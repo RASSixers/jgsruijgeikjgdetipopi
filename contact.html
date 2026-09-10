@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Contact SixersHoops | Get in Touch</title>
-  <meta name="description" content="Contact SixersHoops. Send feedback, report issues, or get in touch with the site owner." />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" href="/favicon.ico" />
+  <meta name="description" content="Contact SixersHoops. Send feedback, report issues, or get in touch with the site owner."/>
+  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
 
-  <link rel="stylesheet" href="navbar-styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="navbar-styles.css"/>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
   <script>
@@ -24,353 +24,252 @@
 
   <style>
     :root {
-      --navy: #001a57;
-      --sixers-blue: #006BB6;
-      --sixers-red: #ED174C;
-      --cream: #f7f8fc;
-      --ink: #0d0f1a;
-      --mid: #64748b;
-      --border-light: #e4e8f0;
+      --navy:#001a57;
+      --sixers-blue:#006BB6;
+      --sixers-red:#ED174C;
+      --cream:#ffffff;
+      --ink:#0d0f1a;
+      --mid:#64748b;
+      --mid-2:#94a3b8;
+      --border-light:#e4e8f0;
+      --card-bg:#ffffff;
+      --surface-soft:#f6f8fc;
+      --green:#16a34a;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html {
-      font-family: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--cream); color: var(--ink); line-height: 1.55;
+    *,*::before,*::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body,html {
+      margin: 0; background: var(--cream); color: var(--ink);
+      font-family: 'Lexend', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased; line-height: 1.5;
     }
-    body { padding-top: 64px; overflow-x: hidden; }
+    body { padding-top: 64px; }
+    @media(max-width:480px){ body { padding-top: 60px; } }
 
-    /* HERO */
-    .page-hero { background: var(--cream); position: relative; overflow: hidden; }
-    .page-hero::before {
-      content: ''; position: absolute; inset: 0;
-      background-image: radial-gradient(circle, rgba(0,107,182,0.12) 1px, transparent 1px);
-      background-size: 28px 28px; opacity: .6; pointer-events: none; z-index: 0;
-    }
-    .hero-glow-blue {
-      position: absolute; right: -120px; top: -80px; width: 600px; height: 500px;
-      background: radial-gradient(ellipse at center, rgba(0,107,182,0.08) 0%, transparent 70%);
-      pointer-events: none; z-index: 0;
-    }
-    .hero-glow-red {
-      position: absolute; left: -60px; bottom: -40px; width: 400px; height: 300px;
-      background: radial-gradient(ellipse at center, rgba(237,23,76,0.05) 0%, transparent 70%);
-      pointer-events: none; z-index: 0;
-    }
     .hero-inner {
-      position: relative; z-index: 1; max-width: 860px; margin: 0 auto;
-      padding: 4.5rem 2rem 3.5rem; display: flex; flex-direction: column;
-      align-items: center; text-align: center;
+      max-width: 860px; margin: 0 auto;
+      padding: 5rem 2rem 3.5rem; text-align: center;
     }
     .hero-title-top, .hero-title-bottom {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: clamp(3.2rem, 8vw, 6rem); font-weight: 900;
-      line-height: .9; letter-spacing: -0.01em; text-transform: uppercase; margin: 0;
+      font-size: clamp(2.4rem,6vw,4.5rem); font-weight: 700;
+      line-height: .95; letter-spacing: -.03em; margin: 0;
     }
     .hero-title-top { color: var(--ink); }
-    .hero-title-bottom { color: var(--sixers-blue); margin: 0 0 .2em; }
-    .hero-divider { width: 32px; height: 3px; background: var(--sixers-red); border-radius: 2px; margin: 1.4rem auto 1.2rem; }
-    .hero-sub { font-size: 1rem; color: var(--mid); max-width: 520px; line-height: 1.65; margin: 0 auto; }
+    .hero-title-bottom { color: var(--sixers-blue); }
+    .hero-sub {
+      margin: 1.1rem auto 0; max-width: 520px;
+      color: var(--mid); font-size: .95rem;
+    }
 
-    /* WRAPPER */
-    .main-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
     .section-label {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800; font-size: .65rem; letter-spacing: .18em;
+      font-weight: 500; font-size: .7rem; letter-spacing: .06em;
       text-transform: uppercase; color: var(--mid);
-      display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem;
     }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
+    .section-label .line { flex: 1; height: 1px; background: var(--border-light); }
 
-    /* CARD BASE */
-    .panel {
-      position: relative; background: #fff;
-      border: 1px solid #e6eaf2; border-radius: 14px;
-      padding: 1.75rem; overflow: hidden;
-      box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 28px -18px rgba(15,23,42,.18);
-    }
-    .panel::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--sixers-blue), #1e90d8 60%, var(--sixers-blue));
-    }
-    .panel.accent-red::before {
-      background: linear-gradient(90deg, var(--sixers-red), #f97391 60%, var(--sixers-red));
-    }
-
-    .panel-title {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900; font-size: 1.15rem; letter-spacing: .06em;
-      text-transform: uppercase; color: var(--ink);
-      display: flex; align-items: center; gap: .55rem;
-      margin: .15rem 0 1.1rem;
-    }
-    .panel-title i { color: var(--sixers-blue); }
-
-    /* GRID */
     .contact-grid {
-      display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem;
-      margin-bottom: 2rem;
+      display: grid; grid-template-columns: 1.6fr 1fr;
+      gap: 1.25rem; margin-bottom: 2.25rem;
     }
-    @media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } }
 
-    /* FORM */
-    .contact-form label {
-      display: block;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800; font-size: .72rem; letter-spacing: .14em;
-      text-transform: uppercase; color: var(--mid);
-      margin: 1rem 0 .35rem;
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1.35rem 1.4rem 1.45rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03);
     }
-    .contact-form label:first-of-type { margin-top: 0; }
+    .panel-title {
+      font-weight: 600; font-size: .95rem; margin: 0 0 1.1rem;
+      letter-spacing: -.01em;
+    }
+
+    .contact-form label {
+      display: block; font-size: .62rem; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--mid); font-weight: 600;
+      margin: 0 0 .4rem;
+    }
+    .field { margin-bottom: 1rem; }
     .contact-form input,
     .contact-form textarea {
-      width: 100%; padding: .8rem 1rem;
+      width: 100%; padding: .8rem .95rem;
       border: 1px solid var(--border-light); border-radius: 10px;
-      font-size: .95rem; font-family: 'Barlow', sans-serif;
-      background: #fafbfd; color: var(--ink); outline: none;
-      transition: all .2s ease;
+      font: inherit; font-size: .92rem; color: var(--ink);
+      background: var(--surface-soft); outline: none;
     }
-    .contact-form input::placeholder,
-    .contact-form textarea::placeholder { color: #a3acba; }
     .contact-form input:focus,
     .contact-form textarea:focus {
-      border-color: var(--sixers-blue); background: #fff;
-      box-shadow: 0 0 0 3px rgba(0,107,182,.12);
+      border-color: rgba(0,107,182,.4);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,107,182,.1);
     }
-    .contact-form textarea { resize: vertical; min-height: 140px; }
+    .contact-form textarea { min-height: 140px; resize: vertical; }
 
-    .contact-actions { margin-top: 1.25rem; }
     .btn-primary {
-      display: inline-flex; align-items: center; gap: .5rem;
+      appearance: none; border: 0; cursor: pointer;
       background: var(--sixers-blue); color: #fff;
-      border: none; padding: .75rem 1.5rem; border-radius: 9px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800; font-size: .85rem; letter-spacing: .1em;
-      text-transform: uppercase; cursor: pointer;
-      box-shadow: 0 2px 12px rgba(0,107,182,.25);
-      transition: all .2s ease;
+      border-radius: 10px; padding: .75rem 1.15rem;
+      font: inherit; font-weight: 600; font-size: .88rem;
     }
-    .btn-primary:hover { background: #0057a0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,107,182,.35); }
-
-    .form-status {
-      margin-top: .85rem; font-weight: 700; font-size: .9rem;
-      color: #059669; min-height: 1.2em;
-    }
+    .btn-primary:hover { background: #0057a0; }
+    .form-status { margin: .8rem 0 0; font-size: .85rem; color: var(--green); min-height: 1.2em; }
     .form-status.error { color: var(--sixers-red); }
 
-    /* CONTACT METHODS */
     .method-card {
-      display: flex; align-items: center; gap: .85rem;
-      background: #fafbfd; border: 1px solid var(--border-light);
-      border-radius: 10px; padding: .85rem 1rem; margin-bottom: .65rem;
-      text-decoration: none; color: inherit;
-      transition: all .2s ease;
+      display: block; text-decoration: none; color: inherit;
+      border: 1px solid var(--border-light); background: var(--surface-soft);
+      border-radius: 10px; padding: .9rem 1rem; margin-bottom: .65rem;
     }
     .method-card:last-child { margin-bottom: 0; }
-    .method-card:hover {
-      transform: translateY(-1px); border-color: var(--sixers-blue);
-      background: #fff; box-shadow: 0 8px 22px -12px rgba(0,107,182,.3);
-    }
-    .icon-circle {
-      width: 38px; height: 38px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; background: var(--sixers-blue); flex-shrink: 0;
-      box-shadow: 0 2px 10px rgba(0,107,182,.3);
-    }
-    .icon-circle.red { background: var(--sixers-red); box-shadow: 0 2px 10px rgba(237,23,76,.3); }
-    .method-title {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800; font-size: .95rem; letter-spacing: .04em;
-      text-transform: uppercase; color: var(--ink);
-    }
-    .method-desc { font-size: .85rem; color: var(--mid); margin-top: 2px; }
-    .method-link { color: var(--sixers-blue); font-weight: 700; }
+    .method-card:hover { border-color: rgba(0,107,182,.3); background: #fff; }
+    .method-title { font-weight: 600; font-size: .88rem; }
+    .method-desc { font-size: .8rem; color: var(--mid); margin-top: .2rem; }
+    .method-link { color: var(--sixers-blue); font-weight: 600; }
 
-    /* FAQ */
-    .faq-list { display: grid; gap: .65rem; }
     .faq-item {
-      background: #fafbfd; border: 1px solid var(--border-light);
-      border-radius: 10px; overflow: hidden;
-      transition: border-color .2s ease;
+      border: 1px solid var(--border-light);
+      border-radius: 10px; background: var(--surface-soft);
+      margin-bottom: .65rem; overflow: hidden;
     }
-    .faq-item.open { border-color: rgba(0,107,182,.35); background: #fff; }
+    .faq-item:last-child { margin-bottom: 0; }
+    .faq-item.open { background: #fff; border-color: rgba(0,107,182,.25); }
     .faq-question {
-      width: 100%; text-align: left; background: transparent; border: none;
-      padding: 1rem 2.75rem 1rem 1.1rem;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800; font-size: 1rem; letter-spacing: .03em;
-      color: var(--ink); cursor: pointer; position: relative;
+      width: 100%; text-align: left; border: 0; background: transparent;
+      padding: 1rem 1.1rem; font: inherit; font-weight: 600; font-size: .92rem;
+      cursor: pointer; color: var(--ink);
     }
-    .faq-icon {
-      position: absolute; right: 1rem; top: 50%;
-      transform: translateY(-50%); color: var(--mid);
-      transition: transform .25s ease, color .2s ease;
-    }
-    .faq-item.open .faq-icon { transform: translateY(-50%) rotate(180deg); color: var(--sixers-blue); }
     .faq-answer {
-      max-height: 0; overflow: hidden;
-      transition: max-height .3s ease, padding .25s ease;
-      padding: 0 1.1rem; color: var(--mid); font-size: .92rem; line-height: 1.6;
+      display: none; padding: 0 1.1rem 1rem;
+      color: var(--mid); font-size: .88rem;
     }
-    .faq-item.open .faq-answer { max-height: 400px; padding: 0 1.1rem 1.1rem; }
+    .faq-item.open .faq-answer { display: block; }
 
-    @media (max-width: 768px) {
-      .hero-inner { padding: 3rem 1.25rem 2rem; }
-      .panel { padding: 1.25rem; }
-      .main-container { padding: 1.5rem 1rem 3rem; }
+    @media (max-width: 900px) {
+      .contact-grid { grid-template-columns: 1fr; }
+      .wrap { padding: 1rem 1.1rem 3rem; }
+      .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
     }
   </style>
 </head>
 <body>
   <script src="nav.js"></script>
 
-  <!-- HERO -->
-  <header class="page-hero">
-    <div class="hero-glow-blue"></div>
-    <div class="hero-glow-red"></div>
+  <header class="hero">
     <div class="hero-inner">
-      <p class="hero-title-top">Contact</p>
-      <p class="hero-title-bottom">SixersHoops</p>
-      <div class="hero-divider"></div>
-      <p class="hero-sub">Questions, feedback, or partnership ideas? We'd love to hear from you.</p>
+      <p class="hero-title-top">CONTACT</p>
+      <p class="hero-title-bottom">SIXERSHOOPS</p>
+      <p class="hero-sub">Questions, feedback, or partnership ideas? Send a note and we’ll get back to you.</p>
     </div>
   </header>
 
-  <div class="main-container">
-    <p class="section-label">Get in Touch</p>
+  <div class="wrap">
+    <div class="section-label"><span>Get in Touch</span><span class="line"></span></div>
 
     <div class="contact-grid">
-      <!-- FORM -->
       <section class="panel">
-        <h2 class="panel-title"><i class="fa-solid fa-paper-plane"></i> Send a Message</h2>
+        <h2 class="panel-title">Send a message</h2>
         <form class="contact-form" action="https://formspree.io/f/xyzpjnze" method="POST">
-          <label for="name">Name</label>
-          <input id="name" name="name" type="text" placeholder="Your name" required />
-
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" placeholder="you@example.com" required />
-
-          <label for="message">Message</label>
-          <textarea id="message" name="message" rows="6" placeholder="How can we help?" required></textarea>
-
-          <div class="contact-actions">
-            <button class="btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Send Message</button>
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" placeholder="Your name" required>
           </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required>
+          </div>
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="How can we help?" required></textarea>
+          </div>
+          <button class="btn-primary" type="submit">Send message</button>
           <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
         </form>
       </section>
 
-      <!-- CONTACT METHODS -->
-      <aside class="panel accent-red" aria-labelledby="reach-title">
-        <h3 id="reach-title" class="panel-title"><i class="fa-solid fa-headset" style="color:var(--sixers-red);"></i> Other Ways to Reach</h3>
-
-        <a class="method-card" href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-          <span class="icon-circle"><i class="fa-brands fa-x-twitter"></i></span>
-          <div>
-            <div class="method-title">Twitter</div>
-            <div class="method-desc">Follow and DM <span class="method-link">@SixersHoops</span></div>
-          </div>
+      <aside class="panel">
+        <h2 class="panel-title">Other ways to reach</h2>
+        <a class="method-card" href="https://x.com/SixersHoops" target="_blank" rel="noopener noreferrer">
+          <div class="method-title">X / Twitter</div>
+          <div class="method-desc">Follow or DM <span class="method-link">@SixersHoops</span></div>
         </a>
-
-        <a class="method-card" href="/cdn-cgi/l/email-protection#8eede1e0faefedfacefde7f6ebfcfde6e1e1fefda0ede1e3">
-          <span class="icon-circle red"><i class="fa-solid fa-envelope"></i></span>
-          <div>
-            <div class="method-title">Email</div>
-            <div class="method-desc"><span class="__cf_email__" data-cfemail="ccafa3a2b8adafb88cbfa5b4a9bebfa4a3a3bcbfe2afa3a1">[email&#160;protected]</span></div>
-          </div>
-        </a>
+        <div class="method-card">
+          <div class="method-title">Email</div>
+          <div class="method-desc">Use the form and we’ll reply to the address you enter.</div>
+        </div>
       </aside>
     </div>
 
-    <!-- FAQ -->
-    <p class="section-label">FAQ</p>
-    <section class="panel" aria-labelledby="faq-title">
-      <h2 id="faq-title" class="panel-title"><i class="fa-solid fa-circle-question"></i> Frequently Asked Questions</h2>
-      <div class="faq-list" id="faqList">
+    <div class="section-label"><span>FAQ</span><span class="line"></span></div>
+    <section class="panel">
+      <h2 class="panel-title">Frequently asked questions</h2>
+      <div id="faqList">
         <div class="faq-item">
-          <button class="faq-question" type="button">
-            How quickly do you respond to messages?
-            <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
-          </button>
-          <div class="faq-answer">We typically respond within 1–2 business days. For urgent issues, include "URGENT" in your subject.</div>
+          <button class="faq-question" type="button">How quickly do you respond?</button>
+          <div class="faq-answer">Usually within 1–2 business days. Put URGENT in the first line if it can’t wait.</div>
         </div>
-
         <div class="faq-item">
-          <button class="faq-question" type="button">
-            Can I submit feature requests or bug reports?
-            <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
-          </button>
-          <div class="faq-answer">Absolutely. Please be as specific as possible and, if relevant, share the page URL and steps to reproduce.</div>
+          <button class="faq-question" type="button">Can I submit feature requests or bug reports?</button>
+          <div class="faq-answer">Yes. Include the page URL and the steps to reproduce if it’s a bug.</div>
         </div>
-
         <div class="faq-item">
-          <button class="faq-question" type="button">
-            Do you accept guest posts or partnerships?
-            <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
-          </button>
-          <div class="faq-answer">We're open to collaborations that align with SixersHoops. Share your idea and we'll follow up.</div>
+          <button class="faq-question" type="button">Do you accept guest posts or partnerships?</button>
+          <div class="faq-answer">If it fits Sixers fans and the site, send the idea through the form.</div>
         </div>
-
         <div class="faq-item">
-          <button class="faq-question" type="button">
-            How often is the salary cap and draft information updated?
-            <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
-          </button>
-          <div class="faq-answer">We update salary cap information and draft picks regularly, typically within 24–48 hours of any official NBA transactions or announcements. During the trade deadline and free agency, updates may be more frequent.</div>
+          <button class="faq-question" type="button">How often is salary cap and draft info updated?</button>
+          <div class="faq-answer">Typically within 24–48 hours of official news. Faster around the trade deadline and free agency.</div>
         </div>
-
         <div class="faq-item">
-          <button class="faq-question" type="button">
-            Do you cover other NBA teams besides the 76ers?
-            <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
-          </button>
-          <div class="faq-answer">SixersHoops is primarily focused on Philadelphia 76ers content, but our trade machine and some analysis tools include data for all 30 NBA teams to provide comprehensive trade scenarios and comparisons.</div>
+          <button class="faq-question" type="button">Do you cover other NBA teams?</button>
+          <div class="faq-answer">The site is Sixers-first. Tools like the trade machine still use all 30 teams so the scenarios work.</div>
         </div>
       </div>
     </section>
   </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const list = document.getElementById('faqList');
+    document.addEventListener("DOMContentLoaded", function () {
+      const list = document.getElementById("faqList");
       if (list) {
-        list.addEventListener('click', function (e) {
-          const btn = e.target.closest('.faq-question');
+        list.addEventListener("click", function (e) {
+          const btn = e.target.closest(".faq-question");
           if (!btn) return;
-          btn.closest('.faq-item').classList.toggle('open');
+          const item = btn.closest(".faq-item");
+          list.querySelectorAll(".faq-item.open").forEach(open => {
+            if (open !== item) open.classList.remove("open");
+          });
+          item.classList.toggle("open");
         });
       }
 
-      const form = document.querySelector('.contact-form');
-      const statusEl = document.getElementById('formStatus');
-      if (form && statusEl) {
-        form.addEventListener('submit', async function (e) {
-          e.preventDefault();
-          statusEl.textContent = 'Submitting…';
-          statusEl.classList.remove('error');
-          try {
-            const formData = new FormData(form);
-            const res = await fetch(form.action, {
-              method: 'POST',
-              headers: { 'Accept': 'application/json' },
-              body: formData
-            });
-            if (res.ok) {
-              statusEl.textContent = 'Your message has been sent. Thank you!';
-              form.reset();
-            } else {
-              const data = await res.json().catch(() => null);
-              const err = data && data.errors ? data.errors.map(e => e.message).join(', ') : 'Please try again later.';
-              statusEl.textContent = 'Submission failed: ' + err;
-              statusEl.classList.add('error');
-            }
-          } catch (err) {
-            statusEl.textContent = 'Network error. Please try again.';
-            statusEl.classList.add('error');
+      const form = document.querySelector(".contact-form");
+      const statusEl = document.getElementById("formStatus");
+      if (!form || !statusEl) return;
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        statusEl.textContent = "Submitting…";
+        statusEl.classList.remove("error");
+        try {
+          const res = await fetch(form.action, {
+            method: "POST",
+            headers: { Accept: "application/json" },
+            body: new FormData(form)
+          });
+          if (res.ok) {
+            statusEl.textContent = "Message sent. Thank you.";
+            form.reset();
+          } else {
+            statusEl.textContent = "Submission failed. Please try again.";
+            statusEl.classList.add("error");
           }
-        });
-      }
+        } catch (err) {
+          statusEl.textContent = "Network error. Please try again.";
+          statusEl.classList.add("error");
+        }
+      });
     });
   </script>
 </body>

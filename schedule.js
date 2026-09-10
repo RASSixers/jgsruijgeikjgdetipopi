@@ -3,16 +3,11 @@ const SCHEDULE_BASE =
 const INJURIES_URL =
   "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
 
-const SEASON_SECTIONS = [
-  { type: 1, title: "Preseason", empty: "No preseason games listed yet." },
-  { type: 2, title: "Regular Season", empty: "Regular season schedule is not available yet." },
-  { type: 3, title: "Playoffs", empty: "Playoff schedule will appear here when available." }
-];
-
 let refreshTimer = null;
 
-function get(obj, path, fallback = "") {
-  return path.split(".").reduce((o, k) => (o && o[k] != null ? o[k] : undefined), obj) ?? fallback;
+function get(obj, path, fallback) {
+  const value = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
+  return value == null ? fallback : value;
 }
 
 function badgeFor(statusName) {
@@ -21,66 +16,57 @@ function badgeFor(statusName) {
   return "badge upcoming";
 }
 
-function getBroadcast(competition) {
-  const broadcasts = competition.broadcasts || [];
-  const names = broadcasts
-    .map(b => get(b, "media.shortName") || get(b, "names.0") || get(b, "shortName"))
-    .filter(Boolean);
-  return [...new Set(names)].join(" / ") || "TBD";
-}
-
 function isLive(statusName) {
   return statusName === "STATUS_IN_PROGRESS" || statusName === "STATUS_LIVE";
 }
 
-function opponentAbbr(event) {
-  const comps = get(event, "competitions.0.competitors", []);
-  const opp = comps.find(c => get(c, "team.abbreviation") !== "PHI");
-  return get(opp, "team.abbreviation", "");
+function getBroadcast(competition) {
+  const broadcasts = get(competition, "broadcasts", []) || [];
+  const names = broadcasts
+    .map(b => get(b, "media.shortName", "") || get(b, "shortName", ""))
+    .filter(Boolean);
+  return [...new Set(names)].join(" / ") || "TBD";
+}
+
+function eventType(event) {
+  return Number(get(event, "seasonType.type", 0));
+}
+
+function oppOf(event) {
+  const comps = get(event, "competitions.0.competitors", []) || [];
+  return comps.find(c => get(c, "team.abbreviation", "") !== "PHI") || null;
+}
+
+function sixersOf(event) {
+  const comps = get(event, "competitions.0.competitors", []) || [];
+  return comps.find(c => get(c, "team.abbreviation", "") === "PHI") || null;
 }
 
 function seriesLine(allEvents, event) {
-  const abbr = opponentAbbr(event);
+  const abbr = get(oppOf(event), "team.abbreviation", "");
+  const name = get(oppOf(event), "team.shortDisplayName", abbr || "this opponent");
   if (!abbr) return "Series history unavailable.";
 
-  const finished = allEvents.filter(e => {
-    const status = get(e, "competitions.0.status.type.name");
-    const type = e.seasonType && e.seasonType.type;
-    return status === "STATUS_FINAL" && type === 2 && opponentAbbr(e) === abbr;
-  });
-
-  const wins = finished.filter(e => {
-    const sixers = (get(e, "competitions.0.competitors", []) || [])
-      .find(c => get(c, "team.abbreviation") === "PHI");
-    return !!(sixers && sixers.winner);
-  }).length;
-
-  const name = get(
-    (get(event, "competitions.0.competitors", []) || []).find(c => get(c, "team.abbreviation") !== "PHI"),
-    "team.shortDisplayName",
-    abbr
+  const finished = allEvents.filter(e =>
+    get(e, "competitions.0.status.type.name", "") === "STATUS_FINAL" &&
+    eventType(e) === 2 &&
+    get(oppOf(e), "team.abbreviation", "") === abbr
   );
-
+  const wins = finished.filter(e => get(sixersOf(e), "winner", false)).length;
   if (!finished.length) return `No regular-season games vs ${name} yet this year.`;
   return `Sixers are ${wins}-${finished.length - wins} vs ${name} this year.`;
 }
 
-function formatInjuries(items) {
-  if (!items.length) return "No injury report posted.";
-  return items.slice(0, 5).map(inj => {
-    const name = get(inj, "athlete.displayName") || "Player";
-    const status = inj.status || get(inj, "type.description") || "";
-    const detail = get(inj, "details.detail") || get(inj, "details.type") || "";
-    const extra = [status, detail].filter(Boolean).join(" · ");
-    return extra ? `${name} (${extra})` : name;
-  }).join(" · ");
-}
-
-async function fetchSeasonType(seasonYear, seasonType) {
-  const res = await fetch(`${SCHEDULE_BASE}?season=${seasonYear}&seasontype=${seasonType}`);
-  if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-  const data = await res.json();
-  return data.events || [];
+async function fetchEvents(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.events) ? data.events : [];
+  } catch (err) {
+    console.warn("Schedule fetch failed:", url, err);
+    return [];
+  }
 }
 
 async function fetchSixersInjuries() {
@@ -89,118 +75,109 @@ async function fetchSixersInjuries() {
     if (!res.ok) return [];
     const data = await res.json();
     const teams = data.injuries || [];
-    const sixers = teams.find(t =>
-      /76ers|philadelphia/i.test(t.displayName || "") ||
-      get(t, "team.abbreviation") === "PHI"
-    );
+    const sixers = teams.find(t => /76ers|philadelphia/i.test(t.displayName || ""));
     return (sixers && sixers.injuries) || [];
   } catch (err) {
     return [];
   }
 }
 
+function formatInjuries(items) {
+  if (!items.length) return "No injury report posted.";
+  return items.slice(0, 5).map(inj => {
+    const name = get(inj, "athlete.displayName", "Player");
+    const status = inj.status || get(inj, "type.description", "");
+    const detail = get(inj, "details.detail", "") || get(inj, "details.type", "");
+    const extra = [status, detail].filter(Boolean).join(" · ");
+    return extra ? `${name} (${extra})` : name;
+  }).join(" · ");
+}
+
+function mergeEvents(groups) {
+  const map = new Map();
+  groups.flat().forEach(event => {
+    if (event && event.id) map.set(String(event.id), event);
+  });
+  return [...map.values()].sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
 function setRefreshCadence(events) {
-  const live = events.some(event => isLive(get(event, "competitions.0.status.type.name")));
+  const live = events.some(event => isLive(get(event, "competitions.0.status.type.name", "")));
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(getSixersSchedule, live ? 45000 : 300000);
 }
 
 function updateSnapshot(events, injuries) {
-  let wins = 0;
-  let losses = 0;
-  let played = 0;
-  let next = null;
+  let wins = 0, losses = 0, played = 0, next = null;
 
-  const sorted = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+  events.forEach(event => {
+    const statusName = get(event, "competitions.0.status.type.name", "");
+    const state = get(event, "competitions.0.status.type.state", "");
+    const sixers = sixersOf(event);
+    const opp = oppOf(event);
 
-  for (const event of sorted) {
-    const comp = event.competitions && event.competitions[0];
-    if (!comp) continue;
-
-    const sixers = (comp.competitors || []).find(c => get(c, "team.abbreviation") === "PHI");
-    const opp = (comp.competitors || []).find(c => get(c, "team.abbreviation") !== "PHI");
-    const statusName = get(comp, "status.type.name");
-    const state = get(comp, "status.type.state");
-    const seasonType = event.seasonType && event.seasonType.type;
-
-    if (statusName === "STATUS_FINAL" && seasonType === 2) {
+    if (statusName === "STATUS_FINAL" && eventType(event) === 2) {
       played += 1;
-      if (sixers && sixers.winner) wins += 1;
+      if (get(sixers, "winner", false)) wins += 1;
       else losses += 1;
     }
 
-    if (!next && isLive(statusName)) {
-      next = { sixers, opp, comp, live: true };
-    } else if (!next && state === "pre") {
-      next = { sixers, opp, comp, live: false };
-    }
-  }
+    if (!next && isLive(statusName)) next = { sixers, opp, event, live: true };
+    else if (!next && state === "pre") next = { sixers, opp, event, live: false };
+  });
 
-  document.getElementById("stat-record").textContent = `${wins}-${losses}`;
-  document.getElementById("stat-played").textContent = String(played);
-  document.getElementById("stat-pct").textContent = played
-    ? (wins / played).toFixed(3).replace(/^0/, "")
-    : "—.---";
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
 
-  const nextEl = document.getElementById("stat-next");
-  const nextDateEl = document.getElementById("stat-next-date");
-  const injuryEl = document.getElementById("injury-note");
+  setText("stat-record", `${wins}-${losses}`);
+  setText("stat-played", String(played));
+  setText("stat-pct", played ? (wins / played).toFixed(3).replace(/^0/, "") : "—.---");
 
   if (next) {
-    const oppName = get(next.opp, "team.shortDisplayName") || get(next.opp, "team.displayName", "TBD");
-    const isHome = get(next.sixers, "homeAway") === "home";
-    nextEl.textContent = next.live
-      ? `LIVE ${isHome ? "vs" : "@"} ${oppName}`
-      : `${isHome ? "vs" : "@"} ${oppName}`;
-    nextDateEl.textContent = get(next.comp, "status.type.shortDetail", "TBD");
+    const oppName = get(next.opp, "team.shortDisplayName", "") || get(next.opp, "team.displayName", "TBD");
+    const isHome = get(next.sixers, "homeAway", "") === "home";
+    setText("stat-next", `${next.live ? "LIVE " : ""}${isHome ? "vs" : "@"} ${oppName}`);
+    setText("stat-next-date", get(next.event, "competitions.0.status.type.shortDetail", "TBD"));
   } else {
-    nextEl.textContent = "TBD";
-    nextDateEl.textContent = "No upcoming game";
+    setText("stat-next", "TBD");
+    setText("stat-next-date", "No upcoming game");
   }
 
-  if (injuryEl) injuryEl.textContent = formatInjuries(injuries);
+  setText("injury-note", formatInjuries(injuries));
 }
 
 function renderGameRow(event, allEvents) {
   const date = new Date(event.date);
-  const dateStr = date.toLocaleDateString("en-US", {
+  const dateStr = isNaN(date) ? "TBD" : date.toLocaleDateString("en-US", {
     weekday: "short", month: "short", day: "numeric"
   });
-  const timeStr = date.toLocaleTimeString("en-US", {
+  const timeStr = isNaN(date) ? "" : date.toLocaleTimeString("en-US", {
     hour: "numeric", minute: "2-digit"
   });
 
-  const competition = (event.competitions && event.competitions[0]) || {};
-  const competitors = competition.competitors || [];
-  const sixers = competitors.find(c => get(c, "team.abbreviation") === "PHI");
-  const opponent = competitors.find(c => get(c, "team.abbreviation") !== "PHI");
-
-  const isHome = get(sixers, "homeAway") === "home";
-  const opponentName =
-    get(opponent, "team.shortDisplayName") ||
-    get(opponent, "team.displayName", "TBD");
+  const sixers = sixersOf(event);
+  const opponent = oppOf(event);
+  const isHome = get(sixers, "homeAway", "") === "home";
+  const opponentName = get(opponent, "team.shortDisplayName", "") || get(opponent, "team.displayName", "TBD");
   const opponentLogo = get(opponent, "team.logos.0.href", "");
-  const venueName = get(competition, "venue.fullName");
-  const venueCity = get(competition, "venue.address.city");
+  const venueName = get(event, "competitions.0.venue.fullName", "");
+  const venueCity = get(event, "competitions.0.venue.address.city", "");
   const venue = venueName ? (venueCity ? `${venueName}, ${venueCity}` : venueName) : "TBD";
+  const statusType = get(event, "competitions.0.status.type.name", "STATUS_SCHEDULED");
+  const statusText = get(event, "competitions.0.status.type.shortDetail", "") ||
+    get(event, "competitions.0.status.type.description", "Scheduled");
 
-  const statusType = get(competition, "status.type.name", "STATUS_SCHEDULED");
-  const statusText =
-    get(competition, "status.type.shortDetail") ||
-    get(competition, "status.type.description", "Scheduled");
-
-  let resultHtml = timeStr;
+  let resultHtml = timeStr || "TBD";
   const sixersScore = get(sixers, "score.displayValue", null);
   const oppScore = get(opponent, "score.displayValue", null);
-
   if (statusType === "STATUS_FINAL" && sixersScore != null && oppScore != null) {
-    const won = !!(sixers && sixers.winner);
-    resultHtml = `<span class="score-cell ${won ? "win-result" : "loss-result"}">${won ? "W" : "L"} ${sixersScore}–${oppScore}</span>`;
+    const won = !!get(sixers, "winner", false);
+    resultHtml = `<span class="${won ? "win-result" : "loss-result"}">${won ? "W" : "L"} ${sixersScore}–${oppScore}</span>`;
   } else if (isLive(statusType) && sixersScore != null) {
-    resultHtml = `<strong class="score-cell">${sixersScore}–${oppScore ?? ""}</strong>`;
+    resultHtml = `<strong>${sixersScore}–${oppScore ?? ""}</strong>`;
   }
-
-  const history = seriesLine(allEvents, event);
 
   return `
     <tr>
@@ -211,35 +188,29 @@ function renderGameRow(event, allEvents) {
           ${opponentLogo ? `<img src="${opponentLogo}" alt="${opponentName}" class="opponent-logo">` : ""}
           <span>${opponentName}</span>
         </div>
-        <p class="series-line">${history}</p>
+        <p class="series-line">${seriesLine(allEvents, event)}</p>
       </td>
       <td>${resultHtml}</td>
       <td>${venue}</td>
       <td><span class="${badgeFor(statusType)}">${statusText}</span></td>
-      <td class="stream-cell">${getBroadcast(competition)}</td>
+      <td class="stream-cell">${getBroadcast(get(event, "competitions.0", {}))}</td>
     </tr>`;
 }
 
 function renderSection(title, events, emptyText, allEvents) {
   if (!events.length) {
-    return `
-      <section class="season-block">
-        <div class="season-heading">${title}</div>
-        <p class="empty-note">${emptyText}</p>
-      </section>`;
+    return `<section class="season-block"><div class="season-heading">${title}</div><p class="empty-note">${emptyText}</p></section>`;
   }
 
   const months = {};
-  events
-    .slice()
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .forEach(event => {
-      const monthYear = new Date(event.date).toLocaleString("en-US", { month: "long", year: "numeric" });
-      (months[monthYear] ||= []).push(event);
-    });
+  events.forEach(event => {
+    const date = new Date(event.date);
+    const key = isNaN(date) ? "Upcoming" : date.toLocaleString("en-US", { month: "long", year: "numeric" });
+    (months[key] ||= []).push(event);
+  });
 
   let html = `<section class="season-block"><div class="season-heading">${title}</div>`;
-  for (const month in months) {
+  Object.keys(months).forEach(month => {
     html += `
       <div class="month-section">
         <div class="month-header"><h2 class="month-title">${month}</h2></div>
@@ -247,21 +218,15 @@ function renderSection(title, events, emptyText, allEvents) {
           <table>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Opponent</th>
-                <th>Result/Time</th>
-                <th>Venue</th>
-                <th>Status</th>
-                <th>Stream</th>
+                <th>Date</th><th>Opponent</th><th>Result/Time</th>
+                <th>Venue</th><th>Status</th><th>Stream</th>
               </tr>
             </thead>
-            <tbody>
-              ${months[month].map(event => renderGameRow(event, allEvents)).join("")}
-            </tbody>
+            <tbody>${months[month].map(event => renderGameRow(event, allEvents)).join("")}</tbody>
           </table>
         </div>
       </div>`;
-  }
+  });
   html += `</section>`;
   return html;
 }
@@ -271,38 +236,43 @@ async function getSixersSchedule() {
   if (!container) return;
 
   try {
-    const probeRes = await fetch(SCHEDULE_BASE);
-    if (!probeRes.ok) throw new Error(`HTTP error! status: ${probeRes.status}`);
-    const probe = await probeRes.json();
-    const seasonYear = get(probe, "season.year") || 2027;
+    const probe = await fetchEvents(SCHEDULE_BASE);
+    let year = 2027;
+    if (probe[0]) year = get(probe[0], "season.year", 2027);
 
     const [pre, regular, playoffs, injuries] = await Promise.all([
-      fetchSeasonType(seasonYear, 1),
-      fetchSeasonType(seasonYear, 2),
-      fetchSeasonType(seasonYear, 3),
+      fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=1`),
+      fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=2`),
+      fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=3`),
       fetchSixersInjuries()
     ]);
 
-    const byType = { 1: pre, 2: regular, 3: playoffs };
-    const allEvents = [...pre, ...regular, ...playoffs];
-
+    const allEvents = mergeEvents([probe, pre, regular, playoffs]);
     if (!allEvents.length) {
-      container.innerHTML = "<p style='text-align:center; padding: 2rem;'>No schedule data available right now.</p>";
+      container.innerHTML = "<p class='empty-note'>No schedule data available right now.</p>";
       return;
     }
 
+    const preseason = allEvents.filter(e => eventType(e) === 1);
+    const regularSeason = allEvents.filter(e => eventType(e) === 2);
+    const postseason = allEvents.filter(e => eventType(e) === 3);
+    const leftover = allEvents.filter(e => ![1, 2, 3].includes(eventType(e)));
+
     updateSnapshot(allEvents, injuries);
-    container.innerHTML = SEASON_SECTIONS.map(section =>
-      renderSection(section.title, byType[section.type], section.empty, allEvents)
-    ).join("");
+    container.innerHTML = [
+      renderSection("Preseason", preseason, "No preseason games listed yet.", allEvents),
+      renderSection("Regular Season", regularSeason.concat(leftover), "Regular season schedule is not available yet.", allEvents),
+      renderSection("Playoffs", postseason, "Playoff schedule will appear here when available.", allEvents)
+    ].join("");
+
     setRefreshCadence(allEvents);
   } catch (err) {
     console.error("Schedule Load Error:", err);
     container.innerHTML = `
-      <div style="text-align:center; padding: 3rem;">
-        <p style="color:#dc2626; font-weight:700; margin-bottom: 1rem;">Error loading schedule.</p>
-        <p style="color:var(--mid); font-size: 0.9rem;">${err.message}</p>
-        <button onclick="getSixersSchedule()" style="margin-top: 1.5rem; padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid var(--sixers-blue); background: white; color: var(--sixers-blue); font-weight: 600;">Try Again</button>
+      <div style="text-align:center;padding:3rem">
+        <p style="color:#dc2626;font-weight:700">Error loading schedule.</p>
+        <p style="color:var(--mid)">${err.message}</p>
+        <button onclick="getSixersSchedule()" style="margin-top:1.5rem;padding:.6rem 1.2rem;border-radius:8px;border:1px solid var(--sixers-blue);background:#fff;color:var(--sixers-blue);font-weight:600">Try Again</button>
       </div>`;
   }
 }

@@ -6,14 +6,11 @@
   <title>Philadelphia 76ers Schedule | SixersHoops</title>
   <meta name="description" content="2026-27 Philadelphia 76ers schedule, results, streams, and upcoming matchups."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="navbar-styles.css"/>
-
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -21,186 +18,113 @@
     gtag('js', new Date());
     gtag('config', 'G-T1V9Q0MNEM');
   </script>
-
   <style>
     :root {
-      --navy:#001a57; --navy-deep:#0b0f1a;
-      --sixers-blue:#006BB6; --sixers-blue-dark:#0057a0;
-      --sixers-red:#ED174C;
-      --cream:#ffffff; --ink:#0d0f1a;
-      --mid:#64748b; --mid-2:#94a3b8;
+      --navy:#001a57; --sixers-blue:#006BB6; --sixers-red:#ED174C;
+      --cream:#ffffff; --ink:#0d0f1a; --mid:#64748b; --mid-2:#94a3b8;
       --border-light:#e4e8f0; --card-bg:#ffffff; --surface-soft:#f6f8fc;
-      --green:#16a34a; --red:#dc2626; --amber:#d97706;
+      --green:#16a34a; --red:#dc2626;
     }
     *,*::before,*::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body,html {
       margin: 0; background: var(--cream); color: var(--ink);
-      font-family: 'Lexend', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      -webkit-font-smoothing: antialiased; line-height: 1.5;
-      overflow-x: hidden; max-width: 100%;
+      font-family: 'Lexend', system-ui, sans-serif; line-height: 1.5;
     }
     body { padding-top: 64px; }
-    @media(max-width:480px){ body { padding-top: 60px; } }
-    a { color: inherit; }
-    button { font-family: inherit; cursor: pointer; }
-
-    .hero { background: var(--cream); position: relative; overflow: hidden; padding: 0; }
-    .hero-inner {
-      position: relative; z-index: 1; max-width: 860px; margin: 0 auto;
-      padding: 5rem 2rem 4rem; display: flex; flex-direction: column;
-      align-items: center; text-align: center;
-    }
+    .hero-inner { max-width: 860px; margin: 0 auto; padding: 5rem 2rem 4rem; text-align: center; }
     .hero-title-top, .hero-title-bottom {
-      font-size: clamp(2.4rem,6vw,4.5rem); font-weight: 700;
-      line-height: .95; letter-spacing: -.03em; margin: 0;
+      font-size: clamp(2.4rem,6vw,4.5rem); font-weight: 700; line-height: .95; margin: 0;
     }
-    .hero-title-top { color: var(--ink); }
     .hero-title-bottom { color: var(--sixers-blue); }
-
     .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
     .section-label {
-      font-weight: 500; font-size: .7rem; letter-spacing: .06em;
-      text-transform: uppercase; color: var(--mid);
-      display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem;
+      font-weight: 500; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--mid); display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem;
     }
     .section-label .line { flex: 1; height: 1px; background: var(--border-light); }
-
     .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: .75rem; margin-bottom: 2.5rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: .75rem; margin-bottom: .75rem;
     }
     .metric {
       background: var(--card-bg); border: 1px solid var(--border-light);
-      border-radius: 12px; padding: 1.15rem 1.2rem 1.1rem;
-      position: relative; overflow: hidden;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03);
-      transition: all .2s;
+      border-radius: 12px; padding: 1.15rem 1.2rem;
     }
-    .metric:hover { border-color: rgba(0,107,182,.25); box-shadow: 0 6px 18px rgba(0,107,182,.08); transform: translateY(-1px); }
-    .metric::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-      background: var(--sixers-blue);
-      transform: scaleY(0); transform-origin: top; transition: transform .25s ease;
-    }
-    .metric:hover::before { transform: scaleY(1); }
-    .metric .k {
-      font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
-      color: var(--mid); font-weight: 600; display: block; margin-bottom: .5rem;
-    }
-    .metric .v {
-      font-weight: 700; font-size: 1.35rem; color: var(--ink);
-      letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1;
-      display: block;
-    }
-    .metric .sub { font-size: .65rem; color: var(--mid-2); font-weight: 500; margin-top: .4rem; display: block; }
+    .metric .k { font-size: .58rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mid); font-weight: 600; display: block; margin-bottom: .5rem; }
+    .metric .v { font-weight: 700; font-size: 1.35rem; display: block; }
+    .metric .sub { font-size: .65rem; color: var(--mid-2); margin-top: .4rem; display: block; }
     .metric.blue .v { color: var(--sixers-blue); }
     .metric.red .v { color: var(--sixers-red); }
     .metric.green .v { color: var(--green); }
-
-    .schedule-container { animation: fadeIn .4s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
+    .injury-note {
+      color: var(--mid); font-size: .82rem; margin: 0 0 2rem;
+      padding: .75rem 1rem; background: var(--surface-soft);
+      border: 1px solid var(--border-light); border-radius: 10px;
+    }
     .season-block { margin-bottom: 2.25rem; }
-    .season-heading {
-      font-weight: 700;
-      font-size: 1.15rem;
-      letter-spacing: -.02em;
-      margin: 0 0 1rem;
-      color: var(--ink);
-    }
+    .season-heading { font-weight: 700; font-size: 1.15rem; margin: 0 0 1rem; }
     .empty-note {
-      color: var(--mid);
-      font-size: .9rem;
-      background: var(--card-bg);
-      border: 1px dashed var(--border-light);
-      border-radius: 12px;
-      padding: 1rem 1.2rem;
-      margin: 0;
+      color: var(--mid); border: 1px dashed var(--border-light);
+      border-radius: 12px; padding: 1rem 1.2rem;
     }
-
     .month-section {
       background: var(--card-bg); border: 1px solid var(--border-light);
-      border-radius: 12px; overflow: hidden;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03);
-      margin-bottom: 1.5rem;
+      border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
     }
     .month-header {
       padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-light);
-      background: var(--surface-soft);
-      display: flex; align-items: center; gap: .6rem;
+      background: var(--surface-soft); display: flex; align-items: center; gap: .6rem;
     }
     .month-header::before { content: ''; width: 4px; height: 18px; background: var(--sixers-blue); border-radius: 2px; }
-    .month-title {
-      font-weight: 600; font-size: .95rem; letter-spacing: -.01em; color: var(--ink); margin: 0;
-    }
-
+    .month-title { font-weight: 600; font-size: .95rem; margin: 0; }
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
     th {
-      text-align: left; font-weight: 500; font-size: .62rem;
-      letter-spacing: .12em; text-transform: uppercase; color: var(--mid);
-      padding: .85rem 1.25rem; border-bottom: 1px solid var(--border-light);
-      background: #fff; white-space: nowrap;
+      text-align: left; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--mid); padding: .85rem 1.25rem; border-bottom: 1px solid var(--border-light);
     }
     td {
       padding: .95rem 1.25rem; border-bottom: 1px solid var(--border-light);
-      font-size: .88rem; color: var(--ink); vertical-align: middle;
+      font-size: .88rem; vertical-align: middle;
     }
-    tbody tr:last-child td { border-bottom: 0; }
-    tbody tr { transition: background .15s; }
     tbody tr:hover td { background: var(--surface-soft); }
-
-    .game-info {
-      display: flex; align-items: center; gap: .6rem;
-      font-weight: 600; letter-spacing: -.01em; color: var(--ink);
-    }
+    .game-info { display: flex; align-items: center; gap: .6rem; font-weight: 600; }
     .opponent-logo { width: 28px; height: 28px; object-fit: contain; }
-    .date-cell { color: var(--mid); font-size: .85rem; font-weight: 500; white-space: nowrap; }
-    .score-cell { font-weight: 600; font-variant-numeric: tabular-nums; }
-    .win-result  { color: var(--green); }
-    .loss-result { color: var(--red); }
+    .date-cell { color: var(--mid); white-space: nowrap; }
+    .win-result { color: var(--green); font-weight: 600; }
+    .loss-result { color: var(--red); font-weight: 600; }
     .stream-cell { font-weight: 600; color: var(--sixers-blue); white-space: nowrap; }
-
+    .series-line {
+      display: none; margin: .35rem 0 0; font-size: .75rem;
+      color: var(--mid); font-weight: 500;
+    }
+    tbody tr:hover .series-line,
+    tbody tr:focus-within .series-line { display: block; }
     .badge {
-      display: inline-block; font-size: .58rem; letter-spacing: .08em;
-      font-weight: 600; padding: 3px 9px; border-radius: 999px;
-      text-transform: uppercase; border: 1px solid var(--border-light);
-      background: var(--surface-soft); color: var(--mid);
+      display: inline-block; font-size: .58rem; letter-spacing: .08em; font-weight: 600;
+      padding: 3px 9px; border-radius: 999px; text-transform: uppercase;
+      border: 1px solid var(--border-light);
     }
-    .badge.upcoming { background: rgba(0,107,182,.08); color: var(--sixers-blue); border-color: rgba(0,107,182,.2); }
-    .badge.final    { background: var(--surface-soft); color: var(--mid-2); border-color: transparent; }
-    .badge.live     {
-      background: rgba(237,23,76,.1); color: var(--sixers-red);
-      border-color: rgba(237,23,76,.25);
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
-
+    .badge.upcoming { background: rgba(0,107,182,.08); color: var(--sixers-blue); }
+    .badge.final { color: var(--mid-2); }
+    .badge.live { background: rgba(237,23,76,.1); color: var(--sixers-red); animation: pulse 2s infinite; }
+    @keyframes pulse { 50% { opacity: .55; } }
     .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
-    .loader p { font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-top: .75rem; }
     .loader-spinner {
-      border: 3px solid var(--border-light);
-      border-top: 3px solid var(--sixers-blue);
-      border-radius: 50%; width: 36px; height: 36px;
-      animation: spin 1s linear infinite; margin: 0 auto;
+      border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
+      border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite; margin: 0 auto;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    @media(max-width:720px) {
-      th, td { padding: .75rem .85rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 720px) {
       .wrap { padding: 1rem 1.1rem 3rem; }
-    }
-    @media(max-width:480px) {
-      .hero-inner { padding: 2.8rem 1.25rem 2.4rem; }
       th:nth-child(4), td:nth-child(4) { display: none; }
+      .series-line { display: block; }
     }
   </style>
 </head>
 <body>
   <script src="nav.js"></script>
-
   <header class="hero">
     <div class="hero-inner">
       <p class="hero-title-top">SIXERS</p>
@@ -210,7 +134,7 @@
 
   <div class="wrap">
     <div class="section-label"><span>Season Snapshot</span><span class="line"></span></div>
-    <div class="metric-grid" id="season-snapshot">
+    <div class="metric-grid">
       <div class="metric blue">
         <span class="k">Record</span>
         <span class="v" id="stat-record">--</span>
@@ -232,16 +156,16 @@
         <span class="sub">Regular season</span>
       </div>
     </div>
+    <p class="injury-note" id="injury-note">Checking injury report…</p>
 
     <div class="section-label"><span>Game Log</span><span class="line"></span></div>
-    <main class="schedule-container" id="schedule">
+    <main id="schedule">
       <div class="loader">
         <div class="loader-spinner"></div>
         <p>Fetching latest schedule...</p>
       </div>
     </main>
   </div>
-
   <script src="schedule.js"></script>
 </body>
 </html>

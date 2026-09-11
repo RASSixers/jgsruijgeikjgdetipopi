@@ -8,6 +8,15 @@
   <link rel="canonical" href="https://sixershoops.com/standings"/>
   <meta name="robots" content="index,follow"/>
   <meta name="theme-color" content="#006BB6"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="SixersHoops"/>
+  <meta property="og:title" content="NBA Standings"/>
+  <meta property="og:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
+  <meta property="og:url" content="https://sixershoops.com/standings"/>
+  <meta property="og:image" content="https://sixershoops.com/sixershoopslogonew.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="NBA Standings"/>
+  <meta name="twitter:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -103,167 +112,179 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Compact social card: 1080 x ~1080, capture-safe */
     #social-export-container {
       position: fixed;
       top: 0;
       left: 0;
       width: 1080px;
-      height: 1080px;
-      padding: 0;
-      background: #f4f6fa;
-      color: #0d0f1a;
+      height: 1350px;
+      background: #08111f;
+      color: #f8fafc;
       font-family: 'Lexend', system-ui, sans-serif;
       z-index: -1;
       pointer-events: none;
       overflow: hidden;
     }
-    #social-export-container.single-conf {
-      width: 1080px;
-      height: 1350px;
+    .sg-frame {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 36px 28px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(237,23,76,.18), transparent 36%),
+        radial-gradient(circle at 0% 100%, rgba(0,107,182,.22), transparent 32%),
+        #08111f;
     }
-    .social-topbar {
-      height: 56px;
+    .sg-brand {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 28px;
-      background: #001a57;
-      color: #fff;
+      margin-bottom: 22px;
     }
-    .social-wordmark {
+    .sg-logo {
       margin: 0;
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 800;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+    .sg-logo span { color: #ED174C; }
+    .sg-chip {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #dbeafe;
+      border: 1px solid rgba(147,197,253,.35);
+      border-radius: 999px;
+      padding: 7px 12px;
+    }
+    .sg-header { margin-bottom: 22px; }
+    .sg-kicker {
+      margin: 0 0 8px;
+      font-size: 12px;
       letter-spacing: .18em;
       text-transform: uppercase;
-    }
-    .social-top-meta {
-      margin: 0;
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
       color: #93c5fd;
-      font-weight: 600;
+      font-weight: 700;
     }
-    .social-header {
-      padding: 22px 28px 16px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 16px;
-      background: #f4f6fa;
-    }
-    .social-title-box h1 {
+    .social-title-box h1,
+    .sg-title {
       margin: 0;
-      font-size: 32px;
-      line-height: 1;
-      letter-spacing: -.03em;
+      font-size: 54px;
+      line-height: .92;
+      letter-spacing: -.05em;
       font-weight: 800;
-      color: #0d0f1a;
     }
-    #export-date {
-      margin: 6px 0 0;
-      color: #64748b;
-      font-size: 13px;
+    #export-date,
+    .sg-sub {
+      margin: 10px 0 0;
+      color: #94a3b8;
+      font-size: 16px;
       font-weight: 500;
     }
-    .social-accent {
+    .sg-rule {
+      height: 3px;
       width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #006BB6 0%, #006BB6 55%, #ED174C 55%, #ED174C 100%);
+      border: 0;
+      margin: 0 0 22px;
+      background: linear-gradient(90deg, #006BB6 0 58%, #ED174C 58% 100%);
     }
     #social-export-content {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 18px;
-      padding: 18px 22px 22px;
-      height: calc(1080px - 56px - 78px - 4px);
+      flex: 1;
+      min-height: 0;
     }
     #social-export-container.single-conf #social-export-content {
       grid-template-columns: 1fr;
-      height: calc(1350px - 56px - 78px - 4px);
     }
     .social-conference {
-      background: #fff;
-      border: 1px solid #e6ebf3;
-      border-radius: 14px;
-      padding: 14px 12px 10px;
+      background: rgba(15,23,42,.72);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 18px;
+      padding: 16px 14px 12px;
       min-width: 0;
-      overflow: hidden;
     }
     .social-conf-title {
-      margin: 0 0 8px;
-      padding: 0 6px;
+      margin: 0 0 10px 6px;
       font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .08em;
+      font-weight: 800;
+      letter-spacing: .16em;
       text-transform: uppercase;
-      color: #006BB6;
+      color: #93c5fd;
     }
     .social-table { width: 100%; border-collapse: collapse; }
     .social-table th {
       text-align: left;
-      font-size: 9px;
-      letter-spacing: .12em;
+      font-size: 10px;
+      letter-spacing: .14em;
       text-transform: uppercase;
-      color: #94a3b8;
-      padding: 6px 6px;
-      border-bottom: 1px solid #eef2f7;
+      color: #64748b;
+      padding: 6px 8px 10px;
+      border-bottom: 1px solid rgba(148,163,184,.14);
       background: transparent;
     }
     .social-table td {
       padding: 0;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 13px;
-      color: #0d0f1a;
+      border-bottom: 1px solid rgba(148,163,184,.08);
+      color: #f8fafc;
       background: transparent;
     }
     .social-table tr:last-child td { border-bottom: 0; }
     .social-table .cell-content {
-      padding: 5px 6px;
-      min-height: 28px;
+      padding: 7px 8px;
+      min-height: 34px;
       display: flex;
       align-items: center;
-      white-space: nowrap;
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
     }
     .social-team {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      font-size: 13px;
+      gap: 10px;
+      font-weight: 650;
     }
-    .social-team-name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 210px;
-    }
+    .social-team-name { font-size: 15px; }
     .social-team-rank {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: #eef3f9;
-      color: #64748b;
-      font-size: 10px;
-      font-weight: 700;
+      background: rgba(255,255,255,.06);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 800;
       flex: 0 0 auto;
     }
-    .social-sixers-row td { background: #e8f3fb; }
-    .social-sixers-row .social-team-rank { background: #006BB6; color: #fff; }
-    .social-streak-badge { font-weight: 700; font-size: 12px; }
-    .social-streak-w { color: #16a34a; }
-    .social-streak-l { color: #dc2626; }
+    .social-sixers-row td { background: rgba(0,107,182,.22); }
+    .social-sixers-row .social-team-rank { background: #ED174C; color: #fff; }
+    .social-streak-badge { font-weight: 800; font-size: 13px; }
+    .social-streak-w { color: #4ade80; }
+    .social-streak-l { color: #fb7185; }
+    .sg-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      color: #64748b;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
 
     .modal {
       display: none; position: fixed; inset: 0; background: rgba(13,15,26,.55);
       align-items: center; justify-content: center; z-index: 80; padding: 1rem;
     }
     .modal-card {
-      background: #fff; border-radius: 16px; max-width: 560px; width: 100%;
+      background: #fff; border-radius: 16px; max-width: 420px; width: 100%;
       max-height: calc(100vh - 2rem); overflow: auto;
       padding: 1rem; box-shadow: 0 20px 50px rgba(0,0,0,.18);
     }
@@ -271,11 +292,10 @@
     #exportPreview {
       width: 100%;
       height: auto;
-      max-height: 62vh;
+      max-height: 64vh;
       object-fit: contain;
       border-radius: 8px;
-      border: 1px solid var(--border-light);
-      background: #f4f6fa;
+      background: #08111f;
     }
 
     @media (max-width: 720px) {
@@ -315,18 +335,25 @@
   </div>
 
   <div id="social-export-container">
-    <div class="social-topbar">
-      <p class="social-wordmark">SixersHoops</p>
-      <p class="social-top-meta" id="social-top-meta">NBA Standings</p>
-    </div>
-    <div class="social-header">
-      <div class="social-title-box">
-        <h1>NBA Standings</h1>
-        <p id="export-date"></p>
+    <div class="sg-frame">
+      <div class="sg-brand">
+        <p class="sg-logo">Sixers<span>Hoops</span></p>
+        <p class="sg-chip" id="social-top-meta">NBA Standings</p>
+      </div>
+      <div class="sg-header social-header">
+        <div class="social-title-box">
+          <p class="sg-kicker">Philadelphia 76ers</p>
+          <h1 class="sg-title">NBA Standings</h1>
+          <p class="sg-sub" id="export-date"></p>
+        </div>
+      </div>
+      <div class="sg-rule"></div>
+      <div id="social-export-content"></div>
+      <div class="sg-footer">
+        <span>sixershoops.com</span>
+        <span>W-L · PCT · STRK</span>
       </div>
     </div>
-    <div class="social-accent"></div>
-    <div id="social-export-content"></div>
   </div>
 
   <div class="modal" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="export-title">

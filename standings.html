@@ -4,19 +4,19 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>NBA Standings | Philadelphia 76ers | SixersHoops</title>
-  <meta name="description" content="NBA standings for the current season and the past 10 seasons, with Eastern and Western Conference tables and Sixers highlighted."/>
+  <meta name="description" content="NBA standings with Eastern and Western Conference tables and the Philadelphia 76ers highlighted."/>
   <link rel="canonical" href="https://sixershoops.com/standings"/>
   <meta name="robots" content="index,follow"/>
   <meta name="theme-color" content="#006BB6"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="SixersHoops"/>
   <meta property="og:title" content="NBA Standings"/>
-  <meta property="og:description" content="Current and historical NBA standings with Philadelphia 76ers highlighted."/>
+  <meta property="og:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
   <meta property="og:url" content="https://sixershoops.com/standings"/>
   <meta property="og:image" content="https://sixershoops.com/sixershoopslogonew.png"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="NBA Standings"/>
-  <meta name="twitter:description" content="Current and historical NBA standings with Philadelphia 76ers highlighted."/>
+  <meta name="twitter:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -29,26 +29,6 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-T1V9Q0MNEM');
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        "url": "https://sixershoops.com/standings",
-        "name": "NBA Standings",
-        "about": { "@type": "SportsTeam", "name": "Philadelphia 76ers", "sport": "Basketball" }
-      },
-      {
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sixershoops.com/" },
-          { "@type": "ListItem", "position": 2, "name": "NBA Standings", "item": "https://sixershoops.com/standings" }
-        ]
-      }
-    ]
-  }
   </script>
   <style>
     :root {
@@ -74,7 +54,6 @@
       line-height: .95; letter-spacing: -.03em; margin: 0;
     }
     .hero-title-bottom { color: var(--sixers-blue); }
-    .hero-sub { margin: 1rem auto 0; max-width: 540px; color: var(--mid); font-size: .95rem; }
     .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
     .section-label {
       font-weight: 500; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase;
@@ -137,15 +116,101 @@
       border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite; margin: 0 auto 1rem;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Offscreen but still paintable by html2canvas */
     #social-export-container {
-      position: absolute; left: -9999px; top: 0; background: #f8fafc; padding: 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 1200px;
+      padding: 48px 40px 40px;
+      background: #f8fafc;
+      color: #0d0f1a;
+      font-family: 'Lexend', system-ui, sans-serif;
+      z-index: -1;
+      pointer-events: none;
+      box-sizing: border-box;
     }
-    .social-title-box h1 { margin: 0 0 1rem; }
-    .social-conf-title { margin: 0 0 .75rem; }
-    .social-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
-    .social-sixers-row { background: rgba(0,107,182,.08); }
-    .social-streak-w { color: #16a34a; font-weight: 700; }
-    .social-streak-l { color: #dc2626; font-weight: 700; }
+    .social-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      border-bottom: 3px solid #006BB6;
+      padding-bottom: 16px;
+    }
+    .social-header.single-conf-mode { justify-content: flex-start; }
+    .social-title-box h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1;
+      letter-spacing: -.03em;
+      font-weight: 800;
+    }
+    #export-date {
+      margin: 8px 0 0;
+      color: #64748b;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    #social-export-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    #social-export-content.mode-east,
+    #social-export-content.mode-west {
+      grid-template-columns: 1fr;
+    }
+    .social-conference { min-width: 0; }
+    .social-conf-title {
+      margin: 0 0 12px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .social-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    .social-table th {
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #64748b;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e4e8f0;
+      background: #fff;
+    }
+    .social-table td {
+      padding: 0;
+      border-bottom: 1px solid #e4e8f0;
+      font-size: 15px;
+      background: #fff;
+    }
+    .social-table .cell-content {
+      padding: 10px 12px;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+    }
+    .social-team {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+    .social-team-rank {
+      width: 22px;
+      color: #64748b;
+      font-variant-numeric: tabular-nums;
+    }
+    .social-sixers-row td { background: rgba(0,107,182,.08); }
+    .social-streak-badge { font-weight: 700; }
+    .social-streak-w { color: #16a34a; }
+    .social-streak-l { color: #dc2626; }
+
     .modal {
       display: none; position: fixed; inset: 0; background: rgba(13,15,26,.55);
       align-items: center; justify-content: center; z-index: 80; padding: 1.5rem;
@@ -156,6 +221,7 @@
     }
     .modal-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
     #exportPreview { width: 100%; border-radius: 8px; border: 1px solid var(--border-light); }
+
     @media (max-width: 720px) {
       .wrap { padding: 1rem 1.1rem 3rem; }
       .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
@@ -171,7 +237,6 @@
       <h1 class="sr-only">NBA Standings</h1>
       <p class="hero-title-top" aria-hidden="true">NBA</p>
       <p class="hero-title-bottom" aria-hidden="true">STANDINGS</p>
-      <p class="hero-sub">Eastern and Western Conference tables for the current season and the last 10 NBA seasons.</p>
     </div>
   </header>
   <div class="wrap">
@@ -198,9 +263,6 @@
         <div class="loader-spinner"></div>
         <p>Fetching latest standings...</p>
       </div>
-      <noscript>
-        <p>Enable JavaScript to load NBA standings.</p>
-      </noscript>
     </main>
   </div>
 

@@ -8,7 +8,6 @@
   <link rel="canonical" href="https://sixershoops.com/schedule"/>
   <meta name="robots" content="index,follow"/>
   <meta name="theme-color" content="#006BB6"/>
-
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="SixersHoops"/>
   <meta property="og:title" content="Philadelphia 76ers 2026-27 Schedule"/>
@@ -18,15 +17,12 @@
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Philadelphia 76ers 2026-27 Schedule"/>
   <meta name="twitter:description" content="Dates, ET start times, TV channels, and results for every Sixers game."/>
-  <meta name="twitter:image" content="https://sixershoops.com/sixershoopslogonew.png"/>
-
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="navbar-styles.css"/>
-
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -34,34 +30,15 @@
     gtag('js', new Date());
     gtag('config', 'G-T1V9Q0MNEM');
   </script>
-
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "CollectionPage",
-        "@id": "https://sixershoops.com/schedule#page",
         "url": "https://sixershoops.com/schedule",
         "name": "Philadelphia 76ers 2026-27 Schedule",
-        "description": "Full 2026-27 Philadelphia 76ers schedule with game times, TV listings, venues, and results.",
-        "isPartOf": { "@id": "https://sixershoops.com/#website" },
-        "about": { "@id": "https://sixershoops.com/#team" },
-        "inLanguage": "en-US"
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://sixershoops.com/#website",
-        "name": "SixersHoops",
-        "url": "https://sixershoops.com/"
-      },
-      {
-        "@type": "SportsTeam",
-        "@id": "https://sixershoops.com/#team",
-        "name": "Philadelphia 76ers",
-        "alternateName": ["Sixers", "76ers", "PHI"],
-        "sport": "Basketball",
-        "memberOf": { "@type": "SportsOrganization", "name": "NBA" }
+        "about": { "@type": "SportsTeam", "name": "Philadelphia 76ers", "sport": "Basketball" }
       },
       {
         "@type": "BreadcrumbList",
@@ -73,7 +50,6 @@
     ]
   }
   </script>
-
   <style>
     :root {
       --navy:#001a57; --sixers-blue:#006BB6; --sixers-red:#ED174C;
@@ -105,9 +81,10 @@
       color: var(--mid); display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem;
     }
     .section-label .line { flex: 1; height: 1px; background: var(--border-light); }
+    .section-label a { color: inherit; text-decoration: none; }
     .metric-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: .75rem; margin-bottom: .75rem;
+      gap: .75rem; margin-bottom: 2rem;
     }
     .metric {
       background: var(--card-bg); border: 1px solid var(--border-light);
@@ -119,11 +96,6 @@
     .metric.blue .v { color: var(--sixers-blue); }
     .metric.red .v { color: var(--sixers-red); }
     .metric.green .v { color: var(--green); }
-    .injury-note {
-      color: var(--mid); font-size: .82rem; margin: 0 0 2rem;
-      padding: .75rem 1rem; background: var(--surface-soft);
-      border: 1px solid var(--border-light); border-radius: 10px;
-    }
     .season-block { margin-bottom: 2.25rem; }
     .season-heading { font-weight: 700; font-size: 1.15rem; margin: 0 0 1rem; }
     .empty-note {
@@ -150,19 +122,14 @@
       padding: .95rem 1.25rem; border-bottom: 1px solid var(--border-light);
       font-size: .88rem; vertical-align: middle;
     }
-    tbody tr:hover td { background: var(--surface-soft); }
+    tbody tr.game-row { cursor: pointer; }
+    tbody tr.game-row:hover td { background: var(--surface-soft); }
     .game-info { display: flex; align-items: center; gap: .6rem; font-weight: 600; }
     .opponent-logo { width: 28px; height: 28px; object-fit: contain; }
     .date-cell { color: var(--mid); white-space: nowrap; }
     .win-result { color: var(--green); font-weight: 600; }
     .loss-result { color: var(--red); font-weight: 600; }
     .stream-cell { font-weight: 600; color: var(--sixers-blue); white-space: nowrap; }
-    .series-line {
-      display: none; margin: .35rem 0 0; font-size: .75rem;
-      color: var(--mid); font-weight: 500;
-    }
-    tbody tr:hover .series-line,
-    tbody tr:focus-within .series-line { display: block; }
     .badge {
       display: inline-block; font-size: .58rem; letter-spacing: .08em; font-weight: 600;
       padding: 3px 9px; border-radius: 999px; text-transform: uppercase;
@@ -172,6 +139,26 @@
     .badge.final { color: var(--mid-2); }
     .badge.live { background: rgba(237,23,76,.1); color: var(--sixers-red); animation: pulse 2s infinite; }
     @keyframes pulse { 50% { opacity: .55; } }
+    .game-detail-row td { padding: 0; }
+    .game-detail { display: none; padding: .95rem 1.25rem 1.15rem; background: var(--surface-soft); }
+    tr.game-row.open + .game-detail-row .game-detail { display: block; }
+    .series-inline { color: var(--mid); font-size: .82rem; margin: 0 0 .75rem; }
+    .inj-title {
+      font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--mid); font-weight: 600; margin: .35rem 0 .45rem;
+    }
+    .inj-list { margin: 0 0 .8rem; padding: 0; list-style: none; }
+    .inj-list li {
+      display: grid; grid-template-columns: minmax(8rem,1fr) 7.5rem minmax(8rem,1.2fr);
+      gap: .75rem; padding: .4rem 0; border-bottom: 1px solid var(--border-light); font-size: .82rem;
+    }
+    .inj-list li:last-child { border-bottom: 0; }
+    .inj-name { font-weight: 600; }
+    .inj-status { font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+    .inj-status.out { color: var(--sixers-red); }
+    .inj-status.questionable, .inj-status.doubtful { color: #b45309; }
+    .inj-status.probable { color: var(--green); }
+    .inj-empty { color: var(--mid); font-size: .82rem; margin: 0 0 .75rem; }
     .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
     .loader-spinner {
       border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
@@ -181,14 +168,13 @@
     @media (max-width: 720px) {
       .wrap { padding: 1rem 1.1rem 3rem; }
       th:nth-child(4), td:nth-child(4) { display: none; }
-      .series-line { display: block; }
       .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
+      .inj-list li { grid-template-columns: 1fr; gap: .15rem; }
     }
   </style>
 </head>
 <body>
   <script src="nav.js"></script>
-
   <header class="hero">
     <div class="hero-inner">
       <h1 class="sr-only">Philadelphia 76ers 2026-27 schedule</h1>
@@ -197,13 +183,11 @@
       <p class="hero-sub">2026-27 preseason, regular season, and playoff dates with ET start times and TV listings.</p>
     </div>
   </header>
-
   <div class="wrap">
-    <nav aria-label="Breadcrumb" class="section-label">
-      <span><a href="/" style="text-decoration:none;color:inherit;">Home</a> / 76ers Schedule</span>
+    <nav class="section-label" aria-label="Breadcrumb">
+      <span><a href="/">Home</a> / 76ers Schedule</span>
       <span class="line"></span>
     </nav>
-
     <div class="section-label"><span>Season Snapshot</span><span class="line"></span></div>
     <div class="metric-grid">
       <div class="metric blue">
@@ -218,7 +202,7 @@
       </div>
       <div class="metric red">
         <span class="k">Next Game</span>
-        <span class="v" id="stat-next" style="font-size:1rem; line-height:1.3;">--</span>
+        <span class="v" id="stat-next" style="font-size:1rem;line-height:1.3;">--</span>
         <span class="sub" id="stat-next-date">TBD</span>
       </div>
       <div class="metric green">
@@ -227,8 +211,6 @@
         <span class="sub">Regular season</span>
       </div>
     </div>
-    <p class="injury-note" id="injury-note">Checking injury report…</p>
-
     <div class="section-label"><span>Game Log</span><span class="line"></span></div>
     <main id="schedule">
       <div class="loader">
@@ -236,11 +218,10 @@
         <p>Fetching latest schedule...</p>
       </div>
       <noscript>
-        <p class="empty-note">The 2026-27 Philadelphia 76ers schedule needs JavaScript to load live times, TV listings, and results. Enable JavaScript or check ESPN / NBA.com for the printed slate.</p>
+        <p class="empty-note">Enable JavaScript to load the live 2026-27 Philadelphia 76ers schedule.</p>
       </noscript>
     </main>
   </div>
-
   <script src="schedule.js"></script>
 </body>
 </html>

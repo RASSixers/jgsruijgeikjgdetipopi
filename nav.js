@@ -1383,9 +1383,19 @@ const notifsLink = document.getElementById('navNotifsLink');
     const mobileMenu = document.getElementById('mobileMenu');
 
     if (mobileMenuBtn && mobileMenu) {
-        mobileMenuBtn.addEventListener('click', function() {
-            mobileMenuBtn.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const open = mobileMenu.classList.toggle('active');
+            mobileMenuBtn.classList.toggle('active', open);
+            document.body.style.overflow = open ? 'hidden' : '';
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!mobileMenu.classList.contains('active')) return;
+            if (mobileMenu.contains(e.target) || mobileMenuBtn.contains(e.target)) return;
+            mobileMenu.classList.remove('active');
+            mobileMenuBtn.classList.remove('active');
+            document.body.style.overflow = '';
         });
     }
 
@@ -1396,6 +1406,7 @@ const notifsLink = document.getElementById('navNotifsLink');
             if (mobileMenuBtn && mobileMenu) {
                 mobileMenuBtn.classList.remove('active');
                 mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
             }
         });
     });

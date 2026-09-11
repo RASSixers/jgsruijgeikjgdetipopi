@@ -1,458 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NBA Standings — Sixers Hoops</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link rel="stylesheet" href="navbar-styles.css">
-<style>
-/* ── Variables — matches homepage/roster/depth chart ── */
-:root {
-  --navy: #001a57;
-  --navy-deep: #0b0f1a;
-  --sixers-blue: #006BB6;
-  --sixers-red: #ED174C;
-  --cream: #ffffff;
-  --ink: #0d0f1a;
-  --mid: #64748b;
-  --border-light: #e4e8f0;
-  --card-bg: #ffffff;
-  --green: #16a34a;
-  --red: #dc2626;
-}
-*, *::before, *::after { box-sizing: border-box; }
-body, html {
-  font-family: 'Lexend', system-ui, -apple-system, sans-serif;
-  margin: 0; background: var(--cream); color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-}
-body { padding-top: 64px; }
-@media (max-width: 480px) { body { padding-top: 60px; } }
-
-/* ── Dark mode ── */
-:root.dark-mode {
-  --cream: #0b0f1a;
-  --ink: #e8eaf0;
-  --mid: #8892a4;
-  --border-light: #1e2535;
-  --card-bg: #131929;
-}
-:root.dark-mode body { background: var(--cream); color: var(--ink); }
-
-/* ── HERO ── */
-.page-hero {
-  background: var(--cream);
-  border-bottom: 1px solid var(--border-light);
-  position: relative; overflow: hidden;
-}
-.hero-inner {
-  position: relative; z-index: 1;
-  max-width: 860px; margin: 0 auto;
-  padding: 4rem 2rem 3.5rem;
-  display: flex; flex-direction: column;
-  align-items: center; text-align: center;
-}
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: rgba(0,107,182,0.07);
-  border: 1px solid rgba(0,107,182,0.18);
-  border-radius: 999px; padding: 5px 14px 5px 10px;
-  margin-bottom: 1.4rem;
-}
-.hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sixers-red); flex-shrink: 0; }
-.hero-eyebrow-text { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sixers-blue); }
-:root.dark-mode .hero-eyebrow { background: rgba(0,107,182,0.12); border-color: rgba(0,107,182,0.25); }
-:root.dark-mode .hero-eyebrow-text { color: #4da8ff; }
-
-.hero-title {
-  font-family: 'Lexend', sans-serif;
-  font-size: clamp(2.2rem, 5.5vw, 4rem);
-  font-weight: 700; line-height: 0.95;
-  letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.1em;
-}
-.hero-title span { color: var(--sixers-blue); display: block; }
-:root.dark-mode .hero-title { color: #f0f2f8; }
-:root.dark-mode .hero-title span { color: #4da8ff; }
-
-.hero-sub {
-  font-size: 0.9rem; font-weight: 400; color: var(--mid);
-  max-width: 460px; line-height: 1.65; margin: 1.1rem auto 0;
-}
-
-/* Export button row */
-.hero-cta-row {
-  display: flex; align-items: center; gap: 0.6rem;
-  margin-top: 1.75rem; flex-wrap: wrap; justify-content: center;
-}
-.hero-btn {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  font-weight: 600; font-size: 0.8rem;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 0.6rem 1.3rem; border-radius: 8px; cursor: pointer;
-  transition: all 0.2s; border: none;
-}
-.hero-btn-primary { background: var(--sixers-blue); color: #fff; box-shadow: 0 2px 10px rgba(0,107,182,.2); }
-.hero-btn-primary:hover:not(:disabled) { background: #0057a0; transform: translateY(-1px); }
-.hero-btn-secondary { background: var(--card-bg); color: var(--sixers-blue); border: 1px solid rgba(0,107,182,0.35); }
-.hero-btn-secondary:hover:not(:disabled) { background: var(--sixers-blue); color: #fff; }
-.hero-btn-navy { background: var(--navy); color: #fff; box-shadow: 0 2px 10px rgba(0,26,87,.18); }
-.hero-btn-navy:hover:not(:disabled) { background: #001240; transform: translateY(-1px); }
-.hero-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-:root.dark-mode .hero-btn-secondary { background: var(--card-bg); border-color: rgba(0,107,182,0.4); }
-
-/* ── LAYOUT ── */
-.tm-wrapper { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-
-.section-label {
-  font-weight: 500; font-size: 0.7rem; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--mid);
-  display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;
-}
-.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
-
-/* ── STANDINGS BOARDS ── */
-.standings-grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
-@media (min-width: 1024px) { .standings-grid { grid-template-columns: 1fr 1fr; } }
-
-.tm-board {
-  background: var(--card-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 14px; padding: 1.25rem;
-  position: relative; overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
-  transition: box-shadow 0.2s;
-}
-.tm-board::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--sixers-blue), #1e90d8 60%, var(--sixers-blue));
-}
-:root.dark-mode .tm-board { background: var(--card-bg); border-color: var(--border-light); }
-
-.conference-title {
-  font-size: 1.25rem; font-weight: 700;
-  letter-spacing: -0.02em; color: var(--ink);
-  margin: 0.35rem 0 1rem; line-height: 1;
-}
-:root.dark-mode .conference-title { color: var(--ink); }
-
-.table-responsive { overflow-x: auto; }
-table.standings-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-
-.standings-table thead th {
-  font-weight: 600; font-size: 0.62rem; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--mid);
-  text-align: right; padding: 0.5rem 0.5rem;
-  border-bottom: 1px solid var(--border-light);
-}
-.standings-table thead th:first-child { text-align: left; }
-
-.standings-table tbody td {
-  padding: 0.6rem 0.5rem; text-align: right;
-  border-bottom: 1px solid var(--border-light);
-  font-variant-numeric: tabular-nums; color: var(--ink);
-  font-size: 0.85rem;
-}
-.standings-table tbody td:first-child { text-align: left; }
-.standings-table tbody tr:last-child td { border-bottom: none; }
-.standings-table tbody tr:hover td { background: rgba(0,107,182,0.03); }
-:root.dark-mode .standings-table tbody tr:hover td { background: rgba(0,107,182,0.07); }
-:root.dark-mode .standings-table tbody td { color: var(--ink); border-color: var(--border-light); }
-:root.dark-mode .standings-table thead th { border-color: var(--border-light); }
-
-.standings-table tbody tr.sixers-highlight td { background: rgba(0,107,182,0.06); font-weight: 600; }
-:root.dark-mode .standings-table tbody tr.sixers-highlight td { background: rgba(0,107,182,0.12); }
-
-.team-info { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; }
-.rank {
-  font-weight: 700; font-size: 0.72rem; color: var(--mid);
-  width: 20px; text-align: center;
-  background: rgba(0,0,0,0.04); border-radius: 4px; padding: 2px 0; flex-shrink: 0;
-}
-:root.dark-mode .rank { background: rgba(255,255,255,0.06); }
-.team-logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
-.pct { font-weight: 600; }
-.gb { color: var(--mid); }
-
-.status-badge {
-  display: inline-block; min-width: 34px; padding: 3px 7px;
-  border-radius: 6px; font-weight: 700; font-size: 0.72rem;
-  letter-spacing: 0.03em;
-  background: rgba(0,0,0,0.04); color: var(--mid);
-}
-:root.dark-mode .status-badge { background: rgba(255,255,255,0.06); }
-.streak-w { background: rgba(22,163,74,.1) !important; color: var(--green) !important; }
-.streak-l { background: rgba(220,38,38,.1) !important; color: var(--red) !important; }
-
-/* ── OFFSCREEN SOCIAL EXPORT ── */
-.social-offscreen { position: fixed; left: -10000px; top: 0; pointer-events: none; }
-.social-card { background: #f7f8fc; padding: 40px; font-family: 'Lexend', sans-serif; color: #0d0f1a; }
-.social-header { text-align: center; margin-bottom: 28px; }
-.social-eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .18em; color: var(--sixers-red); text-transform: uppercase; }
-.social-title { font-size: 48px; font-weight: 700; color: #0d0f1a; margin: 6px 0 4px; letter-spacing: -0.03em; line-height: 1; }
-.social-divider { width: 40px; height: 3px; background: var(--sixers-red); border-radius: 2px; margin: 10px auto; }
-.social-date { font-size: 13px; color: #64748b; letter-spacing: .04em; }
-.social-grid { display: grid; gap: 20px; }
-.social-conference {
-  background: #fff; border: 1px solid #e6eaf2; border-radius: 14px;
-  padding: 18px; position: relative; overflow: hidden;
-}
-.social-conference::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, #006BB6, #1e90d8 60%, #006BB6);
-}
-.social-conf-title { font-size: 20px; font-weight: 700; color: #0d0f1a; margin: 4px 0 12px; letter-spacing: -0.02em; }
-.social-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-.social-table colgroup col.col-team { width: auto; }
-.social-table colgroup col.col-wl   { width: 54px; }
-.social-table colgroup col.col-pct  { width: 48px; }
-.social-table colgroup col.col-strk { width: 52px; }
-.social-table thead th {
-  font-weight: 600; font-size: 10px; letter-spacing: .1em;
-  text-transform: uppercase; color: #64748b;
-  text-align: right; padding: 6px 6px; border-bottom: 1px solid #e6eaf2;
-  white-space: nowrap;
-}
-.social-table thead th:first-child { text-align: left; }
-.social-table tbody td { padding: 7px 6px; border-bottom: 1px solid #f1f3f8; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
-.social-table tbody td:first-child { text-align: left; font-weight: 500; }
-.social-table tbody tr.social-sixers-row td { background: rgba(0,107,182,.06); font-weight: 700; }
-.social-team { display: table; width: 100%; border-collapse: separate; border-spacing: 6px 0; }
-.social-team-rank { display: table-cell; vertical-align: middle; width: 22px; text-align: center; font-weight: 700; font-size: 11px; color: #64748b; background: #f1f3f8; border-radius: 3px; padding: 2px 0; white-space: nowrap; }
-.social-team-logo { display: table-cell; vertical-align: middle; width: 22px; }
-.social-team-logo img { width: 20px; height: 20px; object-fit: contain; display: block; }
-.social-team-name { display: table-cell; vertical-align: middle; font-weight: 500; font-size: 13px; color: #0d0f1a; white-space: nowrap; padding-left: 2px; }
-.social-streak-badge { display: inline-block; min-width: 34px; padding: 2px 7px; border-radius: 5px; font-weight: 700; font-size: 11px; background: #f1f3f8; color: var(--mid); }
-.social-streak-w { background: rgba(22,163,74,.12) !important; color: var(--green) !important; }
-.social-streak-l { background: rgba(220,38,38,.12) !important; color: var(--red) !important; }
-
-/* ── MODAL ── */
-.modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 50;
-  background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
-  align-items: center; justify-content: center; padding: 1rem;
-}
-.modal-overlay.open { display: flex; }
-.modal-card {
-  width: 100%; max-width: 768px;
-  background: var(--card-bg); border-radius: 14px; overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
-}
-:root.dark-mode .modal-card { background: var(--card-bg); border: 1px solid var(--border-light); }
-.modal-head, .modal-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-light);
-}
-.modal-foot { border-bottom: none; border-top: 1px solid var(--border-light); justify-content: flex-end; gap: 0.5rem; }
-.modal-title { font-weight: 700; font-size: 1rem; letter-spacing: -0.01em; color: var(--ink); }
-.modal-body { padding: 1rem; background: rgba(0,0,0,0.02); max-height: 70vh; overflow: auto; }
-.modal-body img { width: 100%; display: block; border-radius: 8px; }
-:root.dark-mode .modal-body { background: rgba(0,0,0,0.2); }
-
-.btn-primary {
-  background: var(--sixers-blue); color: #fff; border: none;
-  font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 0.55rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-}
-.btn-primary:hover { background: #0080d4; transform: translateY(-1px); }
-.btn-ghost {
-  background: var(--card-bg); color: var(--mid);
-  font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 0.5rem 1.1rem; border-radius: 8px;
-  border: 1px solid var(--border-light); cursor: pointer; transition: all 0.2s;
-}
-.btn-ghost:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
-:root.dark-mode .btn-ghost { background: var(--card-bg); border-color: var(--border-light); }
-
-.empty-state { text-align: center; padding: 3rem; color: var(--mid); }
-
-@media (max-width: 640px) {
-  .hero-inner { padding: 2.5rem 1rem 2rem; }
-  .tm-wrapper { padding: 1.25rem 0.75rem 3rem; }
-  .standings-table { font-size: 0.8rem; }
-}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NBA Standings | Philadelphia 76ers | SixersHoops</title>
+  <meta name="description" content="NBA standings for the current season and the past 10 seasons, with Eastern and Western Conference tables and Sixers highlighted."/>
+  <link rel="canonical" href="https://sixershoops.com/standings"/>
+  <meta name="robots" content="index,follow"/>
+  <meta name="theme-color" content="#006BB6"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="SixersHoops"/>
+  <meta property="og:title" content="NBA Standings"/>
+  <meta property="og:description" content="Current and historical NBA standings with Philadelphia 76ers highlighted."/>
+  <meta property="og:url" content="https://sixershoops.com/standings"/>
+  <meta property="og:image" content="https://sixershoops.com/sixershoopslogonew.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="NBA Standings"/>
+  <meta name="twitter:description" content="Current and historical NBA standings with Philadelphia 76ers highlighted."/>
+  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="navbar-styles.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-T1V9Q0MNEM');
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "url": "https://sixershoops.com/standings",
+        "name": "NBA Standings",
+        "about": { "@type": "SportsTeam", "name": "Philadelphia 76ers", "sport": "Basketball" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sixershoops.com/" },
+          { "@type": "ListItem", "position": 2, "name": "NBA Standings", "item": "https://sixershoops.com/standings" }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      --navy:#001a57; --sixers-blue:#006BB6; --sixers-red:#ED174C;
+      --cream:#ffffff; --ink:#0d0f1a; --mid:#64748b; --mid-2:#94a3b8;
+      --border-light:#e4e8f0; --card-bg:#ffffff; --surface-soft:#f6f8fc;
+      --green:#16a34a; --red:#dc2626;
+    }
+    *,*::before,*::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body,html {
+      margin: 0; background: var(--cream); color: var(--ink);
+      font-family: 'Lexend', system-ui, sans-serif; line-height: 1.5;
+    }
+    body { padding-top: 64px; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .hero-inner { max-width: 860px; margin: 0 auto; padding: 5rem 2rem 3.2rem; text-align: center; }
+    .hero-title-top, .hero-title-bottom {
+      font-size: clamp(2.4rem,6vw,4.5rem); font-weight: 700;
+      line-height: .95; letter-spacing: -.03em; margin: 0;
+    }
+    .hero-title-bottom { color: var(--sixers-blue); }
+    .hero-sub { margin: 1rem auto 0; max-width: 540px; color: var(--mid); font-size: .95rem; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
+    .section-label {
+      font-weight: 500; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--mid); display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem;
+    }
+    .section-label .line { flex: 1; height: 1px; background: var(--border-light); }
+    .section-label a { color: inherit; text-decoration: none; }
+    .season-picker-bar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
+      margin: 0 0 1.25rem;
+    }
+    .season-picker-bar label {
+      font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+      font-weight: 600; color: var(--mid);
+    }
+    #season-select {
+      font: inherit; font-weight: 600; font-size: .9rem;
+      padding: .45rem .8rem; border: 1px solid var(--border-light);
+      border-radius: 8px; background: #fff; color: var(--ink); cursor: pointer;
+    }
+    #season-status { font-size: .82rem; color: var(--mid); }
+    .export-bar { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0 0 1.25rem; }
+    .export-btn {
+      border: 1px solid var(--border-light); background: #fff; color: var(--ink);
+      border-radius: 999px; padding: .35rem .75rem; font: inherit; font-size: .78rem;
+      font-weight: 600; cursor: pointer;
+    }
+    .export-btn:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
+    .conference-section {
+      background: var(--card-bg); border: 1px solid var(--border-light);
+      border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .conference-title {
+      margin: 0; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-light);
+      background: var(--surface-soft); font-size: 1.05rem; font-weight: 700;
+    }
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--mid); padding: .85rem 1.25rem; border-bottom: 1px solid var(--border-light);
+    }
+    td {
+      padding: .8rem 1.25rem; border-bottom: 1px solid var(--border-light);
+      font-size: .88rem; vertical-align: middle;
+    }
+    .team-info { display: flex; align-items: center; gap: .65rem; font-weight: 600; }
+    .rank { color: var(--mid); width: 1.4rem; display: inline-block; font-variant-numeric: tabular-nums; }
+    .sixers-highlight td { background: rgba(0,107,182,.07); }
+    .pct, .gb { font-variant-numeric: tabular-nums; }
+    .status-badge {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      letter-spacing: .04em; padding: 3px 8px; border-radius: 999px;
+    }
+    .streak-w { color: var(--green); background: rgba(22,163,74,.1); }
+    .streak-l { color: var(--red); background: rgba(220,38,38,.1); }
+    .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
+    .loader-spinner {
+      border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
+      border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite; margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #social-export-container {
+      position: absolute; left: -9999px; top: 0; background: #f8fafc; padding: 2rem;
+    }
+    .social-title-box h1 { margin: 0 0 1rem; }
+    .social-conf-title { margin: 0 0 .75rem; }
+    .social-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .social-sixers-row { background: rgba(0,107,182,.08); }
+    .social-streak-w { color: #16a34a; font-weight: 700; }
+    .social-streak-l { color: #dc2626; font-weight: 700; }
+    .modal {
+      display: none; position: fixed; inset: 0; background: rgba(13,15,26,.55);
+      align-items: center; justify-content: center; z-index: 80; padding: 1.5rem;
+    }
+    .modal-card {
+      background: #fff; border-radius: 16px; max-width: 920px; width: 100%;
+      padding: 1.25rem; box-shadow: 0 20px 50px rgba(0,0,0,.18);
+    }
+    .modal-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    #exportPreview { width: 100%; border-radius: 8px; border: 1px solid var(--border-light); }
+    @media (max-width: 720px) {
+      .wrap { padding: 1rem 1.1rem 3rem; }
+      .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
+      th:nth-child(6), td:nth-child(6),
+      th:nth-child(7), td:nth-child(7) { display: none; }
+    }
+  </style>
 </head>
 <body>
-<script src="nav.js"></script>
-
-<section class="page-hero">
-  <div class="hero-inner">
-    <h1 class="hero-title">NBA <span>STANDINGS</span></h1>
-    <div class="hero-cta-row">
-      <button class="hero-btn hero-btn-primary" data-export-mode="east">Export East</button>
-      <button class="hero-btn hero-btn-secondary" data-export-mode="west">Export West</button>
-      <button class="hero-btn hero-btn-navy" data-export-mode="both">Full Image</button>
+  <script src="nav.js"></script>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1 class="sr-only">NBA Standings</h1>
+      <p class="hero-title-top" aria-hidden="true">NBA</p>
+      <p class="hero-title-bottom" aria-hidden="true">STANDINGS</p>
+      <p class="hero-sub">Eastern and Western Conference tables for the current season and the last 10 NBA seasons.</p>
     </div>
-  </div>
-</section>
+  </header>
+  <div class="wrap">
+    <nav class="section-label" aria-label="Breadcrumb">
+      <span><a href="/">Home</a> / NBA Standings</span>
+      <span class="line"></span>
+    </nav>
 
-<main class="tm-wrapper">
-  <div class="section-label">Conference Standings</div>
-  <div id="standings" class="standings-grid">
-    <div class="tm-board empty-state"><p style="color:var(--mid)">Loading standings…</p></div>
-  </div>
-</main>
+    <div class="section-label"><span>Season</span><span class="line"></span></div>
+    <div class="season-picker-bar">
+      <label for="season-select">Season</label>
+      <select id="season-select" aria-label="Select NBA season standings"></select>
+      <span id="season-status"></span>
+    </div>
 
-<div class="social-offscreen">
-  <div id="social-export-container" class="social-card" style="width:1200px;">
+    <div class="export-bar">
+      <button type="button" class="export-btn" data-export-mode="all">Export both conferences</button>
+      <button type="button" class="export-btn" data-export-mode="east">Export East</button>
+      <button type="button" class="export-btn" data-export-mode="west">Export West</button>
+    </div>
+
+    <main id="standings">
+      <div class="loader">
+        <div class="loader-spinner"></div>
+        <p>Fetching latest standings...</p>
+      </div>
+      <noscript>
+        <p>Enable JavaScript to load NBA standings.</p>
+      </noscript>
+    </main>
+  </div>
+
+  <div id="social-export-container">
     <div class="social-header">
-      <div class="social-eyebrow">Sixers Hoops</div>
-      <div><h1 class="social-title">NBA Standings</h1></div>
-      <div class="social-divider"></div>
-      <div class="social-date" id="social-date"></div>
+      <div class="social-title-box">
+        <h1>NBA Standings</h1>
+        <p id="export-date"></p>
+      </div>
     </div>
-    <div class="social-grid" id="social-export-content"></div>
+    <div id="social-export-content"></div>
   </div>
-</div>
 
-<div class="modal-overlay" id="exportModal">
-  <div class="modal-card">
-    <div class="modal-head">
-      <div class="modal-title">Share Preview</div>
-      <button class="btn-ghost" id="closeModal">Close</button>
-    </div>
-    <div class="modal-body"><img id="exportPreview" alt="Standings preview" /></div>
-    <div class="modal-foot">
-      <button class="btn-ghost" id="copyBtn">Copy to Clipboard</button>
-      <button class="btn-primary" id="downloadBtn">Download PNG</button>
+  <div class="modal" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="export-title">
+    <div class="modal-card">
+      <h2 id="export-title" style="margin:0 0 .75rem;">Export preview</h2>
+      <img id="exportPreview" alt="Standings export preview"/>
+      <div class="modal-actions">
+        <button type="button" class="export-btn" id="downloadBtn">Download PNG</button>
+        <button type="button" class="export-btn" id="copyBtn">Copy to Clipboard</button>
+        <button type="button" class="export-btn" id="closeModal">Close</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-async function getNBAStandings() {
-  const url = "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings";
-  const container = document.getElementById("standings");
-  const socialContainer = document.getElementById("social-export-content");
-  const dateEl = document.getElementById("social-date");
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-
-    const conferences = data.children || [];
-    if (!conferences.length) {
-      container.innerHTML = '<div class="tm-board empty-state"><p>No standings data available.</p></div>';
-      return;
-    }
-
-    let html = "", socialHtml = "";
-    if (dateEl) dateEl.textContent = "Updated " + new Date().toLocaleDateString();
-
-    conferences.forEach(conf => {
-      const entries = (conf.standings && conf.standings.entries) || [];
-      entries.sort((a, b) => {
-        const get = (e, n) => (e.stats.find(s => s.name === n) || {}).value || 0;
-        return get(b, "winPercent") - get(a, "winPercent");
-      });
-
-      html += '<div class="tm-board"><h2 class="conference-title">' + conf.name + '</h2><div class="table-responsive"><table class="standings-table"><thead><tr><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>L10</th><th>STRK</th></tr></thead><tbody>';
-
-      const confKey = conf.name.toLowerCase().includes("east") ? "east" : "west";
-      socialHtml += '<div class="social-conference" data-conf="' + confKey + '"><h3 class="social-conf-title">' + conf.name + '</h3><table class="social-table"><colgroup><col class="col-team"><col class="col-wl"><col class="col-pct"><col class="col-strk"></colgroup><thead><tr><th>Team</th><th>W-L</th><th>PCT</th><th>STRK</th></tr></thead><tbody>';
-
-      entries.forEach((t, idx) => {
-        const stats = {};
-        t.stats.forEach(s => { if (s.name) stats[s.name] = s; if (s.type) stats[s.type] = s; });
-        const isSixers = t.team.abbreviation === "PHI";
-        const wins   = (stats.wins || {}).displayValue || "-";
-        const losses = (stats.losses || {}).displayValue || "-";
-        const pct    = (stats.winPercent || {}).displayValue || "-";
-        const gb     = (stats.gamesBehind || {}).displayValue || "-";
-        const l10    = (stats.lasttengames || stats.lastTenGames || {}).summary || "-";
-        const streak = (stats.streak || {}).displayValue || "-";
-        const sCls   = streak.startsWith("W") ? "streak-w" : streak.startsWith("L") ? "streak-l" : "";
-        const sSocial= streak.startsWith("W") ? "social-streak-w" : streak.startsWith("L") ? "social-streak-l" : "";
-        const logo   = (t.team.logos && t.team.logos[0] && t.team.logos[0].href) || "";
-
-        html += '<tr class="' + (isSixers ? "sixers-highlight" : "") + '">'
-          + '<td><div class="team-info"><span class="rank">' + (idx+1) + '</span>'
-          + (logo ? '<img class="team-logo" src="' + logo + '" alt="" loading="lazy" />' : '')
-          + '<span>' + t.team.displayName + '</span></div></td>'
-          + '<td>' + wins + '</td><td>' + losses + '</td>'
-          + '<td class="pct">' + pct + '</td><td class="gb">' + gb + '</td><td>' + l10 + '</td>'
-          + '<td><span class="status-badge ' + sCls + '">' + streak + '</span></td></tr>';
-
-        socialHtml += '<tr class="' + (isSixers ? "social-sixers-row" : "") + '">'
-          + '<td><div class="social-team">'
-          + '<span class="social-team-rank">' + (idx+1) + '</span>'
-          + '<span class="social-team-logo">' + (logo ? '<img src="' + logo + '" alt="" width="20" height="20" crossorigin="anonymous" />' : '') + '</span>'
-          + '<span class="social-team-name">' + t.team.displayName + '</span>'
-          + '</div></td>'
-          + '<td>' + wins + '-' + losses + '</td>'
-          + '<td style="font-weight:700">' + pct + '</td>'
-          + '<td><span class="social-streak-badge ' + sSocial + '">' + streak + '</span></td></tr>';
-      });
-
-      html += '</tbody></table></div></div>';
-      socialHtml += '</tbody></table></div>';
-    });
-
-    container.innerHTML = html;
-    socialContainer.innerHTML = socialHtml;
-    initExport();
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = '<div class="tm-board empty-state"><p style="color:var(--red);font-weight:700">Error loading standings.</p><p style="color:var(--mid);font-size:.9rem;margin-top:.5rem">' + err.message + '</p><button class="btn-primary" style="margin-top:1.25rem" onclick="getNBAStandings()">Try again</button></div>';
-  }
-}
-
-function initExport() {
-  const btns = document.querySelectorAll("[data-export-mode]");
-  const modal = document.getElementById("exportModal");
-  const preview = document.getElementById("exportPreview");
-  const closeBtn = document.getElementById("closeModal");
-  const dlBtn = document.getElementById("downloadBtn");
-  const copyBtn = document.getElementById("copyBtn");
-
-  btns.forEach(btn => {
-    btn.onclick = async () => {
-      const mode = btn.dataset.exportMode;
-      const original = btn.textContent;
-      btn.textContent = "Generating…";
-      btn.disabled = true;
-      try {
-        const grid = document.getElementById("social-export-container");
-        const content = document.getElementById("social-export-content");
-        const titleH1 = grid.querySelector(".social-title");
-        const east = content.querySelector('[data-conf="east"]');
-        const west = content.querySelector('[data-conf="west"]');
-        if (mode === "east") {
-          grid.style.width = "800px"; content.style.gridTemplateColumns = "1fr";
-          if (east) east.style.display = "block"; if (west) west.style.display = "none";
-          titleH1.textContent = "Eastern Conference";
-        } else if (mode === "west") {
-          grid.style.width = "800px"; content.style.gridTemplateColumns = "1fr";
-          if (east) east.style.display = "none"; if (west) west.style.display = "block";
-          titleH1.textContent = "Western Conference";
-        } else {
-          grid.style.width = "1200px"; content.style.gridTemplateColumns = "1fr 1fr";
-          if (east) east.style.display = "block"; if (west) west.style.display = "block";
-          titleH1.textContent = "NBA Standings";
-        }
-        const canvas = await html2canvas(grid, { backgroundColor: "#f7f8fc", scale: 2, useCORS: true, allowTaint: true, logging: false });
-        preview.src = canvas.toDataURL("image/png");
-        modal.classList.add("open");
-        dlBtn.onclick = () => { const a = document.createElement("a"); a.download = "nba-" + mode + "-standings-" + new Date().toISOString().split("T")[0] + ".png"; a.href = canvas.toDataURL("image/png"); a.click(); };
-        copyBtn.onclick = () => { canvas.toBlob(blob => { navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => { copyBtn.textContent = "Copied!"; setTimeout(() => { copyBtn.textContent = "Copy to Clipboard"; }, 2000); }); }); };
-      } catch (e) { console.error(e); alert("Failed to generate image."); }
-      finally { btn.textContent = original; btn.disabled = false; }
-    };
-  });
-
-  closeBtn.onclick = () => modal.classList.remove("open");
-  modal.onclick = (e) => { if (e.target === modal) modal.classList.remove("open"); };
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  getNBAStandings();
-  setInterval(getNBAStandings, 300000);
-});
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="standings.js"></script>
 </body>
 </html>

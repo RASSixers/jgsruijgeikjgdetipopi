@@ -66,7 +66,7 @@ function buildSeasonOptions(seasonsFromApi) {
   if (!byYear.has(NEXT_SEASON_YEAR)) byYear.set(NEXT_SEASON_YEAR, NEXT_SEASON_LABEL);
 
   const years = Array.from(byYear.keys()).sort((a, b) => b - a);
-  const latest = Math.max(years[0], NEXT_SEASON_YEAR);
+  const latest = Math.max(years[0] || NEXT_SEASON_YEAR, NEXT_SEASON_YEAR);
   const cutoff = latest - (SEASON_COUNT - 1);
 
   return years
@@ -101,14 +101,13 @@ function isPreseasonBlank(seasonYear, data) {
   const conferences = data?.children || [];
   if (!conferences.length) return true;
 
-  const played = conferences.some((conf) =>
+  return !conferences.some((conf) =>
     (conf.standings?.entries || []).some((t) => {
       const wins = t.stats.find((s) => s.name === "wins")?.value || 0;
       const losses = t.stats.find((s) => s.name === "losses")?.value || 0;
       return wins + losses > 0;
     })
   );
-  return !played;
 }
 
 function emptyRow(team) {
@@ -302,7 +301,7 @@ async function getNBAStandings(seasonYear) {
       return;
     }
 
-    setSeasonStatus(`${resolvedLabel} · final`);
+    setSeasonStatus(`${resolvedLabel}`);
     const conferences = (data.children || []).map((conf) => ({
       name: conf.name,
       rows: rowsFromApiConference(conf)
@@ -343,40 +342,54 @@ function initExport() {
         const grid = document.getElementById("social-export-container");
         const content = document.getElementById("social-export-content");
         const titleH1 = grid.querySelector(".social-title-box h1");
+        const topMeta = document.getElementById("social-top-meta");
         const header = grid.querySelector(".social-header");
+
         content.classList.remove("mode-east", "mode-west");
+        grid.classList.remove("single-conf");
         header.classList.remove("single-conf-mode");
         const eastDiv = content.querySelector('[data-conf="east"]');
         const westDiv = content.querySelector('[data-conf="west"]');
 
         if (mode === "east") {
-          grid.style.width = "800px";
+          grid.style.width = "1080px";
+          grid.classList.add("single-conf");
           content.classList.add("mode-east");
           header.classList.add("single-conf-mode");
           if (eastDiv) eastDiv.style.display = "block";
           if (westDiv) westDiv.style.display = "none";
           titleH1.textContent = "Eastern Conference";
+          if (topMeta) topMeta.textContent = "Eastern Conference";
         } else if (mode === "west") {
-          grid.style.width = "800px";
+          grid.style.width = "1080px";
+          grid.classList.add("single-conf");
           content.classList.add("mode-west");
           header.classList.add("single-conf-mode");
           if (eastDiv) eastDiv.style.display = "none";
           if (westDiv) westDiv.style.display = "block";
           titleH1.textContent = "Western Conference";
+          if (topMeta) topMeta.textContent = "Western Conference";
         } else {
-          grid.style.width = "1200px";
+          grid.style.width = "1080px";
           if (eastDiv) eastDiv.style.display = "block";
           if (westDiv) westDiv.style.display = "block";
           titleH1.textContent = "NBA Standings";
+          if (topMeta) topMeta.textContent = "NBA Standings";
         }
 
+        const height = grid.classList.contains("single-conf") ? 1350 : 1080;
         const canvas = await html2canvas(grid, {
-          backgroundColor: "#07122a",
+          backgroundColor: "#f4f6fa",
           scale: 2,
+          width: 1080,
+          height,
+          windowWidth: 1080,
+          windowHeight: height,
           useCORS: true,
           allowTaint: true,
           logging: false
         });
+
         preview.src = canvas.toDataURL("image/png");
         modal.style.display = "flex";
 
@@ -386,6 +399,7 @@ function initExport() {
           link.href = canvas.toDataURL("image/png");
           link.click();
         };
+
         copyBtn.onclick = () => {
           canvas.toBlob((blob) => {
             navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => {

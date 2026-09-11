@@ -84,7 +84,7 @@
     .section-label a { color: inherit; text-decoration: none; }
     .metric-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: .75rem; margin-bottom: 2rem;
+      gap: .75rem; margin-bottom: 1.25rem;
     }
     .metric {
       background: var(--card-bg); border: 1px solid var(--border-light);
@@ -96,6 +96,40 @@
     .metric.blue .v { color: var(--sixers-blue); }
     .metric.red .v { color: var(--sixers-red); }
     .metric.green .v { color: var(--green); }
+    .live-board {
+      margin: 0 0 2rem; background: var(--card-bg);
+      border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
+    }
+    .live-board.live { border-color: rgba(237,23,76,.35); }
+    .live-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; padding: .85rem 1.2rem; background: var(--surface-soft);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .live-kicker {
+      font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
+      font-weight: 600; color: var(--mid);
+    }
+    .live-board.live .live-kicker { color: var(--sixers-red); }
+    .live-clock { font-size: .82rem; color: var(--mid); font-weight: 600; }
+    .live-scoreline {
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      gap: 1rem; align-items: center; padding: 1.1rem 1.2rem;
+    }
+    .live-team { display: flex; align-items: center; gap: .7rem; font-weight: 700; }
+    .live-team.away { justify-content: flex-end; text-align: right; }
+    .live-logo { width: 36px; height: 36px; object-fit: contain; }
+    .live-score { font-size: 2rem; font-weight: 800; letter-spacing: -.03em; }
+    .pbp-list { list-style: none; margin: 0; padding: 0; max-height: 240px; overflow: auto; }
+    .pbp-list li {
+      display: grid; grid-template-columns: 4.2rem 1fr auto;
+      gap: .7rem; padding: .55rem 1.2rem; border-top: 1px solid var(--border-light);
+      font-size: .82rem;
+    }
+    .pbp-list li.score { background: rgba(0,107,182,.05); font-weight: 600; }
+    .pbp-clock { color: var(--mid); white-space: nowrap; }
+    .pbp-score { color: var(--mid); font-variant-numeric: tabular-nums; }
+    .live-empty { padding: 1rem 1.2rem; color: var(--mid); font-size: .9rem; margin: 0; }
     .season-block { margin-bottom: 2.25rem; }
     .season-heading { font-weight: 700; font-size: 1.15rem; margin: 0 0 1rem; }
     .empty-note {
@@ -170,6 +204,9 @@
       th:nth-child(4), td:nth-child(4) { display: none; }
       .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
       .inj-list li { grid-template-columns: 1fr; gap: .15rem; }
+      .live-scoreline { grid-template-columns: 1fr; text-align: center; }
+      .live-team, .live-team.away { justify-content: center; text-align: center; }
+      .pbp-list li { grid-template-columns: 1fr; gap: .15rem; }
     }
   </style>
 </head>
@@ -211,6 +248,15 @@
         <span class="sub">Regular season</span>
       </div>
     </div>
+    <section class="live-board" id="live-board" aria-live="polite">
+      <div class="live-head">
+        <span class="live-kicker" id="live-kicker">Next game</span>
+        <span class="live-clock" id="live-clock">—</span>
+      </div>
+      <div id="live-body">
+        <p class="live-empty">Loading game status…</p>
+      </div>
+    </section>
     <div class="section-label"><span>Game Log</span><span class="line"></span></div>
     <main id="schedule">
       <div class="loader">

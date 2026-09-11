@@ -97,10 +97,8 @@ function getStat(entry, name) {
 
 function isPreseasonBlank(seasonYear, data) {
   if (seasonYear === NEXT_SEASON_YEAR && Date.now() < NEXT_SEASON_TIPOFF.getTime()) return true;
-
   const conferences = data?.children || [];
   if (!conferences.length) return true;
-
   return !conferences.some((conf) =>
     (conf.standings?.entries || []).some((t) => {
       const wins = t.stats.find((s) => s.name === "wins")?.value || 0;
@@ -187,7 +185,7 @@ function renderTables(conferences, preseason) {
     const confKey = conf.name.toLowerCase().includes("east") ? "east" : "west";
     socialHtml += `
       <div class="social-conference" data-conf="${confKey}">
-        <h2 class="social-conf-title">${conf.name}</h2>
+        <h2 class="social-conf-title">${conf.name.replace(" Conference", "")}</h2>
         <table class="social-table">
           <thead>
             <tr><th>Team</th><th>W-L</th><th>PCT</th><th>STRK</th></tr>
@@ -220,7 +218,7 @@ function renderTables(conferences, preseason) {
             <div class="cell-content">
               <div class="social-team">
                 <span class="social-team-rank">${idx + 1}</span>
-                <span class="social-team-name">${row.team.displayName}</span>
+                <span class="social-team-name">${row.team.abbreviation}</span>
               </div>
             </div>
           </td>
@@ -290,10 +288,7 @@ async function getNBAStandings(seasonYear) {
     populateSeasonSelect(year);
 
     const resolvedLabel = availableSeasons.find((s) => s.year === year)?.label || data.season?.displayName || label;
-    if (exportDate) {
-      const now = new Date();
-      exportDate.textContent = `${resolvedLabel} · ${now.toLocaleDateString()}`;
-    }
+    if (exportDate) exportDate.textContent = `${resolvedLabel} · ${new Date().toLocaleDateString()}`;
 
     if (isPreseasonBlank(year, data)) {
       if (exportDate) exportDate.textContent = `${resolvedLabel} · Season not started`;
@@ -301,12 +296,11 @@ async function getNBAStandings(seasonYear) {
       return;
     }
 
-    setSeasonStatus(`${resolvedLabel}`);
-    const conferences = (data.children || []).map((conf) => ({
+    setSeasonStatus(resolvedLabel);
+    renderTables((data.children || []).map((conf) => ({
       name: conf.name,
       rows: rowsFromApiConference(conf)
-    }));
-    renderTables(conferences, false);
+    })), false);
   } catch (err) {
     console.error("Standings Load Error:", err);
     if (year === NEXT_SEASON_YEAR) {
@@ -343,48 +337,40 @@ function initExport() {
         const content = document.getElementById("social-export-content");
         const titleH1 = grid.querySelector(".social-title-box h1");
         const topMeta = document.getElementById("social-top-meta");
-        const header = grid.querySelector(".social-header");
 
-        content.classList.remove("mode-east", "mode-west");
         grid.classList.remove("single-conf");
-        header.classList.remove("single-conf-mode");
+        content.classList.remove("mode-east", "mode-west");
         const eastDiv = content.querySelector('[data-conf="east"]');
         const westDiv = content.querySelector('[data-conf="west"]');
 
         if (mode === "east") {
-          grid.style.width = "1080px";
           grid.classList.add("single-conf");
           content.classList.add("mode-east");
-          header.classList.add("single-conf-mode");
           if (eastDiv) eastDiv.style.display = "block";
           if (westDiv) westDiv.style.display = "none";
-          titleH1.textContent = "Eastern Conference";
+          titleH1.textContent = "East Standings";
           if (topMeta) topMeta.textContent = "Eastern Conference";
         } else if (mode === "west") {
-          grid.style.width = "1080px";
           grid.classList.add("single-conf");
           content.classList.add("mode-west");
-          header.classList.add("single-conf-mode");
           if (eastDiv) eastDiv.style.display = "none";
           if (westDiv) westDiv.style.display = "block";
-          titleH1.textContent = "Western Conference";
+          titleH1.textContent = "West Standings";
           if (topMeta) topMeta.textContent = "Western Conference";
         } else {
-          grid.style.width = "1080px";
           if (eastDiv) eastDiv.style.display = "block";
           if (westDiv) westDiv.style.display = "block";
           titleH1.textContent = "NBA Standings";
           if (topMeta) topMeta.textContent = "NBA Standings";
         }
 
-        const height = grid.classList.contains("single-conf") ? 1350 : 1080;
         const canvas = await html2canvas(grid, {
-          backgroundColor: "#f4f6fa",
+          backgroundColor: "#08111f",
           scale: 2,
           width: 1080,
-          height,
+          height: 1350,
           windowWidth: 1080,
-          windowHeight: height,
+          windowHeight: 1350,
           useCORS: true,
           allowTaint: true,
           logging: false
@@ -425,13 +411,10 @@ function initExport() {
 document.addEventListener("DOMContentLoaded", () => {
   availableSeasons = buildSeasonOptions([]);
   populateSeasonSelect(NEXT_SEASON_YEAR);
-
   document.getElementById("season-select")?.addEventListener("change", (e) => {
     getNBAStandings(Number(e.target.value));
   });
-
   getNBAStandings(NEXT_SEASON_YEAR);
-
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {
     const viewing = Number(document.getElementById("season-select")?.value || NEXT_SEASON_YEAR);

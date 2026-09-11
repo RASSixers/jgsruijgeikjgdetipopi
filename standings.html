@@ -55,12 +55,6 @@
     }
     .hero-title-bottom { color: var(--sixers-blue); }
     .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
-    .section-label {
-      font-weight: 500; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase;
-      color: var(--mid); display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem;
-    }
-    .section-label .line { flex: 1; height: 1px; background: var(--border-light); }
-    .section-label a { color: inherit; text-decoration: none; }
     .season-picker-bar {
       display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
       margin: 0 0 1.25rem;
@@ -110,6 +104,9 @@
     }
     .streak-w { color: var(--green); background: rgba(22,163,74,.1); }
     .streak-l { color: var(--red); background: rgba(220,38,38,.1); }
+    .preseason-note {
+      margin: 0 0 1rem; color: var(--mid); font-size: .9rem;
+    }
     .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
     .loader-spinner {
       border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
@@ -117,81 +114,109 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Offscreen but still paintable by html2canvas */
     #social-export-container {
       position: fixed;
       top: 0;
       left: 0;
       width: 1200px;
-      padding: 48px 40px 40px;
-      background: #f8fafc;
-      color: #0d0f1a;
+      padding: 0;
+      background: #07122a;
+      color: #fff;
       font-family: 'Lexend', system-ui, sans-serif;
       z-index: -1;
       pointer-events: none;
-      box-sizing: border-box;
+      overflow: hidden;
     }
     .social-header {
+      padding: 36px 40px 28px;
+      background:
+        linear-gradient(135deg, rgba(237,23,76,.22), transparent 42%),
+        linear-gradient(90deg, #06101f 0%, #0b1d3d 55%, #006BB6 160%);
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      margin-bottom: 28px;
-      border-bottom: 3px solid #006BB6;
-      padding-bottom: 16px;
+      gap: 24px;
     }
-    .social-header.single-conf-mode { justify-content: flex-start; }
+    .social-kicker {
+      margin: 0 0 8px;
+      font-size: 12px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      font-weight: 700;
+    }
     .social-title-box h1 {
       margin: 0;
-      font-size: 42px;
-      line-height: 1;
-      letter-spacing: -.03em;
+      font-size: 46px;
+      line-height: .95;
+      letter-spacing: -.04em;
       font-weight: 800;
     }
     #export-date {
-      margin: 8px 0 0;
-      color: #64748b;
-      font-size: 16px;
+      margin: 10px 0 0;
+      color: #cbd5e1;
+      font-size: 15px;
       font-weight: 500;
+    }
+    .social-brand {
+      font-size: 13px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #fff;
+      background: #ED174C;
+      padding: 8px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
     }
     #social-export-content {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 28px;
+      gap: 0;
+      background: #07122a;
     }
     #social-export-content.mode-east,
     #social-export-content.mode-west {
       grid-template-columns: 1fr;
     }
-    .social-conference { min-width: 0; }
+    .social-conference {
+      padding: 24px 28px 32px;
+    }
+    .social-conference + .social-conference {
+      border-left: 1px solid rgba(255,255,255,.08);
+    }
     .social-conf-title {
-      margin: 0 0 12px;
-      font-size: 22px;
+      margin: 0 0 14px;
+      font-size: 18px;
       font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #93c5fd;
     }
     .social-table {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
     }
     .social-table th {
       text-align: left;
-      font-size: 11px;
-      letter-spacing: .12em;
+      font-size: 10px;
+      letter-spacing: .14em;
       text-transform: uppercase;
       color: #64748b;
-      padding: 10px 12px;
-      border-bottom: 1px solid #e4e8f0;
-      background: #fff;
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: transparent;
     }
     .social-table td {
       padding: 0;
-      border-bottom: 1px solid #e4e8f0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
       font-size: 15px;
-      background: #fff;
+      color: #fff;
+      background: transparent;
     }
     .social-table .cell-content {
-      padding: 10px 12px;
-      min-height: 42px;
+      padding: 9px 10px;
+      min-height: 40px;
       display: flex;
       align-items: center;
     }
@@ -202,14 +227,22 @@
       font-weight: 600;
     }
     .social-team-rank {
-      width: 22px;
-      color: #64748b;
-      font-variant-numeric: tabular-nums;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,.08);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 700;
     }
-    .social-sixers-row td { background: rgba(0,107,182,.08); }
+    .social-sixers-row td { background: rgba(0,107,182,.28); }
+    .social-sixers-row .social-team-rank { background: #ED174C; color: #fff; }
     .social-streak-badge { font-weight: 700; }
-    .social-streak-w { color: #16a34a; }
-    .social-streak-l { color: #dc2626; }
+    .social-streak-w { color: #4ade80; }
+    .social-streak-l { color: #fb7185; }
 
     .modal {
       display: none; position: fixed; inset: 0; background: rgba(13,15,26,.55);
@@ -240,12 +273,6 @@
     </div>
   </header>
   <div class="wrap">
-    <nav class="section-label" aria-label="Breadcrumb">
-      <span><a href="/">Home</a> / NBA Standings</span>
-      <span class="line"></span>
-    </nav>
-
-    <div class="section-label"><span>Season</span><span class="line"></span></div>
     <div class="season-picker-bar">
       <label for="season-select">Season</label>
       <select id="season-select" aria-label="Select NBA season standings"></select>
@@ -261,7 +288,7 @@
     <main id="standings">
       <div class="loader">
         <div class="loader-spinner"></div>
-        <p>Fetching latest standings...</p>
+        <p>Loading teams...</p>
       </div>
     </main>
   </div>
@@ -269,9 +296,11 @@
   <div id="social-export-container">
     <div class="social-header">
       <div class="social-title-box">
+        <p class="social-kicker">SixersHoops</p>
         <h1>NBA Standings</h1>
         <p id="export-date"></p>
       </div>
+      <div class="social-brand">PHI</div>
     </div>
     <div id="social-export-content"></div>
   </div>

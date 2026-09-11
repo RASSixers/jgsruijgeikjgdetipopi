@@ -157,7 +157,7 @@ function rowsFromApiConference(conf) {
       gb: stats.gamesBehind?.displayValue || "-",
       home: stats.home?.summary || "-",
       away: stats.road?.summary || "-",
-      l10: stats.lasttengames?.summary || stats.lastTenGames?.summary || "-",
+      l10: stats.lasttengames?.summary || stats.lastTenGames?.summary || stats.l10?.summary || "-",
       streakValue,
       streakClass,
       socialStreakClass
@@ -190,11 +190,19 @@ function renderTables(conferences) {
       <div class="social-conference" data-conf="${confKey}">
         <h2 class="social-conf-title">${conf.name}</h2>
         <table class="social-table">
+          <colgroup>
+            <col class="col-team"/>
+            <col class="col-wl"/>
+            <col class="col-pct"/>
+            <col class="col-l10"/>
+            <col class="col-strk"/>
+          </colgroup>
           <thead>
             <tr>
               <th>Team</th>
               <th>W-L</th>
               <th>PCT</th>
+              <th>L10</th>
               <th>STRK</th>
             </tr>
           </thead>
@@ -223,20 +231,15 @@ function renderTables(conferences) {
       socialHtml += `
         <tr class="${isSixers ? "social-sixers-row" : ""}">
           <td>
-            <div class="cell-content">
-              <div class="social-team">
-                <span class="social-team-rank">${idx + 1}</span>
-                <span class="social-team-name">${row.team.displayName}</span>
-              </div>
+            <div class="social-team">
+              <span class="social-team-rank">${idx + 1}</span>
+              <span class="social-team-name">${row.team.displayName}</span>
             </div>
           </td>
-          <td><div class="cell-content">${row.wins}-${row.losses}</div></td>
-          <td><div class="cell-content">${row.pct}</div></td>
-          <td>
-            <div class="cell-content">
-              <span class="social-streak-badge ${row.socialStreakClass}">${row.streakValue}</span>
-            </div>
-          </td>
+          <td>${row.wins}-${row.losses}</td>
+          <td>${row.pct}</td>
+          <td>${row.l10}</td>
+          <td class="${row.socialStreakClass}">${row.streakValue}</td>
         </tr>`;
     });
 

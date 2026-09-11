@@ -4,11 +4,14 @@ const INJURIES_URL =
   "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
 const SUMMARY_URL =
   "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary";
+const NATIONAL = /NBC|ESPN|ABC|TNT|MAX|PRIME|AMZN|AMAZON|PEACOCK|NBA TV|NBATV/i;
 
 let refreshTimer = null;
 let pbpTimer = null;
 let injuryByAbbr = {};
 let featuredEvent = null;
+let allEventsCache = [];
+let activeFilter = "all";
 
 function get(obj, path, fallback) {
   const value = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
@@ -39,6 +42,18 @@ function oppOf(event) {
 function sixersOf(event) {
   const comps = get(event, "competitions.0.competitors", []) || [];
   return comps.find(c => get(c, "team.abbreviation", "") === "PHI") || null;
+}
+function markBackToBacks(events) {
+  const sorted = events.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+  sorted.forEach((event, i) => {
+    const prev = sorted[i - 1];
+    const next = sorted[i + 1];
+    const t = new Date(event.date).getTime();
+    const nearPrev = prev && Math.abs(t - new Date(prev.date).getTime()) <= 40 * 60 * 60 * 1000;
+    const nearNext = next && Math.abs(new Date(next.date).getTime() - t) <= 40 * 60 * 60 * 1000;
+    event._b2b = !!(nearPrev || nearNext);
+  });
+  return events;
 }
 function seriesLine(allEvents, event) {
   const abbr = get(oppOf(event), "team.abbreviation", "");
@@ -99,12 +114,24 @@ function mergeEvents(groups) {
   groups.flat().forEach(event => {
     if (event && event.id) map.set(String(event.id), event);
   });
-  return [...map.values()].sort((a, b) => new Date(a.date) - new Date(b.date));
+  return markBackToBacks([...map.values()].sort((a, b) => new Date(a.date) - new Date(b.date)));
 }
 function pickFeatured(events) {
   const live = events.find(e => isLive(get(e, "competitions.0.status.type.name", "")));
   if (live) return live;
   return events.find(e => get(e, "competitions.0.status.type.state", "") === "pre") || null;
+}
+function passesFilter(event) {
+  const statusName = get(event, "competitions.0.status.type.name", "");
+  const state = get(event, "competitions.0.status.type.state", "");
+  const home = get(sixersOf(event), "homeAway", "") === "home";
+  const stream = getBroadcast(get(event, "competitions.0", {}));
+  if (activeFilter === "remaining") return state !== "post" && statusName !== "STATUS_FINAL";
+  if (activeFilter === "home") return home;
+  if (activeFilter === "away") return !home;
+  if (activeFilter === "b2b") return !!event._b2b;
+  if (activeFilter === "national") return NATIONAL.test(stream);
+  return true;
 }
 function renderUpcomingBoard(event) {
   const board = document.getElementById("live-board");
@@ -153,8 +180,6 @@ function renderLiveBoard(summary, event) {
     get(event, "competitions.0.competitors", []) || [];
   const home = comps.find(c => c.homeAway === "home") || comps[0];
   const away = comps.find(c => c.homeAway === "away") || comps[1];
-  const homeScore = get(home, "score", "0");
-  const awayScore = get(away, "score", "0");
   const period = get(summary, "header.competitions.0.status.period", get(event, "competitions.0.status.period", ""));
   const displayClock = get(summary, "header.competitions.0.status.displayClock",
     get(event, "competitions.0.status.displayClock", ""));
@@ -176,7 +201,7 @@ function renderLiveBoard(summary, event) {
         <img class="live-logo" src="${get(away, "team.logos.0.href", get(away, "team.logo", ""))}" alt="">
         <span>${get(away, "team.abbreviation", "AWAY")}</span>
       </div>
-      <div class="live-score">${awayScore}–${homeScore}</div>
+      <div class="live-score">${get(away, "score", "0")}–${get(home, "score", "0")}</div>
       <div class="live-team away">
         <span>${get(home, "team.abbreviation", "HOME")}</span>
         <img class="live-logo" src="${get(home, "team.logos.0.href", get(home, "team.logo", ""))}" alt="">
@@ -194,8 +219,7 @@ async function refreshPlayByPlay() {
   try {
     const res = await fetch(`${SUMMARY_URL}?event=${featuredEvent.id}`);
     if (!res.ok) throw new Error("summary failed");
-    const summary = await res.json();
-    renderLiveBoard(summary, featuredEvent);
+    renderLiveBoard(await res.json(), featuredEvent);
   } catch (err) {
     renderLiveBoard({}, featuredEvent);
   }
@@ -205,7 +229,7 @@ function setLivePolling(event) {
   featuredEvent = event;
   refreshPlayByPlay();
   const live = event && isLive(get(event, "competitions.0.status.type.name", ""));
-  pbpTimer = setInterval(refreshPlayByPlay, live ? 12000 : 120000);
+  pbpTimer = setInterval(refreshPlayByPlay, live ? 5000 : 120000);
 }
 function setRefreshCadence(events) {
   const live = events.some(event => isLive(get(event, "competitions.0.status.type.name", "")));
@@ -289,6 +313,7 @@ function renderGameRow(event, allEvents) {
           <span>${isHome ? "vs" : "@"}</span>
           ${opponentLogo ? `<img src="${opponentLogo}" alt="${opponentName}" class="opponent-logo">` : ""}
           <span>${opponentName}</span>
+          ${event._b2b ? `<span class="b2b-tag">B2B</span>` : ""}
         </div>
       </td>
       <td>${resultHtml}</td>
@@ -299,7 +324,7 @@ function renderGameRow(event, allEvents) {
     <tr class="game-detail-row">
       <td colspan="6">
         <div class="game-detail">
-          <p class="series-inline">${seriesLine(allEvents, event)}</p>
+          <p class="series-inline">${seriesLine(allEvents, event)}${event._b2b ? " · Back-to-back set." : ""}</p>
           ${injuryBlock("76ers injuries", injuryByAbbr.PHI || [])}
           ${injuryBlock(`${opponentName} injuries`, injuryByAbbr[oppAbbr] || [])}
         </div>
@@ -321,11 +346,12 @@ function bindRowToggles(root) {
   });
 }
 function renderSection(title, events, emptyText, allEvents) {
-  if (!events.length) {
+  const shown = events.filter(passesFilter);
+  if (!shown.length) {
     return `<section class="season-block"><div class="season-heading">${title}</div><p class="empty-note">${emptyText}</p></section>`;
   }
   const months = {};
-  events.forEach(event => {
+  shown.forEach(event => {
     const date = new Date(event.date);
     const key = isNaN(date) ? "Upcoming" : date.toLocaleString("en-US", { month: "long", year: "numeric" });
     (months[key] ||= []).push(event);
@@ -341,6 +367,27 @@ function renderSection(title, events, emptyText, allEvents) {
   });
   return html + `</section>`;
 }
+function paintLog() {
+  const container = document.getElementById("schedule");
+  if (!container || !allEventsCache.length) return;
+  container.innerHTML = [
+    renderSection("Preseason", allEventsCache.filter(e => eventType(e) === 1), "No matching preseason games.", allEventsCache),
+    renderSection("Regular Season", allEventsCache.filter(e => eventType(e) === 2 || ![1, 2, 3].includes(eventType(e))), "No matching regular-season games.", allEventsCache),
+    renderSection("Playoffs", allEventsCache.filter(e => eventType(e) === 3), "No matching playoff games.", allEventsCache)
+  ].join("");
+  bindRowToggles(container);
+}
+function bindFilters() {
+  const bar = document.getElementById("filter-bar");
+  if (!bar) return;
+  bar.addEventListener("click", e => {
+    const btn = e.target.closest("[data-filter]");
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    bar.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("on", b === btn));
+    paintLog();
+  });
+}
 async function getSixersSchedule() {
   const container = document.getElementById("schedule");
   if (!container) return;
@@ -354,22 +401,20 @@ async function getSixersSchedule() {
       fetchInjuryMap()
     ]);
     injuryByAbbr = injuries;
-    const allEvents = mergeEvents([probe, pre, regular, playoffs]);
-    if (!allEvents.length) {
+    allEventsCache = mergeEvents([probe, pre, regular, playoffs]);
+    if (!allEventsCache.length) {
       container.innerHTML = "<p class='empty-note'>No schedule data available right now.</p>";
       return;
     }
-    updateSnapshot(allEvents);
-    setLivePolling(pickFeatured(allEvents));
-    container.innerHTML = [
-      renderSection("Preseason", allEvents.filter(e => eventType(e) === 1), "No preseason games listed yet.", allEvents),
-      renderSection("Regular Season", allEvents.filter(e => eventType(e) === 2 || ![1, 2, 3].includes(eventType(e))), "Regular season schedule is not available yet.", allEvents),
-      renderSection("Playoffs", allEvents.filter(e => eventType(e) === 3), "Playoff schedule will appear here when available.", allEvents)
-    ].join("");
-    bindRowToggles(container);
-    setRefreshCadence(allEvents);
+    updateSnapshot(allEventsCache);
+    setLivePolling(pickFeatured(allEventsCache));
+    paintLog();
+    setRefreshCadence(allEventsCache);
   } catch (err) {
     container.innerHTML = `<p class="empty-note">Error loading schedule. ${err.message}</p>`;
   }
 }
-document.addEventListener("DOMContentLoaded", getSixersSchedule);
+document.addEventListener("DOMContentLoaded", () => {
+  bindFilters();
+  getSixersSchedule();
+});

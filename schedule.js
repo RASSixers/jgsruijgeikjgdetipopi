@@ -10,17 +10,14 @@ function get(obj, path, fallback) {
   const value = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
   return value == null ? fallback : value;
 }
-
 function badgeFor(statusName) {
   if (statusName === "STATUS_FINAL") return "badge final";
   if (statusName === "STATUS_IN_PROGRESS" || statusName === "STATUS_LIVE") return "badge live";
   return "badge upcoming";
 }
-
 function isLive(statusName) {
   return statusName === "STATUS_IN_PROGRESS" || statusName === "STATUS_LIVE";
 }
-
 function getBroadcast(competition) {
   const broadcasts = get(competition, "broadcasts", []) || [];
   const names = broadcasts
@@ -28,21 +25,17 @@ function getBroadcast(competition) {
     .filter(Boolean);
   return [...new Set(names)].join(" / ") || "TBD";
 }
-
 function eventType(event) {
   return Number(get(event, "seasonType.type", 0));
 }
-
 function oppOf(event) {
   const comps = get(event, "competitions.0.competitors", []) || [];
   return comps.find(c => get(c, "team.abbreviation", "") !== "PHI") || null;
 }
-
 function sixersOf(event) {
   const comps = get(event, "competitions.0.competitors", []) || [];
   return comps.find(c => get(c, "team.abbreviation", "") === "PHI") || null;
 }
-
 function seriesLine(allEvents, event) {
   const abbr = get(oppOf(event), "team.abbreviation", "");
   const name = get(oppOf(event), "team.shortDisplayName", abbr || "this opponent");
@@ -56,7 +49,6 @@ function seriesLine(allEvents, event) {
   if (!finished.length) return `No regular-season games vs ${name} yet this year.`;
   return `Sixers are ${wins}-${finished.length - wins} vs ${name} this year.`;
 }
-
 function statusClass(status) {
   const s = String(status || "").toLowerCase();
   if (s.includes("out")) return "out";
@@ -65,15 +57,13 @@ function statusClass(status) {
   if (s.includes("prob")) return "probable";
   return "";
 }
-
 function parseTeamInjuries(teamBlock) {
   return (get(teamBlock, "injuries", []) || []).map(inj => ({
     name: get(inj, "athlete.displayName", "Player"),
     status: inj.status || get(inj, "type.description", "—"),
-    detail: get(inj, "details.type", "") || get(inj, "details.detail", "") || get(inj, "longComment", "") || "—"
+    detail: get(inj, "details.type", "") || get(inj, "details.detail", "") || "—"
   }));
 }
-
 async function fetchEvents(url) {
   try {
     const res = await fetch(url);
@@ -84,7 +74,6 @@ async function fetchEvents(url) {
     return [];
   }
 }
-
 async function fetchInjuryMap() {
   try {
     const res = await fetch(INJURIES_URL);
@@ -94,15 +83,13 @@ async function fetchInjuryMap() {
     (data.injuries || []).forEach(team => {
       const abbr = get(team, "team.abbreviation", "") ||
         (/76ers|philadelphia/i.test(team.displayName || "") ? "PHI" : "");
-      if (!abbr) return;
-      map[abbr] = parseTeamInjuries(team);
+      if (abbr) map[abbr] = parseTeamInjuries(team);
     });
     return map;
   } catch (err) {
     return {};
   }
 }
-
 function mergeEvents(groups) {
   const map = new Map();
   groups.flat().forEach(event => {
@@ -110,13 +97,11 @@ function mergeEvents(groups) {
   });
   return [...map.values()].sort((a, b) => new Date(a.date) - new Date(b.date));
 }
-
 function setRefreshCadence(events) {
   const live = events.some(event => isLive(get(event, "competitions.0.status.type.name", "")));
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(getSixersSchedule, live ? 45000 : 300000);
 }
-
 function updateSnapshot(events) {
   let wins = 0, losses = 0, played = 0, next = null;
   events.forEach(event => {
@@ -149,32 +134,22 @@ function updateSnapshot(events) {
     setText("stat-next-date", "No upcoming game");
   }
 }
-
 function injuryBlock(title, items) {
   if (!items || !items.length) {
     return `<p class="inj-title">${title}</p><p class="inj-empty">No injuries listed.</p>`;
   }
-  return `
-    <p class="inj-title">${title}</p>
-    <ul class="inj-list">
-      ${items.map(item => `
-        <li>
-          <span class="inj-name">${item.name}</span>
-          <span class="inj-status ${statusClass(item.status)}">${item.status}</span>
-          <span>${item.detail}</span>
-        </li>`).join("")}
-    </ul>`;
+  return `<p class="inj-title">${title}</p>
+    <ul class="inj-list">${items.map(item => `
+      <li>
+        <span class="inj-name">${item.name}</span>
+        <span class="inj-status ${statusClass(item.status)}">${item.status}</span>
+        <span>${item.detail}</span>
+      </li>`).join("")}</ul>`;
 }
-
 function renderGameRow(event, allEvents) {
   const date = new Date(event.date);
-  const dateStr = isNaN(date) ? "TBD" : date.toLocaleDateString("en-US", {
-    weekday: "short", month: "short", day: "numeric"
-  });
-  const timeStr = isNaN(date) ? "" : date.toLocaleTimeString("en-US", {
-    hour: "numeric", minute: "2-digit"
-  });
-
+  const dateStr = isNaN(date) ? "TBD" : date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const timeStr = isNaN(date) ? "" : date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   const sixers = sixersOf(event);
   const opponent = oppOf(event);
   const isHome = get(sixers, "homeAway", "") === "home";
@@ -185,9 +160,7 @@ function renderGameRow(event, allEvents) {
   const venueCity = get(event, "competitions.0.venue.address.city", "");
   const venue = venueName ? (venueCity ? `${venueName}, ${venueCity}` : venueName) : "TBD";
   const statusType = get(event, "competitions.0.status.type.name", "STATUS_SCHEDULED");
-  const statusText = get(event, "competitions.0.status.type.shortDetail", "") ||
-    get(event, "competitions.0.status.type.description", "Scheduled");
-
+  const statusText = get(event, "competitions.0.status.type.shortDetail", "") || get(event, "competitions.0.status.type.description", "Scheduled");
   let resultHtml = timeStr || "TBD";
   const sixersScore = get(sixers, "score.displayValue", null);
   const oppScore = get(opponent, "score.displayValue", null);
@@ -197,10 +170,6 @@ function renderGameRow(event, allEvents) {
   } else if (isLive(statusType) && sixersScore != null) {
     resultHtml = `<strong>${sixersScore}–${oppScore ?? ""}</strong>`;
   }
-
-  const phiInj = injuryByAbbr.PHI || [];
-  const oppInj = injuryByAbbr[oppAbbr] || [];
-
   return `
     <tr class="game-row" tabindex="0">
       <td class="date-cell">${dateStr}</td>
@@ -220,13 +189,12 @@ function renderGameRow(event, allEvents) {
       <td colspan="6">
         <div class="game-detail">
           <p class="series-inline">${seriesLine(allEvents, event)}</p>
-          ${injuryBlock("76ers injuries", phiInj)}
-          ${injuryBlock(`${opponentName} injuries`, oppInj)}
+          ${injuryBlock("76ers injuries", injuryByAbbr.PHI || [])}
+          ${injuryBlock(`${opponentName} injuries`, injuryByAbbr[oppAbbr] || [])}
         </div>
       </td>
     </tr>`;
 }
-
 function bindRowToggles(root) {
   root.querySelectorAll(".game-row").forEach(row => {
     const toggle = () => {
@@ -237,14 +205,10 @@ function bindRowToggles(root) {
     };
     row.addEventListener("click", toggle);
     row.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggle();
-      }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
     });
   });
 }
-
 function renderSection(title, events, emptyText, allEvents) {
   if (!events.length) {
     return `<section class="season-block"><div class="season-heading">${title}</div><p class="empty-note">${emptyText}</p></section>`;
@@ -257,34 +221,21 @@ function renderSection(title, events, emptyText, allEvents) {
   });
   let html = `<section class="season-block"><div class="season-heading">${title}</div>`;
   Object.keys(months).forEach(month => {
-    html += `
-      <div class="month-section">
-        <div class="month-header"><h2 class="month-title">${month}</h2></div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th><th>Opponent</th><th>Result/Time</th>
-                <th>Venue</th><th>Status</th><th>Stream</th>
-              </tr>
-            </thead>
-            <tbody>${months[month].map(event => renderGameRow(event, allEvents)).join("")}</tbody>
-          </table>
-        </div>
-      </div>`;
+    html += `<div class="month-section">
+      <div class="month-header"><h2 class="month-title">${month}</h2></div>
+      <div class="table-responsive"><table>
+        <thead><tr><th>Date</th><th>Opponent</th><th>Result/Time</th><th>Venue</th><th>Status</th><th>Stream</th></tr></thead>
+        <tbody>${months[month].map(event => renderGameRow(event, allEvents)).join("")}</tbody>
+      </table></div></div>`;
   });
-  html += `</section>`;
-  return html;
+  return html + `</section>`;
 }
-
 async function getSixersSchedule() {
   const container = document.getElementById("schedule");
   if (!container) return;
   try {
     const probe = await fetchEvents(SCHEDULE_BASE);
-    let year = 2027;
-    if (probe[0]) year = get(probe[0], "season.year", 2027);
-
+    const year = probe[0] ? get(probe[0], "season.year", 2027) : 2027;
     const [pre, regular, playoffs, injuries] = await Promise.all([
       fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=1`),
       fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=2`),
@@ -292,13 +243,11 @@ async function getSixersSchedule() {
       fetchInjuryMap()
     ]);
     injuryByAbbr = injuries;
-
     const allEvents = mergeEvents([probe, pre, regular, playoffs]);
     if (!allEvents.length) {
       container.innerHTML = "<p class='empty-note'>No schedule data available right now.</p>";
       return;
     }
-
     updateSnapshot(allEvents);
     container.innerHTML = [
       renderSection("Preseason", allEvents.filter(e => eventType(e) === 1), "No preseason games listed yet.", allEvents),
@@ -308,9 +257,7 @@ async function getSixersSchedule() {
     bindRowToggles(container);
     setRefreshCadence(allEvents);
   } catch (err) {
-    console.error("Schedule Load Error:", err);
     container.innerHTML = `<p class="empty-note">Error loading schedule. ${err.message}</p>`;
   }
 }
-
 document.addEventListener("DOMContentLoaded", getSixersSchedule);

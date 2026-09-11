@@ -48,6 +48,15 @@ function seasonLabel(year) {
   return `${year - 1}-${String(year).slice(-2)}`;
 }
 
+function defaultSeasonList() {
+  const list = [];
+  for (let i = 0; i < SEASON_COUNT; i++) {
+    const year = NEXT_SEASON_YEAR - i;
+    list.push({ year, label: year === NEXT_SEASON_YEAR ? NEXT_SEASON_LABEL : seasonLabel(year) });
+  }
+  return list;
+}
+
 function shuffle(list) {
   const arr = [...list];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -59,20 +68,14 @@ function shuffle(list) {
 
 function buildSeasonOptions(seasonsFromApi) {
   const byYear = new Map();
+  defaultSeasonList().forEach((s) => byYear.set(s.year, s.label));
   (seasonsFromApi || []).forEach((s) => {
     if (!s || !s.year) return;
     byYear.set(s.year, s.displayName || seasonLabel(s.year));
   });
-  if (!byYear.has(NEXT_SEASON_YEAR)) byYear.set(NEXT_SEASON_YEAR, NEXT_SEASON_LABEL);
+  byYear.set(NEXT_SEASON_YEAR, NEXT_SEASON_LABEL);
 
-  const years = Array.from(byYear.keys()).sort((a, b) => b - a);
-  const latest = Math.max(years[0] || NEXT_SEASON_YEAR, NEXT_SEASON_YEAR);
-  const cutoff = latest - (SEASON_COUNT - 1);
-
-  return years
-    .filter((y) => y >= cutoff)
-    .concat(years.includes(NEXT_SEASON_YEAR) ? [] : [NEXT_SEASON_YEAR])
-    .filter((y, i, arr) => arr.indexOf(y) === i)
+  return Array.from(byYear.keys())
     .sort((a, b) => b - a)
     .slice(0, SEASON_COUNT)
     .map((year) => ({ year, label: byYear.get(year) || seasonLabel(year) }));
@@ -81,14 +84,10 @@ function buildSeasonOptions(seasonsFromApi) {
 function populateSeasonSelect(selectedYear) {
   const select = document.getElementById("season-select");
   if (!select) return;
+  if (!availableSeasons.length) availableSeasons = defaultSeasonList();
   select.innerHTML = availableSeasons
     .map((s) => `<option value="${s.year}"${s.year === selectedYear ? " selected" : ""}>${s.label}</option>`)
     .join("");
-}
-
-function setSeasonStatus(text) {
-  const el = document.getElementById("season-status");
-  if (el) el.textContent = text || "";
 }
 
 function setGraphicSeason(label) {
@@ -258,7 +257,20 @@ function renderPreseasonBoard(label) {
     { name: "Eastern Conference", rows: shuffle(EAST_TEAMS).map(emptyRow) },
     { name: "Western Conference", rows: shuffle(WEST_TEAMS).map(emptyRow) }
   ]);
-  setSeasonStatus(`${label} · not started`);
+}
+
+async function hydrateSeasonDropdown(selectedYear) {
+  availableSeasons = defaultSeasonList();
+  populateSeasonSelect(selectedYear || NEXT_SEASON_YEAR);
+  try {
+    const res = await fetch(STANDINGS_URL);
+    if (!res.ok) return;
+    const data = await res.json();
+    availableSeasons = buildSeasonOptions(data.seasons || []);
+    populateSeasonSelect(selectedYear || NEXT_SEASON_YEAR);
+  } catch (err) {
+    console.error("Season list error:", err);
+  }
 }
 
 async function getNBAStandings(seasonYear) {
@@ -268,11 +280,7 @@ async function getNBAStandings(seasonYear) {
   const year = seasonYear || currentSeasonYear || NEXT_SEASON_YEAR;
   const label = availableSeasons.find((s) => s.year === year)?.label || seasonLabel(year);
   setGraphicSeason(label);
-
-  if (!availableSeasons.length) {
-    availableSeasons = buildSeasonOptions([]);
-    populateSeasonSelect(year);
-  }
+  populateSeasonSelect(year);
 
   if (year === NEXT_SEASON_YEAR && Date.now() < NEXT_SEASON_TIPOFF.getTime()) {
     renderPreseasonBoard(label);
@@ -290,12 +298,7 @@ async function getNBAStandings(seasonYear) {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
 
-    availableSeasons = buildSeasonOptions(data.seasons || []);
-    if (!availableSeasons.some((s) => s.year === NEXT_SEASON_YEAR)) {
-      availableSeasons.unshift({ year: NEXT_SEASON_YEAR, label: NEXT_SEASON_LABEL });
-      availableSeasons = availableSeasons.slice(0, SEASON_COUNT);
-    }
-    currentSeasonYear = NEXT_SEASON_YEAR;
+    availableSeasons = buildSeasonOptions(data.seasons || availableSeasons);
     populateSeasonSelect(year);
 
     const resolvedLabel = availableSeasons.find((s) => s.year === year)?.label || data.season?.displayName || label;
@@ -306,7 +309,6 @@ async function getNBAStandings(seasonYear) {
       return;
     }
 
-    setSeasonStatus(resolvedLabel);
     renderTables((data.children || []).map((conf) => ({
       name: conf.name,
       rows: rowsFromApiConference(conf)
@@ -407,13 +409,17 @@ function initExport() {
   window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  availableSeasons = buildSeasonOptions([]);
+document.addEventListener("DOMContentLoaded", async () => {
+  availableSeasons = defaultSeasonList();
   populateSeasonSelect(NEXT_SEASON_YEAR);
+  await hydrateSeasonDropdown(NEXT_SEASON_YEAR);
+
   document.getElementById("season-select")?.addEventListener("change", (e) => {
     getNBAStandings(Number(e.target.value));
   });
+
   getNBAStandings(NEXT_SEASON_YEAR);
+
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {
     const viewing = Number(document.getElementById("season-select")?.value || NEXT_SEASON_YEAR);

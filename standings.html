@@ -8,15 +8,6 @@
   <link rel="canonical" href="https://sixershoops.com/standings"/>
   <meta name="robots" content="index,follow"/>
   <meta name="theme-color" content="#006BB6"/>
-  <meta property="og:type" content="website"/>
-  <meta property="og:site_name" content="SixersHoops"/>
-  <meta property="og:title" content="NBA Standings"/>
-  <meta property="og:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
-  <meta property="og:url" content="https://sixershoops.com/standings"/>
-  <meta property="og:image" content="https://sixershoops.com/sixershoopslogonew.png"/>
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="NBA Standings"/>
-  <meta name="twitter:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -104,9 +95,7 @@
     }
     .streak-w { color: var(--green); background: rgba(22,163,74,.1); }
     .streak-l { color: var(--red); background: rgba(220,38,38,.1); }
-    .preseason-note {
-      margin: 0 0 1rem; color: var(--mid); font-size: .9rem;
-    }
+    .preseason-note { margin: 0 0 1rem; color: var(--mid); font-size: .9rem; }
     .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
     .loader-spinner {
       border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
@@ -114,146 +103,180 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Compact social card: 1080 x ~1080, capture-safe */
     #social-export-container {
       position: fixed;
       top: 0;
       left: 0;
-      width: 1200px;
+      width: 1080px;
+      height: 1080px;
       padding: 0;
-      background: #07122a;
-      color: #fff;
+      background: #f4f6fa;
+      color: #0d0f1a;
       font-family: 'Lexend', system-ui, sans-serif;
       z-index: -1;
       pointer-events: none;
       overflow: hidden;
     }
+    #social-export-container.single-conf {
+      width: 1080px;
+      height: 1350px;
+    }
+    .social-topbar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: #001a57;
+      color: #fff;
+    }
+    .social-wordmark {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .social-top-meta {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #93c5fd;
+      font-weight: 600;
+    }
     .social-header {
-      padding: 36px 40px 28px;
-      background:
-        linear-gradient(135deg, rgba(237,23,76,.22), transparent 42%),
-        linear-gradient(90deg, #06101f 0%, #0b1d3d 55%, #006BB6 160%);
+      padding: 22px 28px 16px;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      gap: 24px;
-    }
-    .social-kicker {
-      margin: 0 0 8px;
-      font-size: 12px;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: #94a3b8;
-      font-weight: 700;
+      gap: 16px;
+      background: #f4f6fa;
     }
     .social-title-box h1 {
       margin: 0;
-      font-size: 46px;
-      line-height: .95;
-      letter-spacing: -.04em;
+      font-size: 32px;
+      line-height: 1;
+      letter-spacing: -.03em;
       font-weight: 800;
+      color: #0d0f1a;
     }
     #export-date {
-      margin: 10px 0 0;
-      color: #cbd5e1;
-      font-size: 15px;
+      margin: 6px 0 0;
+      color: #64748b;
+      font-size: 13px;
       font-weight: 500;
     }
-    .social-brand {
-      font-size: 13px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      font-weight: 800;
-      color: #fff;
-      background: #ED174C;
-      padding: 8px 12px;
-      border-radius: 999px;
-      white-space: nowrap;
+    .social-accent {
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #006BB6 0%, #006BB6 55%, #ED174C 55%, #ED174C 100%);
     }
     #social-export-content {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0;
-      background: #07122a;
+      gap: 18px;
+      padding: 18px 22px 22px;
+      height: calc(1080px - 56px - 78px - 4px);
     }
-    #social-export-content.mode-east,
-    #social-export-content.mode-west {
+    #social-export-container.single-conf #social-export-content {
       grid-template-columns: 1fr;
+      height: calc(1350px - 56px - 78px - 4px);
     }
     .social-conference {
-      padding: 24px 28px 32px;
-    }
-    .social-conference + .social-conference {
-      border-left: 1px solid rgba(255,255,255,.08);
+      background: #fff;
+      border: 1px solid #e6ebf3;
+      border-radius: 14px;
+      padding: 14px 12px 10px;
+      min-width: 0;
+      overflow: hidden;
     }
     .social-conf-title {
-      margin: 0 0 14px;
-      font-size: 18px;
+      margin: 0 0 8px;
+      padding: 0 6px;
+      font-size: 13px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
-      color: #93c5fd;
+      color: #006BB6;
     }
-    .social-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    .social-table { width: 100%; border-collapse: collapse; }
     .social-table th {
       text-align: left;
-      font-size: 10px;
-      letter-spacing: .14em;
+      font-size: 9px;
+      letter-spacing: .12em;
       text-transform: uppercase;
-      color: #64748b;
-      padding: 8px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      color: #94a3b8;
+      padding: 6px 6px;
+      border-bottom: 1px solid #eef2f7;
       background: transparent;
     }
     .social-table td {
       padding: 0;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      font-size: 15px;
-      color: #fff;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+      color: #0d0f1a;
       background: transparent;
     }
+    .social-table tr:last-child td { border-bottom: 0; }
     .social-table .cell-content {
-      padding: 9px 10px;
-      min-height: 40px;
+      padding: 5px 6px;
+      min-height: 28px;
       display: flex;
       align-items: center;
+      white-space: nowrap;
     }
     .social-team {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-weight: 600;
+      font-size: 13px;
+    }
+    .social-team-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 210px;
     }
     .social-team-rank {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,.08);
-      color: #cbd5e1;
-      font-size: 11px;
+      background: #eef3f9;
+      color: #64748b;
+      font-size: 10px;
       font-weight: 700;
+      flex: 0 0 auto;
     }
-    .social-sixers-row td { background: rgba(0,107,182,.28); }
-    .social-sixers-row .social-team-rank { background: #ED174C; color: #fff; }
-    .social-streak-badge { font-weight: 700; }
-    .social-streak-w { color: #4ade80; }
-    .social-streak-l { color: #fb7185; }
+    .social-sixers-row td { background: #e8f3fb; }
+    .social-sixers-row .social-team-rank { background: #006BB6; color: #fff; }
+    .social-streak-badge { font-weight: 700; font-size: 12px; }
+    .social-streak-w { color: #16a34a; }
+    .social-streak-l { color: #dc2626; }
 
     .modal {
       display: none; position: fixed; inset: 0; background: rgba(13,15,26,.55);
-      align-items: center; justify-content: center; z-index: 80; padding: 1.5rem;
+      align-items: center; justify-content: center; z-index: 80; padding: 1rem;
     }
     .modal-card {
-      background: #fff; border-radius: 16px; max-width: 920px; width: 100%;
-      padding: 1.25rem; box-shadow: 0 20px 50px rgba(0,0,0,.18);
+      background: #fff; border-radius: 16px; max-width: 560px; width: 100%;
+      max-height: calc(100vh - 2rem); overflow: auto;
+      padding: 1rem; box-shadow: 0 20px 50px rgba(0,0,0,.18);
     }
-    .modal-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
-    #exportPreview { width: 100%; border-radius: 8px; border: 1px solid var(--border-light); }
+    .modal-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
+    #exportPreview {
+      width: 100%;
+      height: auto;
+      max-height: 62vh;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      background: #f4f6fa;
+    }
 
     @media (max-width: 720px) {
       .wrap { padding: 1rem 1.1rem 3rem; }
@@ -278,13 +301,11 @@
       <select id="season-select" aria-label="Select NBA season standings"></select>
       <span id="season-status"></span>
     </div>
-
     <div class="export-bar">
       <button type="button" class="export-btn" data-export-mode="all">Export both conferences</button>
       <button type="button" class="export-btn" data-export-mode="east">Export East</button>
       <button type="button" class="export-btn" data-export-mode="west">Export West</button>
     </div>
-
     <main id="standings">
       <div class="loader">
         <div class="loader-spinner"></div>
@@ -294,14 +315,17 @@
   </div>
 
   <div id="social-export-container">
+    <div class="social-topbar">
+      <p class="social-wordmark">SixersHoops</p>
+      <p class="social-top-meta" id="social-top-meta">NBA Standings</p>
+    </div>
     <div class="social-header">
       <div class="social-title-box">
-        <p class="social-kicker">SixersHoops</p>
         <h1>NBA Standings</h1>
         <p id="export-date"></p>
       </div>
-      <div class="social-brand">PHI</div>
     </div>
+    <div class="social-accent"></div>
     <div id="social-export-content"></div>
   </div>
 

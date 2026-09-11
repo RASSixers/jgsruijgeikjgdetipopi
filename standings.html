@@ -104,7 +104,6 @@
     }
     .streak-w { color: var(--green); background: rgba(22,163,74,.1); }
     .streak-l { color: var(--red); background: rgba(220,38,38,.1); }
-    .preseason-note { margin: 0 0 1rem; color: var(--mid); font-size: .9rem; }
     .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
     .loader-spinner {
       border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
@@ -117,126 +116,91 @@
       top: 0;
       left: 0;
       width: 1080px;
-      height: 1350px;
-      background: #08111f;
-      color: #f8fafc;
+      min-height: 1350px;
+      background: #ffffff;
+      color: #0d0f1a;
       font-family: 'Lexend', system-ui, sans-serif;
       z-index: -1;
       pointer-events: none;
-      overflow: hidden;
     }
-    .sg-frame {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      padding: 36px 36px 28px;
-      background:
-        radial-gradient(circle at 100% 0%, rgba(237,23,76,.18), transparent 36%),
-        radial-gradient(circle at 0% 100%, rgba(0,107,182,.22), transparent 32%),
-        #08111f;
+    .sg-page {
+      width: 1080px;
+      min-height: 1350px;
+      padding: 64px 64px 48px;
+      background: #ffffff;
+      box-sizing: border-box;
     }
-    .sg-brand {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 22px;
+    .sg-top {
+      text-align: center;
+      margin-bottom: 42px;
     }
-    .sg-logo {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-    }
-    .sg-logo span { color: #ED174C; }
-    .sg-chip {
-      margin: 0;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: #dbeafe;
-      border: 1px solid rgba(147,197,253,.35);
-      border-radius: 999px;
-      padding: 7px 12px;
-    }
-    .sg-header { margin-bottom: 22px; }
-    .sg-kicker {
-      margin: 0 0 8px;
-      font-size: 12px;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: #93c5fd;
-      font-weight: 700;
-    }
-    .social-title-box h1,
-    .sg-title {
+    .sg-wordmark {
       margin: 0;
       font-size: 54px;
-      line-height: .92;
-      letter-spacing: -.05em;
+      line-height: 1;
       font-weight: 800;
+      letter-spacing: -.04em;
+      color: #0b1220;
     }
-    #export-date,
-    .sg-sub {
-      margin: 10px 0 0;
-      color: #94a3b8;
-      font-size: 16px;
-      font-weight: 500;
+    .sg-subtitle {
+      margin: 16px 0 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #006BB6;
     }
-    .sg-rule {
+    .sg-subtitle-rule {
+      width: 48px;
       height: 3px;
-      width: 100%;
-      border: 0;
-      margin: 0 0 22px;
-      background: linear-gradient(90deg, #006BB6 0 58%, #ED174C 58% 100%);
+      background: #e5e7eb;
+      margin: 14px auto 0;
     }
     #social-export-content {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      flex: 1;
-      min-height: 0;
+      gap: 28px;
     }
     #social-export-container.single-conf #social-export-content {
       grid-template-columns: 1fr;
     }
-    .social-conference {
-      background: rgba(15,23,42,.72);
-      border: 1px solid rgba(148,163,184,.16);
-      border-radius: 18px;
-      padding: 16px 14px 12px;
-      min-width: 0;
-    }
+    .social-conference { min-width: 0; }
     .social-conf-title {
-      margin: 0 0 10px 6px;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: #93c5fd;
-    }
-    .social-table { width: 100%; border-collapse: collapse; }
-    .social-table th {
-      text-align: left;
-      font-size: 10px;
-      letter-spacing: .14em;
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
       text-transform: uppercase;
       color: #64748b;
-      padding: 6px 8px 10px;
-      border-bottom: 1px solid rgba(148,163,184,.14);
-      background: transparent;
+    }
+    .social-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #f8fafc;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .social-table thead th {
+      background: #f8fafc;
+      color: #94a3b8;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 12px 14px;
+      border: 0;
     }
     .social-table td {
       padding: 0;
-      border-bottom: 1px solid rgba(148,163,184,.08);
-      color: #f8fafc;
-      background: transparent;
+      border: 0;
+      background: #fff;
+      color: #0d0f1a;
     }
-    .social-table tr:last-child td { border-bottom: 0; }
+    .social-table tbody tr:nth-child(odd) td { background: #f8fafc; }
+    .social-table tbody tr:nth-child(even) td { background: #ffffff; }
     .social-table .cell-content {
-      padding: 7px 8px;
-      min-height: 34px;
+      padding: 11px 14px;
+      min-height: 46px;
       display: flex;
       align-items: center;
       font-size: 15px;
@@ -245,38 +209,56 @@
     .social-team {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 650;
+      gap: 12px;
+      font-weight: 700;
+    }
+    .social-team-rank {
+      width: 28px;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
     }
     .social-team-name { font-size: 15px; }
-    .social-team-rank {
-      width: 24px;
-      height: 24px;
-      border-radius: 7px;
+    .social-sixers-row td { background: #eef6fc !important; }
+    .social-streak-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,.06);
-      color: #cbd5e1;
+      min-width: 52px;
+      padding: 4px 10px;
+      border-radius: 999px;
       font-size: 11px;
       font-weight: 800;
-      flex: 0 0 auto;
-    }
-    .social-sixers-row td { background: rgba(0,107,182,.22); }
-    .social-sixers-row .social-team-rank { background: #ED174C; color: #fff; }
-    .social-streak-badge { font-weight: 800; font-size: 13px; }
-    .social-streak-w { color: #4ade80; }
-    .social-streak-l { color: #fb7185; }
-    .sg-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 16px;
-      color: #64748b;
-      font-size: 12px;
-      letter-spacing: .08em;
+      letter-spacing: .06em;
       text-transform: uppercase;
-      font-weight: 700;
+      background: #eef2f7;
+      color: #64748b;
+    }
+    .social-streak-w { background: #e8f8ee; color: #16a34a; }
+    .social-streak-l { background: #fdecef; color: #dc2626; }
+    .sg-bottom {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 28px;
+    }
+    .sg-bottom-rule {
+      width: 48px;
+      height: 3px;
+      background: #e5e7eb;
+      margin: 0 auto 22px;
+    }
+    .sg-bottom-mark {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+    }
+    .sg-bottom-url {
+      margin: 8px 0 0;
+      color: #64748b;
+      font-size: 15px;
+      font-weight: 500;
     }
 
     .modal {
@@ -295,7 +277,8 @@
       max-height: 64vh;
       object-fit: contain;
       border-radius: 8px;
-      background: #08111f;
+      background: #fff;
+      border: 1px solid var(--border-light);
     }
 
     @media (max-width: 720px) {
@@ -335,23 +318,17 @@
   </div>
 
   <div id="social-export-container">
-    <div class="sg-frame">
-      <div class="sg-brand">
-        <p class="sg-logo">Sixers<span>Hoops</span></p>
-        <p class="sg-chip" id="social-top-meta">NBA Standings</p>
+    <div class="sg-page">
+      <div class="sg-top">
+        <p class="sg-wordmark">SixersHoops</p>
+        <p class="sg-subtitle"><span id="social-season-label">2026-27</span> · <span id="social-top-meta">NBA STANDINGS</span></p>
+        <div class="sg-subtitle-rule"></div>
       </div>
-      <div class="sg-header social-header">
-        <div class="social-title-box">
-          <p class="sg-kicker">Philadelphia 76ers</p>
-          <h1 class="sg-title">NBA Standings</h1>
-          <p class="sg-sub" id="export-date"></p>
-        </div>
-      </div>
-      <div class="sg-rule"></div>
       <div id="social-export-content"></div>
-      <div class="sg-footer">
-        <span>sixershoops.com</span>
-        <span>W-L · PCT · STRK</span>
+      <div class="sg-bottom">
+        <div class="sg-bottom-rule"></div>
+        <p class="sg-bottom-mark">SixersHoops</p>
+        <p class="sg-bottom-url">sixershoops.com/standings</p>
       </div>
     </div>
   </div>

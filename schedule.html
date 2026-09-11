@@ -1,273 +1,420 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>76ers Schedule 2026-27 | Times, TV &amp; Results</title>
-  <meta name="description" content="Full 2026-27 Philadelphia 76ers schedule: preseason, regular season, and playoffs. Game times ET, TV/stream, venues, and results."/>
-  <link rel="canonical" href="https://sixershoops.com/schedule"/>
-  <meta name="robots" content="index,follow"/>
-  <meta name="theme-color" content="#006BB6"/>
-  <meta property="og:type" content="website"/>
-  <meta property="og:site_name" content="SixersHoops"/>
-  <meta property="og:title" content="Philadelphia 76ers 2026-27 Schedule"/>
-  <meta property="og:description" content="Dates, ET start times, TV channels, and results for every Sixers game."/>
-  <meta property="og:url" content="https://sixershoops.com/schedule"/>
-  <meta property="og:image" content="https://sixershoops.com/sixershoopslogonew.png"/>
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Philadelphia 76ers 2026-27 Schedule"/>
-  <meta name="twitter:description" content="Dates, ET start times, TV channels, and results for every Sixers game."/>
-  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css"/>
-  <link rel="stylesheet" href="navbar-styles.css"/>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-T1V9Q0MNEM');
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        "url": "https://sixershoops.com/schedule",
-        "name": "Philadelphia 76ers 2026-27 Schedule",
-        "about": { "@type": "SportsTeam", "name": "Philadelphia 76ers", "sport": "Basketball" }
-      },
-      {
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sixershoops.com/" },
-          { "@type": "ListItem", "position": 2, "name": "76ers Schedule", "item": "https://sixershoops.com/schedule" }
-        ]
-      }
-    ]
+const SCHEDULE_BASE =
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/schedule";
+const INJURIES_URL =
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
+const SUMMARY_URL =
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary";
+const NATIONAL = /NBC|ESPN|ABC|TNT|MAX|PRIME|AMZN|AMAZON|PEACOCK|NBA TV|NBATV/i;
+
+let refreshTimer = null;
+let pbpTimer = null;
+let injuryByAbbr = {};
+let featuredEvent = null;
+let allEventsCache = [];
+let activeFilter = "all";
+
+function get(obj, path, fallback) {
+  const value = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
+  return value == null ? fallback : value;
+}
+function badgeFor(statusName) {
+  if (statusName === "STATUS_FINAL") return "badge final";
+  if (statusName === "STATUS_IN_PROGRESS" || statusName === "STATUS_LIVE") return "badge live";
+  return "badge upcoming";
+}
+function isLive(statusName) {
+  return statusName === "STATUS_IN_PROGRESS" || statusName === "STATUS_LIVE";
+}
+function getBroadcast(competition) {
+  const broadcasts = get(competition, "broadcasts", []) || [];
+  const names = broadcasts
+    .map(b => get(b, "media.shortName", "") || get(b, "shortName", ""))
+    .filter(Boolean);
+  return [...new Set(names)].join(" / ") || "TBD";
+}
+function eventType(event) {
+  return Number(get(event, "seasonType.type", 0));
+}
+function oppOf(event) {
+  const comps = get(event, "competitions.0.competitors", []) || [];
+  return comps.find(c => get(c, "team.abbreviation", "") !== "PHI") || null;
+}
+function sixersOf(event) {
+  const comps = get(event, "competitions.0.competitors", []) || [];
+  return comps.find(c => get(c, "team.abbreviation", "") === "PHI") || null;
+}
+function markBackToBacks(events) {
+  const sorted = events.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+  sorted.forEach((event, i) => {
+    const prev = sorted[i - 1];
+    const next = sorted[i + 1];
+    const t = new Date(event.date).getTime();
+    const nearPrev = prev && Math.abs(t - new Date(prev.date).getTime()) <= 40 * 60 * 60 * 1000;
+    const nearNext = next && Math.abs(new Date(next.date).getTime() - t) <= 40 * 60 * 60 * 1000;
+    event._b2b = !!(nearPrev || nearNext);
+  });
+  return events;
+}
+function seriesLine(allEvents, event) {
+  const abbr = get(oppOf(event), "team.abbreviation", "");
+  const name = get(oppOf(event), "team.shortDisplayName", abbr || "this opponent");
+  if (!abbr) return "Series history unavailable.";
+  const finished = allEvents.filter(e =>
+    get(e, "competitions.0.status.type.name", "") === "STATUS_FINAL" &&
+    eventType(e) === 2 &&
+    get(oppOf(e), "team.abbreviation", "") === abbr
+  );
+  const wins = finished.filter(e => get(sixersOf(e), "winner", false)).length;
+  if (!finished.length) return `No regular-season games vs ${name} yet this year.`;
+  return `Sixers are ${wins}-${finished.length - wins} vs ${name} this year.`;
+}
+function statusClass(status) {
+  const s = String(status || "").toLowerCase();
+  if (s.includes("out")) return "out";
+  if (s.includes("doubt")) return "doubtful";
+  if (s.includes("question")) return "questionable";
+  if (s.includes("prob")) return "probable";
+  return "";
+}
+function parseTeamInjuries(teamBlock) {
+  return (get(teamBlock, "injuries", []) || []).map(inj => ({
+    name: get(inj, "athlete.displayName", "Player"),
+    status: inj.status || get(inj, "type.description", "—"),
+    detail: get(inj, "details.type", "") || get(inj, "details.detail", "") || "—"
+  }));
+}
+async function fetchEvents(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.events) ? data.events : [];
+  } catch (err) {
+    return [];
   }
-  </script>
-  <style>
-    :root {
-      --navy:#001a57; --sixers-blue:#006BB6; --sixers-red:#ED174C;
-      --cream:#ffffff; --ink:#0d0f1a; --mid:#64748b; --mid-2:#94a3b8;
-      --border-light:#e4e8f0; --card-bg:#ffffff; --surface-soft:#f6f8fc;
-      --green:#16a34a; --red:#dc2626;
-    }
-    *,*::before,*::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body,html {
-      margin: 0; background: var(--cream); color: var(--ink);
-      font-family: 'Lexend', system-ui, sans-serif; line-height: 1.5;
-    }
-    body { padding-top: 64px; }
-    .sr-only {
-      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-    }
-    .hero-inner { max-width: 860px; margin: 0 auto; padding: 5rem 2rem 3.2rem; text-align: center; }
-    .hero-title-top, .hero-title-bottom {
-      font-size: clamp(2.4rem,6vw,4.5rem); font-weight: 700;
-      line-height: .95; letter-spacing: -.03em; margin: 0;
-    }
-    .hero-title-bottom { color: var(--sixers-blue); }
-    .hero-sub { margin: 1rem auto 0; max-width: 540px; color: var(--mid); font-size: .95rem; }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
-    .section-label {
-      font-weight: 500; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase;
-      color: var(--mid); display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem;
-    }
-    .section-label .line { flex: 1; height: 1px; background: var(--border-light); }
-    .section-label a { color: inherit; text-decoration: none; }
-    .metric-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: .75rem; margin-bottom: 1.25rem;
-    }
-    .metric {
-      background: var(--card-bg); border: 1px solid var(--border-light);
-      border-radius: 12px; padding: 1.15rem 1.2rem;
-    }
-    .metric .k { font-size: .58rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mid); font-weight: 600; display: block; margin-bottom: .5rem; }
-    .metric .v { font-weight: 700; font-size: 1.35rem; display: block; }
-    .metric .sub { font-size: .65rem; color: var(--mid-2); margin-top: .4rem; display: block; }
-    .metric.blue .v { color: var(--sixers-blue); }
-    .metric.red .v { color: var(--sixers-red); }
-    .metric.green .v { color: var(--green); }
-    .live-board {
-      margin: 0 0 2rem; background: var(--card-bg);
-      border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
-    }
-    .live-board.live { border-color: rgba(237,23,76,.35); }
-    .live-head {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 1rem; padding: .85rem 1.2rem; background: var(--surface-soft);
-      border-bottom: 1px solid var(--border-light);
-    }
-    .live-kicker {
-      font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
-      font-weight: 600; color: var(--mid);
-    }
-    .live-board.live .live-kicker { color: var(--sixers-red); }
-    .live-clock { font-size: .82rem; color: var(--mid); font-weight: 600; }
-    .live-scoreline {
-      display: grid; grid-template-columns: 1fr auto 1fr;
-      gap: 1rem; align-items: center; padding: 1.1rem 1.2rem;
-    }
-    .live-team { display: flex; align-items: center; gap: .7rem; font-weight: 700; }
-    .live-team.away { justify-content: flex-end; text-align: right; }
-    .live-logo { width: 36px; height: 36px; object-fit: contain; }
-    .live-score { font-size: 2rem; font-weight: 800; letter-spacing: -.03em; }
-    .pbp-list { list-style: none; margin: 0; padding: 0; max-height: 240px; overflow: auto; }
-    .pbp-list li {
-      display: grid; grid-template-columns: 4.2rem 1fr auto;
-      gap: .7rem; padding: .55rem 1.2rem; border-top: 1px solid var(--border-light);
-      font-size: .82rem;
-    }
-    .pbp-list li.score { background: rgba(0,107,182,.05); font-weight: 600; }
-    .pbp-clock { color: var(--mid); white-space: nowrap; }
-    .pbp-score { color: var(--mid); font-variant-numeric: tabular-nums; }
-    .live-empty { padding: 1rem 1.2rem; color: var(--mid); font-size: .9rem; margin: 0; }
-    .season-block { margin-bottom: 2.25rem; }
-    .season-heading { font-weight: 700; font-size: 1.15rem; margin: 0 0 1rem; }
-    .empty-note {
-      color: var(--mid); border: 1px dashed var(--border-light);
-      border-radius: 12px; padding: 1rem 1.2rem;
-    }
-    .month-section {
-      background: var(--card-bg); border: 1px solid var(--border-light);
-      border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
-    }
-    .month-header {
-      padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-light);
-      background: var(--surface-soft); display: flex; align-items: center; gap: .6rem;
-    }
-    .month-header::before { content: ''; width: 4px; height: 18px; background: var(--sixers-blue); border-radius: 2px; }
-    .month-title { font-weight: 600; font-size: .95rem; margin: 0; }
-    .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      text-align: left; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
-      color: var(--mid); padding: .85rem 1.25rem; border-bottom: 1px solid var(--border-light);
-    }
-    td {
-      padding: .95rem 1.25rem; border-bottom: 1px solid var(--border-light);
-      font-size: .88rem; vertical-align: middle;
-    }
-    tbody tr.game-row { cursor: pointer; }
-    tbody tr.game-row:hover td { background: var(--surface-soft); }
-    .game-info { display: flex; align-items: center; gap: .6rem; font-weight: 600; }
-    .opponent-logo { width: 28px; height: 28px; object-fit: contain; }
-    .date-cell { color: var(--mid); white-space: nowrap; }
-    .win-result { color: var(--green); font-weight: 600; }
-    .loss-result { color: var(--red); font-weight: 600; }
-    .stream-cell { font-weight: 600; color: var(--sixers-blue); white-space: nowrap; }
-    .badge {
-      display: inline-block; font-size: .58rem; letter-spacing: .08em; font-weight: 600;
-      padding: 3px 9px; border-radius: 999px; text-transform: uppercase;
-      border: 1px solid var(--border-light);
-    }
-    .badge.upcoming { background: rgba(0,107,182,.08); color: var(--sixers-blue); }
-    .badge.final { color: var(--mid-2); }
-    .badge.live { background: rgba(237,23,76,.1); color: var(--sixers-red); animation: pulse 2s infinite; }
-    @keyframes pulse { 50% { opacity: .55; } }
-    .game-detail-row td { padding: 0; }
-    .game-detail { display: none; padding: .95rem 1.25rem 1.15rem; background: var(--surface-soft); }
-    tr.game-row.open + .game-detail-row .game-detail { display: block; }
-    .series-inline { color: var(--mid); font-size: .82rem; margin: 0 0 .75rem; }
-    .inj-title {
-      font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
-      color: var(--mid); font-weight: 600; margin: .35rem 0 .45rem;
-    }
-    .inj-list { margin: 0 0 .8rem; padding: 0; list-style: none; }
-    .inj-list li {
-      display: grid; grid-template-columns: minmax(8rem,1fr) 7.5rem minmax(8rem,1.2fr);
-      gap: .75rem; padding: .4rem 0; border-bottom: 1px solid var(--border-light); font-size: .82rem;
-    }
-    .inj-list li:last-child { border-bottom: 0; }
-    .inj-name { font-weight: 600; }
-    .inj-status { font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
-    .inj-status.out { color: var(--sixers-red); }
-    .inj-status.questionable, .inj-status.doubtful { color: #b45309; }
-    .inj-status.probable { color: var(--green); }
-    .inj-empty { color: var(--mid); font-size: .82rem; margin: 0 0 .75rem; }
-    .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
-    .loader-spinner {
-      border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
-      border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite; margin: 0 auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @media (max-width: 720px) {
-      .wrap { padding: 1rem 1.1rem 3rem; }
-      th:nth-child(4), td:nth-child(4) { display: none; }
-      .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
-      .inj-list li { grid-template-columns: 1fr; gap: .15rem; }
-      .live-scoreline { grid-template-columns: 1fr; text-align: center; }
-      .live-team, .live-team.away { justify-content: center; text-align: center; }
-      .pbp-list li { grid-template-columns: 1fr; gap: .15rem; }
-    }
-  </style>
-</head>
-<body>
-  <script src="nav.js"></script>
-  <header class="hero">
-    <div class="hero-inner">
-      <h1 class="sr-only">Philadelphia 76ers 2026-27 schedule</h1>
-      <p class="hero-title-top" aria-hidden="true">SIXERS</p>
-      <p class="hero-title-bottom" aria-hidden="true">SCHEDULE</p>
-      <p class="hero-sub">2026-27 preseason, regular season, and playoff dates with ET start times and TV listings.</p>
+}
+async function fetchInjuryMap() {
+  try {
+    const res = await fetch(INJURIES_URL);
+    if (!res.ok) return {};
+    const data = await res.json();
+    const map = {};
+    (data.injuries || []).forEach(team => {
+      const abbr = get(team, "team.abbreviation", "") ||
+        (/76ers|philadelphia/i.test(team.displayName || "") ? "PHI" : "");
+      if (abbr) map[abbr] = parseTeamInjuries(team);
+    });
+    return map;
+  } catch (err) {
+    return {};
+  }
+}
+function mergeEvents(groups) {
+  const map = new Map();
+  groups.flat().forEach(event => {
+    if (event && event.id) map.set(String(event.id), event);
+  });
+  return markBackToBacks([...map.values()].sort((a, b) => new Date(a.date) - new Date(b.date)));
+}
+function pickFeatured(events) {
+  const live = events.find(e => isLive(get(e, "competitions.0.status.type.name", "")));
+  if (live) return live;
+  return events.find(e => get(e, "competitions.0.status.type.state", "") === "pre") || null;
+}
+function passesFilter(event) {
+  const statusName = get(event, "competitions.0.status.type.name", "");
+  const state = get(event, "competitions.0.status.type.state", "");
+  const home = get(sixersOf(event), "homeAway", "") === "home";
+  const stream = getBroadcast(get(event, "competitions.0", {}));
+  if (activeFilter === "remaining") return state !== "post" && statusName !== "STATUS_FINAL";
+  if (activeFilter === "home") return home;
+  if (activeFilter === "away") return !home;
+  if (activeFilter === "b2b") return !!event._b2b;
+  if (activeFilter === "national") return NATIONAL.test(stream);
+  return true;
+}
+function renderUpcomingBoard(event) {
+  const board = document.getElementById("live-board");
+  const body = document.getElementById("live-body");
+  const kicker = document.getElementById("live-kicker");
+  const clock = document.getElementById("live-clock");
+  if (!board || !body) return;
+  board.classList.remove("live");
+  kicker.textContent = "Next game";
+  if (!event) {
+    clock.textContent = "—";
+    body.innerHTML = `<p class="live-empty">No upcoming Sixers game listed.</p>`;
+    return;
+  }
+  const sixers = sixersOf(event);
+  const opp = oppOf(event);
+  const isHome = get(sixers, "homeAway", "") === "home";
+  const oppName = get(opp, "team.displayName", "Opponent");
+  const oppLogo = get(opp, "team.logos.0.href", "");
+  const phiLogo = get(sixers, "team.logos.0.href", "");
+  const detail = get(event, "competitions.0.status.type.detail", "") ||
+    get(event, "competitions.0.status.type.shortDetail", "TBD");
+  const stream = getBroadcast(get(event, "competitions.0", {}));
+  clock.textContent = detail;
+  body.innerHTML = `
+    <div class="live-scoreline">
+      <div class="live-team">${isHome
+        ? `<img class="live-logo" src="${phiLogo}" alt="76ers"><span>76ers</span>`
+        : `<img class="live-logo" src="${oppLogo}" alt=""><span>${oppName}</span>`}</div>
+      <div class="live-score">vs</div>
+      <div class="live-team away">${isHome
+        ? `<span>${oppName}</span><img class="live-logo" src="${oppLogo}" alt="">`
+        : `<span>76ers</span><img class="live-logo" src="${phiLogo}" alt="76ers">`}</div>
     </div>
-  </header>
-  <div class="wrap">
-    <nav class="section-label" aria-label="Breadcrumb">
-      <span><a href="/">Home</a> / 76ers Schedule</span>
-      <span class="line"></span>
-    </nav>
-    <div class="section-label"><span>Season Snapshot</span><span class="line"></span></div>
-    <div class="metric-grid">
-      <div class="metric blue">
-        <span class="k">Record</span>
-        <span class="v" id="stat-record">--</span>
-        <span class="sub">Regular season W-L</span>
+    <p class="live-empty">${isHome ? "vs" : "@"} ${get(opp, "team.shortDisplayName", oppName)} · ${stream}</p>`;
+}
+function renderLiveBoard(summary, event) {
+  const board = document.getElementById("live-board");
+  const body = document.getElementById("live-body");
+  const kicker = document.getElementById("live-kicker");
+  const clockEl = document.getElementById("live-clock");
+  if (!board || !body) return;
+  board.classList.add("live");
+  kicker.textContent = "Live";
+  const comps = get(summary, "header.competitions.0.competitors", []) ||
+    get(event, "competitions.0.competitors", []) || [];
+  const home = comps.find(c => c.homeAway === "home") || comps[0];
+  const away = comps.find(c => c.homeAway === "away") || comps[1];
+  const period = get(summary, "header.competitions.0.status.period", get(event, "competitions.0.status.period", ""));
+  const displayClock = get(summary, "header.competitions.0.status.displayClock",
+    get(event, "competitions.0.status.displayClock", ""));
+  const shortDetail = get(summary, "header.competitions.0.status.type.shortDetail",
+    get(event, "competitions.0.status.type.shortDetail", "Live"));
+  clockEl.textContent = period ? `Q${period} ${displayClock || ""}`.trim() : shortDetail;
+  const plays = (get(summary, "plays", []) || []).slice().reverse().slice(0, 10);
+  const playHtml = plays.length
+    ? `<ul class="pbp-list">${plays.map(p => `
+        <li class="${p.scoringPlay ? "score" : ""}">
+          <span class="pbp-clock">${get(p, "period.displayValue", "")} ${get(p, "clock.displayValue", "")}</span>
+          <span>${get(p, "text", "")}</span>
+          <span class="pbp-score">${get(p, "awayScore", "")}–${get(p, "homeScore", "")}</span>
+        </li>`).join("")}</ul>`
+    : `<p class="live-empty">Waiting for play-by-play…</p>`;
+  body.innerHTML = `
+    <div class="live-scoreline">
+      <div class="live-team">
+        <img class="live-logo" src="${get(away, "team.logos.0.href", get(away, "team.logo", ""))}" alt="">
+        <span>${get(away, "team.abbreviation", "AWAY")}</span>
       </div>
-      <div class="metric">
-        <span class="k">Games Played</span>
-        <span class="v" id="stat-played">--</span>
-        <span class="sub">Regular season of 82</span>
-      </div>
-      <div class="metric red">
-        <span class="k">Next Game</span>
-        <span class="v" id="stat-next" style="font-size:1rem;line-height:1.3;">--</span>
-        <span class="sub" id="stat-next-date">TBD</span>
-      </div>
-      <div class="metric green">
-        <span class="k">Win %</span>
-        <span class="v" id="stat-pct">--</span>
-        <span class="sub">Regular season</span>
+      <div class="live-score">${get(away, "score", "0")}–${get(home, "score", "0")}</div>
+      <div class="live-team away">
+        <span>${get(home, "team.abbreviation", "HOME")}</span>
+        <img class="live-logo" src="${get(home, "team.logos.0.href", get(home, "team.logo", ""))}" alt="">
       </div>
     </div>
-    <section class="live-board" id="live-board" aria-live="polite">
-      <div class="live-head">
-        <span class="live-kicker" id="live-kicker">Next game</span>
-        <span class="live-clock" id="live-clock">—</span>
-      </div>
-      <div id="live-body">
-        <p class="live-empty">Loading game status…</p>
-      </div>
-    </section>
-    <div class="section-label"><span>Game Log</span><span class="line"></span></div>
-    <main id="schedule">
-      <div class="loader">
-        <div class="loader-spinner"></div>
-        <p>Fetching latest schedule...</p>
-      </div>
-      <noscript>
-        <p class="empty-note">Enable JavaScript to load the live 2026-27 Philadelphia 76ers schedule.</p>
-      </noscript>
-    </main>
-  </div>
-  <script src="schedule.js"></script>
-</body>
-</html>
+    ${playHtml}`;
+}
+async function refreshPlayByPlay() {
+  if (!featuredEvent) return;
+  const statusName = get(featuredEvent, "competitions.0.status.type.name", "");
+  if (!isLive(statusName)) {
+    renderUpcomingBoard(featuredEvent);
+    return;
+  }
+  try {
+    const res = await fetch(`${SUMMARY_URL}?event=${featuredEvent.id}`);
+    if (!res.ok) throw new Error("summary failed");
+    renderLiveBoard(await res.json(), featuredEvent);
+  } catch (err) {
+    renderLiveBoard({}, featuredEvent);
+  }
+}
+function setLivePolling(event) {
+  if (pbpTimer) clearInterval(pbpTimer);
+  featuredEvent = event;
+  refreshPlayByPlay();
+  const live = event && isLive(get(event, "competitions.0.status.type.name", ""));
+  pbpTimer = setInterval(refreshPlayByPlay, live ? 5000 : 120000);
+}
+function setRefreshCadence(events) {
+  const live = events.some(event => isLive(get(event, "competitions.0.status.type.name", "")));
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(getSixersSchedule, live ? 45000 : 300000);
+}
+function updateSnapshot(events) {
+  let wins = 0, losses = 0, played = 0, next = null;
+  events.forEach(event => {
+    const statusName = get(event, "competitions.0.status.type.name", "");
+    const state = get(event, "competitions.0.status.type.state", "");
+    const sixers = sixersOf(event);
+    const opp = oppOf(event);
+    if (statusName === "STATUS_FINAL" && eventType(event) === 2) {
+      played += 1;
+      if (get(sixers, "winner", false)) wins += 1;
+      else losses += 1;
+    }
+    if (!next && isLive(statusName)) next = { sixers, opp, event, live: true };
+    else if (!next && state === "pre") next = { sixers, opp, event, live: false };
+  });
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  setText("stat-record", `${wins}-${losses}`);
+  setText("stat-played", String(played));
+  setText("stat-pct", played ? (wins / played).toFixed(3).replace(/^0/, "") : "—.---");
+  if (next) {
+    const oppName = get(next.opp, "team.shortDisplayName", "") || get(next.opp, "team.displayName", "TBD");
+    const isHome = get(next.sixers, "homeAway", "") === "home";
+    setText("stat-next", `${next.live ? "LIVE " : ""}${isHome ? "vs" : "@"} ${oppName}`);
+    setText("stat-next-date", get(next.event, "competitions.0.status.type.shortDetail", "TBD"));
+  } else {
+    setText("stat-next", "TBD");
+    setText("stat-next-date", "No upcoming game");
+  }
+}
+function injuryBlock(title, items) {
+  if (!items || !items.length) {
+    return `<p class="inj-title">${title}</p><p class="inj-empty">No injuries listed.</p>`;
+  }
+  return `<p class="inj-title">${title}</p>
+    <ul class="inj-list">${items.map(item => `
+      <li>
+        <span class="inj-name">${item.name}</span>
+        <span class="inj-status ${statusClass(item.status)}">${item.status}</span>
+        <span>${item.detail}</span>
+      </li>`).join("")}</ul>`;
+}
+function renderGameRow(event, allEvents) {
+  const date = new Date(event.date);
+  const dateStr = isNaN(date) ? "TBD" : date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const timeStr = isNaN(date) ? "" : date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const sixers = sixersOf(event);
+  const opponent = oppOf(event);
+  const isHome = get(sixers, "homeAway", "") === "home";
+  const opponentName = get(opponent, "team.shortDisplayName", "") || get(opponent, "team.displayName", "TBD");
+  const oppAbbr = get(opponent, "team.abbreviation", "");
+  const opponentLogo = get(opponent, "team.logos.0.href", "");
+  const venueName = get(event, "competitions.0.venue.fullName", "");
+  const venueCity = get(event, "competitions.0.venue.address.city", "");
+  const venue = venueName ? (venueCity ? `${venueName}, ${venueCity}` : venueName) : "TBD";
+  const statusType = get(event, "competitions.0.status.type.name", "STATUS_SCHEDULED");
+  const statusText = get(event, "competitions.0.status.type.shortDetail", "") ||
+    get(event, "competitions.0.status.type.description", "Scheduled");
+  let resultHtml = timeStr || "TBD";
+  const sixersScore = get(sixers, "score.displayValue", null);
+  const oppScore = get(opponent, "score.displayValue", null);
+  if (statusType === "STATUS_FINAL" && sixersScore != null && oppScore != null) {
+    const won = !!get(sixers, "winner", false);
+    resultHtml = `<span class="${won ? "win-result" : "loss-result"}">${won ? "W" : "L"} ${sixersScore}–${oppScore}</span>`;
+  } else if (isLive(statusType) && sixersScore != null) {
+    resultHtml = `<strong>${sixersScore}–${oppScore ?? ""}</strong>`;
+  }
+  return `
+    <tr class="game-row" tabindex="0">
+      <td class="date-cell">${dateStr}</td>
+      <td>
+        <div class="game-info">
+          <span>${isHome ? "vs" : "@"}</span>
+          ${opponentLogo ? `<img src="${opponentLogo}" alt="${opponentName}" class="opponent-logo">` : ""}
+          <span>${opponentName}</span>
+          ${event._b2b ? `<span class="b2b-tag">B2B</span>` : ""}
+        </div>
+      </td>
+      <td>${resultHtml}</td>
+      <td>${venue}</td>
+      <td><span class="${badgeFor(statusType)}">${statusText}</span></td>
+      <td class="stream-cell">${getBroadcast(get(event, "competitions.0", {}))}</td>
+    </tr>
+    <tr class="game-detail-row">
+      <td colspan="6">
+        <div class="game-detail">
+          <p class="series-inline">${seriesLine(allEvents, event)}${event._b2b ? " · Back-to-back set." : ""}</p>
+          ${injuryBlock("76ers injuries", injuryByAbbr.PHI || [])}
+          ${injuryBlock(`${opponentName} injuries`, injuryByAbbr[oppAbbr] || [])}
+        </div>
+      </td>
+    </tr>`;
+}
+function bindRowToggles(root) {
+  root.querySelectorAll(".game-row").forEach(row => {
+    const toggle = () => {
+      root.querySelectorAll(".game-row.open").forEach(open => {
+        if (open !== row) open.classList.remove("open");
+      });
+      row.classList.toggle("open");
+    };
+    row.addEventListener("click", toggle);
+    row.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+  });
+}
+function renderSection(title, events, emptyText, allEvents) {
+  const shown = events.filter(passesFilter);
+  if (!shown.length) {
+    return `<section class="season-block"><div class="season-heading">${title}</div><p class="empty-note">${emptyText}</p></section>`;
+  }
+  const months = {};
+  shown.forEach(event => {
+    const date = new Date(event.date);
+    const key = isNaN(date) ? "Upcoming" : date.toLocaleString("en-US", { month: "long", year: "numeric" });
+    (months[key] ||= []).push(event);
+  });
+  let html = `<section class="season-block"><div class="season-heading">${title}</div>`;
+  Object.keys(months).forEach(month => {
+    html += `<div class="month-section">
+      <div class="month-header"><h2 class="month-title">${month}</h2></div>
+      <div class="table-responsive"><table>
+        <thead><tr><th>Date</th><th>Opponent</th><th>Result/Time</th><th>Venue</th><th>Status</th><th>Stream</th></tr></thead>
+        <tbody>${months[month].map(event => renderGameRow(event, allEvents)).join("")}</tbody>
+      </table></div></div>`;
+  });
+  return html + `</section>`;
+}
+function paintLog() {
+  const container = document.getElementById("schedule");
+  if (!container || !allEventsCache.length) return;
+  container.innerHTML = [
+    renderSection("Preseason", allEventsCache.filter(e => eventType(e) === 1), "No matching preseason games.", allEventsCache),
+    renderSection("Regular Season", allEventsCache.filter(e => eventType(e) === 2 || ![1, 2, 3].includes(eventType(e))), "No matching regular-season games.", allEventsCache),
+    renderSection("Playoffs", allEventsCache.filter(e => eventType(e) === 3), "No matching playoff games.", allEventsCache)
+  ].join("");
+  bindRowToggles(container);
+}
+function bindFilters() {
+  const bar = document.getElementById("filter-bar");
+  if (!bar) return;
+  bar.addEventListener("click", e => {
+    const btn = e.target.closest("[data-filter]");
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    bar.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("on", b === btn));
+    paintLog();
+  });
+}
+async function getSixersSchedule() {
+  const container = document.getElementById("schedule");
+  if (!container) return;
+  try {
+    const probe = await fetchEvents(SCHEDULE_BASE);
+    const year = probe[0] ? get(probe[0], "season.year", 2027) : 2027;
+    const [pre, regular, playoffs, injuries] = await Promise.all([
+      fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=1`),
+      fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=2`),
+      fetchEvents(`${SCHEDULE_BASE}?season=${year}&seasontype=3`),
+      fetchInjuryMap()
+    ]);
+    injuryByAbbr = injuries;
+    allEventsCache = mergeEvents([probe, pre, regular, playoffs]);
+    if (!allEventsCache.length) {
+      container.innerHTML = "<p class='empty-note'>No schedule data available right now.</p>";
+      return;
+    }
+    updateSnapshot(allEventsCache);
+    setLivePolling(pickFeatured(allEventsCache));
+    paintLog();
+    setRefreshCadence(allEventsCache);
+  } catch (err) {
+    container.innerHTML = `<p class="empty-note">Error loading schedule. ${err.message}</p>`;
+  }
+}
+document.addEventListener("DOMContentLoaded", () => {
+  bindFilters();
+  getSixersSchedule();
+});

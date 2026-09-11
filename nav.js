@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
         script.id = 'nav-tailwind-cdn';
         script.src = 'https://cdn.tailwindcss.com';
         script.onload = () => {
-            // Configure Tailwind if it just loaded
             if (window.tailwind) {
                 tailwind.config = {
                     theme: {
@@ -93,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         document.head.appendChild(script);
     } else if (window.tailwind && !tailwind.config?.theme?.extend?.colors?.primary) {
-        // Extend existing config if Tailwind is already there but missing our colors
         const existingConfig = tailwind.config || {};
         tailwind.config = {
             ...existingConfig,
@@ -108,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             DEFAULT: "hsl(222.2 47.4% 11.2%)",
                             foreground: "hsl(210 40% 98%)",
                         },
-                        // Add other necessary colors
                     }
                 }
             }
@@ -127,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const script = document.createElement('script');
             script.id = s.id;
             script.src = s.src;
-            script.async = false; // Ensure they load in order
+            script.async = false;
             document.head.appendChild(script);
         });
     }
@@ -141,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span></span>
             </button>
             <a href="/" class="nav-brand">
+                <img src="/favicon.ico" alt="SixersHoops" class="nav-logo">
                 <span class="brand-name">SixersHoops</span>
             </a>
         </div>
@@ -152,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <li class="nav-item">
                 <a href="/pickem" class="nav-link">Pick'em</a>
             </li>
-<li class="nav-item dropdown">
+            <li class="nav-item dropdown">
                 <button class="dropdown-toggle">Team Hub</button>
                 <div class="dropdown-menu">
                     <a href="https://sixershoops.com/roster" class="dropdown-item">Roster</a>
@@ -222,34 +220,20 @@ document.addEventListener('DOMContentLoaded', function() {
     </nav>
 
     <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-nav-item" id="mobileAuthContainer" style="padding: 1rem; border-bottom: 1px solid rgba(0,0,0,0.1);">
-            <button class="auth-nav-btn" id="mobileSignInBtn" style="width: 100%;">Sign In</button>
-        </div>
-        <div class="mobile-nav-item">
+        <div class="mobile-menu-panel">
+            <p class="mobile-menu-label">Navigate</p>
             <a href="/" class="mobile-nav-link">Home</a>
-        </div>
-        <div class="mobile-nav-item">
             <a href="/pickem" class="mobile-nav-link">Pick'em</a>
-        </div>
-<div class="mobile-nav-item">
-            <a href="https://sixershoops.com/roster" class="mobile-nav-link">Roster</a>
-        </div>
-        <div class="mobile-nav-item">
-            <a href="https://sixershoops.com/sixers-depth-chart" class="mobile-nav-link">Depth Chart</a>
-        </div>
-        <div class="mobile-nav-item">
-            <a href="https://sixershoops.com/standings" class="mobile-nav-link">NBA Standings</a>
-        </div>
-        <div class="mobile-nav-item">
-            <a href="https://sixershoops.com/salary" class="mobile-nav-link">Salary Breakdown</a>
-        </div>
-        <div class="mobile-nav-item">
-            <a href="https://sixershoops.com/future-draft-picks" class="mobile-nav-link">Draft Picks</a>
-        </div>
-        <div class="mobile-nav-item">
             <a href="https://sixershoops.com/schedule" class="mobile-nav-link">Schedule</a>
-        </div>
-        <div class="mobile-nav-item">
+
+            <p class="mobile-menu-label">Team Hub</p>
+            <a href="https://sixershoops.com/roster" class="mobile-nav-link">Roster</a>
+            <a href="https://sixershoops.com/sixers-depth-chart" class="mobile-nav-link">Depth Chart</a>
+            <a href="https://sixershoops.com/standings" class="mobile-nav-link">NBA Standings</a>
+            <a href="https://sixershoops.com/salary" class="mobile-nav-link">Salary Breakdown</a>
+            <a href="https://sixershoops.com/future-draft-picks" class="mobile-nav-link">Draft Picks</a>
+
+            <p class="mobile-menu-label">Site</p>
             <a href="https://sixershoops.com/contact" class="mobile-nav-link">Contact</a>
         </div>
     </div>
@@ -274,14 +258,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="auth-form-group">
                         <label class="auth-label" for="navLoginEmail">Email</label>
                         <div class="auth-input-wrap">
-                            
                             <input type="email" class="auth-input" id="navLoginEmail" required autocomplete="email" placeholder="name@example.com">
                         </div>
                     </div>
                     <div class="auth-form-group">
                         <label class="auth-label" for="navLoginPassword">Password</label>
                         <div class="auth-input-wrap">
-                            
                             <input type="password" class="auth-input" id="navLoginPassword" required autocomplete="current-password" placeholder="••••••••">
                             <button type="button" class="auth-pw-toggle" data-target="navLoginPassword" aria-label="Show password">Show</button>
                         </div>
@@ -303,7 +285,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="auth-form-group">
                         <label class="auth-label" for="navForgotEmail">Email address</label>
                         <div class="auth-input-wrap">
-                            
                             <input type="email" class="auth-input" id="navForgotEmail" required placeholder="name@example.com">
                         </div>
                     </div>
@@ -313,8 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Profile Form -->
                 <form id="navProfileForm" style="display: none;">
-
-                    <!-- Profile Preview Card -->
                     <div id="navProfilePreview" style="display:flex;align-items:center;gap:1rem;background:#f6f8fb;border:1px solid rgba(13,15,26,0.08);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;">
                         <div style="position:relative;flex-shrink:0;">
                             <div id="navProfileAvatarPreview" style="width:56px;height:56px;border-radius:50%;background:#001a57;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.4rem;color:white;overflow:hidden;border:3px solid rgba(0,107,182,0.3);">
@@ -347,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input type="hidden" id="navAvatarColor" value="">
                     </div>
 
-                    
                     <div class="auth-form-group">
                         <label class="auth-label">Profile Picture</label>
                         <div class="pic-upload-row">
@@ -377,21 +355,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="auth-form-group">
                         <label class="auth-label" for="navRegisterUsername">Username (max 12 chars)</label>
                         <div class="auth-input-wrap">
-                            
                             <input type="text" class="auth-input" id="navRegisterUsername" required maxlength="12" placeholder="yourhandle">
                         </div>
                     </div>
                     <div class="auth-form-group">
                         <label class="auth-label" for="navRegisterEmail">Email</label>
                         <div class="auth-input-wrap">
-                            
                             <input type="email" class="auth-input" id="navRegisterEmail" required autocomplete="email" placeholder="name@example.com">
                         </div>
                     </div>
                     <div class="auth-form-group">
                         <label class="auth-label" for="navRegisterPassword">Password</label>
                         <div class="auth-input-wrap">
-                            
                             <input type="password" class="auth-input" id="navRegisterPassword" required autocomplete="new-password" placeholder="At least 8 characters">
                             <button type="button" class="auth-pw-toggle" data-target="navRegisterPassword" aria-label="Show password">Show</button>
                         </div>
@@ -399,7 +374,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="auth-form-group">
                         <label class="auth-label" for="navRegisterConfirm">Confirm password</label>
                         <div class="auth-input-wrap">
-                            
                             <input type="password" class="auth-input" id="navRegisterConfirm" required autocomplete="new-password" placeholder="Repeat password">
                         </div>
                     </div>
@@ -412,13 +386,11 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     `;
 
-    // Footer HTML
     const footerHTML = `
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
                 <a href="/" class="footer-brand">
-
                 </a>
                 <span class="footer-brand-accent"></span>
                 <p class="footer-tagline">Independent Philadelphia 76ers analysis, advanced stats, and draft tools built for fans who want the full picture.</p>
@@ -453,13 +425,9 @@ document.addEventListener('DOMContentLoaded', function() {
     </footer>
     `;
 
-    // Insert navbar at the beginning of body
     document.body.insertAdjacentHTML('afterbegin', navbarHTML);
-    
-    // Insert footer at the end of body
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    // === Firebase Logic ===
     const firebaseConfig = {
         apiKey: "AIzaSyBzMlBV5gbZZlg_eTwNWrRDrhx-_ATIPS0",
         authDomain: "pickem-1e12b.firebaseapp.com",
@@ -470,7 +438,6 @@ document.addEventListener('DOMContentLoaded', function() {
         measurementId: "G-B22K71F01E"
     };
 
-    // Make these globally accessible
     window.auth = null;
     window.db = null;
     window.storage = null;
@@ -487,7 +454,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             window.auth = firebase.auth();
             window.db = firebase.firestore();
-            // No Firebase Storage — profile photos use compressed data URLs in Firestore
             window.storage = null;
             setupAuthListeners();
         } catch (err) {
@@ -496,15 +462,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
-    // --- Single notification badge on profile avatar only ---
     let _notifUnsub = null;
     window.updateNotifBadge = function updateNotifBadge(count) {
         const n = Math.max(0, Number(count) || 0);
-        // ONE badge only — attached to the avatar image inside the profile button
-        // Remove any stray badges elsewhere (brand area, dropdown, duplicates)
         document.querySelectorAll('#navNotifBadgeTop, #nav-notif-badge, .nav-notif-badge, #dropdown-notif-count, #dropdown-inbox-count').forEach(function(el) {
-            if (el.id === 'navNotifBadgeTop') return; // keep the one we manage
+            if (el.id === 'navNotifBadgeTop') return;
             el.style.display = 'none';
             el.classList.add('hidden');
             el.textContent = '';
@@ -515,7 +477,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!btn) return;
         btn.style.position = 'relative';
 
-        // Prefer anchoring to the avatar element
         let anchor = btn.querySelector('.user-avatar-img, .user-avatar, .relative') || btn;
         if (anchor && anchor.classList && anchor.classList.contains('relative')) {
             // ok
@@ -573,10 +534,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const lower = (d.usernameLower || d.username || '').toString().toLowerCase().trim();
                 if (lower) {
                     localStorage.setItem('usernameLower', lower.replace(/[^a-z0-9_-]+/g, '-'));
-                    // If nav already rendered with wrong slug, update link targets by re-render
-                    if (window.auth && window.auth.currentUser) {
-                        // only re-render if slug changed from what is in DOM profile hrefs
-                    }
                 }
             }
         } catch (e) {}
@@ -590,11 +547,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
             const initial = displayName.charAt(0).toUpperCase();
             
-            // Prefer Firestore-backed photo (localStorage) over Auth photoURL (often empty / blocked)
             const photoURL = localStorage.getItem('photoURL') || user.photoURL || '';
             const avatarColor = localStorage.getItem('avatarColor') || '#001a57';
-            // GitHub Pages has NO rewrites — use real file + query/hash
-            // /user.html?u=name  |  #inbox  |  #notifications  |  #settings
             let usernameSlug = (localStorage.getItem('usernameLower') || '').trim().toLowerCase();
             if (!usernameSlug) {
                 usernameSlug = (displayName || 'user').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'user';
@@ -619,50 +573,27 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span>${user.email || ''}</span>
                         </div>
                         <div class="user-dropdown-divider"></div>
-
                         <button class="user-dropdown-item" id="navMyProfileLink">Profile</button>
-
                         <button class="user-dropdown-item" id="navDraftsLink">
                             <span>View Drafts</span>
                         </button>
                         <button class="user-dropdown-item" id="navInboxLink">
                             <span>Inbox</span>
                         </button>
-
                         <button class="user-dropdown-item" id="navNotifsLink">
                             <span>Notifications</span>
                         </button>
-
                         <button class="user-dropdown-item" id="navSettingsBtn">Account Settings</button>
-
                         ${user.email && user.email.toLowerCase() === 'rhatus13@gmail.com' ? `<div class="user-dropdown-divider"></div>
                         <button class="user-dropdown-item" id="navModerationLink">Moderation</button>` : ''}
-
                         <div class="user-dropdown-divider"></div>
-
                         <button class="user-dropdown-item logout-action" id="navDropdownLogout">Sign Out</button>
                     </div>
                 </div>
             `;
 
             if (authNav) authNav.innerHTML = userHTML;
-            if (mobileAuth) {
-                mobileAuth.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="user-profile-btn">
-                                ${avatarHTML}
-                                <span class="user-name">${displayName}</span>
-                            </div>
-                            <button class="logout-btn" id="navLogoutBtn">Logout</button>
-                        </div>
-                        <a class="auth-nav-btn" href="${profileUrl}" style="width:100%;text-align:center;text-decoration:none;display:block;">Profile</a>
-                        <a class="auth-nav-btn" href="${profileUrl}/inbox" style="width:100%;text-align:center;text-decoration:none;display:block;background:#f3f4f6;color:#374151;">Inbox</a>
-                        <a class="auth-nav-btn" id="mobileProfileBtn" href="${profileUrl}/settings" style="width:100%;text-align:center;text-decoration:none;display:block;background:#f3f4f6;color:#374151;">Account Settings</a>
-                        ${user.email && user.email.toLowerCase() === 'rhatus13@gmail.com' ? `<a class="auth-nav-btn" href="/moderation.html" style="width:100%;text-align:center;text-decoration:none;display:block;background:#001a57;color:#fff;">Moderation</a>` : ''}
-                    </div>
-                `;
-            }
+            if (mobileAuth) mobileAuth.innerHTML = '';
 
             const profileBtn = document.getElementById('userProfileBtn');
             const userDropdown = document.getElementById('userDropdown');
@@ -682,7 +613,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         var dd = document.getElementById('userDropdown');
                         if (dd) dd.classList.remove('active');
                     } catch (_) {}
-                    // Always open drafts overlay on the current page (do not jump to trade machine)
                     if (typeof window.openTradeDrafts === 'function') {
                         window.openTradeDrafts();
                     } else if (typeof window.openGlobalDraftsPanel === 'function') {
@@ -690,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 };
             }
-const notifsLink = document.getElementById('navNotifsLink');
+            const notifsLink = document.getElementById('navNotifsLink');
 
             if (profileBtn && userDropdown) {
                 profileBtn.onclick = (e) => {
@@ -698,11 +628,6 @@ const notifsLink = document.getElementById('navNotifsLink');
                     userDropdown.classList.toggle('active');
                 };
             }
-            // Pretty URLs (GitHub Pages 404.html routes these to user.html)
-            // Profile      -> /user/{name}
-            // Inbox        -> /user/{name}/inbox
-            // Notifications-> /user/{name}/notifications
-            // Settings     -> /user/{name}/settings
             if (myProfileLink) myProfileLink.onclick = function(e) {
                 e.preventDefault();
                 window.location.href = profileUrl;
@@ -730,13 +655,12 @@ const notifsLink = document.getElementById('navNotifsLink');
                 e.preventDefault();
                 window.location.href = profileUrl + '/settings';
             };
-            if (mobileLogout)      mobileLogout.onclick      = () => window.auth.signOut();
+            if (mobileLogout) mobileLogout.onclick = () => window.auth.signOut();
             listenNotifications(user);
             syncUsernameSlug(user).then(function(){
                 const newSlug = (localStorage.getItem('usernameLower') || '').trim();
                 if (newSlug) {
                     const expected = '/user/' + encodeURIComponent(newSlug);
-                    // Re-bind if slug improved after Firestore load
                     const mp = document.getElementById('navMyProfileLink');
                     const ib = document.getElementById('navInboxLink');
                     const nt = document.getElementById('navNotifsLink');
@@ -752,7 +676,7 @@ const notifsLink = document.getElementById('navNotifsLink');
 
         } else {
             if (authNav) authNav.innerHTML = '<button class="auth-nav-btn" id="navSignInBtn">Sign In</button>';
-            if (mobileAuth) mobileAuth.innerHTML = '<button class="auth-nav-btn" id="mobileSignInBtn" style="width: 100%;">Sign In</button>';
+            if (mobileAuth) mobileAuth.innerHTML = '';
             
             const signInBtn = document.getElementById('navSignInBtn');
             const mobileSignInBtn = document.getElementById('mobileSignInBtn');
@@ -766,7 +690,6 @@ const notifsLink = document.getElementById('navNotifsLink');
     let notificationUnsubscribe = null;
 
     function setupNotificationListener(user) {
-        // Single badge on profile avatar only (handled by listenNotifications / updateNotifBadge)
         if (notificationUnsubscribe) { try { notificationUnsubscribe(); } catch(_) {} notificationUnsubscribe = null; }
         if (!user || !window.db) { updateNotifBadge(0); return; }
         notificationUnsubscribe = window.db.collection('notifications')
@@ -790,7 +713,6 @@ const notifsLink = document.getElementById('navNotifsLink');
                     const display = user.displayName || (user.email ? user.email.split('@')[0] : 'fan');
                     const usernameLower = (display || 'fan').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'fan';
                     if (!doc.exists) {
-                        // Create profile doc for accounts that never got one (so /user/slug works for everyone)
                         await ref.set({
                             username: display,
                             usernameLower: usernameLower,
@@ -820,7 +742,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         });
     }
 
-    // Global click listener for dropdowns
     document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('userDropdown');
         const profileBtn = document.getElementById('userProfileBtn');
@@ -832,7 +753,6 @@ const notifsLink = document.getElementById('navNotifsLink');
 
     initFirebase();
 
-    // === Modal Logic ===
     const modal = document.getElementById('authModalOverlay');
     const closeBtn = document.getElementById('authModalClose');
     const tabs = document.querySelectorAll('.auth-modal-tab');
@@ -847,7 +767,6 @@ const notifsLink = document.getElementById('navNotifsLink');
     function openAuthModal() {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
-        // Reset to login view when opening
         if (tabs[0]) tabs[0].click();
     }
 
@@ -875,11 +794,9 @@ const notifsLink = document.getElementById('navNotifsLink');
             const initial = displayName.charAt(0).toUpperCase();
             const savedColor = localStorage.getItem('avatarColor') || '#001a57';
 
-            // Populate fields
             document.getElementById('navProfileName').value = displayName;
             document.getElementById('navAvatarColor').value = savedColor;
 
-            // Populate preview card
             const namePreview = document.getElementById('navProfileNamePreview');
             const emailPreview = document.getElementById('navProfileEmailPreview');
             const initialPreview = document.getElementById('navProfileInitialPreview');
@@ -890,7 +807,6 @@ const notifsLink = document.getElementById('navNotifsLink');
             if (avatarPreview) avatarPreview.style.background = savedColor;
             if (initialPreview) initialPreview.textContent = initial;
 
-            // Live preview: name input → preview card
             const nameInput = document.getElementById('navProfileName');
             if (nameInput && namePreview && initialPreview) {
                 nameInput.oninput = () => {
@@ -900,7 +816,6 @@ const notifsLink = document.getElementById('navNotifsLink');
                 };
             }
 
-            // Avatar color picker
             const avatarOpts = document.querySelectorAll('.nav-avatar-opt');
             avatarOpts.forEach(opt => {
                 const isSelected = opt.dataset.color === savedColor;
@@ -921,8 +836,6 @@ const notifsLink = document.getElementById('navNotifsLink');
                 };
             });
 
-
-            // === Profile picture wiring ===
             const picInput   = document.getElementById('navProfilePicInput');
             const picPreview = document.getElementById('navPicPreview');
             const picClear   = document.getElementById('navProfilePicClear');
@@ -1003,7 +916,6 @@ const notifsLink = document.getElementById('navNotifsLink');
                     }
                 };
             }
-
         }
     }
 
@@ -1036,7 +948,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         const user = (window.auth && window.auth.currentUser) ? window.auth.currentUser : null;
         if (!list || !user) return;
 
-        // Ensure window.db is ready
         if (!window.db) {
             console.warn("Firestore not initialized yet");
             setTimeout(loadNotifications, 500);
@@ -1046,7 +957,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         try {
             let snapshot;
             try {
-                // Try fetching with ordering (best case)
                 snapshot = await window.db.collection('notifications')
                     .where('recipientId', '==', user.uid)
                     .orderBy('createdAt', 'desc')
@@ -1054,7 +964,6 @@ const notifsLink = document.getElementById('navNotifsLink');
                     .get();
             } catch (qErr) {
                 console.warn("Ordered notifications query failed, trying simple query", qErr);
-                // Simple query fallback (works without index)
                 snapshot = await window.db.collection('notifications')
                     .where('recipientId', '==', user.uid)
                     .limit(20)
@@ -1086,14 +995,12 @@ const notifsLink = document.getElementById('navNotifsLink');
             if (snapshot.empty) {
                 list.innerHTML = `
                     <div class="text-center py-10 text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2 opacity-20"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                         <p class="text-[11px]">Your inbox is empty</p>
                     </div>
                 `;
                 return;
             }
 
-            // Always manually sort to ensure consistency if the database index is missing
             const docs = [...snapshot.docs];
             docs.sort((a, b) => {
                 const getVal = (doc) => {
@@ -1142,20 +1049,15 @@ const notifsLink = document.getElementById('navNotifsLink');
         }
     }
 
-    // Exported globally so it can be called from notification clicks
     window.handleNotificationClick = async (postId, notificationId, event) => {
         if (event) event.stopPropagation();
         try {
-            // Mark as read
             await window.db.collection('notifications').doc(notificationId).update({ read: true });
             
-            // Close dropdown
             const dropdown = document.getElementById('userDropdown');
             if (dropdown) dropdown.classList.remove('active');
 
-            // Check if we are on community page
             if (window.location.pathname.includes('community') || document.getElementById('community-feed-section')) {
-                // If CommunityFeed is available, open the post
                 if (window.CommunityFeed && typeof window.CommunityFeed.openDetailedView === 'function') {
                     window.CommunityFeed.openDetailedView(postId);
                 } else {
@@ -1177,7 +1079,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         authMessage.textContent = '';
         document.querySelector('.auth-modal-title').textContent = 'Sixers Hoops';
         tabs.forEach(t => t.style.display = 'block');
-        // Reset forms
         if (loginForm) loginForm.reset();
         if (registerForm) registerForm.reset();
         if (forgotForm) forgotForm.reset();
@@ -1282,7 +1183,6 @@ const notifsLink = document.getElementById('navNotifsLink');
             const user = window.auth && window.auth.currentUser;
             if (!user) throw new Error('Please sign in again.');
             const photoURL = (document.getElementById('navProfilePicUrl') || {}).value || '';
-            // Auth only gets displayName — data-URL photos are stored in Firestore (no Storage / no Auth size limit)
             try { await user.updateProfile({ displayName: name }); } catch (ae) { console.warn(ae); }
             if (avatarColor) localStorage.setItem('avatarColor', avatarColor);
             if (photoURL) localStorage.setItem('photoURL', photoURL);
@@ -1320,9 +1220,7 @@ const notifsLink = document.getElementById('navNotifsLink');
             
             if (confirmDelete) {
                 try {
-                    // Remove user data from Firestore first if exists
                     await window.db.collection('users').doc(user.uid).delete().catch(() => {});
-                    
                     await user.delete();
                     showNavMessage('Account deleted successfully.', 'success');
                     setTimeout(closeAuthModal, 2000);
@@ -1367,7 +1265,6 @@ const notifsLink = document.getElementById('navNotifsLink');
                 createdAt: new Date().toISOString()
             }, { merge: true });
 
-            // Refresh user and UI
             await user.reload();
             renderUserNav(window.auth.currentUser);
 
@@ -1378,7 +1275,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         }
     });
 
-    // Mobile Menu Toggle
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const mobileMenu = document.getElementById('mobileMenu');
 
@@ -1399,7 +1295,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         });
     }
 
-    // Close mobile menu when clicking a link
     const mobileLinks = document.querySelectorAll('.mobile-nav-link');
     mobileLinks.forEach(link => {
         link.addEventListener('click', function() {
@@ -1411,7 +1306,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         });
     });
 
-    // Active link highlighting based on current page
     const currentLocation = location.pathname;
     const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
     
@@ -1421,7 +1315,6 @@ const notifsLink = document.getElementById('navNotifsLink');
             (currentLocation === '/' && href === '/')) {
             link.classList.add('active');
         }
-        // Community section active on trades + trade detail
         if (link.getAttribute('data-nav') === 'community') {
             if (currentLocation.indexOf('/trade') === 0 ||
                 currentLocation.indexOf('/trades') === 0 ||
@@ -1434,7 +1327,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         }
     });
 
-    // Scroll effect on navbar
     const navbar = document.querySelector('.navbar');
     if (navbar) {
         window.addEventListener('scroll', function() {
@@ -1448,7 +1340,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         });
     }
 
-    // Theme cycle: light → dark → navy → light
     const themeToggle = document.getElementById('themeToggle');
     const htmlElement = document.documentElement;
 
@@ -1490,7 +1381,6 @@ const notifsLink = document.getElementById('navNotifsLink');
         }
     }
 
-    // Re-apply saved theme after navbar inject (anti-flash already ran)
     var savedTheme = 'light';
     try { savedTheme = localStorage.getItem('theme') || 'light'; } catch (_) {}
     applyTheme(savedTheme);
@@ -1503,7 +1393,6 @@ const notifsLink = document.getElementById('navNotifsLink');
 });
 
 
-/* ── Modern auth UX: password show/hide + inline tab switch links ── */
 document.addEventListener('click', function(e) {
     const tgt = e.target.closest('.auth-pw-toggle');
     if (tgt) {
@@ -1526,7 +1415,6 @@ document.addEventListener('click', function(e) {
 });
 
 
-/* ── Global View Drafts panel (stays on current page; Open loads trade machine) ── */
 (function () {
   var TM_DRAFTS_KEY = 'sixershoops_trade_drafts_v1';
   var TM_DRAFT_KEY = 'sixershoops_trade_post_draft_v1';
@@ -1630,7 +1518,6 @@ document.addEventListener('click', function(e) {
       window.__tmOpenTradeDrafts();
       return;
     }
-    // If trade machine defined openTradeDrafts as its own panel, prefer that only on machine page
     if (/nba-trade-machine\.html/i.test(location.pathname || '') && window.__onTradeMachineDrafts) {
       window.__onTradeMachineDrafts();
       return;
@@ -1657,11 +1544,9 @@ document.addEventListener('click', function(e) {
     renderGlobalDraftsList();
   };
 
-  // Pages without trade machine: openTradeDrafts -> global panel
   if (typeof window.openTradeDrafts !== 'function') {
     window.openTradeDrafts = window.openGlobalDraftsPanel;
   } else {
-    // Trade machine may load after nav.js - wrap later via property if needed
     var _existing = window.openTradeDrafts;
     window.openTradeDrafts = function () {
       if (/nba-trade-machine\.html/i.test(location.pathname || '')) return _existing();

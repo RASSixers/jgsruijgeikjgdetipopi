@@ -68,7 +68,6 @@
       padding: .45rem .8rem; border: 1px solid var(--border-light);
       border-radius: 8px; background: #fff; color: var(--ink); cursor: pointer;
     }
-    #season-status { font-size: .82rem; color: var(--mid); }
     .export-bar { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0 0 1.25rem; }
     .export-btn {
       border: 1px solid var(--border-light); background: #fff; color: var(--ink);
@@ -124,13 +123,13 @@
     }
     .sg-page {
       width: 1080px;
-      padding: 68px 64px 48px;
+      padding: 72px 64px 48px;
       background: #ffffff;
       box-sizing: border-box;
     }
     .sg-top {
       text-align: center;
-      margin: 0 0 28px;
+      margin: 0 0 48px;
     }
     .sg-wordmark {
       margin: 0 0 12px;
@@ -157,6 +156,9 @@
       grid-template-columns: 1fr;
       max-width: 820px;
       margin: 0 auto;
+    }
+    #social-export-container.single-conf .social-conf-title {
+      display: none;
     }
     .social-conference { min-width: 0; }
     .social-conf-title {
@@ -292,7 +294,6 @@
     <div class="season-picker-bar">
       <label for="season-select">Season</label>
       <select id="season-select" aria-label="Select NBA season standings"></select>
-      <span id="season-status"></span>
     </div>
     <div class="export-bar">
       <button type="button" class="export-btn" data-export-mode="all">Export both conferences</button>

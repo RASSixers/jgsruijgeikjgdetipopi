@@ -48,10 +48,6 @@ function seasonLabel(year) {
   return `${year - 1}-${String(year).slice(-2)}`;
 }
 
-function padRank(n) {
-  return String(n).padStart(2, "0");
-}
-
 function shuffle(list) {
   const arr = [...list];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -229,7 +225,7 @@ function renderTables(conferences) {
           <td>
             <div class="cell-content">
               <div class="social-team">
-                <span class="social-team-rank">${padRank(idx + 1)}</span>
+                <span class="social-team-rank">${idx + 1}</span>
                 <span class="social-team-name">${row.team.displayName}</span>
               </div>
             </div>

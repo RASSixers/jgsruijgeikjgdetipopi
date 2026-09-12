@@ -39,63 +39,61 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .article-item-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor;opacity:0.9}
 .article-item-title{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:800;color:var(--ink);line-height:1.2;margin:0 0 0.2rem}
 .article-item-meta{font-size:0.72rem;color:var(--mid);display:flex;align-items:center;gap:0.4rem}
-.article-item-meta-dot{width:3px;height:3px;border-radius:50%;background:var(--mid);opacity:0.5}
 .article-item-excerpt{font-size:0.82rem;color:var(--mid);line-height:1.55;margin-top:0.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .article-item-tweet-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:#1d9bf0;color:white;padding:2px 7px;border-radius:999px;display:inline-flex;align-items:center;gap:3px}
 .article-item-actions{display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;align-items:center;justify-content:center;padding:1rem 1.1rem 1rem 0}
-.btn-edit{background:rgba(0,107,182,0.1);color:var(--sixers-blue);border:1px solid rgba(0,107,182,0.2);border-radius:8px;padding:0.4rem 0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
-.btn-edit:hover{background:rgba(0,107,182,0.2)}
-.btn-delete{background:rgba(237,23,76,0.08);color:var(--sixers-red);border:1px solid rgba(237,23,76,0.15);border-radius:8px;padding:0.4rem 0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
-.btn-delete:hover{background:rgba(237,23,76,0.15)}
-.btn-primary{background:var(--sixers-blue);color:white;border:none;border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
-.btn-primary:hover{background:#0080d4;transform:translateY(-1px)}
-.btn-secondary{background:transparent;color:var(--mid);border:1px solid var(--border-light);border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
-.btn-secondary:hover{border-color:var(--mid);color:var(--ink)}
+.btn-edit{background:rgba(0,107,182,0.1);color:var(--sixers-blue);border:1px solid rgba(0,107,182,0.2);border-radius:8px;padding:0.4rem 0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer}
+.btn-delete{background:rgba(237,23,76,0.08);color:var(--sixers-red);border:1px solid rgba(237,23,76,0.15);border-radius:8px;padding:0.4rem 0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer}
+.btn-primary{background:var(--sixers-blue);color:white;border:none;border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer}
+.btn-secondary{background:transparent;color:var(--mid);border:1px solid var(--border-light);border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer}
 .editor-grid{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;margin-top:1.5rem}
 @media(max-width:800px){.editor-grid{grid-template-columns:1fr}}
 .editor-card{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;padding:1.5rem}
 .editor-card h3{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin:0 0 1rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border-light)}
 .form-group{margin-bottom:1.1rem}
 .form-label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.4rem}
-.form-input,.form-select,.form-textarea{width:100%;padding:0.65rem 0.85rem;background:#f9f7f3;border:1px solid var(--border-light);border-radius:9px;font-family:'Barlow',sans-serif;font-size:0.9rem;color:var(--ink);transition:border-color 0.2s,box-shadow 0.2s;outline:none}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--sixers-blue);box-shadow:0 0 0 3px rgba(0,107,182,0.1)}
+.form-input,.form-select,.form-textarea{width:100%;padding:0.65rem 0.85rem;background:#f9f7f3;border:1px solid var(--border-light);border-radius:9px;font-family:'Barlow',sans-serif;font-size:0.9rem;color:var(--ink);outline:none}
 .form-textarea{resize:vertical;min-height:120px;line-height:1.6}
 .tweet-embed-section{background:#f0f8ff;border:1px solid #bce0f7;border-radius:10px;padding:1rem;margin-bottom:1.1rem}
 .tweet-embed-header{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem}
-.tweet-x-icon{width:18px;height:18px;fill:#000;flex-shrink:0}
 .tweet-embed-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#0f1419}
 .tweet-embed-hint{font-size:0.72rem;color:#536471;margin-top:0.4rem;line-height:1.5}
 .tweet-preview-box{background:white;border:1px solid #cfd9de;border-radius:12px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.8rem;color:#536471;font-style:italic;display:none}
 .tweet-preview-box.visible{display:block}
-.grade-entry{background:#f9f7f3;border:1px solid var(--border-light);border-radius:10px;padding:1rem;margin-bottom:0.75rem;position:relative}
+.grade-entry{background:#f9f7f3;border:1px solid var(--border-light);border-radius:10px;padding:1rem;margin-bottom:0.75rem}
 .grade-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
-.grade-entry-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;color:var(--ink)}
-.grade-entry-remove{background:none;border:none;color:#ef4444;cursor:pointer;padding:2px;font-size:1.1rem;line-height:1}
+.grade-entry-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem}
+.grade-entry-remove{background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem}
 .grade-entry-row{display:grid;grid-template-columns:1fr 100px;gap:0.5rem;margin-bottom:0.5rem}
-.add-player-btn{width:100%;padding:0.6rem;border:1px dashed var(--border-light);border-radius:9px;background:none;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);transition:all 0.2s;margin-top:0.25rem}
-.add-player-btn:hover{border-color:var(--sixers-blue);color:var(--sixers-blue);background:rgba(0,107,182,0.04)}
+.add-player-btn{width:100%;padding:0.6rem;border:1px dashed var(--border-light);border-radius:9px;background:none;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);margin-top:0.25rem}
 .preview-panel{position:sticky;top:84px}
-.preview-article-card{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.preview-article-card{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;overflow:hidden}
 .preview-thumb{height:110px;display:flex;align-items:flex-end;justify-content:flex-start;position:relative;overflow:hidden;padding:0.75rem 1rem}
 .preview-thumb-bg{position:absolute;inset:0}
 .preview-category-chip{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:white;position:relative;z-index:1}
 .preview-body{padding:0.9rem 1rem 1rem}
-.preview-title{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;line-height:1.2;color:var(--ink);margin:0 0 0.3rem}
-.preview-meta{font-size:0.68rem;color:var(--mid);display:flex;align-items:center;gap:0.35rem}
+.preview-title{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;line-height:1.2;margin:0 0 0.3rem}
+.preview-meta{font-size:0.68rem;color:var(--mid)}
 .preview-excerpt{font-size:0.75rem;color:var(--mid);line-height:1.5;margin-top:0.35rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .preview-footer{border-top:1px solid var(--border-light);padding:0.6rem 1rem;display:flex;align-items:center;justify-content:space-between}
 .preview-read-more{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--sixers-blue)}
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--mid)}
-.empty-state h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.2rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink);margin:0.75rem 0 0.4rem}
-.empty-state p{font-size:0.85rem;margin:0}
+.empty-state h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.2rem;text-transform:uppercase;margin:0.75rem 0 0.4rem}
 #toast{position:fixed;bottom:2rem;right:2rem;background:#1e293b;color:white;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.85rem;font-weight:600;z-index:9999;opacity:0;transform:translateY(8px);transition:all 0.3s;pointer-events:none}
 #toast.show{opacity:1;transform:translateY(0)}
 #toast.success{background:#15803d}
 #toast.error{background:#dc2626}
-.ge-tweet-section{margin-top:0.6rem;background:#f0f8ff;border:1px solid #bce0f7;border-radius:8px;padding:0.65rem 0.75rem;}
-.ge-tweet-header{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.45rem;}
-.ge-tweet-label{font-family:'Barlow Condensed',sans-serif;font-size:0.67rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#0f1419;}
-.ge-tweet-hint{font-size:0.7rem;margin-top:0.35rem;line-height:1.4;padding:0.3rem 0.5rem;border-radius:5px;background:rgba(255,255,255,0.7);}
+.ge-tweet-section{margin-top:0.6rem;background:#f0f8ff;border:1px solid #bce0f7;border-radius:8px;padding:0.65rem 0.75rem}
+.ge-tweet-header{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.45rem}
+.ge-tweet-label{font-family:'Barlow Condensed',sans-serif;font-size:0.67rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase}
+.ge-tweet-hint{font-size:0.7rem;margin-top:0.35rem;line-height:1.4}
+.pic-upload-row{display:flex;align-items:center;gap:0.85rem}
+.pic-upload-preview{width:72px;height:72px;border-radius:12px;background:#0b0f1a;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pic-upload-preview img{width:100%;height:100%;object-fit:cover}
+.pic-upload-placeholder{color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.4rem}
+.pic-upload-btn{display:inline-block;background:rgba(0,107,182,0.1);color:var(--sixers-blue);border:1px solid rgba(0,107,182,0.2);border-radius:8px;padding:0.45rem 0.85rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer}
+.pic-upload-clear{background:none;border:none;color:#b83232;font-size:0.78rem;cursor:pointer;padding:0.35rem 0}
+.pic-upload-hint{font-size:0.72rem;color:var(--mid);margin:0.25rem 0 0}
 </style>
 </head>
 <body>
@@ -135,10 +133,7 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
         <button class="btn-primary" id="new-article-btn">+ New Article</button>
       </div>
       <div class="article-list" id="article-list">
-        <div class="empty-state">
-          <h3>No articles yet</h3>
-          <p>Click "New Article" to write your first editorial piece.</p>
-        </div>
+        <div class="empty-state"><h3>No articles yet</h3><p>Click "New Article" to write your first editorial piece.</p></div>
       </div>
     </div>
 
@@ -156,24 +151,22 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
               <label class="form-label">URL Slug *</label>
               <input type="text" class="form-input" id="f-slug" placeholder="e.g. sixers-player-grades-april-18" oninput="handleSlugInput(this.value)">
               <div style="font-size:0.72rem;color:var(--mid);margin-top:0.4rem;" id="f-slug-preview">sixershoops.com/article/<span id="f-slug-preview-text" style="color:var(--sixers-blue);font-weight:600;">your-slug-here</span></div>
-              <div style="font-size:0.72rem;margin-top:0.3rem;display:none;color:#b06b00;" id="f-slug-hint">Use only lowercase letters, numbers, and hyphens — no spaces or special characters.</div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-              <div class="form-group">
-                <label class="form-label">Category *</label>
-                <select class="form-select" id="f-category">
-                  <option value="Player Grades">Player Grades</option>
-                  <option value="Analysis">Analysis</option>
-                  <option value="Opinion">Opinion</option>
-                  <option value="Preview">Preview</option>
-                  <option value="Recap">Recap</option>
-                  <option value="News">News</option>
-                </select>
-              </div>
+              <div style="font-size:0.72rem;margin-top:0.3rem;display:none;color:#b06b00;" id="f-slug-hint">Use only lowercase letters, numbers, and hyphens.</div>
             </div>
             <div class="form-group">
-              <label class="form-label">Excerpt (preview text on homepage card)</label>
-              <textarea class="form-textarea" id="f-excerpt" rows="2" placeholder="A short description of what this article covers..." style="min-height:70px;"></textarea>
+              <label class="form-label">Category *</label>
+              <select class="form-select" id="f-category">
+                <option value="Player Grades">Player Grades</option>
+                <option value="Analysis">Analysis</option>
+                <option value="Opinion">Opinion</option>
+                <option value="Preview">Preview</option>
+                <option value="Recap">Recap</option>
+                <option value="News">News</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Excerpt</label>
+              <textarea class="form-textarea" id="f-excerpt" rows="2" style="min-height:70px;"></textarea>
             </div>
           </div>
 
@@ -181,22 +174,17 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
             <h3>Article Image</h3>
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label">Header Photo</label>
-              <div id="img-drop-zone" style="border:2px dashed var(--border-light);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;background:#f9f7f3;transition:all 0.2s;" onclick="document.getElementById('f-image').click()" ondragover="event.preventDefault();this.style.borderColor='var(--sixers-blue)'" ondragleave="this.style.borderColor='var(--border-light)'" ondrop="handleImgDrop(event)">
-                <div id="img-preview-wrap" style="display:none;margin-bottom:0.75rem;">
-                  <img id="img-preview" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:cover;" />
-                </div>
-                <div id="img-placeholder" style="color:var(--mid);font-size:0.85rem;">
-                  <div style="font-size:1.5rem;margin-bottom:0.4rem;">🖼️</div>
-                  <div style="font-weight:600;margin-bottom:0.2rem;">Click to upload or drag & drop</div>
-                  <div style="font-size:0.75rem;">JPG, PNG, WebP — max 1MB</div>
+              <div class="pic-upload-row">
+                <div class="pic-upload-preview" id="img-preview-box"><span class="pic-upload-placeholder">SH</span></div>
+                <div>
+                  <label for="f-image" class="pic-upload-btn">Upload Photo</label>
+                  <input type="file" id="f-image" accept="image/*" style="display:none;" onchange="handleImgSelect(this)">
+                  <div><button type="button" class="pic-upload-clear" id="img-clear-btn" onclick="clearArticleImage()">Remove</button></div>
+                  <p class="pic-upload-hint">JPG or PNG. Compressed in-browser like profile photos.</p>
+                  <div id="img-status" class="pic-upload-hint"></div>
                 </div>
               </div>
-              <input type="file" id="f-image" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleImgSelect(this)">
-              <div id="img-status" style="font-size:0.75rem;margin-top:0.4rem;color:var(--mid);"></div>
               <input type="hidden" id="f-image-url" value="">
-              <div id="img-existing-wrap" style="display:none;margin-top:0.5rem;">
-                <div style="font-size:0.72rem;color:var(--mid);">Current image: <a id="img-existing-link" href="#" target="_blank" style="color:var(--sixers-blue);">view</a> · <button onclick="clearArticleImage()" style="background:none;border:none;color:#b83232;font-size:0.72rem;cursor:pointer;padding:0;">remove</button></div>
-              </div>
             </div>
           </div>
 
@@ -204,34 +192,25 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
             <h3>Article Body</h3>
             <div class="form-group">
               <label class="form-label">Opening Paragraph</label>
-              <textarea class="form-textarea" id="f-intro" placeholder="Set the scene — what's this article about and why does it matter?"></textarea>
+              <textarea class="form-textarea" id="f-intro"></textarea>
             </div>
             <div class="tweet-embed-section">
-              <div class="tweet-embed-header">
-                <svg class="tweet-x-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                <span class="tweet-embed-label">Embed a Tweet / X Post</span>
-              </div>
-              <div class="form-group" style="margin:0;">
-                <input type="text" class="form-input" id="f-tweet-url" placeholder="https://x.com/user/status/1234567890" oninput="handleTweetInput(this.value)">
-              </div>
-              <div class="tweet-embed-hint">Paste the full URL of a tweet or X post to embed it in the article. Leave blank if not needed.</div>
+              <div class="tweet-embed-header"><span class="tweet-embed-label">Embed a Tweet / X Post</span></div>
+              <input type="text" class="form-input" id="f-tweet-url" placeholder="https://x.com/user/status/1234567890" oninput="handleTweetInput(this.value)">
+              <div class="tweet-embed-hint">Paste the full URL of a tweet. Leave blank if not needed.</div>
               <div class="tweet-preview-box" id="tweet-preview-box">Tweet will be embedded here in the article.</div>
             </div>
           </div>
 
           <div class="editor-card" id="grades-section" style="margin-top:1rem;">
             <h3>Player Grade Cards</h3>
-            <p style="font-size:0.8rem;color:var(--mid);margin:0 0 1rem;">Add a card for each player. Leave empty if not a grades article.</p>
             <div id="grade-entries"></div>
             <button class="add-player-btn" id="add-player-btn">+ Add Player</button>
           </div>
 
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Bottom Line</h3>
-            <div class="form-group">
-              <label class="form-label">Closing / Summary Paragraph</label>
-              <textarea class="form-textarea" id="f-closing" placeholder="Wrap it up — what's the overall takeaway?"></textarea>
-            </div>
+            <textarea class="form-textarea" id="f-closing"></textarea>
           </div>
 
           <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
@@ -243,19 +222,14 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
         <div class="preview-panel">
           <div class="editor-card">
             <h3>Card Preview</h3>
-            <p style="font-size:0.75rem;color:var(--mid);margin:0 0 1rem;">How this will look on the homepage</p>
             <div class="preview-article-card">
               <div class="preview-thumb" id="prev-thumb">
-                <div class="preview-thumb-bg" id="prev-gradient" style="background:linear-gradient(135deg,#001a57 0%,#003a8c 60%,rgba(0,107,182,0.6) 100%);"></div>
+                <div class="preview-thumb-bg" id="prev-gradient" style="background:#001a57;"></div>
                 <span class="preview-category-chip" id="prev-cat-label">Player Grades</span>
               </div>
               <div class="preview-body">
                 <div class="preview-title" id="prev-title">Your article headline will appear here</div>
-                <div class="preview-meta">
-                  <span>Sixers Hoops Staff</span>
-                  <span style="width:3px;height:3px;border-radius:50%;background:var(--mid);opacity:0.5;display:inline-block;"></span>
-                  <span id="prev-meta-date">Today</span>
-                </div>
+                <div class="preview-meta"><span>Sixers Hoops Staff</span> · <span id="prev-meta-date">Today</span></div>
                 <div class="preview-excerpt" id="prev-excerpt" style="display:none;"></div>
               </div>
               <div class="preview-footer">
@@ -269,42 +243,26 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
     </div>
 
     <div class="tab-panel" id="tab-updates">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem;">
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-transform:uppercase;">Sixers Updates</div>
-          <div style="font-size:0.8rem;color:var(--mid);margin-top:2px;">Paste tweet links to show in the homepage updates grid</div>
-        </div>
+      <div style="margin-top:1.5rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-transform:uppercase;">Sixers Updates</div>
+        <div style="font-size:0.8rem;color:var(--mid);margin-top:2px;">Paste tweet links to show in the homepage updates grid</div>
       </div>
-
       <div class="editor-card" style="margin-top:1.25rem;max-width:560px;">
         <h3>New Update</h3>
         <div class="form-group">
-          <label class="form-label">Handle</label>
-          <input type="text" class="form-input" id="u-handle" placeholder="SixersHoops" value="SixersHoops">
-        </div>
-        <div class="form-group">
           <label class="form-label">Tweet / X URL</label>
           <input type="text" class="form-input" id="u-tweet-url" placeholder="https://x.com/user/status/1234567890">
-          <div style="font-size:0.72rem;color:var(--mid);margin-top:0.3rem;">Paste a tweet link to embed it on the homepage. Text is optional if a tweet is attached.</div>
         </div>
-        <div class="form-group" style="margin-bottom:0.5rem;">
-          <label class="form-label">Update Text (optional)</label>
-          <textarea class="form-textarea" id="u-text" rows="3" maxlength="280" placeholder="Optional caption if there is no tweet" oninput="document.getElementById('u-char-count').textContent = (280 - this.value.length) + ' characters left'"></textarea>
-          <div id="u-char-count" style="font-size:0.72rem;color:var(--mid);margin-top:0.3rem;text-align:right;">280 characters left</div>
+        <div class="form-group">
+          <label class="form-label">Optional caption</label>
+          <textarea class="form-textarea" id="u-text" rows="3" maxlength="280" oninput="document.getElementById('u-char-count').textContent=(280-this.value.length)+' characters left'"></textarea>
+          <div id="u-char-count" style="font-size:0.72rem;color:var(--mid);text-align:right;">280 characters left</div>
         </div>
+        <input type="hidden" id="u-handle" value="SixersHoops">
         <button class="btn-primary" id="post-update-btn">Post Update</button>
       </div>
-
       <div style="margin-top:1.75rem;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
-          Posted Updates <span style="flex:1;height:1px;background:var(--border-light);display:inline-block;"></span>
-        </div>
-        <div class="article-list" id="updates-admin-list">
-          <div class="empty-state">
-            <h3>No updates yet</h3>
-            <p>Post your first update above — it'll show up live on the homepage.</p>
-          </div>
-        </div>
+        <div class="article-list" id="updates-admin-list"></div>
       </div>
     </div>
 
@@ -312,7 +270,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem;">
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-transform:uppercase;">Fan Polls</div>
-          <div style="font-size:0.8rem;color:var(--mid);margin-top:2px;">Create polls that appear in the sidebar on your homepage</div>
         </div>
         <button class="btn-primary" id="new-poll-btn" onclick="showPollEditor()">+ New Poll</button>
       </div>
@@ -322,37 +279,28 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
           <input type="hidden" id="poll-editing-id">
           <div class="form-group">
             <label class="form-label">Poll Question *</label>
-            <input type="text" class="form-input" id="poll-question" placeholder="e.g. Who will lead the Sixers in scoring this season?">
+            <input type="text" class="form-input" id="poll-question">
           </div>
           <div class="form-group">
             <label class="form-label">Poll Options *</label>
             <div id="poll-options-list"></div>
-            <button class="add-player-btn" id="add-poll-option-btn" onclick="addPollOption()" style="margin-top:0.5rem;">+ Add Option</button>
+            <button class="add-player-btn" onclick="addPollOption()">+ Add Option</button>
           </div>
           <div class="form-group">
-            <label class="form-label">End Date (optional)</label>
+            <label class="form-label">End Date</label>
             <input type="date" class="form-input" id="poll-end-date">
           </div>
-          <div style="display:flex;gap:0.75rem;margin-top:0.5rem;align-items:center;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:0.5rem;font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">
-              <input type="checkbox" id="poll-is-active" checked style="width:16px;height:16px;accent-color:var(--sixers-blue);">
-              Set as active (shows on homepage sidebar)
-            </label>
-          </div>
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;font-weight:600;">
+            <input type="checkbox" id="poll-is-active" checked> Set as active
+          </label>
           <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
-            <button class="btn-primary" id="save-poll-btn" onclick="savePoll()">Save Poll</button>
+            <button class="btn-primary" onclick="savePoll()">Save Poll</button>
             <button class="btn-secondary" onclick="hidePollEditor()">Cancel</button>
           </div>
         </div>
       </div>
-      <div style="margin-top:1.5rem;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);margin-bottom:0.75rem;">Active</div>
-        <div id="active-poll-list"><p style="font-size:0.82rem;color:var(--mid);padding:1rem 0;">Loading…</p></div>
-      </div>
-      <div style="margin-top:1.5rem;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);margin-bottom:0.75rem;">Past / Archived</div>
-        <div id="past-poll-list"><p style="font-size:0.82rem;color:var(--mid);padding:1rem 0;">Loading…</p></div>
-      </div>
+      <div style="margin-top:1.5rem;" id="active-poll-list"></div>
+      <div style="margin-top:1.5rem;" id="past-poll-list"></div>
     </div>
   </div>
 </div>
@@ -363,6 +311,7 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 const MOD_EMAIL = 'rhatus13@gmail.com';
 const COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
+const POLLS_COLLECTION = 'fan_polls';
 const PINNED_ROSTER = [
   { name: 'Tyrese Maxey', number: 0 },
   { name: 'VJ Edgecombe', number: 77 },
@@ -387,9 +336,7 @@ const REST_ROSTER = [
 const ROSTER = [...PINNED_ROSTER, ...REST_ROSTER];
 const GRADES = ['DNP','INC','A+','A','A-','B+','B','B-','C+','C','D+','D','F'];
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
-const CATEGORY_GRADIENTS = {
-  'Player Grades':'#ED174C','Analysis':'#006BB6','Opinion':'#000000','Preview':'#ED174C','Recap':'#001a57','News':'#006BB6'
-};
+const CATEGORY_GRADIENTS = {'Player Grades':'#ED174C','Analysis':'#006BB6','Opinion':'#000000','Preview':'#ED174C','Recap':'#001a57','News':'#006BB6'};
 
 function toast(msg, type='success') {
   const el = document.getElementById('toast');
@@ -406,7 +353,6 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
   });
 });
-
 function switchTab(name) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -424,62 +370,70 @@ function handleTweetInput(val) {
   else if (clean.length > 0) { box.innerHTML = 'Paste a full x.com or twitter.com status URL.'; box.style.color = '#b06b00'; }
 }
 
-let pendingImageFile = null;
-function handleImgSelect(input) { const file = input.files[0]; if (file) previewImage(file); }
-function handleImgDrop(e) {
-  e.preventDefault();
-  document.getElementById('img-drop-zone').style.borderColor = 'var(--border-light)';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) previewImage(file);
+function compressPic(file, maxSide, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const scale = Math.min(1, maxSide / Math.max(w, h));
+        w = Math.round(w * scale); h = Math.round(h * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
-function previewImage(file) {
-  if (file.size > 1 * 1024 * 1024) { toast('Image must be under 1MB', 'error'); return; }
-  pendingImageFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('img-preview').src = e.target.result;
-    document.getElementById('img-preview-wrap').style.display = 'block';
-    document.getElementById('img-placeholder').style.display = 'none';
-    document.getElementById('img-status').textContent = file.name + ' — will upload when you publish';
+
+function setPreviewBox(url) {
+  const box = document.getElementById('img-preview-box');
+  if (!box) return;
+  if (url) box.innerHTML = '<img src="' + url + '" alt="">';
+  else box.innerHTML = '<span class="pic-upload-placeholder">SH</span>';
+}
+
+async function handleImgSelect(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (!file.type || !file.type.startsWith('image/')) { toast('Please choose an image file.', 'error'); return; }
+  if (file.size > 8 * 1024 * 1024) { toast('Image must be under 8 MB.', 'error'); return; }
+  try {
+    document.getElementById('img-status').textContent = 'Processing photo…';
+    let url = await compressPic(file, 900, 0.7);
+    if (url.length > 700000) url = await compressPic(file, 640, 0.55);
+    if (url.length > 900000) { toast('Image still too large after compression. Try a smaller photo.', 'error'); return; }
+    document.getElementById('f-image-url').value = url;
+    setPreviewBox(url);
+    document.getElementById('img-status').textContent = 'Photo ready. Hit Publish to save it.';
     updatePreview();
-  };
-  reader.readAsDataURL(file);
+  } catch (err) {
+    toast('Could not process photo: ' + (err.message || err), 'error');
+    document.getElementById('img-status').textContent = '';
+  }
 }
-async function uploadArticleImage(docId) {
-  if (!pendingImageFile) return null;
-  if (!window.storage) { toast('Storage not ready', 'error'); return null; }
-  const ext = pendingImageFile.name.split('.').pop();
-  const path = `article-images/${docId}.${ext}`;
-  const ref = window.storage.ref(path);
-  document.getElementById('img-status').textContent = 'Uploading image…';
-  const snap = await ref.put(pendingImageFile);
-  const url = await snap.ref.getDownloadURL();
-  pendingImageFile = null;
-  document.getElementById('img-status').textContent = 'Image uploaded ✓';
-  return url;
-}
+
 function clearArticleImage() {
-  pendingImageFile = null;
   document.getElementById('f-image-url').value = '';
   document.getElementById('f-image').value = '';
-  document.getElementById('img-preview').src = '';
-  document.getElementById('img-preview-wrap').style.display = 'none';
-  document.getElementById('img-placeholder').style.display = 'block';
+  setPreviewBox('');
   document.getElementById('img-status').textContent = '';
-  document.getElementById('img-existing-wrap').style.display = 'none';
   updatePreview();
 }
+
 function populateArticleImage(imageUrl) {
-  if (!imageUrl) return;
-  document.getElementById('f-image-url').value = imageUrl;
-  document.getElementById('img-preview').src = imageUrl;
-  document.getElementById('img-preview-wrap').style.display = 'block';
-  document.getElementById('img-placeholder').style.display = 'none';
-  document.getElementById('img-existing-wrap').style.display = 'block';
-  document.getElementById('img-existing-link').href = imageUrl;
-  document.getElementById('img-status').textContent = 'Existing image loaded';
+  document.getElementById('f-image-url').value = imageUrl || '';
+  setPreviewBox(imageUrl || '');
+  document.getElementById('img-status').textContent = imageUrl ? 'Existing image loaded' : '';
   updatePreview();
 }
+
 function handleSlugInput(val) {
   const clean = val.trim();
   document.getElementById('f-slug-preview-text').textContent = clean || 'your-slug-here';
@@ -487,14 +441,13 @@ function handleSlugInput(val) {
   if (!clean) { hint.style.display = 'none'; return; }
   hint.style.display = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(clean) ? 'none' : 'block';
 }
+
 function updatePreview() {
   const title = document.getElementById('f-title').value.trim() || 'Your article headline will appear here';
   const category = document.getElementById('f-category').value;
   const excerpt = document.getElementById('f-excerpt').value.trim();
   const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'];
-  const imgEl = document.getElementById('img-preview');
-  const existingUrl = document.getElementById('f-image-url').value;
-  const imgUrl = (imgEl && imgEl.getAttribute('src')) || existingUrl;
+  const imgUrl = document.getElementById('f-image-url').value;
   document.getElementById('prev-title').textContent = title;
   document.getElementById('prev-cat-label').textContent = category;
   document.getElementById('prev-gradient').style.background = imgUrl
@@ -528,7 +481,7 @@ function addGradeEntry(data = {}) {
     <div class="grade-entry-row">
       <div class="form-group" style="margin:0;">
         <label class="form-label">Player Name</label>
-        <input type="text" class="form-input ge-name" value="${data.name||''}" placeholder="Player name" oninput="this.closest('.grade-entry').querySelector('.grade-entry-name').textContent=this.value||'Player'">
+        <input type="text" class="form-input ge-name" value="${data.name||''}" oninput="this.closest('.grade-entry').querySelector('.grade-entry-name').textContent=this.value||'Player'">
       </div>
       <div class="form-group" style="margin:0;">
         <label class="form-label">Grade</label>
@@ -538,7 +491,7 @@ function addGradeEntry(data = {}) {
     <div class="ge-fields" style="${isDnp ? 'display:none;' : ''}">
       <div class="form-group" style="margin-bottom:0.5rem;">
         <label class="form-label">Stats Line</label>
-        <input type="text" class="form-input ge-stats" placeholder="e.g. 26.4 PPG" value="${data.stats||''}">
+        <input type="text" class="form-input ge-stats" value="${data.stats||''}">
       </div>
       <div class="form-group" style="margin-bottom:0.5rem;">
         <label class="form-label">Analysis</label>
@@ -546,16 +499,14 @@ function addGradeEntry(data = {}) {
       </div>
       <div class="ge-tweet-section">
         <div class="ge-tweet-header"><span class="ge-tweet-label">Embed Tweet (optional)</span></div>
-        <input type="text" class="form-input ge-tweet-url" placeholder="https://x.com/user/status/..." value="${tweetVal}" oninput="validatePlayerTweet(this)">
+        <input type="text" class="form-input ge-tweet-url" value="${tweetVal}" oninput="validatePlayerTweet(this)">
         <div class="ge-tweet-hint"></div>
       </div>
-    </div>
-  `;
+    </div>`;
   container.appendChild(div);
 }
 function toggleDnpFields(select) {
-  const entry = select.closest('.grade-entry');
-  const fields = entry.querySelector('.ge-fields');
+  const fields = select.closest('.grade-entry').querySelector('.ge-fields');
   const hide = select.value === 'DNP' || select.value === 'INC';
   if (fields) fields.style.display = hide ? 'none' : '';
 }
@@ -574,15 +525,13 @@ function collectGrades() {
   const entries = [];
   document.querySelectorAll('.grade-entry').forEach(el => {
     const name = el.querySelector('.ge-name').value.trim();
-    const grade = el.querySelector('.ge-grade').value;
-    const statsEl = el.querySelector('.ge-stats');
-    const analysisEl = el.querySelector('.ge-analysis');
-    const tweetEl = el.querySelector('.ge-tweet-url');
-    if (name) entries.push({
-      name, grade,
-      stats: statsEl ? statsEl.value.trim() : '',
-      analysis: analysisEl ? analysisEl.value.trim() : '',
-      tweetUrl: tweetEl ? tweetEl.value.trim() : ''
+    if (!name) return;
+    entries.push({
+      name,
+      grade: el.querySelector('.ge-grade').value,
+      stats: (el.querySelector('.ge-stats') || {}).value ? el.querySelector('.ge-stats').value.trim() : '',
+      analysis: (el.querySelector('.ge-analysis') || {}).value ? el.querySelector('.ge-analysis').value.trim() : '',
+      tweetUrl: (el.querySelector('.ge-tweet-url') || {}).value ? el.querySelector('.ge-tweet-url').value.trim() : ''
     });
   });
   return entries;
@@ -600,28 +549,14 @@ function listenToArticles() {
 }
 function renderArticleList() {
   const list = document.getElementById('article-list');
-  if (articles.length === 0) {
+  if (!articles.length) {
     list.innerHTML = '<div class="empty-state"><h3>No articles yet</h3><p>Click "New Article" to write your first editorial piece.</p></div>';
     return;
   }
   list.innerHTML = articles.map(a => {
     const color = CATEGORY_COLORS[a.category] || '#006BB6';
     const date = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'Draft';
-    return `
-      <div class="article-item">
-        <div class="article-item-accent" style="background:${color};"></div>
-        <div class="article-item-body">
-          <div class="article-item-tag-row"><span class="article-item-tag" style="color:${color};border-color:${color};">${a.category}</span></div>
-          <div class="article-item-title">${a.title}</div>
-          <div class="article-item-meta"><span>${date}</span></div>
-          ${a.slug ? `<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;">/article/${a.slug}</div>` : ''}
-          ${a.excerpt ? `<div class="article-item-excerpt">${a.excerpt}</div>` : ''}
-        </div>
-        <div class="article-item-actions">
-          <button class="btn-edit" onclick="editArticle('${a.id}')">Edit</button>
-          <button class="btn-delete" onclick="deleteArticle('${a.id}')">Delete</button>
-        </div>
-      </div>`;
+    return `<div class="article-item"><div class="article-item-accent" style="background:${color};"></div><div class="article-item-body"><div class="article-item-tag-row"><span class="article-item-tag" style="color:${color};border-color:${color};">${a.category}</span></div><div class="article-item-title">${a.title}</div><div class="article-item-meta"><span>${date}</span></div>${a.slug ? `<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;">/article/${a.slug}</div>` : ''}</div><div class="article-item-actions"><button class="btn-edit" onclick="editArticle('${a.id}')">Edit</button><button class="btn-delete" onclick="deleteArticle('${a.id}')">Delete</button></div></div>`;
   }).join('');
 }
 document.getElementById('new-article-btn').addEventListener('click', () => { clearEditor(); switchTab('editor'); });
@@ -659,7 +594,7 @@ function editArticle(id) {
   switchTab('editor');
 }
 async function deleteArticle(id) {
-  if (!confirm('Delete this article? This cannot be undone.')) return;
+  if (!confirm('Delete this article?')) return;
   try { await window.db.collection(COLLECTION).doc(id).delete(); toast('Article deleted'); }
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
@@ -674,7 +609,6 @@ function timeAgoAdmin(date) {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return hours + 'h ago';
   const days = Math.floor(hours / 24);
-  if (days === 1) return 'Yesterday';
   if (days < 7) return days + 'd ago';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
@@ -689,42 +623,30 @@ function listenToUpdates() {
 function renderUpdatesAdminList() {
   const list = document.getElementById('updates-admin-list');
   if (!list) return;
-  if (updatesCache.length === 0) {
-    list.innerHTML = '<div class="empty-state"><h3>No updates yet</h3><p>Post your first update above.</p></div>';
+  if (!updatesCache.length) {
+    list.innerHTML = '<div class="empty-state"><h3>No updates yet</h3></div>';
     return;
   }
   list.innerHTML = updatesCache.map(u => {
     const date = u.createdAt ? (u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt)) : null;
-    const handle = (u.handle || 'SixersHoops').replace('@', '');
     const text = (u.text || '').replace(/</g, '&lt;');
     const tweet = u.tweetUrl ? `<div style="font-size:0.72rem;color:#1d9bf0;margin-top:0.35rem;word-break:break-all;">${String(u.tweetUrl).replace(/</g,'&lt;')}</div>` : '';
-    return `
-      <div class="article-item">
-        <div class="article-item-accent" style="background:#1d9bf0;"></div>
-        <div class="article-item-body">
-          <div class="article-item-tag-row"><span class="article-item-tag" style="color:#1d9bf0;border-color:#1d9bf0;">@${handle}</span>${u.tweetUrl ? '<span class="article-item-tweet-badge">Tweet</span>' : ''}</div>
-          ${text ? `<div class="article-item-excerpt" style="font-size:0.9rem;color:var(--ink);">${text}</div>` : ''}
-          ${tweet}
-          <div class="article-item-meta" style="margin-top:0.5rem;"><span>${date ? timeAgoAdmin(date) : 'Posting…'}</span></div>
-        </div>
-        <div class="article-item-actions"><button class="btn-delete" onclick="deleteUpdate('${u.id}')">Delete</button></div>
-      </div>`;
+    return `<div class="article-item"><div class="article-item-accent" style="background:#1d9bf0;"></div><div class="article-item-body">${u.tweetUrl ? '<span class="article-item-tweet-badge">Tweet</span>' : ''}${text ? `<div class="article-item-excerpt">${text}</div>` : ''}${tweet}<div class="article-item-meta" style="margin-top:0.5rem;"><span>${date ? timeAgoAdmin(date) : 'Posting…'}</span></div></div><div class="article-item-actions"><button class="btn-delete" onclick="deleteUpdate('${u.id}')">Delete</button></div></div>`;
   }).join('');
 }
 async function postUpdate() {
-  const handle = document.getElementById('u-handle').value.trim() || 'SixersHoops';
   const text = document.getElementById('u-text').value.trim();
   const tweetUrl = (document.getElementById('u-tweet-url').value || '').trim();
   const validTweet = /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/i.test(tweetUrl);
-  if (!text && !validTweet) { toast('Add text or a tweet URL', 'error'); return; }
+  if (!text && !validTweet) { toast('Add a tweet URL or caption', 'error'); return; }
   if (tweetUrl && !validTweet) { toast('Use a full x.com or twitter.com status URL', 'error'); return; }
-  if (text.length > 280) { toast('Keep it under 280 characters', 'error'); return; }
   const btn = document.getElementById('post-update-btn');
   btn.textContent = 'Posting...';
   btn.disabled = true;
   try {
     await window.db.collection(UPDATES_COLLECTION).add({
-      handle, text,
+      handle: 'SixersHoops',
+      text,
       tweetUrl: validTweet ? tweetUrl : '',
       createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -751,23 +673,19 @@ document.getElementById('publish-btn').addEventListener('click', async () => {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) { toast('Slug can only have lowercase letters, numbers, and hyphens', 'error'); return; }
   const existingDocId = document.getElementById('editing-doc-id').value;
   if (articles.some(a => a.slug === slug && a.id !== existingDocId)) { toast('That slug is already used', 'error'); return; }
+  const imageUrl = document.getElementById('f-image-url').value || '';
+  if (imageUrl.length > 900000) { toast('Image is too large to save. Choose a smaller photo.', 'error'); return; }
   const btn = document.getElementById('publish-btn');
   btn.textContent = 'Publishing...';
   btn.disabled = true;
   try {
-    const targetDocId = existingDocId || window.db.collection(COLLECTION).doc().id;
-    let imageUrl = document.getElementById('f-image-url').value || '';
-    if (pendingImageFile) {
-      const uploaded = await uploadArticleImage(targetDocId);
-      if (uploaded) imageUrl = uploaded;
-    }
     const data = {
       title, category, slug,
       excerpt: document.getElementById('f-excerpt').value.trim(),
       intro: document.getElementById('f-intro').value.trim(),
       closing: document.getElementById('f-closing').value.trim(),
       tweetUrl: document.getElementById('f-tweet-url').value.trim() || '',
-      imageUrl: imageUrl || '',
+      imageUrl,
       grades: collectGrades(),
       gradient: CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'],
       updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
@@ -777,10 +695,11 @@ document.getElementById('publish-btn').addEventListener('click', async () => {
       toast('Article updated');
     } else {
       data.createdAt = window.firebase.firestore.FieldValue.serverTimestamp();
-      await window.db.collection(COLLECTION).doc(targetDocId).set(data);
+      await window.db.collection(COLLECTION).add(data);
       toast('Article published');
     }
-    clearEditor(); switchTab('list');
+    clearEditor();
+    switchTab('list');
   } catch (e) { toast('Error: ' + e.message, 'error'); }
   finally { btn.textContent = 'Publish Article'; btn.disabled = false; }
 });
@@ -810,7 +729,6 @@ function initAdmin() {
   });
 }
 
-const POLLS_COLLECTION = 'fan_polls';
 let pollsCache = [];
 let pollOptionCount = 0;
 function showPollEditor(poll) {
@@ -821,18 +739,18 @@ function showPollEditor(poll) {
   document.getElementById('poll-is-active').checked = poll ? !!poll.isActive : true;
   document.getElementById('poll-options-list').innerHTML = '';
   pollOptionCount = 0;
-  const opts = poll && poll.options && poll.options.length ? poll.options : [{text:'',votes:0},{text:'',votes:0}];
-  opts.forEach(o => addPollOption(o.text, o.votes || 0));
+  const opts = poll && poll.options && poll.options.length ? poll.options : [{text:''},{text:''}];
+  opts.forEach(o => addPollOption(o.text));
 }
 function hidePollEditor() { document.getElementById('poll-editor').style.display = 'none'; }
-function addPollOption(text = '', votes = 0) {
+function addPollOption(text = '') {
   pollOptionCount++;
   const idx = pollOptionCount;
   const wrap = document.createElement('div');
   wrap.className = 'grade-entry';
   wrap.id = 'poll-opt-' + idx;
   wrap.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.75rem;margin-bottom:0.5rem;';
-  wrap.innerHTML = `<input type="text" class="form-input poll-opt-text" placeholder="Option ${idx}" value="${text.replace(/"/g,'&quot;')}" style="flex:1;"><button type="button" onclick="removePollOption(${idx})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;">&times;</button>`;
+  wrap.innerHTML = `<input type="text" class="form-input poll-opt-text" value="${(text||'').replace(/"/g,'&quot;')}" style="flex:1;"><button type="button" onclick="removePollOption(${idx})" style="background:none;border:none;color:#ef4444;cursor:pointer;">&times;</button>`;
   document.getElementById('poll-options-list').appendChild(wrap);
 }
 function removePollOption(idx) { const el = document.getElementById('poll-opt-' + idx); if (el) el.remove(); }
@@ -851,12 +769,7 @@ async function savePoll() {
   });
   if (options.length < 2) { toast('Please add at least 2 options', 'error'); return; }
   const docId = document.getElementById('poll-editing-id').value;
-  const data = {
-    question, options,
-    isActive: document.getElementById('poll-is-active').checked,
-    endDate: document.getElementById('poll-end-date').value || null,
-    updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
-  };
+  const data = { question, options, isActive: document.getElementById('poll-is-active').checked, endDate: document.getElementById('poll-end-date').value || null, updatedAt: window.firebase.firestore.FieldValue.serverTimestamp() };
   try {
     if (docId) await window.db.collection(POLLS_COLLECTION).doc(docId).update(data);
     else { data.createdAt = window.firebase.firestore.FieldValue.serverTimestamp(); await window.db.collection(POLLS_COLLECTION).add(data); }
@@ -865,16 +778,16 @@ async function savePoll() {
   } catch (e) { toast('Error: ' + e.message, 'error'); }
 }
 async function deletePoll(id) {
-  if (!confirm('Delete this poll permanently?')) return;
+  if (!confirm('Delete this poll?')) return;
   try { await window.db.collection(POLLS_COLLECTION).doc(id).delete(); toast('Poll deleted'); }
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
 async function archivePoll(id) {
-  try { await window.db.collection(POLLS_COLLECTION).doc(id).update({ isActive: false, updatedAt: window.firebase.firestore.FieldValue.serverTimestamp() }); toast('Poll archived'); }
+  try { await window.db.collection(POLLS_COLLECTION).doc(id).update({ isActive: false }); toast('Poll archived'); }
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
 async function activatePoll(id) {
-  try { await window.db.collection(POLLS_COLLECTION).doc(id).update({ isActive: true, updatedAt: window.firebase.firestore.FieldValue.serverTimestamp() }); toast('Poll set as active'); }
+  try { await window.db.collection(POLLS_COLLECTION).doc(id).update({ isActive: true }); toast('Poll set as active'); }
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
 function renderPollCard(poll, isActive) {

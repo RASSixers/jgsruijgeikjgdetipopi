@@ -30,8 +30,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .admin-tab.active{color:white;border-bottom-color:var(--sixers-blue)}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
-
-/* ── ARTICLE LIST CARDS (improved) ── */
 .article-list{display:flex;flex-direction:column;gap:1rem;margin-top:1.5rem}
 .article-item{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;padding:0;display:flex;overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;position:relative}
 .article-item:hover{border-color:rgba(0,107,182,0.35);box-shadow:0 6px 20px rgba(0,0,0,0.08);transform:translateY(-1px)}
@@ -53,7 +51,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .btn-primary:hover{background:#0080d4;transform:translateY(-1px)}
 .btn-secondary{background:transparent;color:var(--mid);border:1px solid var(--border-light);border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
 .btn-secondary:hover{border-color:var(--mid);color:var(--ink)}
-
 .editor-grid{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;margin-top:1.5rem}
 @media(max-width:800px){.editor-grid{grid-template-columns:1fr}}
 .editor-card{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;padding:1.5rem}
@@ -63,7 +60,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .form-input,.form-select,.form-textarea{width:100%;padding:0.65rem 0.85rem;background:#f9f7f3;border:1px solid var(--border-light);border-radius:9px;font-family:'Barlow',sans-serif;font-size:0.9rem;color:var(--ink);transition:border-color 0.2s,box-shadow 0.2s;outline:none}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--sixers-blue);box-shadow:0 0 0 3px rgba(0,107,182,0.1)}
 .form-textarea{resize:vertical;min-height:120px;line-height:1.6}
-/* Tweet embed section */
 .tweet-embed-section{background:#f0f8ff;border:1px solid #bce0f7;border-radius:10px;padding:1rem;margin-bottom:1.1rem}
 .tweet-embed-header{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem}
 .tweet-x-icon{width:18px;height:18px;fill:#000;flex-shrink:0}
@@ -71,7 +67,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .tweet-embed-hint{font-size:0.72rem;color:#536471;margin-top:0.4rem;line-height:1.5}
 .tweet-preview-box{background:white;border:1px solid #cfd9de;border-radius:12px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.8rem;color:#536471;font-style:italic;display:none}
 .tweet-preview-box.visible{display:block}
-
 .grade-entry{background:#f9f7f3;border:1px solid var(--border-light);border-radius:10px;padding:1rem;margin-bottom:0.75rem;position:relative}
 .grade-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
 .grade-entry-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;color:var(--ink)}
@@ -80,8 +75,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .add-player-btn{width:100%;padding:0.6rem;border:1px dashed var(--border-light);border-radius:9px;background:none;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);transition:all 0.2s;margin-top:0.25rem}
 .add-player-btn:hover{border-color:var(--sixers-blue);color:var(--sixers-blue);background:rgba(0,107,182,0.04)}
 .preview-panel{position:sticky;top:84px}
-
-/* Improved preview card */
 .preview-article-card{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
 .preview-thumb{height:110px;display:flex;align-items:flex-end;justify-content:flex-start;position:relative;overflow:hidden;padding:0.75rem 1rem}
 .preview-thumb-bg{position:absolute;inset:0}
@@ -92,7 +85,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .preview-excerpt{font-size:0.75rem;color:var(--mid);line-height:1.5;margin-top:0.35rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .preview-footer{border-top:1px solid var(--border-light);padding:0.6rem 1rem;display:flex;align-items:center;justify-content:space-between}
 .preview-read-more{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--sixers-blue)}
-
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--mid)}
 .empty-state h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.2rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink);margin:0.75rem 0 0.4rem}
 .empty-state p{font-size:0.85rem;margin:0}
@@ -100,8 +92,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 #toast.show{opacity:1;transform:translateY(0)}
 #toast.success{background:#15803d}
 #toast.error{background:#dc2626}
-
-/* Per-player tweet embed */
 .ge-tweet-section{margin-top:0.6rem;background:#f0f8ff;border:1px solid #bce0f7;border-radius:8px;padding:0.65rem 0.75rem;}
 .ge-tweet-header{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.45rem;}
 .ge-tweet-label{font-family:'Barlow Condensed',sans-serif;font-size:0.67rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#0f1419;}
@@ -136,7 +126,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
   </div>
 
   <div class="admin-wrap">
-    <!-- LIST TAB -->
     <div class="tab-panel active" id="tab-list">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem;">
         <div>
@@ -153,11 +142,9 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
       </div>
     </div>
 
-    <!-- EDITOR TAB -->
     <div class="tab-panel" id="tab-editor">
       <div class="editor-grid">
         <div>
-          <!-- Article Info -->
           <div class="editor-card">
             <h3>Article Info</h3>
             <input type="hidden" id="editing-doc-id">
@@ -190,12 +177,11 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
             </div>
           </div>
 
-          <!-- Article Image -->
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Article Image</h3>
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label">Header Photo</label>
-              <div id="img-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--surface);transition:all 0.2s;" onclick="document.getElementById('f-image').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleImgDrop(event)">
+              <div id="img-drop-zone" style="border:2px dashed var(--border-light);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;background:#f9f7f3;transition:all 0.2s;" onclick="document.getElementById('f-image').click()" ondragover="event.preventDefault();this.style.borderColor='var(--sixers-blue)'" ondragleave="this.style.borderColor='var(--border-light)'" ondrop="handleImgDrop(event)">
                 <div id="img-preview-wrap" style="display:none;margin-bottom:0.75rem;">
                   <img id="img-preview" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:cover;" />
                 </div>
@@ -209,20 +195,17 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
               <div id="img-status" style="font-size:0.75rem;margin-top:0.4rem;color:var(--mid);"></div>
               <input type="hidden" id="f-image-url" value="">
               <div id="img-existing-wrap" style="display:none;margin-top:0.5rem;">
-                <div style="font-size:0.72rem;color:var(--mid);">Current image: <a id="img-existing-link" href="#" target="_blank" style="color:var(--accent);">view</a> · <button onclick="clearArticleImage()" style="background:none;border:none;color:#b83232;font-size:0.72rem;cursor:pointer;padding:0;">remove</button></div>
+                <div style="font-size:0.72rem;color:var(--mid);">Current image: <a id="img-existing-link" href="#" target="_blank" style="color:var(--sixers-blue);">view</a> · <button onclick="clearArticleImage()" style="background:none;border:none;color:#b83232;font-size:0.72rem;cursor:pointer;padding:0;">remove</button></div>
               </div>
             </div>
           </div>
 
-          <!-- Article Body -->
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Article Body</h3>
             <div class="form-group">
               <label class="form-label">Opening Paragraph</label>
               <textarea class="form-textarea" id="f-intro" placeholder="Set the scene — what's this article about and why does it matter?"></textarea>
             </div>
-
-            <!-- TWEET EMBED SECTION -->
             <div class="tweet-embed-section">
               <div class="tweet-embed-header">
                 <svg class="tweet-x-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -233,12 +216,11 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
               </div>
               <div class="tweet-embed-hint">Paste the full URL of a tweet or X post to embed it in the article. Leave blank if not needed.</div>
               <div class="tweet-preview-box" id="tweet-preview-box">
-                🐦 Tweet will be embedded here in the article. Make sure the URL is a valid x.com or twitter.com post link.
+                Tweet will be embedded here in the article. Make sure the URL is a valid x.com or twitter.com post link.
               </div>
             </div>
           </div>
 
-          <!-- Player Grades -->
           <div class="editor-card" id="grades-section" style="margin-top:1rem;">
             <h3>Player Grade Cards</h3>
             <p style="font-size:0.8rem;color:var(--mid);margin:0 0 1rem;">Add a card for each player. Leave empty if not a grades article.</p>
@@ -246,7 +228,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
             <button class="add-player-btn" id="add-player-btn">+ Add Player</button>
           </div>
 
-          <!-- Bottom Line -->
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Bottom Line</h3>
             <div class="form-group">
@@ -261,7 +242,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
           </div>
         </div>
 
-        <!-- SIDEBAR PREVIEW -->
         <div class="preview-panel">
           <div class="editor-card">
             <h3>Card Preview</h3>
@@ -289,7 +269,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
               </div>
             </div>
           </div>
-
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Category Guide</h3>
             <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.8rem;">
@@ -300,7 +279,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
               <div><span style="color:#475569;font-weight:700;">Recap</span> — post-game breakdown</div>
             </div>
           </div>
-
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Grade Reference</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem;font-size:0.75rem;">
@@ -322,7 +300,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
       </div>
     </div>
 
-    <!-- UPDATES TAB -->
     <div class="tab-panel" id="tab-updates">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem;">
         <div>
@@ -330,7 +307,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
           <div style="font-size:0.8rem;color:var(--mid);margin-top:2px;">Short, tweet-style posts that appear in the "Sixers Updates" feed on your homepage</div>
         </div>
       </div>
-
       <div class="editor-card" style="margin-top:1.25rem;max-width:560px;">
         <h3>New Update</h3>
         <div class="form-group">
@@ -344,7 +320,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
         </div>
         <button class="btn-primary" id="post-update-btn">Post Update</button>
       </div>
-
       <div style="margin-top:1.75rem;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
           Posted Updates <span style="flex:1;height:1px;background:var(--border-light);display:inline-block;"></span>
@@ -358,9 +333,7 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
       </div>
     </div>
 
-    <!-- POLLS TAB -->
     <div class="tab-panel" id="tab-polls">
-      <!-- Create Poll Form -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem;">
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-transform:uppercase;">Fan Polls</div>
@@ -368,8 +341,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
         </div>
         <button class="btn-primary" id="new-poll-btn" onclick="showPollEditor()">+ New Poll</button>
       </div>
-
-      <!-- Poll Editor (hidden by default) -->
       <div id="poll-editor" style="display:none;margin-top:1.5rem;">
         <div class="editor-card">
           <h3>Create / Edit Poll</h3>
@@ -400,16 +371,12 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
           </div>
         </div>
       </div>
-
-      <!-- Active Polls List -->
       <div style="margin-top:1.5rem;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
           Active <span style="flex:1;height:1px;background:var(--border-light);display:inline-block;"></span>
         </div>
         <div id="active-poll-list"><p style="font-size:0.82rem;color:var(--mid);padding:1rem 0;">Loading…</p></div>
       </div>
-
-      <!-- Past Polls List -->
       <div style="margin-top:1.5rem;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
           Past / Archived <span style="flex:1;height:1px;background:var(--border-light);display:inline-block;"></span>
@@ -417,7 +384,6 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
         <div id="past-poll-list"><p style="font-size:0.82rem;color:var(--mid);padding:1rem 0;">Loading…</p></div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -427,37 +393,31 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 const MOD_EMAIL = 'rhatus13@gmail.com';
 const COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
-
-// ── ROSTER: first 8 are pinned in order, rest follow ──
 const PINNED_ROSTER = [
-  { name: 'Tyrese Maxey',    number: 0  },
-  { name: 'VJ Edgecombe',   number: 77 },
-  { name: 'Paul George',     number: 8  },
-  { name: 'Kelly Oubre Jr.', number: 9  },
-  { name: 'Adem Bona',       number: 30 },
-  { name: 'Andre Drummond',  number: 1  },
-  { name: 'Quentin Grimes',  number: 5  },
+  { name: 'Tyrese Maxey', number: 0 },
+  { name: 'VJ Edgecombe', number: 77 },
+  { name: 'Paul George', number: 8 },
+  { name: 'Kelly Oubre Jr.', number: 9 },
+  { name: 'Adem Bona', number: 30 },
+  { name: 'Andre Drummond', number: 1 },
+  { name: 'Quentin Grimes', number: 5 },
   { name: 'Dominick Barlow', number: 25 },
-  { name: 'Justin Edwards',  number: 11 },
+  { name: 'Justin Edwards', number: 11 },
 ];
-
 const REST_ROSTER = [
-  { name: 'Dalen Terry',      number: 14 },
-  { name: 'Joel Embiid',      number: 21 },
-  { name: 'Johni Broome',     number: 22 },
-  { name: 'Tyrese Martin',    number: 23 },
-  { name: 'Jabari Walker',    number: 33 },
-  { name: 'Trendon Watford',  number: 12 },
-  { name: 'Kyle Lowry',       number: 7  },
+  { name: 'Dalen Terry', number: 14 },
+  { name: 'Joel Embiid', number: 21 },
+  { name: 'Johni Broome', number: 22 },
+  { name: 'Tyrese Martin', number: 23 },
+  { name: 'Jabari Walker', number: 33 },
+  { name: 'Trendon Watford', number: 12 },
+  { name: 'Kyle Lowry', number: 7 },
   { name: 'MarJon Beauchamp', number: 16 },
 ];
-
 const ROSTER = [...PINNED_ROSTER, ...REST_ROSTER];
-
 const GRADES = ['DNP','INC','A+','A','A-','B+','B','B-','C+','C','D+','D','F'];
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
-const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
 const CATEGORY_GRADIENTS = {
   'Player Grades':'#ED174C',
   'Analysis':'#006BB6',
@@ -474,7 +434,6 @@ function toast(msg, type='success') {
   setTimeout(() => { el.className = ''; }, 3000);
 }
 
-// Tabs
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -490,7 +449,6 @@ function switchTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
 }
 
-// Tweet URL handling
 function handleTweetInput(val) {
   const box = document.getElementById('tweet-preview-box');
   const badge = document.getElementById('prev-tweet-badge');
@@ -499,15 +457,14 @@ function handleTweetInput(val) {
   box.classList.toggle('visible', clean.length > 0);
   if (badge) badge.style.display = clean.length > 0 ? 'inline-flex' : 'none';
   if (valid) {
-    box.innerHTML = '✅ Valid tweet URL — will be embedded in article.';
+    box.innerHTML = 'Valid tweet URL — will be embedded in article.';
     box.style.color = '#15803d';
   } else if (clean.length > 0) {
-    box.innerHTML = '⚠️ Paste a full x.com or twitter.com status URL.';
+    box.innerHTML = 'Paste a full x.com or twitter.com status URL.';
     box.style.color = '#b06b00';
   }
 }
 
-// ── IMAGE PICKER ──────────────────────────────────────────────────────────────
 let pendingImageFile = null;
 
 function handleImgSelect(input) {
@@ -517,7 +474,7 @@ function handleImgSelect(input) {
 
 function handleImgDrop(e) {
   e.preventDefault();
-  document.getElementById('img-drop-zone').style.borderColor = 'var(--border)';
+  document.getElementById('img-drop-zone').style.borderColor = 'var(--border-light)';
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) previewImage(file);
 }
@@ -532,6 +489,7 @@ function previewImage(file) {
     document.getElementById('img-placeholder').style.display = 'none';
     document.getElementById('img-status').textContent = file.name + ' — will upload when you publish';
     document.getElementById('img-status').style.color = 'var(--mid)';
+    updatePreview();
   };
   reader.readAsDataURL(file);
 }
@@ -560,6 +518,7 @@ function clearArticleImage() {
   document.getElementById('img-placeholder').style.display = 'block';
   document.getElementById('img-status').textContent = '';
   document.getElementById('img-existing-wrap').style.display = 'none';
+  updatePreview();
 }
 
 function populateArticleImage(imageUrl) {
@@ -571,9 +530,9 @@ function populateArticleImage(imageUrl) {
   document.getElementById('img-existing-wrap').style.display = 'block';
   document.getElementById('img-existing-link').href = imageUrl;
   document.getElementById('img-status').textContent = 'Existing image loaded';
+  updatePreview();
 }
 
-// Slug handling
 function handleSlugInput(val) {
   const clean = val.trim();
   const previewText = document.getElementById('f-slug-preview-text');
@@ -581,19 +540,24 @@ function handleSlugInput(val) {
   const valid = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(clean);
   previewText.textContent = clean || 'your-slug-here';
   if (!clean) { hint.style.display = 'none'; return; }
-  if (valid) { hint.style.display = 'none'; }
-  else { hint.style.display = 'block'; }
+  hint.style.display = valid ? 'none' : 'block';
 }
 
-// Preview update
 function updatePreview() {
   const title = document.getElementById('f-title').value.trim() || 'Your article headline will appear here';
   const category = document.getElementById('f-category').value;
   const excerpt = document.getElementById('f-excerpt').value.trim();
   const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'];
+  const imgEl = document.getElementById('img-preview');
+  const existingUrl = document.getElementById('f-image-url').value;
+  const imgUrl = (imgEl && imgEl.getAttribute('src')) || existingUrl;
   document.getElementById('prev-title').textContent = title;
   document.getElementById('prev-cat-label').textContent = category;
-  document.getElementById('prev-gradient').style.background = gradient;
+  if (imgUrl) {
+    document.getElementById('prev-gradient').style.background = 'url("' + String(imgUrl).replace(/"/g, '\\"') + '") center/cover no-repeat';
+  } else {
+    document.getElementById('prev-gradient').style.background = gradient;
+  }
   const today = new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
   document.getElementById('prev-meta-date').textContent = today;
   const excerptEl = document.getElementById('prev-excerpt');
@@ -606,7 +570,6 @@ function updatePreview() {
 });
 document.getElementById('f-category').addEventListener('change', updatePreview);
 
-// Grade entries
 let gradeCount = 0;
 
 function addGradeEntry(data = {}) {
@@ -655,7 +618,6 @@ function addGradeEntry(data = {}) {
     </div>
     ${isDnp ? `<div class="ge-dnp-hint" style="font-size:0.75rem;color:var(--mid);padding:0.25rem 0;">${selectedGrade === 'INC' ? 'INC — Incomplete. Stats/analysis fields hidden.' : 'DNP — will not appear in the published article'}</div>` : ''}
   `;
-  // Validate pre-filled tweet URL when editing
   if (tweetVal) {
     const inp = div.querySelector('.ge-tweet-url');
     if (inp) validatePlayerTweet(inp);
@@ -688,10 +650,10 @@ function validatePlayerTweet(input) {
   const valid = /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/.test(val);
   hint.style.display = 'block';
   if (valid) {
-    hint.textContent = '✅ Valid — tweet will be embedded below this player\'s grade card.';
+    hint.textContent = 'Valid — tweet will be embedded below this player\'s grade card.';
     hint.style.color = '#15803d';
   } else {
-    hint.textContent = '⚠️ Paste a full x.com or twitter.com status URL.';
+    hint.textContent = 'Paste a full x.com or twitter.com status URL.';
     hint.style.color = '#b06b00';
   }
 }
@@ -715,7 +677,6 @@ function collectGrades() {
   return entries;
 }
 
-// Firestore
 let articles = [];
 function waitForDb(cb, tries = 0) { if (window.db) { cb(); return; } if (tries > 40) return; setTimeout(() => waitForDb(cb, tries + 1), 250); }
 
@@ -753,7 +714,7 @@ function renderArticleList() {
             <span>${date}</span>
             ${gradeInfo}
           </div>
-          ${a.slug ? `<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;font-family:ui-monospace,monospace;">/articles/${a.slug}</div>` : `<div style="font-size:0.72rem;color:#b06b00;margin-top:0.3rem;">No URL slug set — edit to add one</div>`}
+          ${a.slug ? `<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;font-family:ui-monospace,monospace;">/article/${a.slug}</div>` : `<div style="font-size:0.72rem;color:#b06b00;margin-top:0.3rem;">No URL slug set — edit to add one</div>`}
           ${a.excerpt ? `<div class="article-item-excerpt">${a.excerpt}</div>` : ''}
         </div>
         <div class="article-item-actions">
@@ -799,7 +760,6 @@ function editArticle(id) {
     document.getElementById('f-tweet-url').value = a.tweetUrl;
     handleTweetInput(a.tweetUrl);
   }
-  // Clear auto-loaded roster, load saved grades
   document.getElementById('grade-entries').innerHTML = '';
   gradeCount = 0;
   (a.grades || []).forEach(g => addGradeEntry(g));
@@ -814,7 +774,6 @@ async function deleteArticle(id) {
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
 
-// ─── SIXERS UPDATES (tweet-style posts) ───────────────────────────────────────
 let updatesCache = [];
 
 function timeAgoAdmin(date) {
@@ -920,10 +879,8 @@ document.getElementById('publish-btn').addEventListener('click', async () => {
   btn.textContent = 'Publishing...';
   btn.disabled = true;
   try {
-    // Determine doc ID first (needed for image storage path)
     const existingDocId = document.getElementById('editing-doc-id').value;
     const targetDocId = existingDocId || window.db.collection(COLLECTION).doc().id;
-    // Upload image if one is pending
     let imageUrl = document.getElementById('f-image-url').value || '';
     if (pendingImageFile) {
       const uploaded = await uploadArticleImage(targetDocId);
@@ -979,7 +936,6 @@ function initAdmin() {
   });
 }
 
-// ─── FAN POLLS ────────────────────────────────────────────────────────────────
 const POLLS_COLLECTION = 'fan_polls';
 let pollsCache = [];
 let pollOptionCount = 0;
@@ -991,7 +947,6 @@ function showPollEditor(poll) {
   document.getElementById('poll-question').value = poll ? poll.question || '' : '';
   document.getElementById('poll-end-date').value = poll && poll.endDate ? poll.endDate : '';
   document.getElementById('poll-is-active').checked = poll ? !!poll.isActive : true;
-  // Clear and rebuild options
   document.getElementById('poll-options-list').innerHTML = '';
   pollOptionCount = 0;
   const opts = poll && poll.options && poll.options.length ? poll.options : [{text:'',votes:0},{text:'',votes:0}];
@@ -1026,13 +981,11 @@ function removePollOption(idx) {
 async function savePoll() {
   const question = document.getElementById('poll-question').value.trim();
   if (!question) { toast('Please enter a poll question', 'error'); return; }
-
   const optEls = document.querySelectorAll('#poll-options-list .poll-opt-text');
   const options = [];
   optEls.forEach(el => {
     const t = el.value.trim();
     if (t) {
-      // Preserve existing vote count by matching text to cache
       const existingId = document.getElementById('poll-editing-id').value;
       const existing = pollsCache.find(p => p.id === existingId);
       const existingOpt = existing && existing.options ? existing.options.find(o => o.text === t) : null;
@@ -1040,15 +993,12 @@ async function savePoll() {
     }
   });
   if (options.length < 2) { toast('Please add at least 2 options', 'error'); return; }
-
   const isActive = document.getElementById('poll-is-active').checked;
   const endDate = document.getElementById('poll-end-date').value || null;
   const docId = document.getElementById('poll-editing-id').value;
-
   const btn = document.getElementById('save-poll-btn');
   btn.textContent = 'Saving…';
   btn.disabled = true;
-
   try {
     const data = {
       question, options, isActive,
@@ -1111,7 +1061,6 @@ function renderPollCard(poll, isActive) {
     : `<button class="btn-edit" onclick="activatePoll('${poll.id}')">Re-activate</button>
        <button class="btn-edit" onclick="showPollEditor(pollsCache.find(p=>p.id==='${poll.id}'))">Edit</button>
        <button class="btn-delete" onclick="deletePoll('${poll.id}')">Delete</button>`;
-
   return `<div class="article-item" style="display:flex;">
     <div class="article-item-accent" style="background:${isActive ? 'var(--sixers-blue)' : 'var(--border-light)'};"></div>
     <div class="article-item-body">
@@ -1136,12 +1085,10 @@ function listenToPolls() {
     pollsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const active = pollsCache.filter(p => p.isActive);
     const past = pollsCache.filter(p => !p.isActive);
-
     const activeEl = document.getElementById('active-poll-list');
     activeEl.innerHTML = active.length
       ? `<div class="article-list">${active.map(p => renderPollCard(p, true)).join('')}</div>`
       : `<div class="empty-state" style="padding:1rem 0;text-align:left;"><p style="font-size:0.82rem;margin:0;">No active poll. Create one above — it will show in the sidebar on your homepage.</p></div>`;
-
     const pastEl = document.getElementById('past-poll-list');
     pastEl.innerHTML = past.length
       ? `<div class="article-list">${past.map(p => renderPollCard(p, false)).join('')}</div>`

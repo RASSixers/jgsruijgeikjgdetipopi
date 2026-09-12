@@ -59,11 +59,11 @@
     letter-spacing: 0.02em; padding: 0.75rem 1.6rem; border-radius: 8px;
     text-decoration: none; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,107,182,0.25);
   }
-  .hero-cta-primary:hover { background: #0057a0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,107,182,0.35); }
+  .hero-cta-primary:hover { background: #0057a0; transform: translateY(-1px); }
   .hero-cta-secondary {
     color: var(--sixers-blue); font-weight: 600; font-size: 0.76rem;
     letter-spacing: 0.02em; padding: 0.75rem 1.6rem; border-radius: 8px;
-    text-decoration: none; border: 1px solid var(--sixers-blue); transition: all 0.2s;
+    text-decoration: none; border: 1px solid var(--sixers-blue);
   }
   .hero-cta-secondary:hover { background: var(--sixers-blue); color: white; }
 
@@ -74,46 +74,30 @@
   }
   .feature-card {
     background: var(--card-bg); border: 1px solid var(--border-light);
-    padding: 0.9rem 0.9rem 0.85rem; text-decoration: none; display: flex;
-    flex-direction: column; gap: 0.4rem; position: relative; overflow: hidden;
-    transition: all 0.22s ease; border-radius: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03);
+    padding: 0.9rem; text-decoration: none; display: flex; flex-direction: column;
+    gap: 0.4rem; position: relative; overflow: hidden; border-radius: 10px;
   }
-  .feature-card::after {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: var(--sixers-blue); transform: scaleX(0); transform-origin: left;
-    transition: transform 0.28s ease;
-  }
-  .feature-card:hover::after { transform: scaleX(1); }
-  .feature-card:hover {
-    border-color: rgba(0,107,182,0.25); box-shadow: 0 4px 20px rgba(0,107,182,0.07);
-    transform: translateY(-2px);
-  }
-  .feature-card-title { font-size: 0.82rem; font-weight: 600; color: var(--ink); line-height: 1.1; }
+  .feature-card-title { font-size: 0.82rem; font-weight: 600; color: var(--ink); }
   .feature-card-desc { font-size: 0.7rem; color: var(--mid); line-height: 1.45; flex: 1; }
-  .feature-card-arrow { margin-top: auto; color: var(--sixers-blue); opacity: 0.45; transition: opacity 0.2s, transform 0.2s; }
-  .feature-card:hover .feature-card-arrow { opacity: 1; transform: translateX(3px); }
+  .feature-card-arrow { margin-top: auto; color: var(--sixers-blue); }
 
   .news-section { background: var(--cream); padding: 3rem 0 4rem; border-top: 1px solid var(--border-light); }
   .news-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
   .news-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
   .news-eyebrow { display: block; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sixers-blue); margin-bottom: 0.4rem; }
-  .news-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0; line-height: 1.1; }
+  .news-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0; }
   .news-view-all { font-size: 0.8rem; font-weight: 600; color: var(--sixers-blue); text-decoration: none; }
-  .news-view-all:hover { text-decoration: underline; }
   .news-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
   .news-card {
     display: flex; flex-direction: column; background: var(--card-bg);
     border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
-    text-decoration: none; color: inherit; transition: all 0.22s ease;
+    text-decoration: none; color: inherit;
   }
-  .news-card:hover { border-color: rgba(0,107,182,0.3); box-shadow: 0 8px 28px rgba(0,107,182,0.08); transform: translateY(-2px); }
   .news-card-thumb {
-    aspect-ratio: 16/9;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: #001a57;
+    position: relative; aspect-ratio: 16/9; overflow: hidden; background: #001a57;
+  }
+  .news-card-thumb img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
   }
   .news-card-body { padding: 1.25rem 1.4rem 1.4rem; display: flex; flex-direction: column; gap: 0.55rem; }
   .news-tag {
@@ -122,59 +106,46 @@
     background: rgba(0,107,182,0.08); border: 1px solid rgba(0,107,182,0.15);
     padding: 3px 9px; border-radius: 999px;
   }
-  .news-card-title { font-size: 1.25rem; font-weight: 700; line-height: 1.25; letter-spacing: -0.015em; color: var(--ink); margin: 0; }
+  .news-card-title { font-size: 1.25rem; font-weight: 700; line-height: 1.25; margin: 0; }
   .news-card-excerpt { font-size: 0.9rem; line-height: 1.55; color: var(--mid); margin: 0; }
-  .news-card-meta { display: flex; gap: 0.5rem; font-size: 0.75rem; color: var(--mid); margin-top: 0.25rem; }
+  .news-card-meta { display: flex; gap: 0.5rem; font-size: 0.75rem; color: var(--mid); }
   .news-list { display: flex; flex-direction: column; gap: 0.75rem; }
   .news-list-item {
     display: flex; flex-direction: column; gap: 0.4rem; background: var(--card-bg);
     border: 1px solid var(--border-light); border-radius: 10px; padding: 1rem 1.1rem;
-    text-decoration: none; color: inherit; transition: all 0.2s ease;
+    text-decoration: none; color: inherit;
   }
   .news-list-item.has-thumb { flex-direction: row; align-items: stretch; gap: 0.85rem; padding: 0.7rem; }
   .news-list-thumb {
-    flex-shrink: 0; width: 110px; border-radius: 8px;
-    background-size: cover; background-position: center; background-repeat: no-repeat;
-    background-color: #001a57;
+    flex-shrink: 0; width: 110px; border-radius: 8px; overflow: hidden; background: #001a57; position: relative;
   }
+  .news-list-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .news-list-copy { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
-  .news-list-item:hover { border-color: rgba(0,107,182,0.3); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,107,182,0.06); }
-  .news-list-title { font-size: 0.98rem; font-weight: 600; line-height: 1.3; color: var(--ink); margin: 0; }
+  .news-list-title { font-size: 0.98rem; font-weight: 600; line-height: 1.3; margin: 0; }
   .news-list-excerpt { font-size: 0.82rem; line-height: 1.5; color: var(--mid); margin: 0; }
   .news-empty, .news-loading {
     grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: var(--mid);
     background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px;
-    font-size: 0.85rem;
   }
   .grade-chip {
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 0.68rem; font-weight: 700; color: white; border-radius: 5px;
-    padding: 1px 6px; min-width: 26px; text-align: center;
+    font-size: 0.68rem; font-weight: 700; color: white; border-radius: 5px; padding: 1px 6px;
   }
-  .news-card-grades { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
+  .news-card-grades { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 
   .updates-section { background: #f8fafc; padding: 3rem 0 4rem; border-top: 1px solid var(--border-light); }
   .updates-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
   .updates-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .updates-feed {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    align-items: start;
-  }
+  .updates-feed { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
   .update-card {
     background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px;
-    padding: 0.5rem 0.55rem 0.4rem; display: flex; flex-direction: column;
-    min-height: 0; overflow: hidden; transition: all 0.2s ease;
+    padding: 0.5rem 0.55rem 0.4rem; overflow: hidden;
   }
-  .update-card:hover { border-color: rgba(0,107,182,0.25); box-shadow: 0 4px 18px rgba(0,107,182,0.06); }
-  .update-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); margin: 0; white-space: pre-wrap; word-break: break-word; padding: 0.4rem; }
-  .update-embed { margin: 0; min-height: 0; }
+  .update-text { font-size: 0.88rem; line-height: 1.5; margin: 0; padding: 0.4rem; white-space: pre-wrap; }
   .update-embed .twitter-tweet { margin: 0 auto !important; }
   .updates-empty, .updates-loading {
     grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: var(--mid);
     background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 14px;
-    font-size: 0.85rem;
   }
 
   @media (max-width: 900px) {
@@ -184,13 +155,8 @@
   }
   @media (max-width: 600px) {
     .hero-inner { padding: 3.5rem 1rem 2rem; }
-    .hero-sub { font-size: 0.88rem; max-width: 100%; }
-    .hero-cta-row { flex-direction: column; align-items: stretch; width: 100%; gap: 0.6rem; margin-top: 1.25rem; }
-    .hero-cta-primary, .hero-cta-secondary { text-align: center; width: 100%; padding: 0.8rem 1rem; }
-    .feature-cards-inner { padding: 1.5rem 0.75rem 0; gap: 0.5rem; }
-    .feature-card { padding: 0.85rem; }
+    .feature-cards-inner { padding: 1.5rem 0.75rem 0; }
     .feature-card-desc { display: none; }
-    .news-section { padding: 2rem 0 2.5rem; }
     .news-inner, .updates-inner { padding: 0 1rem; }
     .news-list-thumb { width: 84px; }
     .updates-feed { grid-template-columns: 1fr; }
@@ -211,7 +177,6 @@
         </div>
       </div>
     </div>
-
     <div class="feature-cards-section" id="features">
       <div class="feature-cards-inner">
         <a href="https://www.nba.com/trade-machine" target="_blank" rel="noopener noreferrer" class="feature-card">
@@ -274,22 +239,17 @@ const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
+const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
 
 function waitForDb(cb, tries) {
   tries = tries || 0;
   if (window.db) { cb(); return; }
-  if (tries > 60) { console.error('Firestore did not initialize in time.'); return; }
+  if (tries > 60) return;
   setTimeout(function () { waitForDb(cb, tries + 1); }, 250);
 }
-
 function escapeHtml(str) {
-  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
-function cssUrl(url) {
-  return String(url || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-}
-
 function timeAgo(date) {
   if (!date) return '';
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -303,14 +263,11 @@ function timeAgo(date) {
   if (days < 7) return days + 'd ago';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-
 function toDate(ts) {
   if (!ts) return null;
   if (ts.toDate) return ts.toDate();
   return new Date(ts);
 }
-
-const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
 
 function renderNews(articles) {
   const grid = document.getElementById('news-grid');
@@ -325,27 +282,26 @@ function renderNews(articles) {
   function articleUrl(a) {
     return a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
   }
-
   function gradeChips(a) {
     const grades = (a.grades || []).filter(function (g) { return g.grade && g.grade !== 'DNP'; });
     if (!grades.length) return '';
-    const chips = grades.slice(0, 6).map(function (g) {
+    return '<div class="news-card-grades">' + grades.slice(0, 6).map(function (g) {
       const color = GRADE_COLORS[g.grade] || '#006bb6';
       return '<span class="grade-chip" style="background:' + color + ';">' + escapeHtml(g.name ? g.name.split(' ').slice(-1)[0] : '') + ' ' + escapeHtml(g.grade) + '</span>';
-    }).join('');
-    return '<div class="news-card-grades">' + chips + '</div>';
+    }).join('') + '</div>';
   }
-
-  function featuredThumbStyle(a, idx) {
-    if (a.imageUrl) return 'background-image:url("' + cssUrl(a.imageUrl) + '");';
-    const color = a.gradient || THUMB_COLORS[idx % THUMB_COLORS.length];
-    return 'background:' + color + ';';
+  function thumbHtml(a, idx, cls) {
+    const fallback = a.gradient || THUMB_COLORS[idx % THUMB_COLORS.length];
+    if (a.imageUrl) {
+      return '<div class="' + cls + '"><img src="' + escapeHtml(a.imageUrl) + '" alt=""></div>';
+    }
+    return '<div class="' + cls + '" style="background:' + fallback + ';"></div>';
   }
 
   const featuredColor = CATEGORY_COLORS[featured.category] || '#006bb6';
   const featuredHtml =
     '<a href="' + articleUrl(featured) + '" class="news-card">' +
-      '<div class="news-card-thumb" style="' + featuredThumbStyle(featured, 0) + '" aria-hidden="true"></div>' +
+      thumbHtml(featured, 0, 'news-card-thumb') +
       '<div class="news-card-body">' +
         '<span class="news-tag" style="color:' + featuredColor + ';border-color:' + featuredColor + '33;background:' + featuredColor + '14;">' + escapeHtml(featured.category || 'News') + '</span>' +
         '<h3 class="news-card-title">' + escapeHtml(featured.title) + '</h3>' +
@@ -355,14 +311,11 @@ function renderNews(articles) {
       '</div>' +
     '</a>';
 
-  const listHtml = rest.map(function (a) {
+  const listHtml = rest.map(function (a, i) {
     const color = CATEGORY_COLORS[a.category] || '#006bb6';
-    const thumb = a.imageUrl
-      ? '<div class="news-list-thumb" style="background-image:url(&quot;' + cssUrl(a.imageUrl) + '&quot;);"></div>'
-      : '';
     return (
       '<a href="' + articleUrl(a) + '" class="news-list-item' + (a.imageUrl ? ' has-thumb' : '') + '">' +
-        thumb +
+        (a.imageUrl ? thumbHtml(a, i + 1, 'news-list-thumb') : '') +
         '<div class="news-list-copy">' +
           '<span class="news-tag" style="color:' + color + ';border-color:' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
           '<h3 class="news-list-title">' + escapeHtml(a.title) + '</h3>' +
@@ -391,12 +344,10 @@ function listenToNews() {
 function isTweetUrl(url) {
   return /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/i.test(String(url || '').trim());
 }
-
 function tweetCardEmbed(url) {
   const safe = escapeHtml(url);
   return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true"><a href="' + safe + '"></a></blockquote></div>';
 }
-
 function renderUpdates(posts) {
   const feed = document.getElementById('updates-feed');
   if (!posts.length) {
@@ -404,17 +355,14 @@ function renderUpdates(posts) {
     return;
   }
   feed.innerHTML = posts.map(function (p) {
-    const tweetUrl = p.tweetUrl || '';
-    const body = isTweetUrl(tweetUrl)
-      ? tweetCardEmbed(tweetUrl)
+    const body = isTweetUrl(p.tweetUrl)
+      ? tweetCardEmbed(p.tweetUrl)
       : (p.text ? '<p class="update-text">' + escapeHtml(p.text) + '</p>' : '');
     return '<div class="update-card">' + body + '</div>';
   }).join('');
-
   if (posts.some(function (p) { return isTweetUrl(p.tweetUrl); })) {
-    if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load(feed);
-    } else if (!document.getElementById('twitter-wjs')) {
+    if (window.twttr && window.twttr.widgets) window.twttr.widgets.load(feed);
+    else if (!document.getElementById('twitter-wjs')) {
       const s = document.createElement('script');
       s.id = 'twitter-wjs';
       s.async = true;
@@ -423,7 +371,6 @@ function renderUpdates(posts) {
     }
   }
 }
-
 function listenToUpdates() {
   waitForDb(function () {
     window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(20).onSnapshot(

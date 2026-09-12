@@ -117,7 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const scripts = [
             { id: 'firebase-app-sdk', src: 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js' },
             { id: 'firebase-auth-sdk', src: 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js' },
-            { id: 'firebase-firestore-sdk', src: 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js' }
+            { id: 'firebase-firestore-sdk', src: 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js' },
+            { id: 'firebase-storage-sdk', src: 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js' }
         ];
         
         scripts.forEach(s => {
@@ -443,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.storage = null;
     
     function initFirebase() {
-        if (typeof firebase === 'undefined') {
+        if (typeof firebase === 'undefined' || !firebase.auth || !firebase.firestore || !firebase.storage) {
             setTimeout(initFirebase, 200);
             return;
         }
@@ -454,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             window.auth = firebase.auth();
             window.db = firebase.firestore();
-            window.storage = null;
+            window.storage = firebase.storage();
             setupAuthListeners();
         } catch (err) {
             console.error('Firebase init error:', err);

@@ -10,44 +10,53 @@
   var search = location.search || '';
   var hash = location.hash || '';
 
-  // Pretty profile URLs:
-  // /user/{name} and /user/{name}/inbox|notifications|settings
+  function loadPage(url, keepPath) {
+    fetch(url, { credentials: 'same-origin' })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        document.open();
+        document.write(html);
+        document.close();
+        if (keepPath) {
+          try { history.replaceState(null, '', keepPath + hash); } catch (e) {}
+        }
+      })
+      .catch(function () {
+        location.replace('/');
+      });
+  }
+
   if (/^\/user\/[^/]+/i.test(path)) {
     try { sessionStorage.setItem('spa_user_path', path + search + hash); } catch (e) {}
-    location.replace('/user.html');
+    loadPage('/user.html', path + search);
     return;
   }
 
-  // Community feed
   if (/^\/community$/i.test(path)) {
     location.replace('/community.html' + search + hash);
     return;
   }
 
-  // Community post: /community/p/{id} or /community/p/{id}/{slug}
   var cPost = path.match(/^\/community\/p\/([^/]+)(?:\/[^/]*)?$/i);
   if (cPost) {
     location.replace('/trade.html?id=' + encodeURIComponent(decodeURIComponent(cPost[1])) + hash);
     return;
   }
 
-  // Legacy: /trade/{id}/optional-slug
   var trade = path.match(/^\/trade\/([^/]+)/i);
   if (trade) {
     location.replace('/trade.html?id=' + encodeURIComponent(decodeURIComponent(trade[1])) + hash);
     return;
   }
 
-  // Legacy feed
   if (/^\/trades$/i.test(path)) {
     location.replace('/community.html' + search + hash);
     return;
   }
 
-  // /article/{slug}
   var article = path.match(/^\/article\/(.+)$/i);
   if (article) {
-    location.replace('/article.html?slug=' + encodeURIComponent(decodeURIComponent(article[1])) + hash);
+    loadPage('/article.html', path);
     return;
   }
 

@@ -164,16 +164,12 @@
   }
   .update-card {
     background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px;
-    padding: 0.85rem 0.9rem 0.7rem; display: flex; flex-direction: column; gap: 0.55rem;
-    min-height: 220px; transition: all 0.2s ease;
+    padding: 0.5rem 0.55rem 0.4rem; display: flex; flex-direction: column;
+    min-height: 0; overflow: hidden; transition: all 0.2s ease;
   }
   .update-card:hover { border-color: rgba(0,107,182,0.25); box-shadow: 0 4px 18px rgba(0,107,182,0.06); }
-  .update-head { display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
-  .update-handle { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
-  .update-dot { color: var(--mid); font-size: 0.7rem; }
-  .update-time { font-size: 0.75rem; color: var(--mid); }
-  .update-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); margin: 0; white-space: pre-wrap; word-break: break-word; }
-  .update-embed { margin: 0 -0.15rem; min-height: 160px; }
+  .update-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); margin: 0; white-space: pre-wrap; word-break: break-word; padding: 0.4rem; }
+  .update-embed { margin: 0; min-height: 0; }
   .update-embed .twitter-tweet { margin: 0 auto !important; }
   .updates-empty, .updates-loading {
     grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: var(--mid);
@@ -408,21 +404,11 @@ function renderUpdates(posts) {
     return;
   }
   feed.innerHTML = posts.map(function (p) {
-    const handle = p.handle || 'SixersHoops';
     const tweetUrl = p.tweetUrl || '';
     const body = isTweetUrl(tweetUrl)
       ? tweetCardEmbed(tweetUrl)
       : (p.text ? '<p class="update-text">' + escapeHtml(p.text) + '</p>' : '');
-    return (
-      '<div class="update-card">' +
-        '<div class="update-head">' +
-          '<span class="update-handle">@' + escapeHtml(handle.replace('@', '')) + '</span>' +
-          '<span class="update-dot">·</span>' +
-          '<span class="update-time">' + escapeHtml(timeAgo(toDate(p.createdAt))) + '</span>' +
-        '</div>' +
-        body +
-      '</div>'
-    );
+    return '<div class="update-card">' + body + '</div>';
   }).join('');
 
   if (posts.some(function (p) { return isTweetUrl(p.tweetUrl); })) {

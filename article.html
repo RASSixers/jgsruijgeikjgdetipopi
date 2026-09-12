@@ -37,7 +37,6 @@
   .article-back { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--sixers-blue); text-decoration: none; margin-bottom: 1.75rem; }
   .article-back:hover { text-decoration: underline; }
 
-  /* Centered header block */
   .article-header { text-align: center; margin-bottom: 2rem; }
   .article-tag {
     display: inline-flex; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
@@ -46,9 +45,17 @@
   .article-title { font-size: clamp(1.8rem, 4.5vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 0.75rem; }
   .article-meta { display: flex; gap: 0.5rem; font-size: 0.85rem; color: var(--mid); justify-content: center; }
   .article-excerpt { font-size: 1.1rem; line-height: 1.6; color: var(--mid); margin: 1.5rem 0 0; font-weight: 500; }
+  .article-hero { margin: 0 0 2rem; }
+  .article-hero img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    border-radius: 14px;
+    display: block;
+    border: 1px solid var(--border-light);
+  }
   .article-body p { font-size: 1.05rem; line-height: 1.75; color: var(--ink); margin: 0 0 1.5rem; white-space: pre-wrap; }
 
-  /* Tweet embed — nice card wrapper */
   .tweet-embed-wrap {
     margin: 1.25rem 0;
     background: #f8fafc;
@@ -122,7 +129,11 @@ function escapeHtml(str) {
 }
 
 function getSlugFromPath() {
-  // 404.html redirects /article/slug → article.html?slug=slug
+  var path = (window.location.pathname || '').replace(/\/+$/, '');
+  var fromPath = path.match(/^\/article\/(.+)$/i);
+  if (fromPath && fromPath[1] && fromPath[1].toLowerCase() !== 'article.html') {
+    return decodeURIComponent(fromPath[1]);
+  }
   return new URLSearchParams(window.location.search).get('slug') || null;
 }
 
@@ -153,7 +164,6 @@ function renderArticle(a) {
   const date = a.createdAt ? toDate(a.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
   document.title = a.title + ' — Sixers Hoops';
 
-  // Dynamic SEO meta tags
   function setMeta(name, content, prop) {
     const sel = prop ? 'meta[property="' + name + '"]' : 'meta[name="' + name + '"]';
     let el = document.querySelector(sel);
@@ -167,23 +177,29 @@ function renderArticle(a) {
   setMeta('og:description', desc, true);
   setMeta('og:url', canonical, true);
   setMeta('og:type', 'article', true);
-  setMeta('twitter:card', 'summary');
+  setMeta('twitter:card', a.imageUrl ? 'summary_large_image' : 'summary');
   setMeta('twitter:title', a.title + ' — Sixers Hoops');
   setMeta('twitter:description', desc);
-  // Canonical link
+  if (a.imageUrl) {
+    setMeta('og:image', a.imageUrl, true);
+    setMeta('twitter:image', a.imageUrl);
+  }
   let canonEl = document.querySelector('link[rel="canonical"]');
   if (!canonEl) { canonEl = document.createElement('link'); canonEl.setAttribute('rel', 'canonical'); document.head.appendChild(canonEl); }
   canonEl.setAttribute('href', canonical);
 
   let html = '<a href="/" class="article-back">← Back to Sixers Hoops</a>';
 
-  // Centered header
   html += '<div class="article-header">';
   html += '<span class="article-tag" style="color:' + color + ';border:1px solid ' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>';
   html += '<h1 class="article-title">' + escapeHtml(a.title) + '</h1>';
   html += '<div class="article-meta"><span>Sixers Hoops Staff</span><span>·</span><span>' + escapeHtml(date) + '</span></div>';
   if (a.excerpt) html += '<p class="article-excerpt">' + escapeHtml(a.excerpt) + '</p>';
   html += '</div>';
+
+  if (a.imageUrl) {
+    html += '<figure class="article-hero"><img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.title) + '"></figure>';
+  }
 
   if (a.intro) html += '<div class="article-body"><p>' + escapeHtml(a.intro) + '</p></div>';
   if (a.tweetUrl) html += tweetEmbedHtml(a.tweetUrl);
@@ -209,7 +225,6 @@ function renderArticle(a) {
 
   document.getElementById('article-root').innerHTML = html;
 
-  // Load Twitter widgets if any embeds present
   if (a.tweetUrl || grades.some(function (g) { return g.tweetUrl; })) {
     if (window.twttr && window.twttr.widgets) {
       window.twttr.widgets.load();

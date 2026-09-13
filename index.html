@@ -147,6 +147,33 @@
     grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: var(--mid);
     background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 14px;
   }
+  .updates-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .updates-page-btn {
+    background: var(--sixers-blue);
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+  }
+  .updates-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .updates-page-label {
+    font-size: 0.82rem;
+    color: var(--mid);
+  }
 
   @media (max-width: 900px) {
     .feature-cards-inner { grid-template-columns: repeat(2, 1fr); }
@@ -154,7 +181,8 @@
     .updates-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 600px) {
-    .hero-inner { padding: 3.5rem 1rem 2rem; }
+    .hero-inner { padding: 7.5rem 1rem 2.5rem; }
+    .hero-title-top { margin-top: 0.75rem; }
     .feature-cards-inner { padding: 1.5rem 0.75rem 0; }
     .feature-card-desc { display: none; }
     .news-inner, .updates-inner { padding: 0 1rem; }
@@ -229,6 +257,11 @@
       <div class="updates-feed" id="updates-feed">
         <div class="updates-loading">Loading updates…</div>
       </div>
+      <div class="updates-pagination" id="updates-pagination" hidden>
+        <button type="button" class="updates-page-btn" id="updates-prev">Previous</button>
+        <span class="updates-page-label" id="updates-page-label"></span>
+        <button type="button" class="updates-page-btn" id="updates-next">Next</button>
+      </div>
     </div>
   </section>
 </main>
@@ -237,9 +270,13 @@
 <script>
 const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
+const UPDATES_PER_PAGE = 6;
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
 const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
+
+let allUpdates = [];
+let updatesPage = 0;
 
 function waitForDb(cb, tries) {
   tries = tries || 0;
@@ -348,19 +385,39 @@ function tweetCardEmbed(url) {
   const safe = escapeHtml(url);
   return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true"><a href="' + safe + '"></a></blockquote></div>';
 }
-function renderUpdates(posts) {
+function renderUpdatesPage() {
   const feed = document.getElementById('updates-feed');
-  if (!posts.length) {
+  const pager = document.getElementById('updates-pagination');
+  const label = document.getElementById('updates-page-label');
+  const prev = document.getElementById('updates-prev');
+  const next = document.getElementById('updates-next');
+
+  if (!allUpdates.length) {
     feed.innerHTML = '<div class="updates-empty">No updates posted yet. Check back soon.</div>';
+    pager.hidden = true;
     return;
   }
-  feed.innerHTML = posts.map(function (p) {
+
+  const totalPages = Math.ceil(allUpdates.length / UPDATES_PER_PAGE);
+  if (updatesPage >= totalPages) updatesPage = totalPages - 1;
+  if (updatesPage < 0) updatesPage = 0;
+
+  const start = updatesPage * UPDATES_PER_PAGE;
+  const pagePosts = allUpdates.slice(start, start + UPDATES_PER_PAGE);
+
+  feed.innerHTML = pagePosts.map(function (p) {
     const body = isTweetUrl(p.tweetUrl)
       ? tweetCardEmbed(p.tweetUrl)
       : (p.text ? '<p class="update-text">' + escapeHtml(p.text) + '</p>' : '');
     return '<div class="update-card">' + body + '</div>';
   }).join('');
-  if (posts.some(function (p) { return isTweetUrl(p.tweetUrl); })) {
+
+  pager.hidden = totalPages <= 1;
+  label.textContent = 'Page ' + (updatesPage + 1) + ' of ' + totalPages;
+  prev.disabled = updatesPage === 0;
+  next.disabled = updatesPage >= totalPages - 1;
+
+  if (pagePosts.some(function (p) { return isTweetUrl(p.tweetUrl); })) {
     if (window.twttr && window.twttr.widgets) window.twttr.widgets.load(feed);
     else if (!document.getElementById('twitter-wjs')) {
       const s = document.createElement('script');
@@ -373,8 +430,12 @@ function renderUpdates(posts) {
 }
 function listenToUpdates() {
   waitForDb(function () {
-    window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(20).onSnapshot(
-      function (snap) { renderUpdates(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); })); },
+    window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(60).onSnapshot(
+      function (snap) {
+        allUpdates = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+        updatesPage = 0;
+        renderUpdatesPage();
+      },
       function (err) {
         console.error(err);
         document.getElementById('updates-feed').innerHTML = '<div class="updates-empty">Couldn\'t load updates right now.</div>';
@@ -382,6 +443,15 @@ function listenToUpdates() {
     );
   });
 }
+
+document.getElementById('updates-prev').addEventListener('click', function () {
+  updatesPage -= 1;
+  renderUpdatesPage();
+});
+document.getElementById('updates-next').addEventListener('click', function () {
+  updatesPage += 1;
+  renderUpdatesPage();
+});
 
 listenToNews();
 listenToUpdates();

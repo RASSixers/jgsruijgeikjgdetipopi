@@ -4,9 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Sixers Hoops — News, Analysis & Community</title>
-<meta name="description" content="The ultimate destination for Philadelphia 76ers fans. News, analysis, and community for everything Sixers." />
+<meta name="description" content="Philadelphia 76ers news, analysis, and community." />
 <meta property="og:title" content="Sixers Hoops" />
-<meta property="og:description" content="The ultimate destination for Philadelphia 76ers fans. News, analysis, and community for everything Sixers." />
+<meta property="og:description" content="Philadelphia 76ers news, analysis, and community." />
 <link rel="icon" href="/favicon.ico" />
 <link rel="canonical" href="/" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -18,148 +18,233 @@
     --navy: #001a57;
     --sixers-blue: #006bb6;
     --sixers-red: #ed174c;
-    --cream: #ffffff;
-    --ink: #0d0f1a;
-    --mid: #64748b;
-    --border-light: #e4e8f0;
-    --card-bg: #ffffff;
+    --cream: #f7f6f3;
+    --paper: #ffffff;
+    --ink: #111318;
+    --mid: #5c6470;
+    --line: #ddd9d2;
   }
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
     background: var(--cream);
     color: var(--ink);
-    font-family: "Lexend", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
+    font-family: "Lexend", system-ui, sans-serif;
     margin-top: 64px;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: inherit; }
+  a { color: inherit; text-decoration: none; }
 
-  .hero { background: var(--cream); position: relative; overflow: hidden; text-transform: uppercase; }
+  .hero {
+    background: var(--navy);
+    color: #fff;
+    border-bottom: 4px solid var(--sixers-red);
+  }
   .hero-inner {
-    position: relative; z-index: 1; max-width: 860px; margin: 0 auto;
-    padding: 7rem 2rem 4.5rem; display: flex; flex-direction: column;
-    align-items: center; text-align: center;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 3.25rem 2rem 2.6rem;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 2.5rem;
+    align-items: end;
   }
-  .hero-wordmark { display: flex; flex-direction: column; align-items: center; width: 100%; }
-  .hero-title-top, .hero-title-bottom {
-    font-size: clamp(2.4rem, 6vw, 4.5rem); font-weight: 700; line-height: 0.95;
-    letter-spacing: -0.03em; margin: 0;
+  .hero-kicker {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin: 0 0 0.7rem;
+    font-weight: 600;
   }
-  .hero-title-top { color: var(--ink); }
-  .hero-title-bottom { color: var(--sixers-blue); }
+  .hero-title {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    margin: 0;
+    font-weight: 700;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: #7ec4ff;
+  }
   .hero-sub {
-    font-size: 0.92rem; color: var(--mid); max-width: 460px;
-    line-height: 1.65; margin: 1.25rem auto 0; text-transform: none;
+    margin: 1rem 0 0;
+    max-width: 34rem;
+    color: rgba(255,255,255,0.72);
+    font-size: 0.95rem;
+    line-height: 1.55;
   }
-  .hero-cta-row { display: flex; align-items: center; gap: 0.7rem; margin-top: 2.25rem; flex-wrap: wrap; }
-  .hero-cta-primary {
-    background: var(--sixers-blue); color: white; font-weight: 600; font-size: 0.76rem;
-    letter-spacing: 0.02em; padding: 0.75rem 1.6rem; border-radius: 8px;
-    text-decoration: none; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,107,182,0.25);
-  }
-  .hero-cta-primary:hover { background: #0057a0; transform: translateY(-1px); }
-  .hero-cta-secondary {
-    color: var(--sixers-blue); font-weight: 600; font-size: 0.76rem;
-    letter-spacing: 0.02em; padding: 0.75rem 1.6rem; border-radius: 8px;
-    text-decoration: none; border: 1px solid var(--sixers-blue);
-  }
-  .hero-cta-secondary:hover { background: var(--sixers-blue); color: white; }
-
-  .feature-cards-section { background: var(--cream); border-top: 1px solid var(--border-light); padding: 0.5rem 0 2.5rem; }
-  .feature-cards-inner {
-    max-width: 1080px; margin: 0 auto; padding: 1.5rem 2rem 0;
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem;
-  }
-  .feature-card {
-    background: var(--card-bg); border: 1px solid var(--border-light);
-    padding: 0.9rem; text-decoration: none; display: flex; flex-direction: column;
-    gap: 0.4rem; position: relative; overflow: hidden; border-radius: 10px;
-  }
-  .feature-card-title { font-size: 0.82rem; font-weight: 600; color: var(--ink); }
-  .feature-card-desc { font-size: 0.7rem; color: var(--mid); line-height: 1.45; flex: 1; }
-  .feature-card-arrow { margin-top: auto; color: var(--sixers-blue); }
-
-  .news-section { background: var(--cream); padding: 3rem 0 4rem; border-top: 1px solid var(--border-light); }
-  .news-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-  .news-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .news-eyebrow { display: block; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sixers-blue); margin-bottom: 0.4rem; }
-  .news-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0; }
-  .news-view-all { font-size: 0.8rem; font-weight: 600; color: var(--sixers-blue); text-decoration: none; }
-  .news-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
-  .news-card {
-    display: flex; flex-direction: column; background: var(--card-bg);
-    border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
-    text-decoration: none; color: inherit;
-  }
-  .news-card-thumb {
-    position: relative; aspect-ratio: 16/9; overflow: hidden; background: #001a57;
-  }
-  .news-card-thumb img {
-    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
-  }
-  .news-card-body { padding: 1.25rem 1.4rem 1.4rem; display: flex; flex-direction: column; gap: 0.55rem; }
-  .news-tag {
-    align-self: flex-start; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--sixers-blue);
-    background: rgba(0,107,182,0.08); border: 1px solid rgba(0,107,182,0.15);
-    padding: 3px 9px; border-radius: 999px;
-  }
-  .news-card-title { font-size: 1.25rem; font-weight: 700; line-height: 1.25; margin: 0; }
-  .news-card-excerpt { font-size: 0.9rem; line-height: 1.55; color: var(--mid); margin: 0; }
-  .news-card-meta { display: flex; gap: 0.5rem; font-size: 0.75rem; color: var(--mid); }
-  .news-list { display: flex; flex-direction: column; gap: 0.75rem; }
-  .news-list-item {
-    display: flex; flex-direction: column; gap: 0.4rem; background: var(--card-bg);
-    border: 1px solid var(--border-light); border-radius: 10px; padding: 1rem 1.1rem;
-    text-decoration: none; color: inherit;
-  }
-  .news-list-item.has-thumb { flex-direction: row; align-items: stretch; gap: 0.85rem; padding: 0.7rem; }
-  .news-list-thumb {
-    flex-shrink: 0; width: 110px; border-radius: 8px; overflow: hidden; background: #001a57; position: relative;
-  }
-  .news-list-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-  .news-list-copy { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
-  .news-list-title { font-size: 0.98rem; font-weight: 600; line-height: 1.3; margin: 0; }
-  .news-list-excerpt { font-size: 0.82rem; line-height: 1.5; color: var(--mid); margin: 0; }
-  .news-empty, .news-loading {
-    grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: var(--mid);
-    background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px;
-  }
-  .grade-chip {
+  .hero-actions { display: flex; gap: 0.7rem; margin-top: 1.4rem; flex-wrap: wrap; }
+  .btn-solid, .btn-ghost {
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 0.68rem; font-weight: 700; color: white; border-radius: 5px; padding: 1px 6px;
+    padding: 0.7rem 1.05rem; font-size: 0.78rem; font-weight: 600;
+    border-radius: 2px;
   }
-  .news-card-grades { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .btn-solid { background: #fff; color: var(--navy); }
+  .btn-solid:hover { background: #e8f2fb; }
+  .btn-ghost { border: 1px solid rgba(255,255,255,0.35); color: #fff; }
+  .btn-ghost:hover { border-color: #fff; }
+  .hero-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+  .hero-link {
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+    padding: 0.85rem 0.9rem;
+    min-height: 78px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hero-link strong { font-size: 0.82rem; font-weight: 600; }
+  .hero-link span { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 0.35rem; }
+  .hero-link:hover { background: rgba(255,255,255,0.08); }
 
-  .updates-section { background: #f8fafc; padding: 3rem 0 4rem; border-top: 1px solid var(--border-light); }
-  .updates-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-  .updates-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .updates-feed { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+  .page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 2.25rem 2rem 4rem;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.55rem;
+  }
+  .section-head h2 {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .section-head a {
+    font-size: 0.78rem;
+    color: var(--sixers-blue);
+    font-weight: 600;
+  }
+
+  .news-layout {
+    display: grid;
+    grid-template-columns: 1.45fr 0.95fr;
+    gap: 1.75rem;
+    align-items: start;
+  }
+  .lead {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    display: block;
+  }
+  .lead-media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--navy);
+    overflow: hidden;
+  }
+  .lead-media img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .lead-body { padding: 1.15rem 1.2rem 1.25rem; }
+  .cat {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sixers-red);
+    margin-bottom: 0.45rem;
+  }
+  .lead h3 {
+    margin: 0;
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+  }
+  .lead p {
+    margin: 0.55rem 0 0;
+    color: var(--mid);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .meta {
+    margin-top: 0.7rem;
+    font-size: 0.74rem;
+    color: var(--mid);
+  }
+  .lead:hover h3 { color: var(--sixers-blue); }
+
+  .rail { display: flex; flex-direction: column; }
+  .rail-item {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 0.85rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+  .rail-item:first-child { padding-top: 0; }
+  .rail-item:last-child { border-bottom: 0; padding-bottom: 0; }
+  .rail-item.no-photo { grid-template-columns: 1fr; }
+  .rail-thumb {
+    width: 96px; height: 72px; background: var(--navy); overflow: hidden;
+  }
+  .rail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rail-item h3 {
+    margin: 0.2rem 0 0;
+    font-size: 0.98rem;
+    line-height: 1.28;
+    font-weight: 600;
+  }
+  .rail-item:hover h3 { color: var(--sixers-blue); }
+
+  .empty {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--mid);
+    font-size: 0.88rem;
+  }
+
+  .updates-wrap { margin-top: 2.75rem; }
+  .updates-feed {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    align-items: start;
+  }
   .update-card {
-    background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px;
-    padding: 0.5rem 0.55rem 0.4rem; overflow: hidden;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 0.45rem;
+    overflow: hidden;
   }
-  .update-text { font-size: 0.88rem; line-height: 1.5; margin: 0; padding: 0.4rem; white-space: pre-wrap; }
+  .update-text {
+    margin: 0;
+    padding: 0.55rem 0.45rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
   .update-embed .twitter-tweet { margin: 0 auto !important; }
-  .updates-empty, .updates-loading {
-    grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: var(--mid);
-    background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 14px;
-  }
 
   @media (max-width: 900px) {
-    .feature-cards-inner { grid-template-columns: repeat(2, 1fr); }
-    .news-grid { grid-template-columns: 1fr; }
-    .updates-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hero-inner, .news-layout { grid-template-columns: 1fr; }
+    .hero-links { grid-template-columns: 1fr 1fr; }
+    .updates-feed { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 600px) {
-    .hero-inner { padding: 3.5rem 1rem 2rem; }
-    .feature-cards-inner { padding: 1.5rem 0.75rem 0; }
-    .feature-card-desc { display: none; }
-    .news-inner, .updates-inner { padding: 0 1rem; }
-    .news-list-thumb { width: 84px; }
+    .hero-inner, .page { padding-left: 1rem; padding-right: 1rem; }
+    .hero-links { grid-template-columns: 1fr; }
     .updates-feed { grid-template-columns: 1fr; }
+    .rail-item { grid-template-columns: 76px 1fr; }
+    .rail-thumb { width: 76px; height: 58px; }
   }
 </style>
 </head>
@@ -167,79 +252,63 @@
 <main>
   <header class="hero">
     <div class="hero-inner">
-      <div class="hero-wordmark">
-        <p class="hero-title-top">Sixers</p>
-        <p class="hero-title-bottom">Hoops</p>
-        <p class="hero-sub">The ultimate destination for Sixers fans. News, analysis, community, and everything 76ers.</p>
-        <div class="hero-cta-row">
-          <a href="#news" class="hero-cta-primary">Latest News</a>
-          <a href="#features" class="hero-cta-secondary">Explore the site →</a>
+      <div>
+        <p class="hero-kicker">Philadelphia 76ers coverage</p>
+        <h1 class="hero-title">Sixers<br><em>Hoops</em></h1>
+        <p class="hero-sub">Game grades, roster notes, and the arguments that actually matter after the final horn.</p>
+        <div class="hero-actions">
+          <a class="btn-solid" href="#news">Latest stories</a>
+          <a class="btn-ghost" href="/schedule.html">Schedule</a>
         </div>
       </div>
-    </div>
-    <div class="feature-cards-section" id="features">
-      <div class="feature-cards-inner">
-        <a href="https://www.nba.com/trade-machine" target="_blank" rel="noopener noreferrer" class="feature-card">
-          <div class="feature-card-title">NBA Trade Machine</div>
-          <div class="feature-card-desc">Build and simulate trades to see how they affect the Sixers roster.</div>
-          <div class="feature-card-arrow">→</div>
+      <div class="hero-links">
+        <a class="hero-link" href="https://www.nba.com/trade-machine" target="_blank" rel="noopener noreferrer">
+          <strong>Trade Machine</strong>
+          <span>Test a deal before you send it in the group chat.</span>
         </a>
-        <a href="/roster.html" class="feature-card">
-          <div class="feature-card-title">Roster &amp; Depth Chart</div>
-          <div class="feature-card-desc">Full squad, lineups, and player stats at a glance.</div>
-          <div class="feature-card-arrow">→</div>
+        <a class="hero-link" href="/roster.html">
+          <strong>Roster</strong>
+          <span>Current rotation and depth.</span>
         </a>
-        <a href="/schedule.html" class="feature-card">
-          <div class="feature-card-title">2025–26 Schedule</div>
-          <div class="feature-card-desc">Full game schedule, results and upcoming matchups.</div>
-          <div class="feature-card-arrow">→</div>
+        <a class="hero-link" href="/schedule.html">
+          <strong>2025–26 slate</strong>
+          <span>Results and what’s next.</span>
         </a>
-        <a href="/pickem.html" class="feature-card">
-          <div class="feature-card-title">Community Pick'em</div>
-          <div class="feature-card-desc">Make your predictions and compete with the Sixers fanbase.</div>
-          <div class="feature-card-arrow" style="color: var(--sixers-red);">→</div>
+        <a class="hero-link" href="/pickem.html">
+          <strong>Pick’em</strong>
+          <span>Weekly board against other fans.</span>
         </a>
       </div>
     </div>
   </header>
 
-  <section id="news" class="news-section">
-    <div class="news-inner">
-      <div class="news-heading">
-        <div>
-          <span class="news-eyebrow">Latest</span>
-          <h2 class="news-title">News &amp; Analysis</h2>
-        </div>
-        <a href="/news.html" class="news-view-all">View all news →</a>
+  <div class="page">
+    <section id="news">
+      <div class="section-head">
+        <h2>News &amp; analysis</h2>
+        <a href="/news.html">All stories</a>
       </div>
-      <div class="news-grid" id="news-grid">
-        <div class="news-loading">Loading the latest…</div>
+      <div class="news-layout" id="news-grid">
+        <div class="empty">Loading stories…</div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="updates" class="updates-section">
-    <div class="updates-inner">
-      <div class="updates-heading">
-        <div>
-          <span class="news-eyebrow">From the desk</span>
-          <h2 class="news-title">Sixers Updates</h2>
-        </div>
+    <section id="updates" class="updates-wrap">
+      <div class="section-head">
+        <h2>From the timeline</h2>
       </div>
       <div class="updates-feed" id="updates-feed">
-        <div class="updates-loading">Loading updates…</div>
+        <div class="empty">Loading updates…</div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </main>
 
 <script src="/nav.js"></script>
 <script>
 const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
-const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
-const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
-const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
+const THUMB_COLORS = ['#001a57', '#006bb6', '#111318', '#ed174c'];
 
 function waitForDb(cb, tries) {
   tries = tries || 0;
@@ -272,71 +341,48 @@ function toDate(ts) {
 function renderNews(articles) {
   const grid = document.getElementById('news-grid');
   if (!articles.length) {
-    grid.innerHTML = '<div class="news-empty">No articles published yet. Check back soon.</div>';
+    grid.innerHTML = '<div class="empty">No stories published yet.</div>';
     return;
   }
-
   const featured = articles[0];
-  const rest = articles.slice(1, 4);
+  const rest = articles.slice(1, 5);
 
-  function articleUrl(a) {
-    return a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
-  }
-  function gradeChips(a) {
-    const grades = (a.grades || []).filter(function (g) { return g.grade && g.grade !== 'DNP'; });
-    if (!grades.length) return '';
-    return '<div class="news-card-grades">' + grades.slice(0, 6).map(function (g) {
-      const color = GRADE_COLORS[g.grade] || '#006bb6';
-      return '<span class="grade-chip" style="background:' + color + ';">' + escapeHtml(g.name ? g.name.split(' ').slice(-1)[0] : '') + ' ' + escapeHtml(g.grade) + '</span>';
-    }).join('') + '</div>';
-  }
-  function thumbHtml(a, idx, cls) {
-    const fallback = a.gradient || THUMB_COLORS[idx % THUMB_COLORS.length];
-    if (a.imageUrl) {
-      return '<div class="' + cls + '"><img src="' + escapeHtml(a.imageUrl) + '" alt=""></div>';
-    }
-    return '<div class="' + cls + '" style="background:' + fallback + ';"></div>';
-  }
+  function href(a) { return a.slug ? '/article/' + encodeURIComponent(a.slug) : '#'; }
 
-  const featuredColor = CATEGORY_COLORS[featured.category] || '#006bb6';
   const featuredHtml =
-    '<a href="' + articleUrl(featured) + '" class="news-card">' +
-      thumbHtml(featured, 0, 'news-card-thumb') +
-      '<div class="news-card-body">' +
-        '<span class="news-tag" style="color:' + featuredColor + ';border-color:' + featuredColor + '33;background:' + featuredColor + '14;">' + escapeHtml(featured.category || 'News') + '</span>' +
-        '<h3 class="news-card-title">' + escapeHtml(featured.title) + '</h3>' +
-        (featured.excerpt ? '<p class="news-card-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
-        gradeChips(featured) +
-        '<div class="news-card-meta"><span>Sixers Hoops Staff</span><span>·</span><span>' + escapeHtml(timeAgo(toDate(featured.createdAt))) + '</span></div>' +
+    '<a class="lead" href="' + href(featured) + '">' +
+      '<div class="lead-media"' + (featured.imageUrl ? '' : ' style="background:' + (featured.gradient || THUMB_COLORS[0]) + ';"') + '>' +
+        (featured.imageUrl ? '<img src="' + escapeHtml(featured.imageUrl) + '" alt="">' : '') +
+      '</div>' +
+      '<div class="lead-body">' +
+        '<div class="cat">' + escapeHtml(featured.category || 'News') + '</div>' +
+        '<h3>' + escapeHtml(featured.title) + '</h3>' +
+        (featured.excerpt ? '<p>' + escapeHtml(featured.excerpt) + '</p>' : '') +
+        '<div class="meta">Staff · ' + escapeHtml(timeAgo(toDate(featured.createdAt))) + '</div>' +
       '</div>' +
     '</a>';
 
-  const listHtml = rest.map(function (a, i) {
-    const color = CATEGORY_COLORS[a.category] || '#006bb6';
+  const rail = rest.map(function (a, i) {
     return (
-      '<a href="' + articleUrl(a) + '" class="news-list-item' + (a.imageUrl ? ' has-thumb' : '') + '">' +
-        (a.imageUrl ? thumbHtml(a, i + 1, 'news-list-thumb') : '') +
-        '<div class="news-list-copy">' +
-          '<span class="news-tag" style="color:' + color + ';border-color:' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
-          '<h3 class="news-list-title">' + escapeHtml(a.title) + '</h3>' +
-          (a.excerpt ? '<p class="news-list-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
-          '<div class="news-card-meta"><span>Sixers Hoops Staff</span><span>·</span><span>' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</span></div>' +
+      '<a class="rail-item' + (a.imageUrl ? '' : ' no-photo') + '" href="' + href(a) + '">' +
+        (a.imageUrl ? '<div class="rail-thumb"><img src="' + escapeHtml(a.imageUrl) + '" alt=""></div>' : '') +
+        '<div>' +
+          '<div class="cat">' + escapeHtml(a.category || 'News') + '</div>' +
+          '<h3>' + escapeHtml(a.title) + '</h3>' +
+          '<div class="meta">' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</div>' +
         '</div>' +
       '</a>'
     );
   }).join('');
 
-  grid.innerHTML = featuredHtml + '<div class="news-list">' + (listHtml || '<div class="news-empty">More articles coming soon.</div>') + '</div>';
+  grid.innerHTML = featuredHtml + '<div class="rail">' + (rail || '') + '</div>';
 }
 
 function listenToNews() {
   waitForDb(function () {
     window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(8).onSnapshot(
       function (snap) { renderNews(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); })); },
-      function (err) {
-        console.error(err);
-        document.getElementById('news-grid').innerHTML = '<div class="news-empty">Couldn\'t load news right now.</div>';
-      }
+      function () { document.getElementById('news-grid').innerHTML = '<div class="empty">Stories unavailable right now.</div>'; }
     );
   });
 }
@@ -344,19 +390,15 @@ function listenToNews() {
 function isTweetUrl(url) {
   return /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/i.test(String(url || '').trim());
 }
-function tweetCardEmbed(url) {
-  const safe = escapeHtml(url);
-  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true"><a href="' + safe + '"></a></blockquote></div>';
-}
 function renderUpdates(posts) {
   const feed = document.getElementById('updates-feed');
   if (!posts.length) {
-    feed.innerHTML = '<div class="updates-empty">No updates posted yet. Check back soon.</div>';
+    feed.innerHTML = '<div class="empty">No updates yet.</div>';
     return;
   }
   feed.innerHTML = posts.map(function (p) {
     const body = isTweetUrl(p.tweetUrl)
-      ? tweetCardEmbed(p.tweetUrl)
+      ? '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true"><a href="' + escapeHtml(p.tweetUrl) + '"></a></blockquote></div>'
       : (p.text ? '<p class="update-text">' + escapeHtml(p.text) + '</p>' : '');
     return '<div class="update-card">' + body + '</div>';
   }).join('');
@@ -375,10 +417,7 @@ function listenToUpdates() {
   waitForDb(function () {
     window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(20).onSnapshot(
       function (snap) { renderUpdates(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); })); },
-      function (err) {
-        console.error(err);
-        document.getElementById('updates-feed').innerHTML = '<div class="updates-empty">Couldn\'t load updates right now.</div>';
-      }
+      function () { document.getElementById('updates-feed').innerHTML = '<div class="empty">Updates unavailable right now.</div>'; }
     );
   });
 }

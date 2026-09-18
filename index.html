@@ -133,6 +133,29 @@
   }
   .news-card-grades { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 
+  .poll-section { background: var(--cream); padding: 0 0 4rem; }
+  .poll-inner { max-width: 760px; margin: 0 auto; padding: 0 2rem; }
+  .poll-card { background: transparent; }
+  .poll-question { font-size: clamp(1.35rem, 3vw, 1.85rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.1rem; }
+  .poll-options { display: flex; flex-direction: column; gap: 0.7rem; }
+  .poll-option {
+    width: 100%; border: 1px solid var(--border-light); background: #f3f6fb;
+    border-radius: 999px; padding: 0; cursor: pointer; overflow: hidden; text-align: left;
+    font-family: inherit; position: relative;
+  }
+  .poll-option:disabled { cursor: default; }
+  .poll-option-fill {
+    position: absolute; inset: 0 auto 0 0; background: #dbe7f5; width: 0;
+    transition: width 0.35s ease;
+  }
+  .poll-option-row {
+    position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding: 0.8rem 1.1rem;
+  }
+  .poll-option-name { font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+  .poll-option-pct { font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+  .poll-empty, .poll-loading { color: var(--mid); font-size: 0.9rem; }
+
   .updates-section { background: #f8fafc; padding: 3rem 0 4rem; border-top: 1px solid var(--border-light); }
   .updates-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
   .updates-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
@@ -148,32 +171,16 @@
     background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 14px;
   }
   .updates-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-    flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap;
   }
   .updates-page-btn {
-    background: var(--sixers-blue);
-    color: #fff;
-    border: 0;
-    border-radius: 8px;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.78rem;
-    padding: 0.55rem 1rem;
-    cursor: pointer;
+    background: var(--sixers-blue); color: #fff; border: 0; border-radius: 8px;
+    font-family: inherit; font-weight: 600; font-size: 0.78rem;
+    padding: 0.55rem 1rem; cursor: pointer;
   }
-  .updates-page-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-  .updates-page-label {
-    font-size: 0.82rem;
-    color: var(--mid);
-  }
+  .updates-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .updates-page-label { font-size: 0.82rem; color: var(--mid); }
 
   @media (max-width: 900px) {
     .feature-cards-inner { grid-template-columns: repeat(2, 1fr); }
@@ -186,7 +193,7 @@
     .hero-wordmark { padding-top: 1.25rem; }
     .feature-cards-inner { padding: 1.5rem 0.75rem 0; }
     .feature-card-desc { display: none; }
-    .news-inner, .updates-inner { padding: 0 1rem; }
+    .news-inner, .updates-inner, .poll-inner { padding: 0 1rem; }
     .news-list-thumb { width: 84px; }
     .updates-feed { grid-template-columns: 1fr; }
   }
@@ -247,6 +254,12 @@
     </div>
   </section>
 
+  <section id="fan-poll" class="poll-section">
+    <div class="poll-inner" id="poll-box">
+      <div class="poll-loading">Loading poll…</div>
+    </div>
+  </section>
+
   <section id="updates" class="updates-section">
     <div class="updates-inner">
       <div class="updates-heading">
@@ -271,6 +284,7 @@
 <script>
 const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
+const POLLS_COLLECTION = 'fan_polls';
 const UPDATES_PER_PAGE = 6;
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
@@ -278,6 +292,7 @@ const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
 
 let allUpdates = [];
 let updatesPage = 0;
+let activePoll = null;
 
 function waitForDb(cb, tries) {
   tries = tries || 0;
@@ -306,9 +321,16 @@ function toDate(ts) {
   if (ts.toDate) return ts.toDate();
   return new Date(ts);
 }
+function isPublished(a) {
+  return !a.status || a.status === 'published';
+}
+function byline(a) {
+  return a.author || 'Sixers Hoops Staff';
+}
 
 function renderNews(articles) {
   const grid = document.getElementById('news-grid');
+  articles = (articles || []).filter(isPublished);
   if (!articles.length) {
     grid.innerHTML = '<div class="news-empty">No articles published yet. Check back soon.</div>';
     return;
@@ -345,7 +367,7 @@ function renderNews(articles) {
         '<h3 class="news-card-title">' + escapeHtml(featured.title) + '</h3>' +
         (featured.excerpt ? '<p class="news-card-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
         gradeChips(featured) +
-        '<div class="news-card-meta"><span>Sixers Hoops Staff</span><span>·</span><span>' + escapeHtml(timeAgo(toDate(featured.createdAt))) + '</span></div>' +
+        '<div class="news-card-meta"><span>' + escapeHtml(byline(featured)) + '</span><span>·</span><span>' + escapeHtml(timeAgo(toDate(featured.createdAt))) + '</span></div>' +
       '</div>' +
     '</a>';
 
@@ -358,7 +380,7 @@ function renderNews(articles) {
           '<span class="news-tag" style="color:' + color + ';border-color:' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
           '<h3 class="news-list-title">' + escapeHtml(a.title) + '</h3>' +
           (a.excerpt ? '<p class="news-list-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
-          '<div class="news-card-meta"><span>Sixers Hoops Staff</span><span>·</span><span>' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</span></div>' +
+          '<div class="news-card-meta"><span>' + escapeHtml(byline(a)) + '</span><span>·</span><span>' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</span></div>' +
         '</div>' +
       '</a>'
     );
@@ -369,11 +391,71 @@ function renderNews(articles) {
 
 function listenToNews() {
   waitForDb(function () {
-    window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(8).onSnapshot(
-      function (snap) { renderNews(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); })); },
+    window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(12).onSnapshot(
+      function (snap) {
+        renderNews(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }));
+      },
       function (err) {
         console.error(err);
         document.getElementById('news-grid').innerHTML = '<div class="news-empty">Couldn\'t load news right now.</div>';
+      }
+    );
+  });
+}
+
+function pollVoteKey(id) {
+  return 'sixers_poll_vote_' + id;
+}
+function renderPoll(poll) {
+  const box = document.getElementById('poll-box');
+  if (!poll || !poll.options || poll.options.length < 2) {
+    box.innerHTML = '';
+    return;
+  }
+  const total = poll.options.reduce(function (sum, o) { return sum + (Number(o.votes) || 0); }, 0);
+  const voted = localStorage.getItem(pollVoteKey(poll.id));
+  const optionsHtml = poll.options.map(function (o, i) {
+    const votes = Number(o.votes) || 0;
+    const pct = total ? Math.round((votes / total) * 100) : 0;
+    return '<button type="button" class="poll-option" data-idx="' + i + '"' + (voted ? ' disabled' : '') + '>' +
+      '<span class="poll-option-fill" style="width:' + (voted || total ? pct : 0) + '%;"></span>' +
+      '<span class="poll-option-row"><span class="poll-option-name">' + escapeHtml(o.text) + '</span>' +
+      '<span class="poll-option-pct">' + pct + '%</span></span></button>';
+  }).join('');
+  box.innerHTML =
+    '<div class="poll-card">' +
+      '<span class="news-eyebrow">Fan Poll</span>' +
+      '<h2 class="poll-question">' + escapeHtml(poll.question || '') + '</h2>' +
+      '<div class="poll-options">' + optionsHtml + '</div>' +
+    '</div>';
+  if (!voted) {
+    box.querySelectorAll('.poll-option').forEach(function (btn) {
+      btn.addEventListener('click', function () { votePoll(poll.id, Number(btn.getAttribute('data-idx'))); });
+    });
+  }
+}
+async function votePoll(id, idx) {
+  if (!activePoll || localStorage.getItem(pollVoteKey(id))) return;
+  const options = (activePoll.options || []).map(function (o, i) {
+    return { text: o.text, votes: (Number(o.votes) || 0) + (i === idx ? 1 : 0) };
+  });
+  localStorage.setItem(pollVoteKey(id), String(idx));
+  try {
+    await window.db.collection(POLLS_COLLECTION).doc(id).update({ options: options });
+  } catch (e) {
+    console.error(e);
+  }
+}
+function listenToPoll() {
+  waitForDb(function () {
+    window.db.collection(POLLS_COLLECTION).where('isActive', '==', true).limit(8).onSnapshot(
+      function (snap) {
+        const polls = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+        activePoll = polls[0] || null;
+        renderPoll(activePoll);
+      },
+      function () {
+        document.getElementById('poll-box').innerHTML = '';
       }
     );
   });
@@ -455,6 +537,7 @@ document.getElementById('updates-next').addEventListener('click', function () {
 });
 
 listenToNews();
+listenToPoll();
 listenToUpdates();
 </script>
 </body>

@@ -244,26 +244,126 @@ document.addEventListener('DOMContentLoaded', function() {
                 gap: 0.6rem;
                 padding: 0.7rem 1rem;
                 background: #fff;
-                border: 1px solid #e2e8f0;
+                border: 2px solid #94a3b8;
                 border-radius: 8px;
+                outline: 2px solid transparent;
+                outline-offset: 0;
                 font-family: inherit;
                 font-size: 0.88rem;
                 font-weight: 600;
                 color: #1e293b;
                 cursor: pointer;
-                transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+                transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, outline-color 0.15s;
             }
             .auth-google-btn:hover {
                 background: #f8fafc;
-                border-color: #cbd5e1;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                border-color: #006BB6;
+                outline-color: rgba(0,107,182,0.25);
+                box-shadow: 0 1px 4px rgba(0,107,182,0.12);
+            }
+            .auth-google-btn:focus-visible {
+                outline: 2px solid #006BB6;
+                outline-offset: 2px;
+                border-color: #006BB6;
             }
             :root.dark-mode .auth-google-btn {
                 background: #1e293b;
-                border-color: #334155;
+                border-color: #64748b;
                 color: #e2e8f0;
             }
-            :root.dark-mode .auth-google-btn:hover { background: #334155; }
+            :root.dark-mode .auth-google-btn:hover {
+                background: #334155;
+                border-color: #4da8ff;
+                outline-color: rgba(77,168,255,0.3);
+            }
+            :root.dark-mode .auth-google-btn:focus-visible {
+                outline-color: #4da8ff;
+                border-color: #4da8ff;
+            }
+            .auth-agree-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.55rem;
+                margin: 0.85rem 0 1rem;
+                font-size: 0.78rem;
+                line-height: 1.45;
+                color: #64748b;
+            }
+            .auth-agree-row input[type="checkbox"] {
+                margin-top: 0.15rem;
+                flex-shrink: 0;
+                width: 15px;
+                height: 15px;
+                accent-color: #006BB6;
+                cursor: pointer;
+            }
+            .auth-agree-row label { cursor: pointer; }
+            .auth-agree-row a {
+                color: #006BB6;
+                font-weight: 600;
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+            .auth-agree-row a:hover { color: #004a8f; }
+            :root.dark-mode .auth-agree-row { color: #94a3b8; }
+            :root.dark-mode .auth-agree-row a { color: #4da8ff; }
+            :root.dark-mode .auth-agree-row a:hover { color: #7cc4ff; }
+            .policy-popup-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(15,23,42,0.55);
+                z-index: 10060;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+            .policy-popup-overlay.open { display: flex; }
+            .policy-popup {
+                background: #fff;
+                border-radius: 14px;
+                width: min(640px, 100%);
+                max-height: min(80vh, 720px);
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 25px 60px rgba(0,0,0,0.28);
+                font-family: Lexend, system-ui, sans-serif;
+            }
+            :root.dark-mode .policy-popup { background: #12141c; color: #e8eaf0; }
+            .policy-popup-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.9rem 1.1rem;
+                border-bottom: 1px solid #e2e8f0;
+                font-weight: 800;
+                font-size: 1rem;
+            }
+            :root.dark-mode .policy-popup-head { border-bottom-color: #2a2f3a; }
+            .policy-popup-close {
+                border: none;
+                background: transparent;
+                font-size: 1.4rem;
+                cursor: pointer;
+                color: #64748b;
+                line-height: 1;
+            }
+            .policy-popup-body {
+                overflow: auto;
+                padding: 1rem 1.15rem 1.25rem;
+                font-size: 0.88rem;
+                line-height: 1.6;
+                color: #334155;
+            }
+            :root.dark-mode .policy-popup-body { color: #cbd5e1; }
+            .policy-popup-body iframe {
+                width: 100%;
+                height: min(60vh, 520px);
+                border: 0;
+                border-radius: 8px;
+                background: #f8fafc;
+            }
             :root.dark-mode .auth-divider::before,
             :root.dark-mode .auth-divider::after { background: #334155; }
         </style>
@@ -298,7 +398,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="auth-modal-tabs">
                 <button class="auth-modal-tab active" data-tab="login">Login</button>
                 <button class="auth-modal-tab" data-tab="register">Sign Up</button>
-                <button class="auth-modal-tab" data-tab="profile" id="navProfileTab" style="display: none;">Profile</button>
             </div>
             <div class="auth-modal-content">
                 <div id="navAuthMessage" class="auth-message"></div>
@@ -432,7 +531,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <input type="password" class="auth-input" id="navRegisterConfirm" required autocomplete="new-password" placeholder="Repeat password">
                         </div>
                     </div>
-                    <p class="auth-fineprint">By creating an account, you agree to the Terms and Privacy Policy.</p>
+                    <div class="auth-agree-row">
+                        <input type="checkbox" id="navAgreeTerms" required>
+                        <label for="navAgreeTerms">I agree to the <a href="/terms-of-service" data-policy="terms" class="policy-link">Terms of Service</a>, <a href="/privacy-policy" data-policy="privacy" class="policy-link">Privacy Policy</a>, and <a href="/cookie-policy" data-policy="cookie" class="policy-link">Cookie Policy</a>.</label>
+                    </div>
                     <button type="submit" class="auth-submit-btn">Create Account</button>
                     <div class="auth-divider"><span>or</span></div>
                     <button type="button" class="auth-google-btn" id="navGoogleSignUpBtn">
@@ -442,6 +544,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="auth-switch">Already have an account? <a href="#" data-tab-switch="login">Sign in</a></div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <div class="policy-popup-overlay" id="policyPopupOverlay" aria-hidden="true">
+        <div class="policy-popup" role="dialog" aria-modal="true" aria-labelledby="policyPopupTitle">
+            <div class="policy-popup-head">
+                <span id="policyPopupTitle">Policy</span>
+                <button type="button" class="policy-popup-close" id="policyPopupClose" aria-label="Close">×</button>
+            </div>
+            <div class="policy-popup-body" id="policyPopupBody"></div>
         </div>
     </div>
     `;
@@ -839,12 +951,10 @@ document.addEventListener('DOMContentLoaded', function() {
         forgotForm.style.display = 'none';
         profileForm.style.display = 'block';
         
-        tabs.forEach(t => t.style.display = 'none');
-        const profileTab = document.getElementById('navProfileTab');
-        if (profileTab) profileTab.style.display = 'block';
-        
-        tabs.forEach(t => t.classList.remove('active'));
-        if (profileTab) profileTab.classList.add('active');
+        tabs.forEach(t => {
+            t.style.display = 'none';
+            t.classList.remove('active');
+        });
 
         document.querySelector('.auth-modal-title').textContent = 'Account Settings';
 
@@ -1212,8 +1322,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Google Sign-In / Sign-Up
-    async function handleGoogleSignIn() {
+    async function handleGoogleSignIn(fromRegister) {
         try {
+            if (fromRegister) {
+                const agreed = document.getElementById('navAgreeTerms');
+                if (agreed && !agreed.checked) {
+                    showNavMessage('Please agree to the Terms of Service, Privacy Policy, and Cookie Policy to continue.', 'error');
+                    return;
+                }
+            }
             const provider = new firebase.auth.GoogleAuthProvider();
             const result = await auth.signInWithPopup(provider);
             const user = result.user;
@@ -1243,8 +1360,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    document.getElementById('navGoogleSignInBtn')?.addEventListener('click', handleGoogleSignIn);
-    document.getElementById('navGoogleSignUpBtn')?.addEventListener('click', handleGoogleSignIn);
+    document.getElementById('navGoogleSignInBtn')?.addEventListener('click', () => handleGoogleSignIn(false));
+    document.getElementById('navGoogleSignUpBtn')?.addEventListener('click', () => handleGoogleSignIn(true));
+
+    // Policy links open in popup
+    const policyTitles = {
+        terms: 'Terms of Service',
+        privacy: 'Privacy Policy',
+        cookie: 'Cookie Policy'
+    };
+    const policyUrls = {
+        terms: '/terms-of-service',
+        privacy: '/privacy-policy',
+        cookie: '/cookie-policy'
+    };
+    function openPolicyPopup(key) {
+        const overlay = document.getElementById('policyPopupOverlay');
+        const title = document.getElementById('policyPopupTitle');
+        const body = document.getElementById('policyPopupBody');
+        if (!overlay || !title || !body) return;
+        title.textContent = policyTitles[key] || 'Policy';
+        body.innerHTML = '<iframe src="' + (policyUrls[key] || '/') + '" title="' + (policyTitles[key] || 'Policy') + '" loading="lazy"></iframe>';
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+    function closePolicyPopup() {
+        const overlay = document.getElementById('policyPopupOverlay');
+        const body = document.getElementById('policyPopupBody');
+        if (overlay) {
+            overlay.classList.remove('open');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+        if (body) body.innerHTML = '';
+    }
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a.policy-link');
+        if (link) {
+            e.preventDefault();
+            openPolicyPopup(link.getAttribute('data-policy'));
+            return;
+        }
+        if (e.target.id === 'policyPopupClose' || e.target.id === 'policyPopupOverlay') {
+            closePolicyPopup();
+        }
+    });
 
     if(forgotForm) forgotForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1336,6 +1495,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById('navRegisterEmail').value;
         const password = document.getElementById('navRegisterPassword').value;
         const confirm = document.getElementById('navRegisterConfirm').value;
+        const agreed = document.getElementById('navAgreeTerms');
+        
+        if (agreed && !agreed.checked) {
+            showNavMessage('Please agree to the Terms of Service, Privacy Policy, and Cookie Policy to continue.', 'error');
+            return;
+        }
         
         if (password !== confirm) {
             showNavMessage('Passwords do not match', 'error');

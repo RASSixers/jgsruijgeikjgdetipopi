@@ -12,48 +12,62 @@
 :root { --navy:#001a57;--navy-deep:#000d2e;--sixers-blue:#006BB6;--sixers-red:#ED174C;--cream:#f5f0e8;--ink:#0d0d0d;--mid:#4a4a5a;--border-light:#e8e4dc;--card-bg:#ffffff; }
 *,*::before,*::after{box-sizing:border-box}
 body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream);color:var(--ink)}
-.admin-wrap{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.admin-wrap{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 6rem}
 .admin-header{background:var(--navy-deep);padding:2rem 1.5rem;position:relative;overflow:hidden}
 .admin-header::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,107,182,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,107,182,0.06) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
 .admin-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
 .admin-header h1{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;color:white;margin:0}
 .admin-header p{color:rgba(255,255,255,0.4);font-size:0.82rem;margin:0.25rem 0 0}
+.header-actions{display:flex;align-items:center;gap:0.85rem;flex-wrap:wrap}
+.writer-chip{color:rgba(255,255,255,0.7);font-size:0.78rem}
+.header-link{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.5);text-decoration:none;background:none;border:0;cursor:pointer}
 #auth-gate{display:flex;align-items:center;justify-content:center;min-height:60vh}
 .auth-card{background:white;border:1px solid var(--border-light);border-radius:16px;padding:2.5rem;text-align:center;max-width:380px;width:100%}
 .auth-card h2{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:900;text-transform:uppercase;margin:0 0 0.5rem}
 .auth-card p{color:var(--mid);font-size:0.85rem;margin:0 0 1.5rem}
 #sign-in-btn{background:var(--sixers-blue);color:white;border:none;padding:0.75rem 2rem;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;width:100%}
 #sign-in-btn:hover{background:#0080d4}
-.admin-tabs{display:flex;background:var(--navy-deep);border-bottom:1px solid rgba(255,255,255,0.08)}
-.admin-tab{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.85rem 1.5rem;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+.admin-tabs{display:flex;background:var(--navy-deep);border-bottom:1px solid rgba(255,255,255,0.08);overflow-x:auto}
+.admin-tab{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.85rem 1.5rem;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
 .admin-tab:hover{color:rgba(255,255,255,0.75)}
 .admin-tab.active{color:white;border-bottom-color:var(--sixers-blue)}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
+.toolbar-row{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-top:1.5rem;flex-wrap:wrap}
+.list-filters{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem}
+.list-filters .form-input,.list-filters .form-select{min-width:180px;margin:0}
 .article-list{display:flex;flex-direction:column;gap:1rem;margin-top:1.5rem}
 .article-item{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;padding:0;display:flex;overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;position:relative}
 .article-item:hover{border-color:rgba(0,107,182,0.35);box-shadow:0 6px 20px rgba(0,0,0,0.08);transform:translateY(-1px)}
-.article-item-accent{width:4px;flex-shrink:0;border-radius:0}
+.article-item-accent{width:4px;flex-shrink:0}
+.article-item-thumb{width:92px;flex-shrink:0;background:#001a57;align-self:stretch}
+.article-item-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .article-item-body{flex:1;min-width:0;padding:1.1rem 1.25rem}
-.article-item-tag-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.35rem}
+.article-item-tag-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.35rem;flex-wrap:wrap}
 .article-item-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor;opacity:0.9}
+.draft-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:#b06b00;color:#fff;padding:2px 7px;border-radius:999px}
 .article-item-title{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:800;color:var(--ink);line-height:1.2;margin:0 0 0.2rem}
-.article-item-meta{font-size:0.72rem;color:var(--mid);display:flex;align-items:center;gap:0.4rem}
+.article-item-meta{font-size:0.72rem;color:var(--mid);display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap}
 .article-item-excerpt{font-size:0.82rem;color:var(--mid);line-height:1.55;margin-top:0.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .article-item-tweet-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:#1d9bf0;color:white;padding:2px 7px;border-radius:999px;display:inline-flex;align-items:center;gap:3px}
 .article-item-actions{display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;align-items:center;justify-content:center;padding:1rem 1.1rem 1rem 0}
 .btn-edit{background:rgba(0,107,182,0.1);color:var(--sixers-blue);border:1px solid rgba(0,107,182,0.2);border-radius:8px;padding:0.4rem 0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer}
 .btn-delete{background:rgba(237,23,76,0.08);color:var(--sixers-red);border:1px solid rgba(237,23,76,0.15);border-radius:8px;padding:0.4rem 0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer}
+.btn-ghost{background:transparent;color:var(--mid);border:1px solid var(--border-light);border-radius:8px;padding:0.4rem 0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-block}
 .btn-primary{background:var(--sixers-blue);color:white;border:none;border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer}
 .btn-secondary{background:transparent;color:var(--mid);border:1px solid var(--border-light);border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer}
+.btn-draft{background:#1e293b;color:#fff;border:none;border-radius:10px;padding:0.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer}
 .editor-grid{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;margin-top:1.5rem}
-@media(max-width:800px){.editor-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.editor-grid{grid-template-columns:1fr}.article-item-thumb{display:none}.article-item-actions{padding-right:0.75rem}}
 .editor-card{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;padding:1.5rem}
 .editor-card h3{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin:0 0 1rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border-light)}
 .form-group{margin-bottom:1.1rem}
 .form-label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.4rem}
+.form-hint{font-size:0.72rem;color:var(--mid);margin-top:0.35rem;line-height:1.45}
 .form-input,.form-select,.form-textarea{width:100%;padding:0.65rem 0.85rem;background:#f9f7f3;border:1px solid var(--border-light);border-radius:9px;font-family:'Barlow',sans-serif;font-size:0.9rem;color:var(--ink);outline:none}
 .form-textarea{resize:vertical;min-height:120px;line-height:1.6}
+.form-textarea.tall{min-height:180px}
+.char-count{font-size:0.72rem;color:var(--mid);text-align:right;margin-top:0.3rem}
 .tweet-embed-section{background:#f0f8ff;border:1px solid #bce0f7;border-radius:10px;padding:1rem;margin-bottom:1.1rem}
 .tweet-embed-header{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem}
 .tweet-embed-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#0f1419}
@@ -66,6 +80,7 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .grade-entry-remove{background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem}
 .grade-entry-row{display:grid;grid-template-columns:1fr 100px;gap:0.5rem;margin-bottom:0.5rem}
 .add-player-btn{width:100%;padding:0.6rem;border:1px dashed var(--border-light);border-radius:9px;background:none;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);margin-top:0.25rem}
+.grade-toolbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem}
 .preview-panel{position:sticky;top:84px}
 .preview-article-card{background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;overflow:hidden}
 .preview-thumb{height:110px;display:flex;align-items:flex-end;justify-content:flex-start;position:relative;overflow:hidden;padding:0.75rem 1rem}
@@ -79,7 +94,12 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 .preview-read-more{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--sixers-blue)}
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--mid)}
 .empty-state h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.2rem;text-transform:uppercase;margin:0.75rem 0 0.4rem}
-#toast{position:fixed;bottom:2rem;right:2rem;background:#1e293b;color:white;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.85rem;font-weight:600;z-index:9999;opacity:0;transform:translateY(8px);transition:all 0.3s;pointer-events:none}
+.sticky-save{position:fixed;left:0;right:0;bottom:0;background:rgba(0,13,46,0.96);padding:0.75rem 1.25rem;display:none;z-index:40;border-top:1px solid rgba(255,255,255,0.08)}
+.sticky-save.visible{display:block}
+.sticky-save-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.sticky-save-meta{color:rgba(255,255,255,0.65);font-size:0.78rem}
+.drop-target.dragover{outline:2px dashed var(--sixers-blue);outline-offset:4px}
+#toast{position:fixed;bottom:5.5rem;right:2rem;background:#1e293b;color:white;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.85rem;font-weight:600;z-index:9999;opacity:0;transform:translateY(8px);transition:all 0.3s;pointer-events:none}
 #toast.show{opacity:1;transform:translateY(0)}
 #toast.success{background:#15803d}
 #toast.error{background:#dc2626}
@@ -100,17 +120,21 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 <div class="admin-header">
   <div class="admin-header-inner">
     <div>
-      <h1>Articles Admin</h1>
-      <p>Create and manage editorial content — separate from the community feed</p>
+      <h1>Writer Desk</h1>
+      <p>Draft, edit, and publish News &amp; Analysis — same fields the homepage already reads</p>
     </div>
-    <a href="/" style="font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.5);text-decoration:none;">Back to Site</a>
+    <div class="header-actions">
+      <span class="writer-chip" id="writer-chip"></span>
+      <button type="button" class="header-link" id="sign-out-btn" style="display:none;">Sign out</button>
+      <a href="/" class="header-link">Back to Site</a>
+    </div>
   </div>
 </div>
 
 <div id="auth-gate" style="display:none;">
   <div class="auth-card">
-    <h2>Admin Only</h2>
-    <p>Sign in with your admin account to access the article editor.</p>
+    <h2>Writers Only</h2>
+    <p>Sign in with an approved Sixers Hoops writer account.</p>
     <button id="sign-in-btn">Sign In with Google</button>
   </div>
 </div>
@@ -125,12 +149,29 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 
   <div class="admin-wrap">
     <div class="tab-panel active" id="tab-list">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem;">
+      <div class="toolbar-row">
         <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-transform:uppercase;">Published Articles</div>
-          <div style="font-size:0.8rem;color:var(--mid);margin-top:2px;">These appear in News &amp; Analysis on the homepage</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-transform:uppercase;">Published &amp; Drafts</div>
+          <div style="font-size:0.8rem;color:var(--mid);margin-top:2px;">Drafts stay off the homepage until you hit Publish</div>
         </div>
         <button class="btn-primary" id="new-article-btn">+ New Article</button>
+      </div>
+      <div class="list-filters">
+        <input type="search" class="form-input" id="article-search" placeholder="Search headline, slug, or author">
+        <select class="form-select" id="article-filter-category">
+          <option value="">All categories</option>
+          <option value="Player Grades">Player Grades</option>
+          <option value="Analysis">Analysis</option>
+          <option value="Opinion">Opinion</option>
+          <option value="Preview">Preview</option>
+          <option value="Recap">Recap</option>
+          <option value="News">News</option>
+        </select>
+        <select class="form-select" id="article-filter-status">
+          <option value="">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Drafts</option>
+        </select>
       </div>
       <div class="article-list" id="article-list">
         <div class="empty-state"><h3>No articles yet</h3><p>Click "New Article" to write your first editorial piece.</p></div>
@@ -149,9 +190,14 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
             </div>
             <div class="form-group">
               <label class="form-label">URL Slug *</label>
-              <input type="text" class="form-input" id="f-slug" placeholder="e.g. sixers-player-grades-april-18" oninput="handleSlugInput(this.value)">
-              <div style="font-size:0.72rem;color:var(--mid);margin-top:0.4rem;" id="f-slug-preview">sixershoops.com/article/<span id="f-slug-preview-text" style="color:var(--sixers-blue);font-weight:600;">your-slug-here</span></div>
-              <div style="font-size:0.72rem;margin-top:0.3rem;display:none;color:#b06b00;" id="f-slug-hint">Use only lowercase letters, numbers, and hyphens.</div>
+              <input type="text" class="form-input" id="f-slug" placeholder="e.g. sixers-player-grades-april-18" oninput="handleSlugInput(this.value, true)">
+              <div class="form-hint" id="f-slug-preview">sixershoops.com/article/<span id="f-slug-preview-text" style="color:var(--sixers-blue);font-weight:600;">your-slug-here</span></div>
+              <div class="form-hint" style="display:none;color:#b06b00;" id="f-slug-hint">Use only lowercase letters, numbers, and hyphens.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Byline</label>
+              <input type="text" class="form-input" id="f-author" placeholder="Writer name shown in the CMS list">
+              <div class="form-hint">Homepage still says “Sixers Hoops Staff” until that page is updated to use this field.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Category *</label>
@@ -166,13 +212,14 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
             </div>
             <div class="form-group">
               <label class="form-label">Excerpt</label>
-              <textarea class="form-textarea" id="f-excerpt" rows="2" style="min-height:70px;"></textarea>
+              <textarea class="form-textarea" id="f-excerpt" rows="2" style="min-height:70px;" maxlength="280"></textarea>
+              <div class="char-count" id="excerpt-count">280 characters left</div>
             </div>
           </div>
 
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Article Image</h3>
-            <div class="form-group" style="margin-bottom:0;">
+            <div class="form-group drop-target" id="img-drop" style="margin-bottom:0;">
               <label class="form-label">Header Photo</label>
               <div class="pic-upload-row">
                 <div class="pic-upload-preview" id="img-preview-box"><span class="pic-upload-placeholder">SH</span></div>
@@ -180,7 +227,7 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
                   <label for="f-image" class="pic-upload-btn">Upload Photo</label>
                   <input type="file" id="f-image" accept="image/*" style="display:none;" onchange="handleImgSelect(this)">
                   <div><button type="button" class="pic-upload-clear" id="img-clear-btn" onclick="clearArticleImage()">Remove</button></div>
-                  <p class="pic-upload-hint">JPG or PNG. Compressed in-browser like profile photos.</p>
+                  <p class="pic-upload-hint">JPG or PNG. Drag and drop works too. Compressed in-browser like profile photos.</p>
                   <div id="img-status" class="pic-upload-hint"></div>
                 </div>
               </div>
@@ -192,7 +239,8 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
             <h3>Article Body</h3>
             <div class="form-group">
               <label class="form-label">Opening Paragraph</label>
-              <textarea class="form-textarea" id="f-intro"></textarea>
+              <textarea class="form-textarea tall" id="f-intro" placeholder="Set the scene. This is the lede readers see first."></textarea>
+              <div class="char-count" id="intro-count">0 words</div>
             </div>
             <div class="tweet-embed-section">
               <div class="tweet-embed-header"><span class="tweet-embed-label">Embed a Tweet / X Post</span></div>
@@ -204,18 +252,18 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
 
           <div class="editor-card" id="grades-section" style="margin-top:1rem;">
             <h3>Player Grade Cards</h3>
+            <div class="grade-toolbar">
+              <button type="button" class="btn-ghost" id="load-roster-btn">Load roster</button>
+              <button type="button" class="btn-ghost" id="clear-grades-btn">Clear grades</button>
+            </div>
             <div id="grade-entries"></div>
             <button class="add-player-btn" id="add-player-btn">+ Add Player</button>
           </div>
 
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Bottom Line</h3>
-            <textarea class="form-textarea" id="f-closing"></textarea>
-          </div>
-
-          <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
-            <button class="btn-primary" id="publish-btn">Publish Article</button>
-            <button class="btn-secondary" id="cancel-editor-btn">Cancel</button>
+            <textarea class="form-textarea" id="f-closing" placeholder="The takeaway. Keep it tight."></textarea>
+            <div class="char-count" id="closing-count">0 words</div>
           </div>
         </div>
 
@@ -229,7 +277,7 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
               </div>
               <div class="preview-body">
                 <div class="preview-title" id="prev-title">Your article headline will appear here</div>
-                <div class="preview-meta"><span>Sixers Hoops Staff</span> · <span id="prev-meta-date">Today</span></div>
+                <div class="preview-meta"><span id="prev-author">Sixers Hoops Staff</span> · <span id="prev-meta-date">Today</span></div>
                 <div class="preview-excerpt" id="prev-excerpt" style="display:none;"></div>
               </div>
               <div class="preview-footer">
@@ -237,6 +285,7 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
                 <span id="prev-tweet-badge" style="display:none;" class="article-item-tweet-badge">Tweet</span>
               </div>
             </div>
+            <p class="form-hint" id="autosave-status" style="margin-top:0.85rem;">Autosave ready</p>
           </div>
         </div>
       </div>
@@ -305,13 +354,29 @@ body,html{font-family:'Barlow',sans-serif;margin-top:64px;background:var(--cream
   </div>
 </div>
 
+<div class="sticky-save" id="sticky-save">
+  <div class="sticky-save-inner">
+    <div class="sticky-save-meta" id="sticky-save-meta">Unsaved article</div>
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+      <button class="btn-secondary" id="cancel-editor-btn" style="color:#fff;border-color:rgba(255,255,255,0.2);">Back to list</button>
+      <button class="btn-draft" id="draft-btn">Save Draft</button>
+      <button class="btn-primary" id="publish-btn">Publish Article</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <script src="/nav.js"></script>
 <script>
 const MOD_EMAIL = 'rhatus13@gmail.com';
+const ALLOWED_WRITERS = [
+  'rhatus13@gmail.com'
+  // add writer Gmail addresses here, lowercase is fine
+];
 const COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
 const POLLS_COLLECTION = 'fan_polls';
+const AUTOSAVE_KEY = 'sixers_article_draft_v1';
 const PINNED_ROSTER = [
   { name: 'Tyrese Maxey', number: 0 },
   { name: 'VJ Edgecombe', number: 77 },
@@ -338,25 +403,47 @@ const GRADES = ['DNP','INC','A+','A','A-','B+','B','B-','C+','C','D+','D','F'];
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const CATEGORY_GRADIENTS = {'Player Grades':'#ED174C','Analysis':'#006BB6','Opinion':'#000000','Preview':'#ED174C','Recap':'#001a57','News':'#006BB6'};
 
+let currentUser = null;
+let slugManual = false;
+let editorDirty = false;
+let autosaveTimer = null;
+
+function isAllowedWriter(email) {
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  return lower === MOD_EMAIL.toLowerCase() || ALLOWED_WRITERS.some(e => String(e).toLowerCase() === lower);
+}
+function escapeHtml(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function wordCount(str) {
+  return String(str || '').trim() ? String(str).trim().split(/\s+/).length : 0;
+}
+function slugify(str) {
+  return String(str || '').toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+}
 function toast(msg, type='success') {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'show ' + type;
   setTimeout(() => { el.className = ''; }, 3000);
 }
+function articleStatus(a) {
+  if (a && a.status === 'draft') return 'draft';
+  return 'published';
+}
 
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab !== 'editor' && editorDirty && !confirm('Leave this article? Unsaved changes stay in browser autosave.')) return;
+    switchTab(tab.dataset.tab);
   });
 });
 function switchTab(name) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('sticky-save').classList.toggle('visible', name === 'editor');
 }
 
 function handleTweetInput(val) {
@@ -391,16 +478,13 @@ function compressPic(file, maxSide, quality) {
     reader.readAsDataURL(file);
   });
 }
-
 function setPreviewBox(url) {
   const box = document.getElementById('img-preview-box');
   if (!box) return;
   if (url) box.innerHTML = '<img src="' + url + '" alt="">';
   else box.innerHTML = '<span class="pic-upload-placeholder">SH</span>';
 }
-
-async function handleImgSelect(input) {
-  const file = input.files && input.files[0];
+async function processImageFile(file) {
   if (!file) return;
   if (!file.type || !file.type.startsWith('image/')) { toast('Please choose an image file.', 'error'); return; }
   if (file.size > 8 * 1024 * 1024) { toast('Image must be under 8 MB.', 'error'); return; }
@@ -411,22 +495,23 @@ async function handleImgSelect(input) {
     if (url.length > 900000) { toast('Image still too large after compression. Try a smaller photo.', 'error'); return; }
     document.getElementById('f-image-url').value = url;
     setPreviewBox(url);
-    document.getElementById('img-status').textContent = 'Photo ready. Hit Publish to save it.';
+    document.getElementById('img-status').textContent = 'Photo ready. Save draft or publish to keep it.';
+    markDirty();
     updatePreview();
   } catch (err) {
     toast('Could not process photo: ' + (err.message || err), 'error');
     document.getElementById('img-status').textContent = '';
   }
 }
-
+async function handleImgSelect(input) { await processImageFile(input.files && input.files[0]); }
 function clearArticleImage() {
   document.getElementById('f-image-url').value = '';
   document.getElementById('f-image').value = '';
   setPreviewBox('');
   document.getElementById('img-status').textContent = '';
+  markDirty();
   updatePreview();
 }
-
 function populateArticleImage(imageUrl) {
   document.getElementById('f-image-url').value = imageUrl || '';
   setPreviewBox(imageUrl || '');
@@ -434,22 +519,36 @@ function populateArticleImage(imageUrl) {
   updatePreview();
 }
 
-function handleSlugInput(val) {
+function handleSlugInput(val, fromUser) {
+  if (fromUser) slugManual = true;
   const clean = val.trim();
   document.getElementById('f-slug-preview-text').textContent = clean || 'your-slug-here';
   const hint = document.getElementById('f-slug-hint');
   if (!clean) { hint.style.display = 'none'; return; }
   hint.style.display = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(clean) ? 'none' : 'block';
 }
-
+function maybeAutofillSlug() {
+  if (slugManual) return;
+  const next = slugify(document.getElementById('f-title').value);
+  document.getElementById('f-slug').value = next;
+  handleSlugInput(next, false);
+}
+function updateCounts() {
+  const excerpt = document.getElementById('f-excerpt').value;
+  document.getElementById('excerpt-count').textContent = (280 - excerpt.length) + ' characters left';
+  document.getElementById('intro-count').textContent = wordCount(document.getElementById('f-intro').value) + ' words';
+  document.getElementById('closing-count').textContent = wordCount(document.getElementById('f-closing').value) + ' words';
+}
 function updatePreview() {
   const title = document.getElementById('f-title').value.trim() || 'Your article headline will appear here';
   const category = document.getElementById('f-category').value;
   const excerpt = document.getElementById('f-excerpt').value.trim();
+  const author = document.getElementById('f-author').value.trim() || 'Sixers Hoops Staff';
   const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'];
   const imgUrl = document.getElementById('f-image-url').value;
   document.getElementById('prev-title').textContent = title;
   document.getElementById('prev-cat-label').textContent = category;
+  document.getElementById('prev-author').textContent = author;
   document.getElementById('prev-gradient').style.background = imgUrl
     ? 'url("' + String(imgUrl).replace(/"/g, '\\"') + '") center/cover no-repeat'
     : gradient;
@@ -457,9 +556,34 @@ function updatePreview() {
   const excerptEl = document.getElementById('prev-excerpt');
   if (excerpt) { excerptEl.textContent = excerpt; excerptEl.style.display = ''; }
   else excerptEl.style.display = 'none';
+  updateCounts();
+  syncGradesVisibility();
+  const existing = document.getElementById('editing-doc-id').value;
+  document.getElementById('publish-btn').textContent = existing ? 'Update & Publish' : 'Publish Article';
+  document.getElementById('sticky-save-meta').textContent = (document.getElementById('f-title').value.trim() || 'Untitled') + (editorDirty ? ' · unsaved' : '');
 }
-['f-title','f-excerpt'].forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
-document.getElementById('f-category').addEventListener('change', updatePreview);
+function syncGradesVisibility() {
+  const show = document.getElementById('f-category').value === 'Player Grades';
+  document.getElementById('grades-section').style.display = show ? '' : 'none';
+}
+function markDirty() {
+  editorDirty = true;
+  scheduleAutosave();
+  updatePreview();
+}
+
+['f-title','f-excerpt','f-intro','f-closing','f-author','f-slug','f-tweet-url'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    if (id === 'f-title') maybeAutofillSlug();
+    markDirty();
+  });
+});
+document.getElementById('f-category').addEventListener('change', () => {
+  if (document.getElementById('f-category').value === 'Player Grades' && !document.querySelector('.grade-entry')) {
+    ROSTER.forEach(p => addGradeEntry({ name: p.name, grade: 'DNP' }));
+  }
+  markDirty();
+});
 
 let gradeCount = 0;
 function addGradeEntry(data = {}) {
@@ -472,34 +596,34 @@ function addGradeEntry(data = {}) {
   const selectedGrade = data.grade || 'DNP';
   const gradeOptions = GRADES.map(g => '<option value="' + g + '"' + (selectedGrade === g ? ' selected' : '') + '>' + g + '</option>').join('');
   const isDnp = selectedGrade === 'DNP' || selectedGrade === 'INC';
-  const tweetVal = data.tweetUrl || '';
+  const tweetVal = escapeHtml(data.tweetUrl || '');
   div.innerHTML = `
     <div class="grade-entry-header">
-      <span class="grade-entry-name">${data.name || 'Player ' + id}</span>
+      <span class="grade-entry-name">${escapeHtml(data.name || 'Player ' + id)}</span>
       <button class="grade-entry-remove" onclick="removeGradeEntry(${id})">✕</button>
     </div>
     <div class="grade-entry-row">
       <div class="form-group" style="margin:0;">
         <label class="form-label">Player Name</label>
-        <input type="text" class="form-input ge-name" value="${data.name||''}" oninput="this.closest('.grade-entry').querySelector('.grade-entry-name').textContent=this.value||'Player'">
+        <input type="text" class="form-input ge-name" value="${escapeHtml(data.name||'')}" oninput="this.closest('.grade-entry').querySelector('.grade-entry-name').textContent=this.value||'Player'; markDirty();">
       </div>
       <div class="form-group" style="margin:0;">
         <label class="form-label">Grade</label>
-        <select class="form-select ge-grade" onchange="toggleDnpFields(this)">${gradeOptions}</select>
+        <select class="form-select ge-grade" onchange="toggleDnpFields(this); markDirty();">${gradeOptions}</select>
       </div>
     </div>
     <div class="ge-fields" style="${isDnp ? 'display:none;' : ''}">
       <div class="form-group" style="margin-bottom:0.5rem;">
         <label class="form-label">Stats Line</label>
-        <input type="text" class="form-input ge-stats" value="${data.stats||''}">
+        <input type="text" class="form-input ge-stats" value="${escapeHtml(data.stats||'')}" oninput="markDirty()">
       </div>
       <div class="form-group" style="margin-bottom:0.5rem;">
         <label class="form-label">Analysis</label>
-        <textarea class="form-textarea ge-analysis" style="min-height:80px;">${data.analysis||''}</textarea>
+        <textarea class="form-textarea ge-analysis" style="min-height:80px;" oninput="markDirty()">${escapeHtml(data.analysis||'')}</textarea>
       </div>
       <div class="ge-tweet-section">
         <div class="ge-tweet-header"><span class="ge-tweet-label">Embed Tweet (optional)</span></div>
-        <input type="text" class="form-input ge-tweet-url" value="${tweetVal}" oninput="validatePlayerTweet(this)">
+        <input type="text" class="form-input ge-tweet-url" value="${tweetVal}" oninput="validatePlayerTweet(this); markDirty();">
         <div class="ge-tweet-hint"></div>
       </div>
     </div>`;
@@ -519,8 +643,20 @@ function validatePlayerTweet(input) {
   hint.textContent = valid ? 'Valid tweet URL.' : 'Paste a full x.com or twitter.com status URL.';
   hint.style.color = valid ? '#15803d' : '#b06b00';
 }
-function removeGradeEntry(id) { const el = document.getElementById('grade-entry-' + id); if (el) el.remove(); }
-document.getElementById('add-player-btn').addEventListener('click', () => addGradeEntry());
+function removeGradeEntry(id) { const el = document.getElementById('grade-entry-' + id); if (el) el.remove(); markDirty(); }
+document.getElementById('add-player-btn').addEventListener('click', () => { addGradeEntry(); markDirty(); });
+document.getElementById('load-roster-btn').addEventListener('click', () => {
+  if (document.querySelector('.grade-entry') && !confirm('Replace current grade cards with the full roster?')) return;
+  document.getElementById('grade-entries').innerHTML = '';
+  gradeCount = 0;
+  ROSTER.forEach(p => addGradeEntry({ name: p.name, grade: 'DNP' }));
+  markDirty();
+});
+document.getElementById('clear-grades-btn').addEventListener('click', () => {
+  document.getElementById('grade-entries').innerHTML = '';
+  gradeCount = 0;
+  markDirty();
+});
 function collectGrades() {
   const entries = [];
   document.querySelectorAll('.grade-entry').forEach(el => {
@@ -547,40 +683,83 @@ function listenToArticles() {
     }, err => console.error(err));
   });
 }
+function filteredArticles() {
+  const q = (document.getElementById('article-search').value || '').trim().toLowerCase();
+  const cat = document.getElementById('article-filter-category').value;
+  const status = document.getElementById('article-filter-status').value;
+  return articles.filter(a => {
+    if (cat && a.category !== cat) return false;
+    if (status && articleStatus(a) !== status) return false;
+    if (!q) return true;
+    const hay = [a.title, a.slug, a.author, a.excerpt, a.category].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+}
 function renderArticleList() {
   const list = document.getElementById('article-list');
+  const rows = filteredArticles();
   if (!articles.length) {
     list.innerHTML = '<div class="empty-state"><h3>No articles yet</h3><p>Click "New Article" to write your first editorial piece.</p></div>';
     return;
   }
-  list.innerHTML = articles.map(a => {
+  if (!rows.length) {
+    list.innerHTML = '<div class="empty-state"><h3>No matches</h3><p>Try a different search or filter.</p></div>';
+    return;
+  }
+  list.innerHTML = rows.map(a => {
     const color = CATEGORY_COLORS[a.category] || '#006BB6';
     const date = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'Draft';
-    return `<div class="article-item"><div class="article-item-accent" style="background:${color};"></div><div class="article-item-body"><div class="article-item-tag-row"><span class="article-item-tag" style="color:${color};border-color:${color};">${a.category}</span></div><div class="article-item-title">${a.title}</div><div class="article-item-meta"><span>${date}</span></div>${a.slug ? `<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;">/article/${a.slug}</div>` : ''}</div><div class="article-item-actions"><button class="btn-edit" onclick="editArticle('${a.id}')">Edit</button><button class="btn-delete" onclick="deleteArticle('${a.id}')">Delete</button></div></div>`;
+    const status = articleStatus(a);
+    const thumb = a.imageUrl
+      ? `<div class="article-item-thumb"><img src="${escapeHtml(a.imageUrl)}" alt=""></div>`
+      : `<div class="article-item-thumb" style="background:${escapeHtml(a.gradient || color)};"></div>`;
+    const live = (status === 'published' && a.slug)
+      ? `<a class="btn-ghost" href="/article/${encodeURIComponent(a.slug)}" target="_blank" rel="noopener">View</a>`
+      : '';
+    return `<div class="article-item"><div class="article-item-accent" style="background:${color};"></div>${thumb}<div class="article-item-body"><div class="article-item-tag-row"><span class="article-item-tag" style="color:${color};border-color:${color};">${escapeHtml(a.category || 'News')}</span>${status === 'draft' ? '<span class="draft-badge">Draft</span>' : ''}</div><div class="article-item-title">${escapeHtml(a.title || 'Untitled')}</div><div class="article-item-meta"><span>${escapeHtml(date)}</span><span>·</span><span>${escapeHtml(a.author || 'Sixers Hoops Staff')}</span></div>${a.slug ? `<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;">/article/${escapeHtml(a.slug)}</div>` : ''}</div><div class="article-item-actions"><button class="btn-edit" onclick="editArticle('${a.id}')">Edit</button><button class="btn-ghost" onclick="duplicateArticle('${a.id}')">Duplicate</button>${live}<button class="btn-delete" onclick="deleteArticle('${a.id}')">Delete</button></div></div>`;
   }).join('');
 }
+['article-search','article-filter-category','article-filter-status'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderArticleList);
+  document.getElementById(id).addEventListener('change', renderArticleList);
+});
+
 document.getElementById('new-article-btn').addEventListener('click', () => { clearEditor(); switchTab('editor'); });
-document.getElementById('cancel-editor-btn').addEventListener('click', () => switchTab('list'));
-function clearEditor() {
+document.getElementById('cancel-editor-btn').addEventListener('click', () => {
+  if (editorDirty && !confirm('Back to the list? Browser autosave will keep a local copy.')) return;
+  switchTab('list');
+});
+
+function defaultAuthor() {
+  if (!currentUser) return 'Sixers Hoops Staff';
+  return currentUser.displayName || currentUser.email || 'Sixers Hoops Staff';
+}
+function clearEditor(opts = {}) {
   document.getElementById('editing-doc-id').value = '';
   ['f-title','f-slug','f-excerpt','f-intro','f-closing','f-tweet-url'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-category').value = 'Player Grades';
+  document.getElementById('f-author').value = defaultAuthor();
+  document.getElementById('f-category').value = opts.category || 'News';
   document.getElementById('grade-entries').innerHTML = '';
   document.getElementById('tweet-preview-box').classList.remove('visible');
+  slugManual = false;
   handleSlugInput('');
   clearArticleImage();
   gradeCount = 0;
-  ROSTER.forEach(p => addGradeEntry({ name: p.name, grade: 'DNP' }));
+  if ((opts.category || 'News') === 'Player Grades') {
+    ROSTER.forEach(p => addGradeEntry({ name: p.name, grade: 'DNP' }));
+  }
+  editorDirty = false;
   updatePreview();
 }
-function editArticle(id) {
-  const a = articles.find(x => x.id === id);
-  if (!a) return;
-  clearEditor();
-  document.getElementById('editing-doc-id').value = id;
+function fillEditor(a, asNewCopy) {
+  clearEditor({ category: a.category || 'News' });
+  if (!asNewCopy) document.getElementById('editing-doc-id').value = a.id;
   document.getElementById('f-title').value = a.title || '';
-  document.getElementById('f-slug').value = a.slug || '';
-  handleSlugInput(a.slug || '');
+  document.getElementById('f-author').value = a.author || defaultAuthor();
+  const slug = asNewCopy ? slugify((a.slug || a.title || '') + '-copy') : (a.slug || '');
+  slugManual = !!slug;
+  document.getElementById('f-slug').value = slug;
+  handleSlugInput(slug, false);
   populateArticleImage(a.imageUrl || '');
   document.getElementById('f-category').value = a.category || 'Analysis';
   document.getElementById('f-excerpt').value = a.excerpt || '';
@@ -590,14 +769,151 @@ function editArticle(id) {
   document.getElementById('grade-entries').innerHTML = '';
   gradeCount = 0;
   (a.grades || []).forEach(g => addGradeEntry(g));
+  editorDirty = !!asNewCopy;
   updatePreview();
   switchTab('editor');
 }
+function editArticle(id) {
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  fillEditor(a, false);
+}
+function duplicateArticle(id) {
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  fillEditor(a, true);
+  toast('Duplicated as a new article — change the slug before publishing');
+}
 async function deleteArticle(id) {
-  if (!confirm('Delete this article?')) return;
+  const a = articles.find(x => x.id === id);
+  const label = a && a.title ? a.title : 'this article';
+  if (!confirm('Delete "' + label + '"? This cannot be undone.')) return;
   try { await window.db.collection(COLLECTION).doc(id).delete(); toast('Article deleted'); }
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
+
+function collectArticleData(status) {
+  const title = document.getElementById('f-title').value.trim();
+  const category = document.getElementById('f-category').value;
+  const slug = document.getElementById('f-slug').value.trim().toLowerCase();
+  const imageUrl = document.getElementById('f-image-url').value || '';
+  return {
+    title, category, slug, imageUrl, status,
+    author: document.getElementById('f-author').value.trim() || defaultAuthor(),
+    excerpt: document.getElementById('f-excerpt').value.trim(),
+    intro: document.getElementById('f-intro').value.trim(),
+    closing: document.getElementById('f-closing').value.trim(),
+    tweetUrl: document.getElementById('f-tweet-url').value.trim() || '',
+    grades: category === 'Player Grades' ? collectGrades() : collectGrades(),
+    gradient: CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'],
+    updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: currentUser ? (currentUser.email || '') : ''
+  };
+}
+function validateArticle(data, { allowEmptyTitle } = {}) {
+  if (!allowEmptyTitle && !data.title) { toast('Please add a headline', 'error'); return false; }
+  if (!data.slug) { toast('Please add a URL slug', 'error'); return false; }
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(data.slug)) { toast('Slug can only have lowercase letters, numbers, and hyphens', 'error'); return false; }
+  const existingDocId = document.getElementById('editing-doc-id').value;
+  if (articles.some(a => a.slug === data.slug && a.id !== existingDocId)) { toast('That slug is already used', 'error'); return false; }
+  if (data.imageUrl.length > 900000) { toast('Image is too large to save. Choose a smaller photo.', 'error'); return false; }
+  return true;
+}
+async function saveArticle(status) {
+  const data = collectArticleData(status);
+  if (!validateArticle(data, { allowEmptyTitle: status === 'draft' })) return;
+  if (status === 'draft' && !data.title) data.title = 'Untitled draft';
+  const btn = status === 'draft' ? document.getElementById('draft-btn') : document.getElementById('publish-btn');
+  const prev = btn.textContent;
+  btn.textContent = status === 'draft' ? 'Saving…' : 'Publishing…';
+  btn.disabled = true;
+  try {
+    const existingDocId = document.getElementById('editing-doc-id').value;
+    if (existingDocId) {
+      await window.db.collection(COLLECTION).doc(existingDocId).update(data);
+      toast(status === 'draft' ? 'Draft saved' : 'Article updated');
+    } else {
+      data.createdAt = window.firebase.firestore.FieldValue.serverTimestamp();
+      data.createdBy = currentUser ? (currentUser.email || '') : '';
+      const ref = await window.db.collection(COLLECTION).add(data);
+      document.getElementById('editing-doc-id').value = ref.id;
+      toast(status === 'draft' ? 'Draft saved' : 'Article published');
+    }
+    editorDirty = false;
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) {}
+    document.getElementById('autosave-status').textContent = 'Saved to Firebase';
+    updatePreview();
+    if (status === 'published') switchTab('list');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+  finally { btn.textContent = prev; btn.disabled = false; }
+}
+document.getElementById('publish-btn').addEventListener('click', () => saveArticle('published'));
+document.getElementById('draft-btn').addEventListener('click', () => saveArticle('draft'));
+
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    try {
+      const snap = {
+        editingId: document.getElementById('editing-doc-id').value,
+        title: document.getElementById('f-title').value,
+        slug: document.getElementById('f-slug').value,
+        author: document.getElementById('f-author').value,
+        category: document.getElementById('f-category').value,
+        excerpt: document.getElementById('f-excerpt').value,
+        intro: document.getElementById('f-intro').value,
+        closing: document.getElementById('f-closing').value,
+        tweetUrl: document.getElementById('f-tweet-url').value,
+        imageUrl: document.getElementById('f-image-url').value,
+        grades: collectGrades(),
+        slugManual,
+        savedAt: Date.now()
+      };
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(snap));
+      document.getElementById('autosave-status').textContent = 'Local autosave ' + new Date().toLocaleTimeString();
+    } catch (e) {
+      document.getElementById('autosave-status').textContent = 'Local autosave unavailable';
+    }
+  }, 600);
+}
+function restoreAutosave() {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return;
+    const snap = JSON.parse(raw);
+    if (!snap || !(snap.title || snap.intro || snap.excerpt)) return;
+    if (!confirm('Restore the locally autosaved article from this browser?')) return;
+    fillEditor({
+      id: snap.editingId || '',
+      title: snap.title,
+      slug: snap.slug,
+      author: snap.author,
+      category: snap.category,
+      excerpt: snap.excerpt,
+      intro: snap.intro,
+      closing: snap.closing,
+      tweetUrl: snap.tweetUrl,
+      imageUrl: snap.imageUrl,
+      grades: snap.grades
+    }, !snap.editingId);
+    slugManual = !!snap.slugManual;
+    editorDirty = true;
+  } catch (e) {}
+}
+
+const drop = document.getElementById('img-drop');
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('dragover'); }));
+drop.addEventListener('drop', e => {
+  const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  processImageFile(file);
+});
+
+window.addEventListener('beforeunload', e => {
+  if (!editorDirty) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
 
 let updatesCache = [];
 function timeAgoAdmin(date) {
@@ -629,8 +945,8 @@ function renderUpdatesAdminList() {
   }
   list.innerHTML = updatesCache.map(u => {
     const date = u.createdAt ? (u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt)) : null;
-    const text = (u.text || '').replace(/</g, '&lt;');
-    const tweet = u.tweetUrl ? `<div style="font-size:0.72rem;color:#1d9bf0;margin-top:0.35rem;word-break:break-all;">${String(u.tweetUrl).replace(/</g,'&lt;')}</div>` : '';
+    const text = escapeHtml(u.text || '');
+    const tweet = u.tweetUrl ? `<div style="font-size:0.72rem;color:#1d9bf0;margin-top:0.35rem;word-break:break-all;">${escapeHtml(u.tweetUrl)}</div>` : '';
     return `<div class="article-item"><div class="article-item-accent" style="background:#1d9bf0;"></div><div class="article-item-body">${u.tweetUrl ? '<span class="article-item-tweet-badge">Tweet</span>' : ''}${text ? `<div class="article-item-excerpt">${text}</div>` : ''}${tweet}<div class="article-item-meta" style="margin-top:0.5rem;"><span>${date ? timeAgoAdmin(date) : 'Posting…'}</span></div></div><div class="article-item-actions"><button class="btn-delete" onclick="deleteUpdate('${u.id}')">Delete</button></div></div>`;
   }).join('');
 }
@@ -664,58 +980,23 @@ async function deleteUpdate(id) {
 }
 document.getElementById('post-update-btn').addEventListener('click', postUpdate);
 
-document.getElementById('publish-btn').addEventListener('click', async () => {
-  const title = document.getElementById('f-title').value.trim();
-  const category = document.getElementById('f-category').value;
-  const slug = document.getElementById('f-slug').value.trim().toLowerCase();
-  if (!title) { toast('Please add a headline', 'error'); return; }
-  if (!slug) { toast('Please add a URL slug', 'error'); return; }
-  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) { toast('Slug can only have lowercase letters, numbers, and hyphens', 'error'); return; }
-  const existingDocId = document.getElementById('editing-doc-id').value;
-  if (articles.some(a => a.slug === slug && a.id !== existingDocId)) { toast('That slug is already used', 'error'); return; }
-  const imageUrl = document.getElementById('f-image-url').value || '';
-  if (imageUrl.length > 900000) { toast('Image is too large to save. Choose a smaller photo.', 'error'); return; }
-  const btn = document.getElementById('publish-btn');
-  btn.textContent = 'Publishing...';
-  btn.disabled = true;
-  try {
-    const data = {
-      title, category, slug,
-      excerpt: document.getElementById('f-excerpt').value.trim(),
-      intro: document.getElementById('f-intro').value.trim(),
-      closing: document.getElementById('f-closing').value.trim(),
-      tweetUrl: document.getElementById('f-tweet-url').value.trim() || '',
-      imageUrl,
-      grades: collectGrades(),
-      gradient: CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'],
-      updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
-    };
-    if (existingDocId) {
-      await window.db.collection(COLLECTION).doc(existingDocId).update(data);
-      toast('Article updated');
-    } else {
-      data.createdAt = window.firebase.firestore.FieldValue.serverTimestamp();
-      await window.db.collection(COLLECTION).add(data);
-      toast('Article published');
-    }
-    clearEditor();
-    switchTab('list');
-  } catch (e) { toast('Error: ' + e.message, 'error'); }
-  finally { btn.textContent = 'Publish Article'; btn.disabled = false; }
-});
-
 function initAdmin() {
   function tryAuth(tries = 0) {
     if (!window.auth) { if (tries < 40) setTimeout(() => tryAuth(tries + 1), 250); else document.getElementById('auth-gate').style.display = 'flex'; return; }
     window.auth.onAuthStateChanged(user => {
-      if (user && user.email && user.email.toLowerCase() === MOD_EMAIL.toLowerCase()) {
+      currentUser = user || null;
+      if (user && isAllowedWriter(user.email)) {
         document.getElementById('auth-gate').style.display = 'none';
         document.getElementById('admin-ui').style.display = 'block';
+        document.getElementById('writer-chip').textContent = user.displayName || user.email;
+        document.getElementById('sign-out-btn').style.display = '';
         listenToArticles(); listenToUpdates(); listenToPolls();
+        restoreAutosave();
       } else {
         document.getElementById('auth-gate').style.display = 'flex';
         document.getElementById('admin-ui').style.display = 'none';
-        if (user) { document.querySelector('.auth-card p').textContent = 'This page is restricted to the site admin.'; document.getElementById('sign-in-btn').style.display = 'none'; }
+        document.getElementById('sign-out-btn').style.display = 'none';
+        if (user) { document.querySelector('.auth-card p').textContent = 'This account is not on the writer list yet.'; document.getElementById('sign-in-btn').style.display = 'none'; }
       }
     });
   }
@@ -726,6 +1007,9 @@ function initAdmin() {
       else if (tries < 20) setTimeout(() => trySignIn(tries + 1), 300);
     }
     trySignIn();
+  });
+  document.getElementById('sign-out-btn').addEventListener('click', () => {
+    if (window.auth) window.auth.signOut();
   });
 }
 
@@ -750,7 +1034,7 @@ function addPollOption(text = '') {
   wrap.className = 'grade-entry';
   wrap.id = 'poll-opt-' + idx;
   wrap.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.75rem;margin-bottom:0.5rem;';
-  wrap.innerHTML = `<input type="text" class="form-input poll-opt-text" value="${(text||'').replace(/"/g,'&quot;')}" style="flex:1;"><button type="button" onclick="removePollOption(${idx})" style="background:none;border:none;color:#ef4444;cursor:pointer;">&times;</button>`;
+  wrap.innerHTML = `<input type="text" class="form-input poll-opt-text" value="${escapeHtml(text||'')}" style="flex:1;"><button type="button" onclick="removePollOption(${idx})" style="background:none;border:none;color:#ef4444;cursor:pointer;">&times;</button>`;
   document.getElementById('poll-options-list').appendChild(wrap);
 }
 function removePollOption(idx) { const el = document.getElementById('poll-opt-' + idx); if (el) el.remove(); }
@@ -791,7 +1075,7 @@ async function activatePoll(id) {
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
 function renderPollCard(poll, isActive) {
-  const q = (poll.question || '').replace(/</g, '&lt;');
+  const q = escapeHtml(poll.question || '');
   const actionBtns = isActive
     ? `<button class="btn-edit" onclick="showPollEditor(pollsCache.find(p=>p.id==='${poll.id}'))">Edit</button><button class="btn-delete" onclick="archivePoll('${poll.id}')">Archive</button><button class="btn-delete" onclick="deletePoll('${poll.id}')">Delete</button>`
     : `<button class="btn-edit" onclick="activatePoll('${poll.id}')">Re-activate</button><button class="btn-delete" onclick="deletePoll('${poll.id}')">Delete</button>`;

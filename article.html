@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sixers Hoops — Article</title>
-<meta name="description" content="News and analysis for Philadelphia 76ers fans." />
+<title>Article | Sixers Hoops</title>
+<meta name="description" content="Sixers Hoops news and analysis." />
 <link rel="icon" href="/favicon.ico" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/navbar-styles.css" />
 <style>
   :root {
@@ -31,84 +31,141 @@
     -webkit-font-smoothing: antialiased;
     margin-top: 64px;
   }
-  a { color: inherit; }
+  a { color: inherit; text-decoration: none; }
 
-  .article-wrap { max-width: 760px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
-  .article-back { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--sixers-blue); text-decoration: none; margin-bottom: 1.75rem; }
-  .article-back:hover { text-decoration: underline; }
-
-  .article-header { text-align: center; margin-bottom: 2rem; }
-  .article-tag {
-    display: inline-flex; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; padding: 4px 11px; border-radius: 999px; margin-bottom: 1rem;
+  .article-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4.5rem;
   }
-  .article-title { font-size: clamp(1.8rem, 4.5vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 0.75rem; }
-  .article-meta { display: flex; gap: 0.5rem; font-size: 0.85rem; color: var(--mid); justify-content: center; }
-  .article-excerpt { font-size: 1.1rem; line-height: 1.6; color: var(--mid); margin: 1.5rem 0 0; font-weight: 500; }
-  .article-hero { margin: 0 0 2rem; }
-  .article-hero img {
-    width: 100%;
-    max-height: 420px;
-    object-fit: cover;
+  .article-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .article-title {
+    font-size: clamp(1.8rem, 5vw, 2.7rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+    margin: 0 0 0.85rem;
+  }
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    font-size: 0.84rem;
+    color: var(--mid);
+    margin-bottom: 1.15rem;
+  }
+  .article-excerpt {
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--mid);
+    margin: 0 0 1.25rem;
+  }
+  .article-photo {
+    margin: 0 0 0.45rem;
     border-radius: 14px;
+    overflow: hidden;
+    background: #001a57;
+    aspect-ratio: 16 / 9;
+  }
+  .article-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .article-photo-credit {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin: 0 0 1.5rem;
+  }
+  .article-body {
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+  .article-body p {
+    margin: 0 0 1.15rem;
+    white-space: pre-wrap;
+  }
+  .article-tweet { margin: 1.25rem 0 1.6rem; }
+  .grade-block { margin: 1.4rem 0 1.7rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .grade-card {
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    background: #fff;
+  }
+  .grade-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .grade-name { font-weight: 700; }
+  .grade-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 2rem; font-size: 0.78rem; font-weight: 700; color: #fff;
+    border-radius: 6px; padding: 3px 8px;
+  }
+  .grade-stats { font-size: 0.82rem; color: var(--mid); margin-top: 0.25rem; }
+  .grade-analysis { font-size: 0.92rem; line-height: 1.6; margin-top: 0.45rem; }
+
+  .bottom-line {
+    margin: 1.75rem 0 2.5rem;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 1.1rem 1.2rem 1.2rem;
+    background: #f8fafc;
+  }
+  .bottom-line-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sixers-blue);
+    margin-bottom: 0.45rem;
+  }
+  .bottom-line p {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .more-section { margin-top: 2.75rem; }
+  .more-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 0.9rem;
+  }
+  .more-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .more-item {
     display: block;
     border: 1px solid var(--border-light);
-  }
-  .article-body p { font-size: 1.05rem; line-height: 1.75; color: var(--ink); margin: 0 0 1.5rem; white-space: pre-wrap; }
-
-  .tweet-embed-wrap {
-    margin: 1.25rem 0;
-    background: #f8fafc;
-    border: 1px solid var(--border-light);
     border-radius: 14px;
-    padding: 1rem 1.25rem 0.5rem;
-    overflow: hidden;
+    padding: 1rem 1.1rem;
+    background: #fff;
   }
-  .tweet-embed-wrap .twitter-tweet { margin: 0 auto !important; }
-  .tweet-fallback-card { font-size: 0.85rem; color: var(--mid); }
-  .tweet-fallback-card a { color: var(--sixers-blue); font-weight: 600; text-decoration: none; }
-  .tweet-fallback-card a:hover { text-decoration: underline; }
+  .more-item-title { font-size: 1rem; font-weight: 700; line-height: 1.3; margin: 0.35rem 0 0.3rem; }
+  .more-item-excerpt { font-size: 0.86rem; line-height: 1.5; color: var(--mid); margin: 0 0 0.4rem; }
+  .more-item-meta { font-size: 0.75rem; color: var(--mid); }
 
-  .grades-section { margin: 2.5rem 0; }
-  .grades-heading { font-size: 1.3rem; font-weight: 700; margin: 0 0 1.25rem; }
-  .grade-card {
-    border: 1px solid var(--border-light); border-radius: 12px; padding: 1.1rem 1.25rem;
-    margin-bottom: 1rem; display: flex; gap: 1rem; align-items: flex-start;
-  }
-  .grade-pill {
-    flex-shrink: 0; width: 48px; height: 48px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem;
-  }
-  .grade-card-body { flex: 1; min-width: 0; }
-  .grade-card-name { font-size: 1rem; font-weight: 700; margin: 0 0 0.2rem; }
-  .grade-card-stats { font-size: 0.82rem; color: var(--mid); margin: 0 0 0.5rem; }
-  .grade-card-analysis { font-size: 0.92rem; line-height: 1.55; color: var(--ink); margin: 0; }
-  .grade-card-tweet { margin-top: 0.85rem; }
-
-  .article-closing { font-size: 1.05rem; line-height: 1.75; color: var(--ink); margin-top: 2rem; padding-top: 1.75rem; border-top: 1px solid var(--border-light); white-space: pre-wrap; }
-
-  .article-state { text-align: center; padding: 5rem 1rem; color: var(--mid); }
-  .article-state h2 { font-size: 1.4rem; color: var(--ink); margin: 0 0 0.5rem; }
-  .article-skel { background: linear-gradient(90deg, var(--border-light) 25%, #f0f3f8 37%, var(--border-light) 63%); background-size: 400% 100%; animation: skel-shine 1.4s ease infinite; border-radius: 8px; }
-  @keyframes skel-shine { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-
-  @media (max-width: 600px) {
-    .article-wrap { padding: 1.75rem 1.1rem 3.5rem; }
-    .grade-card { flex-direction: column; }
+  .article-empty, .article-loading {
+    text-align: center;
+    color: var(--mid);
+    padding: 4rem 1rem;
   }
 </style>
 </head>
 <body>
-<main>
-  <div class="article-wrap" id="article-root">
-    <a href="/" class="article-back">← Back to Sixers Hoops</a>
-    <div class="article-skel" style="height:28px;width:120px;margin-bottom:1rem;"></div>
-    <div class="article-skel" style="height:42px;width:90%;margin-bottom:2rem;"></div>
-    <div class="article-skel" style="aspect-ratio:21/9;width:100%;margin-bottom:2rem;"></div>
-    <div class="article-skel" style="height:16px;width:100%;margin-bottom:0.75rem;"></div>
-    <div class="article-skel" style="height:16px;width:95%;margin-bottom:0.75rem;"></div>
-    <div class="article-skel" style="height:16px;width:88%;"></div>
-  </div>
+<main class="article-wrap" id="article-root">
+  <div class="article-loading">Loading article…</div>
 </main>
 
 <script src="/nav.js"></script>
@@ -120,137 +177,162 @@ const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6'
 function waitForDb(cb, tries) {
   tries = tries || 0;
   if (window.db) { cb(); return; }
-  if (tries > 60) { renderError('Could not connect right now. Please refresh and try again.'); return; }
+  if (tries > 60) return;
   setTimeout(function () { waitForDb(cb, tries + 1); }, 250);
 }
-
 function escapeHtml(str) {
-  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
-function getSlugFromPath() {
-  var path = (window.location.pathname || '').replace(/\/+$/, '');
-  var fromPath = path.match(/^\/article\/(.+)$/i);
-  if (fromPath && fromPath[1] && fromPath[1].toLowerCase() !== 'article.html') {
-    return decodeURIComponent(fromPath[1]);
-  }
-  return new URLSearchParams(window.location.search).get('slug') || null;
-}
-
 function toDate(ts) {
   if (!ts) return null;
   if (ts.toDate) return ts.toDate();
   return new Date(ts);
 }
-
-function tweetEmbedHtml(url) {
-  const safeUrl = escapeHtml(url);
-  return (
-    '<div class="tweet-embed-wrap">' +
-      '<blockquote class="twitter-tweet"><a href="' + safeUrl + '"></a></blockquote>' +
-      '<noscript><div class="tweet-fallback-card">View this post on <a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">X / Twitter</a>.</div></noscript>' +
-    '</div>'
-  );
+function timeAgo(date) {
+  if (!date) return '';
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return 'Just now';
+  const mins = Math.floor(seconds / 60);
+  if (mins < 60) return mins + 'm ago';
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + 'h ago';
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return days + 'd ago';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function formatDate(date) {
+  if (!date) return '';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function readMinutes(article) {
+  const text = [article.excerpt, article.intro, article.closing].join(' ') +
+    (article.grades || []).map(function (g) { return (g.analysis || '') + ' ' + (g.stats || ''); }).join(' ');
+  const words = String(text).trim() ? String(text).trim().split(/\s+/).length : 0;
+  return Math.max(1, Math.round(words / 220)) + ' min read';
+}
+function isPublished(a) {
+  return !a.status || a.status === 'published';
+}
+function getSlug() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('slug')) return params.get('slug');
+  const parts = window.location.pathname.replace(/\/+$/, '').split('/');
+  const idx = parts.lastIndexOf('article');
+  if (idx !== -1 && parts[idx + 1]) return decodeURIComponent(parts[idx + 1]);
+  return decodeURIComponent(parts[parts.length - 1] || '');
+}
+function paragraphs(text) {
+  return String(text || '').split(/\n{2,}/).map(function (p) { return p.trim(); }).filter(Boolean);
+}
+function isTweetUrl(url) {
+  return /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/i.test(String(url || '').trim());
 }
 
-function renderError(message) {
-  document.getElementById('article-root').innerHTML =
-    '<a href="/" class="article-back">← Back to Sixers Hoops</a>' +
-    '<div class="article-state"><h2>' + escapeHtml(message) + '</h2><p>Head back to the homepage for the latest news.</p></div>';
-}
+function renderArticle(article, more) {
+  const root = document.getElementById('article-root');
+  const color = CATEGORY_COLORS[article.category] || '#006bb6';
+  const date = toDate(article.createdAt);
+  const author = article.author || 'Sixers Hoops Staff';
+  document.title = (article.title || 'Article') + ' | Sixers Hoops';
 
-function renderArticle(a) {
-  const color = CATEGORY_COLORS[a.category] || '#006bb6';
-  const date = a.createdAt ? toDate(a.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-  document.title = a.title + ' — Sixers Hoops';
+  const photo = article.imageUrl
+    ? '<div class="article-photo"><img src="' + escapeHtml(article.imageUrl) + '" alt=""></div>' +
+      (article.imageCredit ? '<p class="article-photo-credit">' + escapeHtml(article.imageCredit) + '</p>' : '<div style="height:1rem;"></div>')
+    : '';
 
-  function setMeta(name, content, prop) {
-    const sel = prop ? 'meta[property="' + name + '"]' : 'meta[name="' + name + '"]';
-    let el = document.querySelector(sel);
-    if (!el) { el = document.createElement('meta'); if (prop) el.setAttribute('property', name); else el.setAttribute('name', name); document.head.appendChild(el); }
-    el.setAttribute('content', content);
-  }
-  const desc = a.excerpt || (a.intro ? a.intro.slice(0, 155) : 'Sixers Hoops — Philadelphia 76ers news and analysis.');
-  const canonical = 'https://sixershoops.com/article/' + encodeURIComponent(a.slug || '');
-  setMeta('description', desc);
-  setMeta('og:title', a.title + ' — Sixers Hoops', true);
-  setMeta('og:description', desc, true);
-  setMeta('og:url', canonical, true);
-  setMeta('og:type', 'article', true);
-  setMeta('twitter:card', a.imageUrl ? 'summary_large_image' : 'summary');
-  setMeta('twitter:title', a.title + ' — Sixers Hoops');
-  setMeta('twitter:description', desc);
-  if (a.imageUrl) {
-    setMeta('og:image', a.imageUrl, true);
-    setMeta('twitter:image', a.imageUrl);
-  }
-  let canonEl = document.querySelector('link[rel="canonical"]');
-  if (!canonEl) { canonEl = document.createElement('link'); canonEl.setAttribute('rel', 'canonical'); document.head.appendChild(canonEl); }
-  canonEl.setAttribute('href', canonical);
+  const bodyHtml = paragraphs(article.intro).map(function (p) {
+    return '<p>' + escapeHtml(p) + '</p>';
+  }).join('');
 
-  let html = '<a href="/" class="article-back">← Back to Sixers Hoops</a>';
+  const tweetHtml = isTweetUrl(article.tweetUrl)
+    ? '<div class="article-tweet"><blockquote class="twitter-tweet" data-dnt="true"><a href="' + escapeHtml(article.tweetUrl) + '"></a></blockquote></div>'
+    : '';
 
-  html += '<div class="article-header">';
-  html += '<span class="article-tag" style="color:' + color + ';border:1px solid ' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>';
-  html += '<h1 class="article-title">' + escapeHtml(a.title) + '</h1>';
-  html += '<div class="article-meta"><span>Sixers Hoops Staff</span><span>·</span><span>' + escapeHtml(date) + '</span></div>';
-  if (a.excerpt) html += '<p class="article-excerpt">' + escapeHtml(a.excerpt) + '</p>';
-  html += '</div>';
+  const grades = (article.grades || []).filter(function (g) { return g && g.name && g.grade && g.grade !== 'DNP'; });
+  const gradesHtml = grades.length
+    ? '<div class="grade-block">' + grades.map(function (g) {
+        const chip = GRADE_COLORS[g.grade] || '#006bb6';
+        return '<div class="grade-card"><div class="grade-card-top"><div class="grade-name">' + escapeHtml(g.name) + '</div>' +
+          '<span class="grade-chip" style="background:' + chip + ';">' + escapeHtml(g.grade) + '</span></div>' +
+          (g.stats ? '<div class="grade-stats">' + escapeHtml(g.stats) + '</div>' : '') +
+          (g.analysis ? '<div class="grade-analysis">' + escapeHtml(g.analysis) + '</div>' : '') +
+          '</div>';
+      }).join('') + '</div>'
+    : '';
 
-  if (a.imageUrl) {
-    html += '<figure class="article-hero"><img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.title) + '"></figure>';
-  }
+  const closingHtml = article.closing
+    ? '<aside class="bottom-line"><span class="bottom-line-label">Bottom Line</span><p>' + escapeHtml(article.closing) + '</p></aside>'
+    : '';
 
-  if (a.intro) html += '<div class="article-body"><p>' + escapeHtml(a.intro) + '</p></div>';
-  if (a.tweetUrl) html += tweetEmbedHtml(a.tweetUrl);
+  const moreHtml = (more || []).length
+    ? '<section class="more-section"><h2 class="more-title">More from the desk</h2><div class="more-list">' +
+      more.map(function (a) {
+        const c = CATEGORY_COLORS[a.category] || '#006bb6';
+        return '<a class="more-item" href="/article/' + encodeURIComponent(a.slug || '') + '">' +
+          '<span class="article-tag" style="color:' + c + ';background:' + c + '14;border:1px solid ' + c + '33;">' + escapeHtml(a.category || 'News') + '</span>' +
+          '<h3 class="more-item-title">' + escapeHtml(a.title || '') + '</h3>' +
+          (a.excerpt ? '<p class="more-item-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
+          '<div class="more-item-meta">' + escapeHtml(a.author || 'Sixers Hoops Staff') + ' · ' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</div>' +
+          '</a>';
+      }).join('') + '</div></section>'
+    : '';
 
-  const grades = (a.grades || []).filter(function (g) { return g.grade && g.grade !== 'DNP'; });
-  if (grades.length) {
-    html += '<div class="grades-section"><h2 class="grades-heading">Player Grades</h2>';
-    grades.forEach(function (g) {
-      const gColor = GRADE_COLORS[g.grade] || '#006bb6';
-      html += '<div class="grade-card">';
-      html += '<div class="grade-pill" style="background:' + gColor + ';color:#fff;">' + escapeHtml(g.grade) + '</div>';
-      html += '<div class="grade-card-body">';
-      html += '<h3 class="grade-card-name">' + escapeHtml(g.name) + '</h3>';
-      if (g.stats) html += '<p class="grade-card-stats">' + escapeHtml(g.stats) + '</p>';
-      if (g.analysis) html += '<p class="grade-card-analysis">' + escapeHtml(g.analysis) + '</p>';
-      if (g.tweetUrl) html += '<div class="grade-card-tweet">' + tweetEmbedHtml(g.tweetUrl) + '</div>';
-      html += '</div></div>';
-    });
-    html += '</div>';
-  }
+  root.innerHTML =
+    '<span class="article-tag" style="color:' + color + ';background:' + color + '14;border:1px solid ' + color + '33;">' + escapeHtml(article.category || 'News') + '</span>' +
+    '<h1 class="article-title">' + escapeHtml(article.title || '') + '</h1>' +
+    '<div class="article-meta"><span>' + escapeHtml(author) + '</span><span>·</span><span>' + escapeHtml(formatDate(date)) + '</span><span>·</span><span>' + escapeHtml(readMinutes(article)) + '</span></div>' +
+    (article.excerpt ? '<p class="article-excerpt">' + escapeHtml(article.excerpt) + '</p>' : '') +
+    photo +
+    '<div class="article-body">' + (bodyHtml || '') + '</div>' +
+    tweetHtml +
+    gradesHtml +
+    closingHtml +
+    moreHtml;
 
-  if (a.closing) html += '<div class="article-closing">' + escapeHtml(a.closing) + '</div>';
-
-  document.getElementById('article-root').innerHTML = html;
-
-  if (a.tweetUrl || grades.some(function (g) { return g.tweetUrl; })) {
-    if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load();
-    } else {
+  if (tweetHtml) {
+    if (window.twttr && window.twttr.widgets) window.twttr.widgets.load(root);
+    else if (!document.getElementById('twitter-wjs')) {
       const s = document.createElement('script');
+      s.id = 'twitter-wjs';
       s.async = true;
       s.src = 'https://platform.twitter.com/widgets.js';
-      s.charset = 'utf-8';
       document.body.appendChild(s);
     }
   }
 }
 
 function loadArticle() {
-  const slug = getSlugFromPath();
-  if (!slug) { renderError('Article not found'); return; }
+  const slug = getSlug();
+  const root = document.getElementById('article-root');
+  if (!slug || slug === 'article' || slug === 'article.html') {
+    root.innerHTML = '<div class="article-empty">Article not found.</div>';
+    return;
+  }
   waitForDb(function () {
-    window.db.collection(NEWS_COLLECTION).where('slug', '==', slug).limit(1).get()
-      .then(function (snap) {
-        if (snap.empty) { renderError('Article not found'); return; }
-        renderArticle(snap.docs[0].data());
-      })
-      .catch(function (err) {
-        console.error(err);
-        renderError("Couldn't load this article right now");
+    window.db.collection(NEWS_COLLECTION).where('slug', '==', slug).limit(1).get().then(function (snap) {
+      if (snap.empty) {
+        root.innerHTML = '<div class="article-empty">Article not found.</div>';
+        return;
+      }
+      const article = Object.assign({ id: snap.docs[0].id }, snap.docs[0].data());
+      if (!isPublished(article)) {
+        root.innerHTML = '<div class="article-empty">This article is not published yet.</div>';
+        return;
+      }
+      window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(8).get().then(function (moreSnap) {
+        const more = moreSnap.docs
+          .map(function (d) { return Object.assign({ id: d.id }, d.data()); })
+          .filter(function (a) { return isPublished(a) && a.slug && a.slug !== article.slug; })
+          .slice(0, 3);
+        renderArticle(article, more);
+      }).catch(function () {
+        renderArticle(article, []);
       });
+    }).catch(function (err) {
+      console.error(err);
+      root.innerHTML = '<div class="article-empty">Couldn\'t load this article.</div>';
+    });
   });
 }
 

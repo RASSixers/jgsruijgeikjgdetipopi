@@ -899,6 +899,7 @@
         <div class="user-info">
           <span class="user-welcome">Welcome, <strong id="currentUser"></strong>!</span>
           <span class="user-badge" id="userBadge">Player</span>
+          <span class="user-badge" id="userStreakBadge" style="display:none;background:rgba(237,23,76,0.12);color:#ED174C;"></span>
         </div>
         <button class="logout-btn" id="logoutBtn">Logout</button>
       </div>
@@ -984,8 +985,10 @@
           <div id="weekPickerContainer" class="date-picker-container"></div>
           <button class="date-nav-btn" id="nextWeekBtn">›</button>
         </div>
-        <div style="margin-bottom: 15px;">
+        <div style="margin-bottom: 15px; display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
           <button type="button" class="btn btn-secondary" id="refreshWeeklyBtn"> Refresh</button>
+          <button type="button" class="btn btn-primary" id="shareWeeklyBtn"> Share card</button>
+          <span id="shareWeeklyStatus" style="font-size:0.8rem;color:var(--mid);"></span>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -1451,6 +1454,7 @@
     </div><!-- /appContainer -->
   </div><!-- /main-container -->
 
+  <script src="/js/engagement.js"></script>
   <script src="nav.js"></script>
   <script>
     // Firebase Logic (Unified with Navbar)
@@ -4047,7 +4051,18 @@
         });
 
         console.log(` Picks saved with doc ID: ${pickRef.id}`);
-        showMessage(' Picks submitted successfully!', 'success');
+        let streakMsg = 'Picks submitted successfully!';
+        try {
+          if (window.SixersEngagement && auth.currentUser) {
+            const st = await SixersEngagement.updatePickStreak(db, auth.currentUser.uid, selectedPickDate);
+            if (st && st.pickStreak) {
+              streakMsg = 'Picks submitted! 🔥 ' + st.pickStreak + '-day pick streak' + (st.bestPickStreak > st.pickStreak ? ' (best: ' + st.bestPickStreak + ')' : '');
+              const badgeEl = document.getElementById('userStreakBadge');
+              if (badgeEl) badgeEl.textContent = SixersEngagement.streakBadgeLabel(st.pickStreak);
+            }
+          }
+        } catch (streakErr) { console.warn('Streak update failed', streakErr); }
+        showMessage(streakMsg, 'success');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Already Submitted for This Date';
       } catch (err) {
@@ -5072,5 +5087,79 @@
       }
     };
   </script>
+  </script>
+
+    // === Engagement: weekly share card + streak display ===
+    window.__lastWeeklyLbRows = [];
+    window.__lastWeeklyLabel = 'Weekly Leaderboard';
+
+    (function patchWeeklyShare() {
+      const origLoad = window.loadLeaderboard;
+      // Capture rows when weekly body is filled — observe weeklyLeaderboardBody updates via MutationObserver light hook
+      const shareBtn = document.getElementById('shareWeeklyBtn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          const status = document.getElementById('shareWeeklyStatus');
+          const body = document.getElementById('weeklyLeaderboardBody');
+          if (!body || !window.SixersEngagement) {
+            if (status) status.textContent = 'Share not ready';
+            return;
+          }
+          const rows = [];
+          body.querySelectorAll('tr').forEach((tr, i) => {
+            const tds = tr.querySelectorAll('td');
+            if (tds.length < 4) return;
+            const rankTxt = (tds[0].textContent || '').replace('#','').trim();
+            const username = (tds[1].textContent || '').trim();
+            if (!username || username.toLowerCase().includes('no ')) return;
+            rows.push({
+              rank: parseInt(rankTxt, 10) || (i + 1),
+              username: username,
+              correct: (tds[2].textContent || '').trim(),
+              total: (tds[3].textContent || '').trim(),
+              accuracy: tds[4] ? (tds[4].textContent || '').replace('%','').trim() : ''
+            });
+          });
+          if (!rows.length) {
+            if (status) status.textContent = 'No leaderboard rows to share yet';
+            return;
+          }
+          const weekLabelEl = document.querySelector('#weekPickerContainer .date-chip.active, #weekPickerContainer .active, #weekPickerContainer');
+          let weekLabel = 'Weekly Leaderboard';
+          if (weekLabelEl) weekLabel = (weekLabelEl.textContent || weekLabel).trim().substring(0, 40);
+          if (status) status.textContent = 'Creating image…';
+          const res = await SixersEngagement.shareWeeklyCard({ rows: rows, weekLabel: weekLabel });
+          if (status) status.textContent = res.shared ? 'Shared!' : (res.downloaded ? 'Downloaded PNG' : (res.error || 'Done'));
+        });
+      }
+    })();
+
+    async function refreshUserStreakBadge() {
+      try {
+        if (!window.SixersEngagement || !auth || !auth.currentUser || !db) return;
+        const ref = await db.collection('users').doc(auth.currentUser.uid).get();
+        const data = ref.exists ? ref.data() : {};
+        const n = Number(data.pickStreak) || 0;
+        const el = document.getElementById('userStreakBadge');
+        if (!el) return;
+        if (n > 0) {
+          el.style.display = 'inline-flex';
+          el.textContent = SixersEngagement.streakBadgeLabel(n);
+        } else {
+          el.style.display = 'none';
+        }
+      } catch (e) { console.warn(e); }
+    }
+
+    // Call after showApp when possible
+    const _origShowApp = typeof showApp === 'function' ? showApp : null;
+    if (_origShowApp) {
+      // showApp already defined as function declaration - wrap via post-auth
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(refreshUserStreakBadge, 1500);
+    });
+
+</script>
 </body>
-</html>
+</html

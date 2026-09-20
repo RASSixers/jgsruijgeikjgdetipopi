@@ -746,17 +746,139 @@
     [title] { position: relative; }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .page-header-inner { padding: 2.5rem 1.25rem 2rem; }
+    @media (max-width: 900px) {
       .questions-container { grid-template-columns: 1fr; }
-      .tabs { border-radius: 0; }
-      .tab-btn { padding: 0.6rem 0.75rem; font-size: 0.68rem; }
-      .submit-section { flex-direction: column; }
-      .leaderboard-table { font-size: 13px; }
+      .main-container { padding: 0 1rem 3rem; }
+    }
+
+    @media (max-width: 768px) {
+      body { overflow-x: hidden; }
+      .main-container { padding: 0 0.75rem 3rem; max-width: 100%; }
+
+      .page-header-inner { padding: 1.75rem 1rem 1.5rem; }
+      .page-header h1 { font-size: 1.75rem; line-height: 1.15; }
+      .page-subtitle { font-size: 0.88rem; }
+
+      .info-section { margin: 1.25rem 0; gap: 0.75rem; }
+      .info-card { padding: 1rem; }
+
+      .auth-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+      }
+      .user-info { flex-wrap: wrap; gap: 0.5rem; }
+      .user-welcome { font-size: 0.84rem; }
+      .logout-btn { align-self: flex-start; }
+
+      .tabs {
+        margin: 0 -0.75rem 1.25rem;
+        padding: 0 0.5rem;
+        border-radius: 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn {
+        padding: 0.7rem 0.7rem;
+        font-size: 0.64rem;
+        flex-shrink: 0;
+      }
+
+      .questions-container {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+      }
+      .question-card {
+        padding: 1rem 0.95rem;
+        border-radius: 12px;
+        min-width: 0;
+      }
+      .question-text {
+        font-size: 0.95rem;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+      .options-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .option-label {
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        font-size: 0.88rem;
+        border-radius: 10px;
+      }
+
+      .submit-section {
+        flex-direction: column;
+        gap: 0.65rem;
+        padding: 1rem 0 0.5rem;
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(to top, var(--cream) 70%, transparent);
+        z-index: 5;
+      }
+      :root.dark-mode .submit-section {
+        background: linear-gradient(to top, var(--bg, #0b0f1a) 70%, transparent);
+      }
+      .submit-section .btn {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .date-slider-controls {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        justify-content: center;
+      }
+      .date-nav-btn { min-width: 40px; min-height: 40px; }
+
+      .leaderboard-table {
+        font-size: 12px;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+      }
       .leaderboard-table thead th,
-      .leaderboard-table tbody td { padding: 10px 12px; }
-      .auth-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
-      .info-section { margin: 1.5rem 0 1rem; }
+      .leaderboard-table tbody td {
+        padding: 10px 8px;
+        white-space: nowrap;
+      }
+
+      .admin-panel { padding: 0; }
+      .admin-form, .admin-questions-list { padding: 1rem; }
+      .admin-question-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.65rem;
+      }
+      .admin-question-item-actions { width: 100%; }
+      .preset-btn { font-size: 0.7rem; padding: 0.4rem 0.55rem; }
+
+      #lockTimeStatus { padding: 0.85rem; margin-bottom: 1rem; }
+      #lockTimeStatusMessage { font-size: 0.88rem; }
+
+      .percent-container { min-width: 70px; }
+    }
+
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 1.5rem; }
+      .tab-btn { padding: 0.65rem 0.55rem; font-size: 0.6rem; letter-spacing: 0.04em; }
+      .question-text { font-size: 0.9rem; }
+      .option-label { padding: 0.7rem 0.8rem; font-size: 0.85rem; }
+      .user-badge { font-size: 0.6rem; }
+    }
+
+    /* Touch-friendly option targets */
+    @media (hover: none) {
+      .option-label { min-height: 44px; }
+      .tab-btn { min-height: 44px; }
+      .btn { min-height: 44px; }
     }
 
     /* ── Sign-in gate (logged-out state) ── */
@@ -1156,7 +1278,20 @@
               <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: #92400e;">
                 <p style="margin: 0; font-weight: 600; font-size: 0.9rem;"> Tip: Set the <strong>Week Number</strong> field to assign questions to a specific week for the weekly leaderboard. This is the ONLY field needed for weekly leaderboards to work! Day of Week is optional and for your reference only.</p>
               </div>
-              <div class="admin-form">
+              
+              <div class="admin-form" style="margin-bottom:1rem;border:1px dashed rgba(0,107,182,0.35);">
+                <h3 style="margin-top:0;">Quick setup — copy questions</h3>
+                <p style="font-size:0.85rem;color:var(--mid);margin:0 0 0.75rem;">Copy an existing day's questions onto the date selected above, then edit names/matchups. Saves a lot of daily setup time.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;">
+                  <div style="flex:1;min-width:140px;">
+                    <label class="form-label" for="copyFromDate">Copy from date</label>
+                    <input type="date" id="copyFromDate" class="form-input" />
+                  </div>
+                  <button type="button" class="btn btn-secondary" id="copyQuestionsBtn">Copy questions</button>
+                </div>
+                <div id="copyQuestionsMsg" class="message" style="margin-top:0.75rem;"></div>
+              </div>
+<div class="admin-form">
                 <h3 style="margin-top: 0;">Add New Question</h3>
                 
                 <div class="form-group">
@@ -5242,6 +5377,62 @@
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(refreshUserStreakBadge, 1500);
     });
+
+
+    // === Admin: copy questions from another date ===
+    (function setupCopyQuestions() {
+      const btn = document.getElementById('copyQuestionsBtn');
+      if (!btn) return;
+      btn.addEventListener('click', async () => {
+        if (!checkAdminPermission()) return;
+        const targetDate = document.getElementById('adminDate') && document.getElementById('adminDate').value;
+        const fromDate = document.getElementById('copyFromDate') && document.getElementById('copyFromDate').value;
+        const msgId = 'copyQuestionsMsg';
+        if (!targetDate || !fromDate) {
+          showMessage('Pick both a target date (above) and a copy-from date.', 'error', msgId);
+          return;
+        }
+        if (targetDate === fromDate) {
+          showMessage('Choose a different source date to copy from.', 'error', msgId);
+          return;
+        }
+        try {
+          showMessage('Copying…', 'info', msgId);
+          const snap = await db.collection('questions').where('date', '==', fromDate).get();
+          if (snap.empty) {
+            showMessage('No questions found on ' + fromDate, 'error', msgId);
+            return;
+          }
+          const items = (snap.docs[0].data().items || []).map(q => {
+            const { tempId, ...rest } = q;
+            return { ...rest };
+          });
+          const existing = await db.collection('questions').where('date', '==', targetDate).get();
+          if (!existing.empty) {
+            if (!confirm('Questions already exist for ' + targetDate + '. Replace them with a copy from ' + fromDate + '?')) {
+              showMessage('Cancelled.', 'info', msgId);
+              return;
+            }
+            await existing.docs[0].ref.update({ items, updatedAt: new Date().toISOString(), copiedFrom: fromDate });
+          } else {
+            await db.collection('questions').add({
+              date: targetDate,
+              items,
+              createdAt: new Date().toISOString(),
+              copiedFrom: fromDate
+            });
+          }
+          // Reload into admin UI
+          const loadBtn = document.getElementById('loadDateBtn');
+          if (loadBtn) loadBtn.click();
+          showMessage('Copied ' + items.length + ' questions from ' + fromDate + ' → ' + targetDate + '. Review and save if you edit further.', 'success', msgId);
+        } catch (err) {
+          console.error(err);
+          showMessage('Copy failed: ' + (err.message || err), 'error', msgId);
+        }
+      });
+    })();
+
   </script>
 </body>
 </html>

@@ -113,12 +113,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add Firebase SDKs if not present
-    if (!document.getElementById('sixers-engagement-js')) {
-        const eng = document.createElement('script');
-        eng.id = 'sixers-engagement-js';
-        eng.src = '/js/engagement.js';
-        document.head.appendChild(eng);
-    }
     if (!document.getElementById('firebase-app-sdk')) {
         const scripts = [
             { id: 'firebase-app-sdk', src: 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js' },
@@ -260,11 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 color: #1e293b;
                 cursor: pointer;
                 transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, outline-color 0.15s;
-                position: relative;
-                z-index: 2;
-                pointer-events: auto;
             }
-            .auth-google-btn svg { pointer-events: none; flex-shrink: 0; }
             .auth-google-btn:hover {
                 background: #f8fafc;
                 border-color: #006BB6;
@@ -436,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <button type="submit" class="auth-submit-btn">Sign In</button>
                     <div class="auth-divider"><span>or</span></div>
-                    <button type="button" class="auth-google-btn" id="navGoogleSignInBtn" onclick="window.__sixersGoogleSignIn && window.__sixersGoogleSignIn(false); return false;">
+                    <button type="button" class="auth-google-btn" id="navGoogleSignInBtn">
                         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
                         Continue with Google
                     </button>
@@ -547,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <button type="submit" class="auth-submit-btn">Create Account</button>
                     <div class="auth-divider"><span>or</span></div>
-                    <button type="button" class="auth-google-btn" id="navGoogleSignUpBtn" onclick="window.__sixersGoogleSignIn && window.__sixersGoogleSignIn(true); return false;">
+                    <button type="button" class="auth-google-btn" id="navGoogleSignUpBtn">
                         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
                         Continue with Google
                     </button>
@@ -623,30 +613,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.auth = null;
     window.db = null;
     window.storage = null;
-
-    // Visit streak (once per calendar day)
-    async function trackVisitStreak(user) {
-        try {
-            if (!user || !window.db) return;
-            // wait briefly for engagement.js
-            let tries = 0;
-            while (!window.SixersEngagement && tries < 20) {
-                await new Promise(r => setTimeout(r, 100));
-                tries++;
-            }
-            if (!window.SixersEngagement) return;
-            const st = await SixersEngagement.updateVisitStreak(window.db, user.uid);
-            if (st && st.visitStreak) {
-                window.__visitStreak = st.visitStreak;
-                const el = document.getElementById('navVisitStreak');
-                if (el) {
-                    el.style.display = 'inline-flex';
-                    el.textContent = '📅 ' + st.visitStreak + 'd on-site';
-                }
-            }
-        } catch (e) { console.warn('visit streak', e); }
-    }
-
     
     function initFirebase() {
         if (typeof firebase === 'undefined' || !firebase.auth || !firebase.firestore || !firebase.storage) {
@@ -912,8 +878,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setupAuthListeners() {
         window.auth.onAuthStateChanged(async user => {
-            if (user) trackVisitStreak(user);
-
             if (user && window.db) {
                 try {
                     const ref = window.db.collection('users').doc(user.uid);
@@ -1340,153 +1304,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showNavMessage(msg, type) {
-        if (!authMessage) return;
         authMessage.textContent = msg;
-        authMessage.className = `auth-message show ${type || 'error'}`;
+        authMessage.className = `auth-message show ${type}`;
     }
 
-    async function friendlyAuthError(err, email) {
-        const code = (err && err.code) || '';
-        const raw = (err && err.message) || '';
-
-        // Detect Google-only (or other provider) accounts when password sign-in fails
-        if (email && (code === 'auth/wrong-password' || code === 'auth/invalid-credential' ||
-            code === 'auth/invalid-login-credentials' || code === 'auth/user-not-found')) {
-            try {
-                const a = window.auth || (window.firebase && firebase.auth());
-                if (a && a.fetchSignInMethodsForEmail) {
-                    const methods = await a.fetchSignInMethodsForEmail(email);
-                    if (methods && methods.length) {
-                        if (methods.indexOf('password') === -1 && methods.indexOf('google.com') !== -1) {
-                            return 'This email is registered with Google. Please use Continue with Google to sign in.';
-                        }
-                        if (methods.indexOf('password') === -1) {
-                            return 'This account uses a different sign-in method. Try Continue with Google.';
-                        }
-                    }
-                }
-            } catch (_) { /* ignore lookup failures */ }
-        }
-
-        switch (code) {
-            case 'auth/wrong-password':
-            case 'auth/invalid-credential':
-            case 'auth/invalid-login-credentials':
-                return 'Incorrect email or password. Please try again.';
-            case 'auth/user-not-found':
-                return 'No account found with that email. Check the address or create an account.';
-            case 'auth/invalid-email':
-                return 'Please enter a valid email address.';
-            case 'auth/too-many-requests':
-                return 'Too many attempts. Please wait a few minutes and try again.';
-            case 'auth/user-disabled':
-                return 'This account has been disabled. Contact support if you need help.';
-            case 'auth/network-request-failed':
-                return 'Network error. Check your connection and try again.';
-            case 'auth/email-already-in-use':
-                return 'An account with this email already exists. Try signing in instead.';
-            case 'auth/weak-password':
-                return 'Password is too weak. Use at least 6 characters.';
-            case 'auth/popup-closed-by-user':
-                return '';
-            case 'auth/popup-blocked':
-                return 'Pop-up was blocked. Allow pop-ups for this site and try again.';
-            case 'auth/cancelled-popup-request':
-                return '';
-            case 'auth/account-exists-with-different-credential':
-                return 'An account already exists with this email using a different sign-in method. Try Continue with Google or your email password.';
-            case 'auth/operation-not-allowed':
-                return 'This sign-in method is not enabled. Please try another option.';
-            case 'auth/requires-recent-login':
-                return 'For security, please sign out and sign back in, then try again.';
-            case 'auth/unauthorized-domain':
-                return 'This site is not authorized for sign-in yet. Please contact the site owner.';
-            case 'auth/auth-domain-config-required':
-                return 'Sign-in is misconfigured. Please try again later.';
-            case 'auth/internal-error':
-                return 'Google sign-in failed. Please allow pop-ups for this site and try again.';
-            case 'auth/web-storage-unsupported':
-                return 'Your browser is blocking sign-in storage. Try another browser or allow site data.';
-            default:
-                if (/firebase/i.test(raw) || /auth\//i.test(raw)) {
-                    return 'Something went wrong. Please try again.';
-                }
-                return raw || 'Something went wrong. Please try again.';
-        }
-    }
-
-    if (loginForm) loginForm.addEventListener('submit', async (e) => {
+    if(loginForm) loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = (document.getElementById('navLoginEmail') || {}).value || '';
-        const password = (document.getElementById('navLoginPassword') || {}).value || '';
-        if (!email || !password) {
-            showNavMessage('Please enter your email and password.', 'error');
-            return;
-        }
-        const a = window.auth || (typeof firebase !== 'undefined' && firebase.auth && firebase.auth());
-        if (!a) {
-            showNavMessage('Sign-in is still loading. Please wait a moment and try again.', 'error');
-            return;
-        }
+        const email = document.getElementById('navLoginEmail').value;
+        const password = document.getElementById('navLoginPassword').value;
+        
         try {
-            await a.signInWithEmailAndPassword(email.trim(), password);
+            await auth.signInWithEmailAndPassword(email, password);
             closeAuthModal();
         } catch (err) {
-            const msg = await friendlyAuthError(err, email.trim());
-            if (msg) showNavMessage(msg, 'error');
+            showNavMessage(err.message, 'error');
         }
     });
 
-    // Google Sign-In — must call signInWithPopup synchronously from the click
-    // (any long await before popup causes the browser to block it)
-    async function ensureGoogleUserDoc(user) {
-        const userDb = window.db;
-        if (!userDb || !user) return;
-        try {
-            const userRef = userDb.collection('users').doc(user.uid);
-            const snap = await userRef.get();
-            if (!snap.exists) {
-                const displayName = (user.displayName || (user.email ? user.email.split('@')[0] : 'User')).substring(0, 12);
-                const usernameLower = displayName.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
-                await userRef.set({
-                    username: displayName,
-                    usernameLower: usernameLower,
-                    email: user.email || '',
-                    photoURL: user.photoURL || null,
-                    createdAt: new Date().toISOString()
-                }, { merge: true });
-                localStorage.setItem('usernameLower', usernameLower);
-            }
-        } catch (e) {
-            console.warn('ensureGoogleUserDoc', e);
-        }
-    }
-
-    function getAuthNow() {
-        try {
-            if (window.auth) return window.auth;
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                if ((!firebase.apps || !firebase.apps.length) && typeof firebaseConfig !== 'undefined') {
-                    firebase.initializeApp(firebaseConfig);
-                }
-                window.auth = firebase.auth();
-                if (!window.db && firebase.firestore) {
-                    try { window.db = firebase.firestore(); } catch (_) {}
-                }
-                return window.auth;
-            }
-        } catch (e) {
-            console.warn('getAuthNow', e);
-        }
-        return null;
-    }
-
-    /**
-     * Google sign-in — POPUP first (small window).
-     * Redirect is only used if the browser blocks the popup.
-     * signInWithPopup must run immediately inside the click handler.
-     */
-    function handleGoogleSignIn(fromRegister) {
+    // Google Sign-In / Sign-Up
+    async function handleGoogleSignIn(fromRegister) {
         try {
             if (fromRegister) {
                 const agreed = document.getElementById('navAgreeTerms');
@@ -1495,95 +1331,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
             }
-
-            const a = getAuthNow();
-            if (!a || typeof firebase === 'undefined') {
-                showNavMessage('Sign-in is still loading. Wait one second, then try again.', 'error');
-                return;
-            }
-
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
+            const result = await auth.signInWithPopup(provider);
+            const user = result.user;
 
-            // Open the small Google popup immediately (user gesture)
-            a.signInWithPopup(provider)
-                .then(async function (result) {
-                    if (result && result.user) {
-                        await ensureGoogleUserDoc(result.user);
-                        closeAuthModal();
-                    }
-                })
-                .catch(async function (err) {
-                    console.error('Google popup error:', err && err.code, err);
-                    const code = (err && err.code) || '';
-
-                    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-                        return;
-                    }
-
-                    // Only if popup is blocked → full-page redirect
-                    if (code === 'auth/popup-blocked' ||
-                        code === 'auth/operation-not-supported-in-this-environment') {
-                        showNavMessage('Pop-up blocked by the browser. Redirecting instead…', 'success');
-                        try { sessionStorage.setItem('sixers_google_redirect', fromRegister ? 'register' : 'login'); } catch (_) {}
-                        try {
-                            await a.signInWithRedirect(provider);
-                        } catch (e2) {
-                            const msg = await friendlyAuthError(e2);
-                            if (msg) showNavMessage(msg, 'error');
-                        }
-                        return;
-                    }
-
-                    const msg = await friendlyAuthError(err);
-                    if (msg) showNavMessage(msg, 'error');
-                });
-        } catch (err) {
-            console.error('Google sign-in setup error:', err);
-            showNavMessage('Could not start Google sign-in. Please refresh and try again.', 'error');
-        }
-    }
-
-    window.__sixersGoogleSignIn = handleGoogleSignIn;
-
-    // Complete redirect only if we had to fall back
-    (function completeGoogleRedirect() {
-        var attempts = 0;
-        function tryComplete() {
-            attempts++;
-            const a = getAuthNow();
-            if (!a || !a.getRedirectResult) {
-                if (attempts < 40) setTimeout(tryComplete, 250);
-                return;
+            const userDb = window.db;
+            if (userDb) {
+                const userRef = userDb.collection('users').doc(user.uid);
+                const snap = await userRef.get();
+                if (!snap.exists) {
+                    const displayName = (user.displayName || (user.email ? user.email.split('@')[0] : 'User')).substring(0, 12);
+                    const usernameLower = displayName.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+                    await userRef.set({
+                        username: displayName,
+                        usernameLower: usernameLower,
+                        email: user.email || '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        photoURL: user.photoURL || null
+                    });
+                    localStorage.setItem('usernameLower', usernameLower);
+                }
             }
-            a.getRedirectResult().then(async function (result) {
-                if (result && result.user) {
-                    await ensureGoogleUserDoc(result.user);
-                    try { sessionStorage.removeItem('sixers_google_redirect'); } catch (_) {}
-                    try { closeAuthModal(); } catch (_) {}
-                }
-            }).catch(async function (err) {
-                if (!err || !err.code || err.code === 'auth/popup-closed-by-user') return;
-                console.error('Google redirect result error:', err.code, err);
-                const msg = await friendlyAuthError(err);
-                if (msg) {
-                    try { openAuthModal(); } catch (_) {}
-                    setTimeout(function () { showNavMessage(msg, 'error'); }, 400);
-                }
-            });
+            closeAuthModal();
+        } catch (err) {
+            if (err.code !== 'auth/popup-closed-by-user') {
+                showNavMessage(err.message || 'Google sign-in failed', 'error');
+            }
         }
-        setTimeout(tryComplete, 300);
-    })();
-
-    function onGoogleBtnClick(e) {
-        const btn = e.target.closest && e.target.closest('#navGoogleSignInBtn, #navGoogleSignUpBtn, button.auth-google-btn');
-        if (!btn) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const fromRegister = btn.id === 'navGoogleSignUpBtn' || !!(btn.closest && btn.closest('#navRegisterForm'));
-        handleGoogleSignIn(fromRegister);
     }
-    document.addEventListener('click', onGoogleBtnClick, true);
+
+    document.getElementById('navGoogleSignInBtn')?.addEventListener('click', () => handleGoogleSignIn(false));
+    document.getElementById('navGoogleSignUpBtn')?.addEventListener('click', () => handleGoogleSignIn(true));
 
     // Policy links open in popup
     const policyTitles = {
@@ -1638,8 +1416,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tabs[0]) tabs[0].click();
             }, 3000);
         } catch (err) {
-            const msg = await friendlyAuthError(err, email);
-            if (msg) showNavMessage(msg, 'error');
+            showNavMessage(err.message, 'error');
         }
     });
 
@@ -1754,8 +1531,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNavMessage('Account created! Settings updated.', 'success');
             setTimeout(closeAuthModal, 1500);
         } catch (err) {
-            const msg = await friendlyAuthError(err, email);
-            if (msg) showNavMessage(msg, 'error');
+            showNavMessage(err.message, 'error');
         }
     });
 

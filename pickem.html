@@ -1416,8 +1416,8 @@
                   <div>
                     <label class="form-label">Lock before tip</label>
                     <select id="autoSlateLockOffset" class="form-input">
-                      <option value="0">At tip</option>
-                      <option value="15" selected>15 min before</option>
+                      <option value="0" selected>At tip (earliest game)</option>
+                      <option value="15">15 min before</option>
                       <option value="30">30 min before</option>
                       <option value="60">1 hour before</option>
                       <option value="-1">Don't set lock</option>
@@ -1462,8 +1462,12 @@
 
                 <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
                   <button type="button" class="btn btn-secondary" id="autoPreviewBtn">Preview questions</button>
-                  <button type="button" class="btn btn-primary" id="autoSaveBtn">Generate &amp; save slate</button>
+                  <button type="button" class="btn btn-primary" id="autoSaveBtn">Generate draft</button>
+                  <button type="button" class="btn btn-primary" id="autoPublishBtn" style="background:#059669;">Publish to site</button>
                 </div>
+                <p style="font-size:0.78rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.4;">
+                  <strong>Generate draft</strong> saves privately. <strong>Publish</strong> goes live for users starting 72 hours before the earliest tip (lock = that tip time exactly).
+                </p>
 
                 <pre id="autoPreview" style="margin:0;padding:0.85rem;background:var(--chip,#f1f5f9);border-radius:8px;font-size:0.78rem;max-height:280px;overflow:auto;white-space:pre-wrap;"></pre>
               </div>
@@ -3948,6 +3952,26 @@
     }
 
     // === Questions & Picks ===
+
+    function getPickWindowStatus(dateStr, lockTime12) {
+      if (!lockTime12) return { open: true, locked: false, reason: 'no-lock' };
+      try {
+        const now = getESTNow();
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const time24 = (typeof convert12To24 === 'function') ? convert12To24(lockTime12) : '19:30';
+        const [hh, mm] = time24.split(':').map(Number);
+        const lockDate = new Date(now);
+        lockDate.setFullYear(y, m - 1, d);
+        lockDate.setHours(hh, mm, 0, 0);
+        const openDate = new Date(lockDate.getTime() - 72 * 60 * 60 * 1000);
+        if (now < openDate) return { open: false, locked: false, openDate: openDate, lockDate: lockDate, reason: 'not-yet' };
+        if (now >= lockDate) return { open: false, locked: true, openDate: openDate, lockDate: lockDate, reason: 'locked' };
+        return { open: true, locked: false, openDate: openDate, lockDate: lockDate, reason: 'open' };
+      } catch (e) {
+        return { open: true, locked: false, reason: 'error' };
+      }
+    }
+
     async function loadQuestionsForDate(dateStr, weekNumber = null) {
       if (!currentUser) return;
       try {
@@ -3982,6 +4006,14 @@
         const docs = snapshot.docs;
         if (docs.length > 0) {
           const questionData = docs[0].data();
+          if (questionData.published === false || questionData.status === 'draft') {
+            if (!(typeof isUserAdmin === 'function' && isUserAdmin())) {
+              todayQuestions = [];
+              const container = document.getElementById('questionsContainer');
+              if (container) container.innerHTML = '<div class="empty-state"><p>Questions for this date are not published yet.</p></div>';
+              return;
+            }
+          }
           let allQuestions = questionData.items || [];
           
           if (weekNumber !== null) {
@@ -4041,7 +4073,25 @@
           }
         }
         
-        renderQuestions();
+        
+        if (!(typeof isUserAdmin === 'function' && isUserAdmin())) {
+          try {
+            const lockSnap = await db.collection('lockTimes').where('date', '==', dateStr).get();
+            if (!lockSnap.empty) {
+              const lt = lockSnap.docs[0].data().lockTime;
+              const win = getPickWindowStatus(dateStr, lt);
+              if (win.reason === 'not-yet') {
+                const est = win.openDate.toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+                document.getElementById('questionsContainer').innerHTML =
+                  '<div class="empty-state"><p style="font-weight:700;">Questions open 72 hours before lock</p><p style="color:var(--muted);">Opens ' + est + ' ET</p></div>';
+                todayQuestions = [];
+                return;
+              }
+            }
+          } catch (e) { console.warn('pick window', e); }
+        }
+
+renderQuestions();
         
         // Check if already submitted for this date
         await checkSubmissionForDate(dateStr);
@@ -5751,37 +5801,55 @@
           );
         }
 
-        // 2) Fill remaining slots from shuffled bank across games
+        // 2) Fill remaining — DIFFERENT question types first (each bank key once)
         if (items.length < TARGET) {
           const dateStr = document.getElementById('autoSlateDate')?.value || '';
           let seed = 0;
           for (let i = 0; i < dateStr.length; i++) seed += dateStr.charCodeAt(i);
           const bankOrder = shuffleCopy(QUESTION_BANK.filter(b => b.key !== 'win'), seed + 7);
           const gameOrder = shuffleCopy(list.map((_, i) => i), seed + 99);
+          const usedBankKeys = new Set(['win']);
 
-          // Round-robin: for each bank question type, apply to a game
-          let safety = 0;
-          while (items.length < TARGET && safety < 500) {
-            safety++;
-            let added = false;
-            for (const bi of bankOrder) {
-              if (items.length >= TARGET) break;
-              for (const gi of gameOrder) {
-                if (items.length >= TARGET) break;
-                const uk = gi + ':' + bi.key;
-                if (usedKeys.has(uk)) continue;
-                const g = list[gi];
-                const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
-                const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
-                const line = bi.needsLine ? suggestTotalLine(home, away) : null;
-                const qText = fillTemplate(bi.template, home, away, line);
-                const opts = fillOptions(bi.options, home, away);
-                usedKeys.add(uk);
-                addQ(qText, opts, { gameIndex: gi, bankKey: bi.key, line: line });
-                added = true;
-              }
+          for (const bi of bankOrder) {
+            if (items.length >= TARGET) break;
+            if (usedBankKeys.has(bi.key)) continue;
+            for (const gi of gameOrder) {
+              const uk = gi + ':' + bi.key;
+              if (usedKeys.has(uk)) continue;
+              const g = list[gi];
+              const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
+              const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
+              const line = bi.needsLine ? suggestTotalLine(home, away) : null;
+              usedKeys.add(uk);
+              usedBankKeys.add(bi.key);
+              addQ(fillTemplate(bi.template, home, away, line), fillOptions(bi.options, home, away), { gameIndex: gi, bankKey: bi.key, line: line });
+              break;
             }
-            if (!added) break;
+          }
+
+          if (items.length < TARGET) {
+            let safety = 0;
+            while (items.length < TARGET && safety < 400) {
+              safety++;
+              let added = false;
+              for (const bi of bankOrder) {
+                if (items.length >= TARGET) break;
+                for (const gi of gameOrder) {
+                  if (items.length >= TARGET) break;
+                  const uk = gi + ':' + bi.key;
+                  if (usedKeys.has(uk)) continue;
+                  const g = list[gi];
+                  const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
+                  const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
+                  const line = bi.needsLine ? suggestTotalLine(home, away) : null;
+                  usedKeys.add(uk);
+                  addQ(fillTemplate(bi.template, home, away, line), fillOptions(bi.options, home, away), { gameIndex: gi, bankKey: bi.key, line: line });
+                  added = true;
+                  break;
+                }
+              }
+              if (!added) break;
+            }
           }
         }
 
@@ -5912,7 +5980,7 @@
             await existing.docs[0].ref.update({
               items,
               updatedAt: new Date().toISOString(),
-              source: 'auto-slate',
+              source: 'auto-slate', published: false, status: 'draft',
               opponent: opp,
               tipET: tip,
               gameCount: games.length
@@ -5922,7 +5990,7 @@
               date,
               items,
               createdAt: new Date().toISOString(),
-              source: 'auto-slate',
+              source: 'auto-slate', published: false, status: 'draft',
               opponent: opp,
               tipET: tip,
               gameCount: games.length
@@ -5940,7 +6008,7 @@
           if (adminDate) adminDate.value = date;
           document.getElementById('loadDateBtn')?.click();
           document.getElementById('autoPreviewBtn')?.click();
-          msg('Saved ' + items.length + ' questions for ' + date + (lock ? ' · lock ' + lock : ''), 'success');
+          msg('Draft saved: ' + items.length + ' questions for ' + date + '. Click Publish when ready.', 'success');
         } catch (err) {
           console.error(err);
           msg('Save failed: ' + (err.message || err), 'error');
@@ -5952,6 +6020,64 @@
         const el = document.getElementById('autoSlateDate');
         if (el && !el.value) el.value = todayISO();
       } catch (_) {}
+
+      document.getElementById('autoPublishBtn')?.addEventListener('click', async () => {
+        if (!checkAdminPermission()) return;
+        if (!window.db) { msg('Database not ready.', 'error'); return; }
+        const date = document.getElementById('autoSlateDate')?.value;
+        if (!date) { msg('Choose a date.', 'error'); return; }
+        try {
+          msg('Publishing…', 'info');
+          const snap = await db.collection('questions').where('date', '==', date).get();
+          if (snap.empty) { msg('No draft for this date. Generate draft first.', 'error'); return; }
+          const games = (typeof getGamesForBuild === 'function') ? getGamesForBuild() : (foundGames || []);
+          const tips = (games || []).map(g => g.tipET).filter(Boolean).sort();
+          let tip24 = tips[0] || document.getElementById('autoTipTime')?.value || '19:30';
+          const parts = tip24.split(':');
+          let h = parseInt(parts[0], 10);
+          const m = parts[1] || '00';
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12; if (h === 0) h = 12;
+          const lock12 = h + ':' + m + ' ' + ampm;
+
+          const lockSnap = await db.collection('lockTimes').where('date', '==', date).get();
+          const lockPayload = { date: date, lockTime: lock12, lockTime24: tip24, updatedAt: new Date().toISOString(), source: 'auto-slate-publish' };
+          if (!lockSnap.empty) await lockSnap.docs[0].ref.update(lockPayload);
+          else await db.collection('lockTimes').add(Object.assign({ immediateLock: false, createdAt: new Date().toISOString() }, lockPayload));
+
+          const [y, mo, d] = date.split('-').map(Number);
+          const [hh, mm] = tip24.split(':').map(Number);
+          const lockLocal = new Date(y, mo - 1, d, hh, mm, 0, 0);
+          const openLocal = new Date(lockLocal.getTime() - 72 * 60 * 60 * 1000);
+
+          const schedSnap = await db.collection('questionSchedules').where('questionsDate', '==', date).get();
+          const schedPayload = {
+            questionsDate: date,
+            goLiveDateTime: openLocal.toISOString(),
+            goLiveDate: openLocal.toISOString().slice(0, 10),
+            goLiveTime: String(openLocal.getHours()).padStart(2,'0') + ':' + String(openLocal.getMinutes()).padStart(2,'0'),
+            lockTime: lock12,
+            lockDateTime: lockLocal.toISOString(),
+            updatedAt: new Date().toISOString(),
+            source: 'auto-slate-publish'
+          };
+          if (!schedSnap.empty) await schedSnap.docs[0].ref.update(schedPayload);
+          else await db.collection('questionSchedules').add(schedPayload);
+
+          await snap.docs[0].ref.update({
+            published: true,
+            status: 'published',
+            publishedAt: new Date().toISOString(),
+            tipET: tip24,
+            lockTime: lock12
+          });
+          msg('Published ' + date + '. Opens ~72h before tip · locks at ' + lock12 + ' (earliest tip).', 'success');
+        } catch (err) {
+          console.error(err);
+          msg('Publish failed: ' + (err.message || err), 'error');
+        }
+      });
+
       loadRoster().catch(() => {});
     })();
 

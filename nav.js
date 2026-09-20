@@ -1395,6 +1395,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return 'This sign-in method is not enabled. Please try another option.';
             case 'auth/requires-recent-login':
                 return 'For security, please sign out and sign back in, then try again.';
+            case 'auth/unauthorized-domain':
+                return 'This site is not authorized for sign-in yet. Please contact the site owner.';
+            case 'auth/auth-domain-config-required':
+                return 'Sign-in is misconfigured. Please try again later.';
+            case 'auth/internal-error':
+                return 'Google sign-in failed. Please allow pop-ups for this site and try again.';
+            case 'auth/web-storage-unsupported':
+                return 'Your browser is blocking sign-in storage. Try another browser or allow site data.';
             default:
                 if (/firebase/i.test(raw) || /auth\//i.test(raw)) {
                     return 'Something went wrong. Please try again.';
@@ -1425,7 +1433,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Google Sign-In / Sign-Up
+    // Ensure a Google-auth-capable Firebase Auth instance is ready
+    async function waitForAuth(maxMs) {
+        maxMs = maxMs || 8000;
+        const start = Date.now();
+        while (Date.now() - start < maxMs) {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                try {
+                    if (!firebase.apps || !firebase.apps.length) {
+                        if (typeof firebaseConfig !== 'undefined') firebase.initializeApp(firebaseConfig);
+                    }
+                    const a = firebase.auth();
+                    window.auth = a;
+                    if (!window.db && firebase.firestore) window.db = firebase.firestore();
+                    return a;
+                } catch (e) { /* retry */ }
+            }
+            await new Promise(r => setTimeout(r, 150));
+        }
+        return window.auth || null;
+    }
+
+    async function ensureGoogleUserDoc(user) {
+        const userDb = window.db;
+        if (!userDb || !user) return;
+        try {
+            const userRef = userDb.collection('users').doc(user.uid);
+            const snap = await userRef.get();
+            if (!snap.exists) {
+                const displayName = (user.displayName || (user.email ? user.email.split('@')[0] : 'User')).substring(0, 12);
+                const usernameLower = displayName.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+                const payload = {
+                    username: displayName,
+                    usernameLower: usernameLower,
+                    email: user.email || '',
+                    photoURL: user.photoURL || null
+                };
+                try {
+                    payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                } catch (_) {
+                    payload.createdAt = new Date().toISOString();
+                }
+                await userRef.set(payload, { merge: true });
+                localStorage.setItem('usernameLower', usernameLower);
+            }
+        } catch (e) {
+            console.warn('ensureGoogleUserDoc', e);
+        }
+    }
+
+    // Google Sign-In / Sign-Up (popup first, redirect fallback)
     async function handleGoogleSignIn(fromRegister) {
         try {
             if (fromRegister) {
@@ -1435,52 +1492,109 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
             }
-            const a = window.auth || (typeof firebase !== 'undefined' && firebase.auth && firebase.auth());
+
+            showNavMessage('Opening Google…', 'success');
+            const a = await waitForAuth(8000);
             if (!a || typeof firebase === 'undefined') {
-                showNavMessage('Sign-in is still loading. Please wait a moment and try again.', 'error');
+                showNavMessage('Sign-in is still loading. Please wait a second and try again.', 'error');
                 return;
             }
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-            const result = await a.signInWithPopup(provider);
-            const user = result.user;
 
-            const userDb = window.db;
-            if (userDb) {
-                const userRef = userDb.collection('users').doc(user.uid);
-                const snap = await userRef.get();
-                if (!snap.exists) {
-                    const displayName = (user.displayName || (user.email ? user.email.split('@')[0] : 'User')).substring(0, 12);
-                    const usernameLower = displayName.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
-                    await userRef.set({
-                        username: displayName,
-                        usernameLower: usernameLower,
-                        email: user.email || '',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        photoURL: user.photoURL || null
-                    });
-                    localStorage.setItem('usernameLower', usernameLower);
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('email');
+            provider.addScope('profile');
+            provider.setCustomParameters({ prompt: 'select_account' });
+
+            let result = null;
+            try {
+                result = await a.signInWithPopup(provider);
+            } catch (popupErr) {
+                console.warn('Google popup error:', popupErr && popupErr.code, popupErr);
+                const code = (popupErr && popupErr.code) || '';
+                // Fallback to redirect when popup is blocked or fails due to storage/COOP
+                if (code === 'auth/popup-blocked' ||
+                    code === 'auth/cancelled-popup-request' ||
+                    code === 'auth/operation-not-supported-in-this-environment' ||
+                    code === 'auth/internal-error' ||
+                    code === 'auth/network-request-failed') {
+                    showNavMessage('Redirecting to Google…', 'success');
+                    sessionStorage.setItem('sixers_google_redirect', fromRegister ? 'register' : 'login');
+                    await a.signInWithRedirect(provider);
+                    return;
                 }
+                throw popupErr;
             }
-            closeAuthModal();
+
+            if (result && result.user) {
+                await ensureGoogleUserDoc(result.user);
+                showNavMessage('', 'success');
+                closeAuthModal();
+            }
         } catch (err) {
+            console.error('Google sign-in failed:', err && err.code, err);
             const msg = await friendlyAuthError(err);
             if (msg) showNavMessage(msg, 'error');
         }
     }
 
-    // Event delegation so Google buttons always work (even if re-rendered)
+    // Complete redirect-based Google sign-in if we came back from Google
+    (async function completeGoogleRedirect() {
+        try {
+            const a = await waitForAuth(10000);
+            if (!a || !a.getRedirectResult) return;
+            const result = await a.getRedirectResult();
+            if (result && result.user) {
+                await ensureGoogleUserDoc(result.user);
+                sessionStorage.removeItem('sixers_google_redirect');
+                try { closeAuthModal(); } catch (_) {}
+            }
+        } catch (err) {
+            if (err && err.code && err.code !== 'auth/popup-closed-by-user') {
+                console.error('Google redirect result error:', err.code, err);
+                const msg = await friendlyAuthError(err);
+                if (msg) {
+                    try { openAuthModal(); } catch (_) {}
+                    setTimeout(() => showNavMessage(msg, 'error'), 300);
+                }
+            }
+        }
+    })();
+
+    // Direct listeners + delegation (covers SVG clicks inside the button)
+    function bindGoogleButtons() {
+        const loginBtn = document.getElementById('navGoogleSignInBtn');
+        const signupBtn = document.getElementById('navGoogleSignUpBtn');
+        if (loginBtn && !loginBtn._googleBound) {
+            loginBtn._googleBound = true;
+            loginBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleGoogleSignIn(false);
+            });
+        }
+        if (signupBtn && !signupBtn._googleBound) {
+            signupBtn._googleBound = true;
+            signupBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleGoogleSignIn(true);
+            });
+        }
+    }
+    bindGoogleButtons();
+    // Re-bind when modal opens (in case DOM was rebuilt)
     document.addEventListener('click', function (e) {
-        const btn = e.target.closest && e.target.closest('#navGoogleSignInBtn, #navGoogleSignUpBtn, .auth-google-btn');
+        const t = e.target;
+        if (!t) return;
+        if (t.id === 'navSignInBtn' || (t.closest && t.closest('#navSignInBtn'))) {
+            setTimeout(bindGoogleButtons, 50);
+        }
+        const btn = t.closest && t.closest('#navGoogleSignInBtn, #navGoogleSignUpBtn');
         if (!btn) return;
-        if (btn.id === 'navGoogleSignUpBtn') {
+        // backup if direct listener missed
+        if (!btn._googleBound) {
             e.preventDefault();
-            handleGoogleSignIn(true);
-        } else if (btn.id === 'navGoogleSignInBtn' || btn.classList.contains('auth-google-btn')) {
-            e.preventDefault();
-            // On register form the signup id is preferred; otherwise treat as login
-            const onRegister = !!(btn.closest && btn.closest('#navRegisterForm'));
-            handleGoogleSignIn(onRegister);
+            handleGoogleSignIn(btn.id === 'navGoogleSignUpBtn');
         }
     });
 

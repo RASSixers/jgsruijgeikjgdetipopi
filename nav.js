@@ -11,6 +11,12 @@
     } catch(e) {}
 })();
 
+// Early stub so the Google button never silently does nothing
+window.__sixersGoogleSignIn = function () {
+    alert('Sign-in is still loading. Please wait a second and try again.');
+    return false;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Add Navbar Styles if not present
     if (!document.getElementById('navbar-styles')) {
@@ -1464,10 +1470,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function getAuthNow() {
         try {
             if (window.auth) return window.auth;
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                if ((!firebase.apps || !firebase.apps.length) && typeof firebaseConfig !== 'undefined') {
-                    firebase.initializeApp(firebaseConfig);
-                }
+            if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+                window.auth = firebase.auth();
+                return window.auth;
+            }
+            if (typeof firebase !== 'undefined' && firebase.auth && typeof firebaseConfig !== 'undefined') {
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 window.auth = firebase.auth();
                 if (!window.db && firebase.firestore) {
                     try { window.db = firebase.firestore(); } catch (_) {}
@@ -1480,75 +1488,76 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
 
-    // Single Google sign-in entry point (called from button onclick only — no double listeners)
+    // Real Google handler (replaces early stub)
     window.__sixersGoogleSignIn = function (fromRegister) {
+        console.log('[SixersAuth] Google button clicked', { fromRegister: !!fromRegister, hasFirebase: typeof firebase !== 'undefined', hasAuth: !!(window.auth) });
+
         try {
             if (fromRegister) {
-                const agreed = document.getElementById('navAgreeTerms');
+                var agreed = document.getElementById('navAgreeTerms');
                 if (agreed && !agreed.checked) {
                     showNavMessage('Please agree to the Terms of Service, Privacy Policy, and Cookie Policy to continue.', 'error');
                     return false;
                 }
             }
 
-            const a = getAuthNow();
-            if (!a || typeof firebase === 'undefined') {
-                showNavMessage('Sign-in is still loading. Wait one second, then try again.', 'error');
+            var a = getAuthNow();
+            if (!a) {
+                showNavMessage('Sign-in is still loading. Wait 2 seconds, then try again.', 'error');
+                console.warn('[SixersAuth] auth not ready');
                 return false;
             }
 
-            const provider = new firebase.auth.GoogleAuthProvider();
+            if (typeof firebase === 'undefined' || !firebase.auth || !firebase.auth.GoogleAuthProvider) {
+                showNavMessage('Google sign-in is unavailable. Please refresh the page.', 'error');
+                return false;
+            }
+
+            var provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
+
+            showNavMessage('Opening Google…', 'success');
 
             a.signInWithPopup(provider)
                 .then(function (result) {
+                    console.log('[SixersAuth] popup success', result && result.user && result.user.email);
                     if (!result || !result.user) return;
                     return ensureGoogleUserDoc(result.user).then(function () {
                         closeAuthModal();
                     });
                 })
                 .catch(function (err) {
-                    console.error('Google sign-in error:', err && err.code, err);
+                    console.error('[SixersAuth] popup error', err && err.code, err);
                     var code = (err && err.code) || '';
                     if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+                        showNavMessage('', 'success');
                         return;
                     }
                     if (code === 'auth/popup-blocked') {
-                        showNavMessage('Pop-up blocked. Allow pop-ups for this site, or use the redirect option.', 'error');
+                        showNavMessage('Your browser blocked the Google pop-up. Allow pop-ups for sixershoops.com and try again.', 'error');
+                        return;
+                    }
+                    if (code === 'auth/unauthorized-domain') {
+                        showNavMessage('This domain is not authorized for Google sign-in. Add sixershoops.com in Firebase Authorized domains.', 'error');
+                        return;
+                    }
+                    if (code === 'auth/internal-error' || code === 'auth/network-request-failed') {
+                        showNavMessage('Google sign-in failed to open. Try disabling ad blockers, or use another browser.', 'error');
                         return;
                     }
                     return friendlyAuthError(err).then(function (msg) {
                         if (msg) showNavMessage(msg, 'error');
+                        else showNavMessage('Google sign-in failed. Please try again.', 'error');
                     });
                 });
+
             return false;
         } catch (err) {
-            console.error('Google sign-in setup error:', err);
-            showNavMessage('Could not start Google sign-in. Please refresh and try again.', 'error');
+            console.error('[SixersAuth] setup error', err);
+            showNavMessage('Could not start Google sign-in: ' + (err && err.message ? err.message : 'unknown error'), 'error');
             return false;
         }
     };
-
-    // Finish sign-in if user returns from a redirect (rare fallback)
-    (function completeGoogleRedirect() {
-        var attempts = 0;
-        function tryComplete() {
-            attempts++;
-            var a = getAuthNow();
-            if (!a || !a.getRedirectResult) {
-                if (attempts < 30) setTimeout(tryComplete, 300);
-                return;
-            }
-            a.getRedirectResult().then(function (result) {
-                if (result && result.user) {
-                    ensureGoogleUserDoc(result.user).then(function () {
-                        try { closeAuthModal(); } catch (_) {}
-                    });
-                }
-            }).catch(function () {});
-        }
-        setTimeout(tryComplete, 400);
-    })();
 
     // Policy links open in popup
     const policyTitles = {

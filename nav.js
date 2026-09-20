@@ -113,6 +113,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add Firebase SDKs if not present
+    if (!document.getElementById('sixers-engagement-js')) {
+        const eng = document.createElement('script');
+        eng.id = 'sixers-engagement-js';
+        eng.src = '/js/engagement.js';
+        document.head.appendChild(eng);
+    }
     if (!document.getElementById('firebase-app-sdk')) {
         const scripts = [
             { id: 'firebase-app-sdk', src: 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js' },
@@ -613,6 +619,30 @@ document.addEventListener('DOMContentLoaded', function() {
     window.auth = null;
     window.db = null;
     window.storage = null;
+
+    // Visit streak (once per calendar day)
+    async function trackVisitStreak(user) {
+        try {
+            if (!user || !window.db) return;
+            // wait briefly for engagement.js
+            let tries = 0;
+            while (!window.SixersEngagement && tries < 20) {
+                await new Promise(r => setTimeout(r, 100));
+                tries++;
+            }
+            if (!window.SixersEngagement) return;
+            const st = await SixersEngagement.updateVisitStreak(window.db, user.uid);
+            if (st && st.visitStreak) {
+                window.__visitStreak = st.visitStreak;
+                const el = document.getElementById('navVisitStreak');
+                if (el) {
+                    el.style.display = 'inline-flex';
+                    el.textContent = '📅 ' + st.visitStreak + 'd on-site';
+                }
+            }
+        } catch (e) { console.warn('visit streak', e); }
+    }
+
     
     function initFirebase() {
         if (typeof firebase === 'undefined' || !firebase.auth || !firebase.firestore || !firebase.storage) {
@@ -878,6 +908,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setupAuthListeners() {
         window.auth.onAuthStateChanged(async user => {
+            if (user) trackVisitStreak(user);
+
             if (user && window.db) {
                 try {
                     const ref = window.db.collection('users').doc(user.uid);

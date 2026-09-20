@@ -5878,19 +5878,12 @@
         const off = Number(document.getElementById('autoSlateLockOffset')?.value);
         const lock = lockTimeFromTip(tip, off);
         document.getElementById('autoPreview').textContent =
-          'Games used: ' + games.length + ' · Questions: ' + items.length + '
-
-' +
-          items.map((q, i) => (i + 1) + '. ' + q.question +
-            (q.options && q.options.length ? '
-    ' + q.options.join(' | ') : '')).join('
-
-') +
-          (lock ? '
-
-Lock time: ' + lock : '
-
-Lock time: (not set)');
+          'Games used: ' + games.length + ' · Questions: ' + items.length + '\n\n' +
+          items.map(function (q, i) {
+            return (i + 1) + '. ' + q.question +
+              (q.options && q.options.length ? '\n    ' + q.options.join(' | ') : '');
+          }).join('\n\n') +
+          (lock ? '\n\nLock time: ' + lock : '\n\nLock time: (not set)');
       });
 
       document.getElementById('autoSaveBtn')?.addEventListener('click', async () => {

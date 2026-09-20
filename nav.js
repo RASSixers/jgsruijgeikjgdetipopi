@@ -1482,9 +1482,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Google sign-in using REDIRECT (primary).
-     * Popup is unreliable with custom authDomain on GitHub Pages.
-     * Must stay synchronous at the start of the click.
+     * Google sign-in — POPUP first (small window).
+     * Redirect is only used if the browser blocks the popup.
+     * signInWithPopup must run immediately inside the click handler.
      */
     function handleGoogleSignIn(fromRegister) {
         try {
@@ -1505,36 +1505,48 @@ document.addEventListener('DOMContentLoaded', function() {
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
-            showNavMessage('Redirecting to Google…', 'success');
-            try {
-                sessionStorage.setItem('sixers_google_redirect', fromRegister ? 'register' : 'login');
-            } catch (_) {}
-
-            // Primary: full-page redirect (works with custom auth domain)
-            a.signInWithRedirect(provider).catch(function (err) {
-                console.error('signInWithRedirect failed:', err && err.code, err);
-                // Last resort: try popup
-                a.signInWithPopup(provider).then(async function (result) {
+            // Open the small Google popup immediately (user gesture)
+            a.signInWithPopup(provider)
+                .then(async function (result) {
                     if (result && result.user) {
                         await ensureGoogleUserDoc(result.user);
                         closeAuthModal();
                     }
-                }).catch(async function (err2) {
-                    console.error('signInWithPopup failed:', err2 && err2.code, err2);
-                    const msg = await friendlyAuthError(err2 || err);
+                })
+                .catch(async function (err) {
+                    console.error('Google popup error:', err && err.code, err);
+                    const code = (err && err.code) || '';
+
+                    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+                        return;
+                    }
+
+                    // Only if popup is blocked → full-page redirect
+                    if (code === 'auth/popup-blocked' ||
+                        code === 'auth/operation-not-supported-in-this-environment') {
+                        showNavMessage('Pop-up blocked by the browser. Redirecting instead…', 'success');
+                        try { sessionStorage.setItem('sixers_google_redirect', fromRegister ? 'register' : 'login'); } catch (_) {}
+                        try {
+                            await a.signInWithRedirect(provider);
+                        } catch (e2) {
+                            const msg = await friendlyAuthError(e2);
+                            if (msg) showNavMessage(msg, 'error');
+                        }
+                        return;
+                    }
+
+                    const msg = await friendlyAuthError(err);
                     if (msg) showNavMessage(msg, 'error');
                 });
-            });
         } catch (err) {
             console.error('Google sign-in setup error:', err);
             showNavMessage('Could not start Google sign-in. Please refresh and try again.', 'error');
         }
     }
 
-    // Expose for inline onclick on the buttons
     window.__sixersGoogleSignIn = handleGoogleSignIn;
 
-    // Complete redirect when user returns from Google
+    // Complete redirect only if we had to fall back
     (function completeGoogleRedirect() {
         var attempts = 0;
         function tryComplete() {

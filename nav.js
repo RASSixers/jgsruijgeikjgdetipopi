@@ -260,7 +260,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 color: #1e293b;
                 cursor: pointer;
                 transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, outline-color 0.15s;
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
             }
+            .auth-google-btn svg { pointer-events: none; flex-shrink: 0; }
             .auth-google-btn:hover {
                 background: #f8fafc;
                 border-color: #006BB6;
@@ -1433,27 +1437,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Ensure a Google-auth-capable Firebase Auth instance is ready
-    async function waitForAuth(maxMs) {
-        maxMs = maxMs || 8000;
-        const start = Date.now();
-        while (Date.now() - start < maxMs) {
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                try {
-                    if (!firebase.apps || !firebase.apps.length) {
-                        if (typeof firebaseConfig !== 'undefined') firebase.initializeApp(firebaseConfig);
-                    }
-                    const a = firebase.auth();
-                    window.auth = a;
-                    if (!window.db && firebase.firestore) window.db = firebase.firestore();
-                    return a;
-                } catch (e) { /* retry */ }
-            }
-            await new Promise(r => setTimeout(r, 150));
-        }
-        return window.auth || null;
-    }
-
+    // Google Sign-In — must call signInWithPopup synchronously from the click
+    // (any long await before popup causes the browser to block it)
     async function ensureGoogleUserDoc(user) {
         const userDb = window.db;
         if (!userDb || !user) return;
@@ -1467,13 +1452,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     username: displayName,
                     usernameLower: usernameLower,
                     email: user.email || '',
-                    photoURL: user.photoURL || null
+                    photoURL: user.photoURL || null,
+                    createdAt: new Date().toISOString()
                 };
-                try {
-                    payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                } catch (_) {
-                    payload.createdAt = new Date().toISOString();
-                }
                 await userRef.set(payload, { merge: true });
                 localStorage.setItem('usernameLower', usernameLower);
             }
@@ -1482,8 +1463,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Google Sign-In / Sign-Up (popup first, redirect fallback)
-    async function handleGoogleSignIn(fromRegister) {
+    function getAuthNow() {
+        try {
+            if (window.auth) return window.auth;
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                if (!firebase.apps.length && typeof firebaseConfig !== 'undefined') {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                window.auth = firebase.auth();
+                if (!window.db && firebase.firestore) window.db = firebase.firestore();
+                return window.auth;
+            }
+        } catch (e) {
+            console.warn('getAuthNow', e);
+        }
+        return null;
+    }
+
+    function handleGoogleSignIn(fromRegister) {
         try {
             if (fromRegister) {
                 const agreed = document.getElementById('navAgreeTerms');
@@ -1493,110 +1490,86 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            showNavMessage('Opening Google…', 'success');
-            const a = await waitForAuth(8000);
-            if (!a || typeof firebase === 'undefined') {
-                showNavMessage('Sign-in is still loading. Please wait a second and try again.', 'error');
+            const a = getAuthNow();
+            if (!a || typeof firebase === 'undefined' || !firebase.auth) {
+                showNavMessage('Sign-in is still loading. Wait a second, then try again.', 'error');
                 return;
             }
 
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('email');
-            provider.addScope('profile');
             provider.setCustomParameters({ prompt: 'select_account' });
 
-            let result = null;
-            try {
-                result = await a.signInWithPopup(provider);
-            } catch (popupErr) {
-                console.warn('Google popup error:', popupErr && popupErr.code, popupErr);
-                const code = (popupErr && popupErr.code) || '';
-                // Fallback to redirect when popup is blocked or fails due to storage/COOP
-                if (code === 'auth/popup-blocked' ||
-                    code === 'auth/cancelled-popup-request' ||
-                    code === 'auth/operation-not-supported-in-this-environment' ||
-                    code === 'auth/internal-error' ||
-                    code === 'auth/network-request-failed') {
-                    showNavMessage('Redirecting to Google…', 'success');
-                    sessionStorage.setItem('sixers_google_redirect', fromRegister ? 'register' : 'login');
-                    await a.signInWithRedirect(provider);
+            // CRITICAL: call popup immediately (still inside the click stack)
+            const popupPromise = a.signInWithPopup(provider);
+
+            popupPromise.then(async function (result) {
+                if (result && result.user) {
+                    await ensureGoogleUserDoc(result.user);
+                    closeAuthModal();
+                }
+            }).catch(async function (err) {
+                console.error('Google sign-in error:', err && err.code, err);
+                const code = (err && err.code) || '';
+                if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
                     return;
                 }
-                throw popupErr;
-            }
-
-            if (result && result.user) {
-                await ensureGoogleUserDoc(result.user);
-                showNavMessage('', 'success');
-                closeAuthModal();
-            }
+                // If popup blocked, fall back to redirect (full page)
+                if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+                    showNavMessage('Pop-up blocked — redirecting to Google…', 'success');
+                    try {
+                        sessionStorage.setItem('sixers_google_redirect', fromRegister ? 'register' : 'login');
+                        await a.signInWithRedirect(provider);
+                    } catch (e2) {
+                        const msg = await friendlyAuthError(e2);
+                        if (msg) showNavMessage(msg, 'error');
+                    }
+                    return;
+                }
+                const msg = await friendlyAuthError(err);
+                if (msg) showNavMessage(msg, 'error');
+            });
         } catch (err) {
-            console.error('Google sign-in failed:', err && err.code, err);
-            const msg = await friendlyAuthError(err);
-            if (msg) showNavMessage(msg, 'error');
+            console.error('Google sign-in setup error:', err);
+            showNavMessage('Could not start Google sign-in. Please refresh and try again.', 'error');
         }
     }
 
-    // Complete redirect-based Google sign-in if we came back from Google
-    (async function completeGoogleRedirect() {
-        try {
-            const a = await waitForAuth(10000);
-            if (!a || !a.getRedirectResult) return;
-            const result = await a.getRedirectResult();
-            if (result && result.user) {
-                await ensureGoogleUserDoc(result.user);
-                sessionStorage.removeItem('sixers_google_redirect');
-                try { closeAuthModal(); } catch (_) {}
+    // Finish redirect flow if user was sent to Google
+    (function completeGoogleRedirect() {
+        function tryComplete() {
+            const a = getAuthNow();
+            if (!a || !a.getRedirectResult) {
+                setTimeout(tryComplete, 300);
+                return;
             }
-        } catch (err) {
-            if (err && err.code && err.code !== 'auth/popup-closed-by-user') {
-                console.error('Google redirect result error:', err.code, err);
+            a.getRedirectResult().then(async function (result) {
+                if (result && result.user) {
+                    await ensureGoogleUserDoc(result.user);
+                    sessionStorage.removeItem('sixers_google_redirect');
+                    try { closeAuthModal(); } catch (_) {}
+                }
+            }).catch(async function (err) {
+                if (!err || !err.code || err.code === 'auth/popup-closed-by-user') return;
+                console.error('Google redirect error:', err.code, err);
                 const msg = await friendlyAuthError(err);
                 if (msg) {
                     try { openAuthModal(); } catch (_) {}
-                    setTimeout(() => showNavMessage(msg, 'error'), 300);
+                    setTimeout(function () { showNavMessage(msg, 'error'); }, 400);
                 }
-            }
+            });
         }
+        setTimeout(tryComplete, 400);
     })();
 
-    // Direct listeners + delegation (covers SVG clicks inside the button)
-    function bindGoogleButtons() {
-        const loginBtn = document.getElementById('navGoogleSignInBtn');
-        const signupBtn = document.getElementById('navGoogleSignUpBtn');
-        if (loginBtn && !loginBtn._googleBound) {
-            loginBtn._googleBound = true;
-            loginBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleGoogleSignIn(false);
-            });
-        }
-        if (signupBtn && !signupBtn._googleBound) {
-            signupBtn._googleBound = true;
-            signupBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleGoogleSignIn(true);
-            });
-        }
-    }
-    bindGoogleButtons();
-    // Re-bind when modal opens (in case DOM was rebuilt)
-    document.addEventListener('click', function (e) {
-        const t = e.target;
-        if (!t) return;
-        if (t.id === 'navSignInBtn' || (t.closest && t.closest('#navSignInBtn'))) {
-            setTimeout(bindGoogleButtons, 50);
-        }
-        const btn = t.closest && t.closest('#navGoogleSignInBtn, #navGoogleSignUpBtn');
+    function onGoogleBtnClick(e) {
+        const btn = e.target.closest && e.target.closest('#navGoogleSignInBtn, #navGoogleSignUpBtn, button.auth-google-btn');
         if (!btn) return;
-        // backup if direct listener missed
-        if (!btn._googleBound) {
-            e.preventDefault();
-            handleGoogleSignIn(btn.id === 'navGoogleSignUpBtn');
-        }
-    });
+        e.preventDefault();
+        e.stopPropagation();
+        const fromRegister = btn.id === 'navGoogleSignUpBtn' || !!(btn.closest && btn.closest('#navRegisterForm'));
+        handleGoogleSignIn(fromRegister);
+    }
+    document.addEventListener('click', onGoogleBtnClick, true);
 
     // Policy links open in popup
     const policyTitles = {

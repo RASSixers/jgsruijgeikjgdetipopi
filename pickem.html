@@ -1450,12 +1450,10 @@
                   </div>
                 </div>
 
-                <label class="form-label">Question pack</label>
-                <select id="autoPack" class="form-input" style="margin-bottom:0.75rem;">
-                  <option value="sixers_standard">Sixers standard (recommended)</option>
-                  <option value="sixers_props">Sixers + player props</option>
-                  <option value="sixers_minimal">Minimal (3 questions + TB)</option>
-                </select>
+                <p style="font-size:0.85rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.45;">
+                  Always builds <strong>exactly 10 questions</strong>: uses all games that day (or as many as fit),
+                  then fills the rest from the random question bank. Over/Unders use .5 lines so there is no push.
+                </p>
 
                 <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;font-size:0.85rem;">
                   <input type="checkbox" id="autoReplace" checked />
@@ -5620,7 +5618,7 @@
           el.innerHTML = '<div style="color:var(--mid);">No games found. Enter opponent & tip time manually, or add the game to <code>/data/schedule.json</code>.</div>';
           return;
         }
-        el.innerHTML = '<div style="margin-bottom:0.4rem;font-weight:700;">Games found — click one to use it:</div>' +
+        el.innerHTML = '<div style="margin-bottom:0.4rem;font-weight:700;">Games found for this date (all will be used for the 10-question slate). Click one only to set default tip time for lock:</div>' +
           games.map((g, i) => {
             const isPhi = (g.home === 'PHI' || g.away === 'PHI' ||
               /76ers|philadelphia/i.test(g.homeName || '') || /76ers|philadelphia/i.test(g.awayName || ''));
@@ -5643,49 +5641,174 @@
         });
       }
 
-      function buildItems(opponent, weekNumber, pack, homeAway) {
-        const opp = (opponent || 'Opponent').trim();
-        const week = weekNumber ? Number(weekNumber) : null;
-        const scorers = (roster && roster.featuredScorers) || ['Tyrese Maxey', 'Joel Embiid', 'Paul George'];
-        const scorerOptions = scorers.slice(0, 5).concat([opp + ' player']);
-        const loc = homeAway === 'away' ? 'on the road' : 'at home';
-        const items = [];
-        const add = (question, type, options, isTieBreaker) => {
-          items.push({
-            question,
-            type: type || 'multiple',
-            options: options || [],
-            isTieBreaker: !!isTieBreaker,
-            weekNumber: week,
-            dayOfWeek: null
-          });
-        };
 
-        if (pack === 'sixers_minimal') {
-          add('Who wins: 76ers vs ' + opp + '?', 'multiple', ['76ers', opp]);
-          add('Game total Over or Under?', 'multiple', ['Over', 'Under']);
-          add('Will the 76ers cover the spread?', 'multiple', ['Yes', 'No']);
-          add('Margin of victory (pts, tie-breaker)', 'number', [], true);
-        } else if (pack === 'sixers_props') {
-          add('Who wins: 76ers vs ' + opp + ' (' + loc + ')?', 'multiple', ['76ers', opp]);
-          add('Will the 76ers cover the spread?', 'multiple', ['Yes', 'No']);
-          add('Game total Over or Under?', 'multiple', ['Over', 'Under']);
-          add('Who will be the leading scorer?', 'multiple', scorerOptions);
-          add('Tyrese Maxey 20+ points?', 'multiple', ['Yes', 'No']);
-          add('Joel Embiid 25+ points? (or Yes if OUT → pick No)', 'multiple', ['Yes', 'No']);
-          add('Which team grabs more rebounds?', 'multiple', ['76ers', opp]);
-          add('Final score differential (tie-breaker)', 'number', [], true);
-        } else {
-          // sixers_standard
-          add('Who wins: 76ers vs ' + opp + ' (' + loc + ')?', 'multiple', ['76ers', opp]);
-          add('Will the 76ers cover the spread?', 'multiple', ['Yes', 'No']);
-          add('Game total Over or Under?', 'multiple', ['Over', 'Under']);
-          add('Who will be the leading scorer?', 'multiple', scorerOptions);
-          add('Tyrese Maxey 20+ points?', 'multiple', ['Yes', 'No']);
-          add('Which team scores more in the first half?', 'multiple', ['76ers', opp]);
-          add('Final score differential (tie-breaker)', 'number', [], true);
+      // Question bank (from your Quick Presets) — filled with team names when applied to a game
+      const QUESTION_BANK = [
+        { key: 'win', template: 'Who will win: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'ot', template: 'Will there be overtime in {away} vs {home}?', options: ['Yes', 'No'] },
+        { key: 'score_first', template: 'Who will score first: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'more_points', template: 'Who will have more points: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'more_assists', template: 'Who will have more assists: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'more_rebounds', template: 'Who will have more rebounds: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'more_steals', template: 'Who will have more steals: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'more_blocks', template: 'Who will have more blocks: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'more_to', template: 'Who will have more turnovers: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'more_threes', template: 'Who will make more 3-pointers: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'ou', template: 'Will the total score be OVER or UNDER {line} in {away} vs {home}?', options: ['Over', 'Under'], needsLine: true },
+        { key: 'halftime', template: 'Which team will lead at halftime: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'first_100', template: 'Which team will score 100 points first: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'fg50', template: 'Will either team shoot above 50% from the field in {away} vs {home}?', options: ['Yes', 'No'] },
+        { key: 'double_double', template: 'Will a player record a double-double in {away} vs {home}?', options: ['Yes', 'No'] },
+        { key: 'triple_double', template: 'Will there be a triple-double recorded in {away} vs {home}?', options: ['Yes', 'No'] },
+        { key: 'q4', template: 'Which team will win the 4th quarter: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'fast_break', template: 'Which team will have more fast break points: {away} vs {home}?', options: ['{away}', '{home}'] },
+        { key: 'fouls', template: 'Which team will commit more fouls: {away} vs {home}?', options: ['{away}', '{home}'] }
+      ];
+
+      function fillTemplate(str, home, away, line) {
+        return String(str || '')
+          .replace(/\{home\}/g, home)
+          .replace(/\{away\}/g, away)
+          .replace(/\{line\}/g, line != null ? String(line) : '');
+      }
+
+      function fillOptions(opts, home, away) {
+        return (opts || []).map(o => fillTemplate(o, home, away));
+      }
+
+      // Deterministic-ish .5 total line from team name hashes (no API)
+      function suggestTotalLine(home, away) {
+        const s = String(home) + '|' + String(away);
+        let h = 0;
+        for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i);
+        h = Math.abs(h);
+        // NBA totals often 210.5–245.5
+        const base = 215 + (h % 31); // 215..245
+        return base + 0.5;
+      }
+
+      function shuffleCopy(arr, seed) {
+        const a = arr.slice();
+        let s = seed || 1;
+        for (let i = a.length - 1; i > 0; i--) {
+          s = (s * 1103515245 + 12345) & 0x7fffffff;
+          const j = s % (i + 1);
+          const t = a[i]; a[i] = a[j]; a[j] = t;
         }
-        return items;
+        return a;
+      }
+
+      /**
+       * Build exactly 10 questions for a day.
+       * - Primary: one "Who will win?" per game (all games, or first N if too many)
+       * - Fill to 10 from the preset bank applied to random games that day
+       * - Over/Under lines always end in .5
+       */
+      function buildDailyTen(games, weekNumber) {
+        const week = weekNumber ? Number(weekNumber) : null;
+        const TARGET = 10;
+        const items = [];
+        const usedKeys = new Set(); // gameIndex + bank key to avoid exact dupes
+
+        const list = (games && games.length) ? games.slice() : [];
+        // If no games, synthesize a placeholder so bank still works with manual opponent
+        if (!list.length) {
+          const opp = (document.getElementById('autoOpponent')?.value || 'Opponent').trim();
+          const ha = document.getElementById('autoHomeAway')?.value || 'home';
+          list.push({
+            homeName: ha === 'home' ? 'Philadelphia 76ers' : opp,
+            awayName: ha === 'home' ? opp : 'Philadelphia 76ers',
+            home: ha === 'home' ? 'PHI' : 'OPP',
+            away: ha === 'home' ? 'OPP' : 'PHI'
+          });
+        }
+
+        function addQ(question, options, meta) {
+          if (items.length >= TARGET) return false;
+          items.push({
+            question: question,
+            type: 'multiple',
+            options: options,
+            isTieBreaker: false,
+            weekNumber: week,
+            dayOfWeek: null,
+            meta: meta || null
+          });
+          return true;
+        }
+
+        // 1) One moneyline per game until we hit 10 or run out of games
+        for (let i = 0; i < list.length && items.length < TARGET; i++) {
+          const g = list[i];
+          const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
+          const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
+          const key = i + ':win';
+          usedKeys.add(key);
+          addQ(
+            fillTemplate('Who will win: {away} vs {home}?', home, away),
+            fillOptions(['{away}', '{home}'], home, away),
+            { gameIndex: i, bankKey: 'win' }
+          );
+        }
+
+        // 2) Fill remaining slots from shuffled bank across games
+        if (items.length < TARGET) {
+          const dateStr = document.getElementById('autoSlateDate')?.value || '';
+          let seed = 0;
+          for (let i = 0; i < dateStr.length; i++) seed += dateStr.charCodeAt(i);
+          const bankOrder = shuffleCopy(QUESTION_BANK.filter(b => b.key !== 'win'), seed + 7);
+          const gameOrder = shuffleCopy(list.map((_, i) => i), seed + 99);
+
+          // Round-robin: for each bank question type, apply to a game
+          let safety = 0;
+          while (items.length < TARGET && safety < 500) {
+            safety++;
+            let added = false;
+            for (const bi of bankOrder) {
+              if (items.length >= TARGET) break;
+              for (const gi of gameOrder) {
+                if (items.length >= TARGET) break;
+                const uk = gi + ':' + bi.key;
+                if (usedKeys.has(uk)) continue;
+                const g = list[gi];
+                const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
+                const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
+                const line = bi.needsLine ? suggestTotalLine(home, away) : null;
+                const qText = fillTemplate(bi.template, home, away, line);
+                const opts = fillOptions(bi.options, home, away);
+                usedKeys.add(uk);
+                addQ(qText, opts, { gameIndex: gi, bankKey: bi.key, line: line });
+                added = true;
+              }
+            }
+            if (!added) break;
+          }
+        }
+
+        // 3) If still short (edge case), generic fillers
+        let n = 1;
+        while (items.length < TARGET) {
+          addQ('Bonus pick #' + n + ': Will the higher seed win tonight?', ['Yes', 'No'], { bankKey: 'filler' });
+          n++;
+        }
+
+        // Optional: last question as numeric TB only if you want — user asked for 10 multiple style; keep all multiple
+        return items.slice(0, TARGET);
+      }
+
+      function getGamesForBuild() {
+        // Prefer selected/found games; if empty use manual single matchup
+        if (foundGames && foundGames.length) return foundGames;
+        const opp = (document.getElementById('autoOpponent')?.value || '').trim();
+        if (!opp) return [];
+        const ha = document.getElementById('autoHomeAway')?.value || 'home';
+        return [{
+          homeName: ha === 'home' ? 'Philadelphia 76ers' : opp,
+          awayName: ha === 'home' ? opp : 'Philadelphia 76ers',
+          home: ha === 'home' ? 'PHI' : 'OPP',
+          away: ha === 'home' ? 'OPP' : 'PHI',
+          tipET: document.getElementById('autoTipTime')?.value || '19:30'
+        }];
       }
 
       function lockTimeFromTip(tipHHMM, offsetMin) {
@@ -5740,18 +5863,34 @@
       });
 
       document.getElementById('autoPreviewBtn')?.addEventListener('click', () => {
-        const opp = document.getElementById('autoOpponent')?.value;
         const week = document.getElementById('autoSlateWeek')?.value;
-        const pack = document.getElementById('autoPack')?.value;
-        const ha = document.getElementById('autoHomeAway')?.value;
-        const items = buildItems(opp, week, pack, ha);
-        const tip = document.getElementById('autoTipTime')?.value || '19:30';
+        const games = getGamesForBuild();
+        if (!games.length) {
+          msg('Find games for the date first, or enter an opponent manually.', 'error');
+          return;
+        }
+        const items = buildDailyTen(games, week);
+        let tip = document.getElementById('autoTipTime')?.value || '';
+        if (!tip || tip === '19:30') {
+          const tips = games.map(g => g.tipET).filter(Boolean).sort();
+          tip = tips[0] || '19:30';
+        }
         const off = Number(document.getElementById('autoSlateLockOffset')?.value);
         const lock = lockTimeFromTip(tip, off);
         document.getElementById('autoPreview').textContent =
-          items.map((q, i) => (i + 1) + '. ' + q.question + (q.isTieBreaker ? ' [TB]' : '') +
-            (q.options && q.options.length ? '\n    options: ' + q.options.join(' | ') : '')).join('\n\n') +
-          (lock ? '\n\nLock time: ' + lock : '\n\nLock time: (not set)');
+          'Games used: ' + games.length + ' · Questions: ' + items.length + '
+
+' +
+          items.map((q, i) => (i + 1) + '. ' + q.question +
+            (q.options && q.options.length ? '
+    ' + q.options.join(' | ') : '')).join('
+
+') +
+          (lock ? '
+
+Lock time: ' + lock : '
+
+Lock time: (not set)');
       });
 
       document.getElementById('autoSaveBtn')?.addEventListener('click', async () => {
@@ -5759,17 +5898,13 @@
         if (!window.db) { msg('Database not ready.', 'error'); return; }
         const date = document.getElementById('autoSlateDate')?.value;
         if (!date) { msg('Choose a date.', 'error'); return; }
-        const opp = document.getElementById('autoOpponent')?.value;
-        if (!opp) { msg('Set an opponent (fetch a game or type one).', 'error'); return; }
-        if (!roster) {
-          try { await loadRoster(); } catch (_) {}
-        }
+        const games = getGamesForBuild();
+        if (!games.length) { msg('Find games for the date first, or enter an opponent manually.', 'error'); return; }
         const week = document.getElementById('autoSlateWeek')?.value;
-        const pack = document.getElementById('autoPack')?.value;
-        const ha = document.getElementById('autoHomeAway')?.value;
         const replace = document.getElementById('autoReplace')?.checked;
-        const items = buildItems(opp, week, pack, ha);
-        const tip = document.getElementById('autoTipTime')?.value || '19:30';
+        const items = buildDailyTen(games, week);
+        const tip = document.getElementById('autoTipTime')?.value || games[0].tipET || '19:30';
+        const opp = document.getElementById('autoOpponent')?.value || (games[0].awayName || games[0].homeName || '');
         const off = Number(document.getElementById('autoSlateLockOffset')?.value);
         const lock = lockTimeFromTip(tip, off);
 
@@ -5786,7 +5921,8 @@
               updatedAt: new Date().toISOString(),
               source: 'auto-slate',
               opponent: opp,
-              tipET: tip
+              tipET: tip,
+              gameCount: games.length
             });
           } else {
             await db.collection('questions').add({
@@ -5795,7 +5931,8 @@
               createdAt: new Date().toISOString(),
               source: 'auto-slate',
               opponent: opp,
-              tipET: tip
+              tipET: tip,
+              gameCount: games.length
             });
           }
 

@@ -1336,20 +1336,92 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showNavMessage(msg, type) {
+        if (!authMessage) return;
         authMessage.textContent = msg;
-        authMessage.className = `auth-message show ${type}`;
+        authMessage.className = `auth-message show ${type || 'error'}`;
     }
 
-    if(loginForm) loginForm.addEventListener('submit', async (e) => {
+    async function friendlyAuthError(err, email) {
+        const code = (err && err.code) || '';
+        const raw = (err && err.message) || '';
+
+        // Detect Google-only (or other provider) accounts when password sign-in fails
+        if (email && (code === 'auth/wrong-password' || code === 'auth/invalid-credential' ||
+            code === 'auth/invalid-login-credentials' || code === 'auth/user-not-found')) {
+            try {
+                const a = window.auth || (window.firebase && firebase.auth());
+                if (a && a.fetchSignInMethodsForEmail) {
+                    const methods = await a.fetchSignInMethodsForEmail(email);
+                    if (methods && methods.length) {
+                        if (methods.indexOf('password') === -1 && methods.indexOf('google.com') !== -1) {
+                            return 'This email is registered with Google. Please use Continue with Google to sign in.';
+                        }
+                        if (methods.indexOf('password') === -1) {
+                            return 'This account uses a different sign-in method. Try Continue with Google.';
+                        }
+                    }
+                }
+            } catch (_) { /* ignore lookup failures */ }
+        }
+
+        switch (code) {
+            case 'auth/wrong-password':
+            case 'auth/invalid-credential':
+            case 'auth/invalid-login-credentials':
+                return 'Incorrect email or password. Please try again.';
+            case 'auth/user-not-found':
+                return 'No account found with that email. Check the address or create an account.';
+            case 'auth/invalid-email':
+                return 'Please enter a valid email address.';
+            case 'auth/too-many-requests':
+                return 'Too many attempts. Please wait a few minutes and try again.';
+            case 'auth/user-disabled':
+                return 'This account has been disabled. Contact support if you need help.';
+            case 'auth/network-request-failed':
+                return 'Network error. Check your connection and try again.';
+            case 'auth/email-already-in-use':
+                return 'An account with this email already exists. Try signing in instead.';
+            case 'auth/weak-password':
+                return 'Password is too weak. Use at least 6 characters.';
+            case 'auth/popup-closed-by-user':
+                return '';
+            case 'auth/popup-blocked':
+                return 'Pop-up was blocked. Allow pop-ups for this site and try again.';
+            case 'auth/cancelled-popup-request':
+                return '';
+            case 'auth/account-exists-with-different-credential':
+                return 'An account already exists with this email using a different sign-in method. Try Continue with Google or your email password.';
+            case 'auth/operation-not-allowed':
+                return 'This sign-in method is not enabled. Please try another option.';
+            case 'auth/requires-recent-login':
+                return 'For security, please sign out and sign back in, then try again.';
+            default:
+                if (/firebase/i.test(raw) || /auth\//i.test(raw)) {
+                    return 'Something went wrong. Please try again.';
+                }
+                return raw || 'Something went wrong. Please try again.';
+        }
+    }
+
+    if (loginForm) loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('navLoginEmail').value;
-        const password = document.getElementById('navLoginPassword').value;
-        
+        const email = (document.getElementById('navLoginEmail') || {}).value || '';
+        const password = (document.getElementById('navLoginPassword') || {}).value || '';
+        if (!email || !password) {
+            showNavMessage('Please enter your email and password.', 'error');
+            return;
+        }
+        const a = window.auth || (typeof firebase !== 'undefined' && firebase.auth && firebase.auth());
+        if (!a) {
+            showNavMessage('Sign-in is still loading. Please wait a moment and try again.', 'error');
+            return;
+        }
         try {
-            await auth.signInWithEmailAndPassword(email, password);
+            await a.signInWithEmailAndPassword(email.trim(), password);
             closeAuthModal();
         } catch (err) {
-            showNavMessage(err.message, 'error');
+            const msg = await friendlyAuthError(err, email.trim());
+            if (msg) showNavMessage(msg, 'error');
         }
     });
 
@@ -1363,8 +1435,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
             }
+            const a = window.auth || (typeof firebase !== 'undefined' && firebase.auth && firebase.auth());
+            if (!a || typeof firebase === 'undefined') {
+                showNavMessage('Sign-in is still loading. Please wait a moment and try again.', 'error');
+                return;
+            }
             const provider = new firebase.auth.GoogleAuthProvider();
-            const result = await auth.signInWithPopup(provider);
+            provider.setCustomParameters({ prompt: 'select_account' });
+            const result = await a.signInWithPopup(provider);
             const user = result.user;
 
             const userDb = window.db;
@@ -1386,14 +1464,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             closeAuthModal();
         } catch (err) {
-            if (err.code !== 'auth/popup-closed-by-user') {
-                showNavMessage(err.message || 'Google sign-in failed', 'error');
-            }
+            const msg = await friendlyAuthError(err);
+            if (msg) showNavMessage(msg, 'error');
         }
     }
 
-    document.getElementById('navGoogleSignInBtn')?.addEventListener('click', () => handleGoogleSignIn(false));
-    document.getElementById('navGoogleSignUpBtn')?.addEventListener('click', () => handleGoogleSignIn(true));
+    // Event delegation so Google buttons always work (even if re-rendered)
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest && e.target.closest('#navGoogleSignInBtn, #navGoogleSignUpBtn, .auth-google-btn');
+        if (!btn) return;
+        if (btn.id === 'navGoogleSignUpBtn') {
+            e.preventDefault();
+            handleGoogleSignIn(true);
+        } else if (btn.id === 'navGoogleSignInBtn' || btn.classList.contains('auth-google-btn')) {
+            e.preventDefault();
+            // On register form the signup id is preferred; otherwise treat as login
+            const onRegister = !!(btn.closest && btn.closest('#navRegisterForm'));
+            handleGoogleSignIn(onRegister);
+        }
+    });
 
     // Policy links open in popup
     const policyTitles = {
@@ -1448,7 +1537,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tabs[0]) tabs[0].click();
             }, 3000);
         } catch (err) {
-            showNavMessage(err.message, 'error');
+            const msg = await friendlyAuthError(err, email);
+            if (msg) showNavMessage(msg, 'error');
         }
     });
 
@@ -1563,7 +1653,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showNavMessage('Account created! Settings updated.', 'success');
             setTimeout(closeAuthModal, 1500);
         } catch (err) {
-            showNavMessage(err.message, 'error');
+            const msg = await friendlyAuthError(err, email);
+            if (msg) showNavMessage(msg, 'error');
         }
     });
 

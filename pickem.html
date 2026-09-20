@@ -1271,6 +1271,7 @@
               <button class="btn btn-secondary" id="addQuestionTabBtn" style="flex: 1; background: #e0e7ff; color: var(--brand); border: 2px solid var(--brand);"> Add Questions</button>
               <button class="btn btn-secondary" id="markAnswersTabBtn" style="flex: 1;"> Mark Correct Answers</button>
               <button class="btn btn-secondary" id="editLeaderboardTabBtn" style="flex: 1;"> Edit Leaderboard</button>
+              <button class="btn btn-secondary" id="assistantTabBtn" style="flex: 1; background: rgba(0,107,182,0.08); color: var(--sixers-blue); border: 2px solid rgba(0,107,182,0.35);"> Admin Assistant</button>
             </div>
 
             <!-- Add Questions Tab -->
@@ -1391,7 +1392,107 @@
             </div>
 
             <!-- Edit Leaderboard Tab -->
-            <div id="editLeaderboardTab" style="display: none;">
+            
+            <!-- Admin Assistant Tab -->
+            <div id="assistantTab" style="display: none;">
+              <div class="admin-form" style="border: 1px solid rgba(0,107,182,0.25);">
+                <h3 style="margin-top:0;">Admin Assistant</h3>
+                <p style="font-size:0.88rem;color:var(--mid);margin:0 0 1rem;line-height:1.5;">
+                  Admin-only tools that do the busywork for you: build a question slate, grade from a simple answer list, and schedule lock times in advance.
+                  This is a structured assistant (fast &amp; reliable). You stay in control — it writes to the same Firestore data you already use.
+                </p>
+
+                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem;">
+                  <button type="button" class="btn btn-secondary assist-mode-btn active" data-assist-mode="slate" style="flex:1;min-width:120px;">1. Build slate</button>
+                  <button type="button" class="btn btn-secondary assist-mode-btn" data-assist-mode="grade" style="flex:1;min-width:120px;">2. Auto-grade</button>
+                  <button type="button" class="btn btn-secondary assist-mode-btn" data-assist-mode="schedule" style="flex:1;min-width:120px;">3. Schedule locks</button>
+                </div>
+
+                <div id="assistMsg" class="message"></div>
+
+                <!-- SLATE -->
+                <div id="assistModeSlate" class="assist-mode-panel">
+                  <label class="form-label">Date for this slate</label>
+                  <input type="date" id="assistSlateDate" class="form-input" style="margin-bottom:0.75rem;" />
+
+                  <label class="form-label">Week number (for weekly leaderboard)</label>
+                  <input type="number" id="assistWeekNum" class="form-input" min="1" max="52" placeholder="e.g. 12" style="margin-bottom:0.75rem;" />
+
+                  <label class="form-label">Preset pack</label>
+                  <select id="assistPreset" class="form-input" style="margin-bottom:0.75rem;">
+                    <option value="sixers_home">Sixers game night (home/away style)</option>
+                    <option value="sixers_basic">Sixers basic (win, total, top scorer)</option>
+                    <option value="full_nba">Full slate style (multi-game props)</option>
+                    <option value="custom_lines">Blank lines (you fill teams below)</option>
+                  </select>
+
+                  <label class="form-label">Matchup / context (optional)</label>
+                  <input type="text" id="assistMatchup" class="form-input" placeholder="e.g. Sixers vs Celtics" style="margin-bottom:0.75rem;" />
+
+                  <label class="form-label">Extra custom questions (one per line, optional)</label>
+                  <textarea id="assistCustomQs" class="form-input" rows="4" placeholder="Will Maxey score 25+ points?&#10;Which team wins the rebounding battle?" style="margin-bottom:0.75rem;"></textarea>
+
+                  <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;font-size:0.85rem;">
+                    <input type="checkbox" id="assistReplaceExisting" />
+                    Replace existing questions for this date (if any)
+                  </label>
+
+                  <button type="button" class="btn btn-primary" id="assistBuildSlateBtn">Generate &amp; save questions</button>
+                  <pre id="assistSlatePreview" style="margin-top:1rem;padding:0.85rem;background:var(--chip,#f1f5f9);border-radius:8px;font-size:0.78rem;max-height:220px;overflow:auto;white-space:pre-wrap;"></pre>
+                </div>
+
+                <!-- GRADE -->
+                <div id="assistModeGrade" class="assist-mode-panel" style="display:none;">
+                  <label class="form-label">Date to grade</label>
+                  <input type="date" id="assistGradeDate" class="form-input" style="margin-bottom:0.75rem;" />
+
+                  <button type="button" class="btn btn-secondary" id="assistLoadQsBtn" style="margin-bottom:0.75rem;">Load questions for this date</button>
+                  <div id="assistGradeQsList" style="font-size:0.82rem;margin-bottom:0.75rem;color:var(--mid);"></div>
+
+                  <label class="form-label">Answers (one per line, in order)</label>
+                  <p style="font-size:0.78rem;color:var(--mid);margin:0 0 0.5rem;">
+                    Examples:<br>
+                    <code>Sixers</code><br>
+                    <code>Over</code><br>
+                    <code>Maxey</code><br>
+                    <code>112</code> (numbers for tie-breakers)
+                  </p>
+                  <textarea id="assistAnswersText" class="form-input" rows="8" placeholder="Answer for Q1&#10;Answer for Q2&#10;Answer for Q3" style="margin-bottom:0.75rem;"></textarea>
+
+                  <button type="button" class="btn btn-primary" id="assistGradeBtn">Save answers &amp; grade</button>
+                </div>
+
+                <!-- SCHEDULE -->
+                <div id="assistModeSchedule" class="assist-mode-panel" style="display:none;">
+                  <label class="form-label">Start date</label>
+                  <input type="date" id="assistSchedStart" class="form-input" style="margin-bottom:0.75rem;" />
+
+                  <label class="form-label">End date</label>
+                  <input type="date" id="assistSchedEnd" class="form-input" style="margin-bottom:0.75rem;" />
+
+                  <label class="form-label">Lock time (local browser time → stored as you enter)</label>
+                  <input type="time" id="assistSchedTime" class="form-input" value="19:00" style="margin-bottom:0.75rem;" />
+
+                  <label class="form-label">Only these weekdays (optional)</label>
+                  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;font-size:0.82rem;">
+                    <label><input type="checkbox" class="assist-dow" value="1" checked /> Mon</label>
+                    <label><input type="checkbox" class="assist-dow" value="2" checked /> Tue</label>
+                    <label><input type="checkbox" class="assist-dow" value="3" checked /> Wed</label>
+                    <label><input type="checkbox" class="assist-dow" value="4" checked /> Thu</label>
+                    <label><input type="checkbox" class="assist-dow" value="5" checked /> Fri</label>
+                    <label><input type="checkbox" class="assist-dow" value="6" checked /> Sat</label>
+                    <label><input type="checkbox" class="assist-dow" value="0" checked /> Sun</label>
+                  </div>
+
+                  <p style="font-size:0.78rem;color:var(--mid);margin:0 0 0.75rem;">
+                    Sets lock times for each selected day in the range. You can still override a single day later in Lock Time settings.
+                  </p>
+
+                  <button type="button" class="btn btn-primary" id="assistSchedBtn">Apply lock schedule</button>
+                </div>
+              </div>
+            </div>
+<div id="editLeaderboardTab" style="display: none;">
               <div class="admin-form">
                 <h3 style="margin-top: 0;">Direct Leaderboard Editor</h3>
                 <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Directly adjust player scores for a specific date. These changes use the override system.</p>
@@ -1832,8 +1933,8 @@
     }
 
     // Tab switching for admin panel
-    const adminTabBtns = ['addQuestionTabBtn', 'markAnswersTabBtn', 'editLeaderboardTabBtn'];
-    const adminTabContents = ['addQuestionTab', 'markAnswersTab', 'editLeaderboardTab'];
+    const adminTabBtns = ['addQuestionTabBtn', 'markAnswersTabBtn', 'editLeaderboardTabBtn', 'assistantTabBtn'];
+    const adminTabContents = ['addQuestionTab', 'markAnswersTab', 'editLeaderboardTab', 'assistantTab'];
 
     adminTabBtns.forEach((btnId, idx) => {
       document.getElementById(btnId).addEventListener('click', () => {
@@ -5431,6 +5532,285 @@
           showMessage('Copy failed: ' + (err.message || err), 'error', msgId);
         }
       });
+    })();
+
+
+
+    // ========== ADMIN ASSISTANT ==========
+    (function setupAdminAssistant() {
+      function assistMsg(msg, type) {
+        if (typeof showMessage === 'function') showMessage(msg, type || 'info', 'assistMsg');
+        else {
+          const el = document.getElementById('assistMsg');
+          if (el) { el.textContent = msg; el.className = 'message show ' + (type || 'info'); }
+        }
+      }
+
+      // Mode toggles
+      document.querySelectorAll('.assist-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.assist-mode-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.background = '';
+            b.style.color = '';
+            b.style.borderColor = '';
+          });
+          btn.classList.add('active');
+          btn.style.background = 'rgba(0,107,182,0.12)';
+          btn.style.color = 'var(--sixers-blue)';
+          const mode = btn.getAttribute('data-assist-mode');
+          ['slate', 'grade', 'schedule'].forEach(m => {
+            const panel = document.getElementById('assistMode' + m.charAt(0).toUpperCase() + m.slice(1));
+            if (panel) panel.style.display = m === mode ? 'block' : 'none';
+          });
+        });
+      });
+
+      function buildPresetItems(preset, matchup, weekNumber, customLines) {
+        const vs = (matchup || 'the opponent').trim();
+        const week = weekNumber ? Number(weekNumber) : null;
+        const base = [];
+        const add = (question, type, options, isTieBreaker) => {
+          base.push({
+            question,
+            type: type || 'multiple',
+            options: options || [],
+            isTieBreaker: !!isTieBreaker,
+            weekNumber: week,
+            dayOfWeek: null
+          });
+        };
+
+        if (preset === 'sixers_basic') {
+          add('Will the 76ers win vs ' + vs + '?', 'multiple', ['Yes', 'No']);
+          add('Game total: Over or Under?', 'multiple', ['Over', 'Under']);
+          add('Who will be the leading scorer?', 'multiple', ['Sixers player', 'Opponent player']);
+          add('Final combined score (tie-breaker)', 'number', [], true);
+        } else if (preset === 'full_nba') {
+          add('Which team wins: ' + vs + '?', 'multiple', ['Team A', 'Team B']);
+          add('Spread cover?', 'multiple', ['Favorite', 'Underdog']);
+          add('Total points Over/Under?', 'multiple', ['Over', 'Under']);
+          add('First team to 20 points?', 'multiple', ['Team A', 'Team B']);
+          add('Margin of victory (pts, tie-breaker)', 'number', [], true);
+        } else if (preset === 'custom_lines') {
+          // only custom
+        } else {
+          // sixers_home default
+          add('Who wins: 76ers vs ' + vs + '?', 'multiple', ['76ers', 'Opponent']);
+          add('Will the 76ers cover the spread?', 'multiple', ['Yes', 'No']);
+          add('Game total Over or Under?', 'multiple', ['Over', 'Under']);
+          add('Who scores more points?', 'multiple', ['76ers', 'Opponent']);
+          add('First basket by?', 'multiple', ['76ers', 'Opponent']);
+          add('Maxey 20+ points?', 'multiple', ['Yes', 'No']);
+          add('Final score differential (tie-breaker)', 'number', [], true);
+        }
+
+        (customLines || '').split('\n').map(s => s.trim()).filter(Boolean).forEach(line => {
+          add(line, 'multiple', ['Yes', 'No']);
+        });
+
+        return base;
+      }
+
+      document.getElementById('assistBuildSlateBtn')?.addEventListener('click', async () => {
+        if (!checkAdminPermission()) return;
+        const date = document.getElementById('assistSlateDate')?.value;
+        if (!date) { assistMsg('Choose a date for the slate.', 'error'); return; }
+        const weekNumber = document.getElementById('assistWeekNum')?.value;
+        const preset = document.getElementById('assistPreset')?.value || 'sixers_home';
+        const matchup = document.getElementById('assistMatchup')?.value || '';
+        const custom = document.getElementById('assistCustomQs')?.value || '';
+        const replace = document.getElementById('assistReplaceExisting')?.checked;
+        const items = buildPresetItems(preset, matchup, weekNumber, custom);
+        if (!items.length) { assistMsg('No questions to save. Add a preset or custom lines.', 'error'); return; }
+
+        const preview = items.map((q, i) => (i + 1) + '. ' + q.question + (q.isTieBreaker ? ' [TB]' : '')).join('\n');
+        const prevEl = document.getElementById('assistSlatePreview');
+        if (prevEl) prevEl.textContent = preview;
+
+        try {
+          assistMsg('Saving ' + items.length + ' questions…', 'info');
+          const existing = await db.collection('questions').where('date', '==', date).get();
+          if (!existing.empty && !replace) {
+            assistMsg('Questions already exist for this date. Check “Replace existing” to overwrite.', 'error');
+            return;
+          }
+          if (!existing.empty && replace) {
+            await existing.docs[0].ref.update({
+              items,
+              updatedAt: new Date().toISOString(),
+              source: 'admin-assistant'
+            });
+          } else if (existing.empty) {
+            await db.collection('questions').add({
+              date,
+              items,
+              createdAt: new Date().toISOString(),
+              source: 'admin-assistant'
+            });
+          }
+          // sync main admin date + reload list
+          const adminDate = document.getElementById('adminDate');
+          if (adminDate) adminDate.value = date;
+          const loadBtn = document.getElementById('loadDateBtn');
+          if (loadBtn) loadBtn.click();
+          assistMsg('Saved ' + items.length + ' questions for ' + date + '. Review under Add Questions if you want to tweak.', 'success');
+        } catch (err) {
+          console.error(err);
+          assistMsg('Failed: ' + (err.message || err), 'error');
+        }
+      });
+
+      let _assistLoadedItems = [];
+      document.getElementById('assistLoadQsBtn')?.addEventListener('click', async () => {
+        if (!checkAdminPermission()) return;
+        const date = document.getElementById('assistGradeDate')?.value;
+        if (!date) { assistMsg('Choose a date to grade.', 'error'); return; }
+        try {
+          const snap = await db.collection('questions').where('date', '==', date).get();
+          if (snap.empty) {
+            _assistLoadedItems = [];
+            document.getElementById('assistGradeQsList').textContent = 'No questions for this date.';
+            assistMsg('No questions found.', 'error');
+            return;
+          }
+          _assistLoadedItems = snap.docs[0].data().items || [];
+          document.getElementById('assistGradeQsList').innerHTML =
+            '<strong>' + _assistLoadedItems.length + ' questions</strong><ol style="margin:0.4rem 0 0 1.1rem;padding:0;">' +
+            _assistLoadedItems.map(q => '<li style="margin-bottom:0.25rem;">' + (q.question || '') +
+              (q.isTieBreaker ? ' <em>(tie-breaker)</em>' : '') + '</li>').join('') + '</ol>';
+          assistMsg('Questions loaded. Paste answers in order below.', 'success');
+        } catch (err) {
+          assistMsg('Load failed: ' + (err.message || err), 'error');
+        }
+      });
+
+      document.getElementById('assistGradeBtn')?.addEventListener('click', async () => {
+        if (!checkAdminPermission()) return;
+        const date = document.getElementById('assistGradeDate')?.value;
+        if (!date) { assistMsg('Choose a date.', 'error'); return; }
+        if (!_assistLoadedItems.length) {
+          assistMsg('Load questions first so answers map in the right order.', 'error');
+          return;
+        }
+        const lines = (document.getElementById('assistAnswersText')?.value || '')
+          .split('\n').map(s => s.trim()).filter(s => s.length);
+        if (!lines.length) { assistMsg('Paste at least one answer.', 'error'); return; }
+
+        const answers = [];
+        const n = Math.min(lines.length, _assistLoadedItems.length);
+        for (let i = 0; i < n; i++) {
+          const q = _assistLoadedItems[i];
+          let val = lines[i];
+          if (q.type === 'number' || q.isTieBreaker) {
+            const num = parseFloat(val);
+            val = isNaN(num) ? val : num;
+          }
+          // Match the format used by saveCorrectAnswersBtn / calculateScoresForDate
+          answers.push({
+            questionId: i,
+            question: q.question || '',
+            correctAnswer: val
+          });
+        }
+
+        try {
+          assistMsg('Saving answers…', 'info');
+          const existing = await db.collection('correctAnswers').where('date', '==', date).get();
+          const payload = {
+            date,
+            answers,
+            updatedAt: new Date().toISOString(),
+            source: 'admin-assistant'
+          };
+          if (!existing.empty) {
+            await existing.docs[0].ref.update(payload);
+          } else {
+            await db.collection('correctAnswers').add(payload);
+          }
+          assistMsg('Graded ' + answers.length + ' question(s) for ' + date + '. Leaderboards will use these answers.', 'success');
+        } catch (err) {
+          console.error(err);
+          assistMsg('Grade failed: ' + (err.message || err), 'error');
+        }
+      });
+
+      document.getElementById('assistSchedBtn')?.addEventListener('click', async () => {
+        if (!checkAdminPermission()) return;
+        const start = document.getElementById('assistSchedStart')?.value;
+        const end = document.getElementById('assistSchedEnd')?.value;
+        const time = document.getElementById('assistSchedTime')?.value; // HH:MM 24h
+        if (!start || !end || !time) {
+          assistMsg('Set start date, end date, and lock time.', 'error');
+          return;
+        }
+        const dowSelected = new Set(
+          Array.from(document.querySelectorAll('.assist-dow:checked')).map(el => Number(el.value))
+        );
+        if (!dowSelected.size) {
+          assistMsg('Select at least one weekday.', 'error');
+          return;
+        }
+
+        // Convert 24h HH:MM to a friendly lockTime string used elsewhere if needed
+        function toDisplayTime(hhmm) {
+          const [hStr, mStr] = hhmm.split(':');
+          let h = parseInt(hStr, 10);
+          const m = mStr || '00';
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12;
+          if (h === 0) h = 12;
+          return h + ':' + m + ' ' + ampm;
+        }
+        const lockDisplay = toDisplayTime(time);
+
+        const startD = new Date(start + 'T12:00:00');
+        const endD = new Date(end + 'T12:00:00');
+        if (endD < startD) {
+          assistMsg('End date must be on or after start date.', 'error');
+          return;
+        }
+
+        let written = 0;
+        try {
+          assistMsg('Writing lock schedule…', 'info');
+          for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
+            if (!dowSelected.has(d.getDay())) continue;
+            const y = d.getFullYear();
+            const mo = String(d.getMonth() + 1).padStart(2, '0');
+            const da = String(d.getDate()).padStart(2, '0');
+            const dateStr = y + '-' + mo + '-' + da;
+            const snap = await db.collection('lockTimes').where('date', '==', dateStr).get();
+            const payload = {
+              date: dateStr,
+              lockTime: lockDisplay,
+              lockTime24: time,
+              updatedAt: new Date().toISOString(),
+              source: 'admin-assistant'
+            };
+            if (!snap.empty) {
+              await snap.docs[0].ref.update(payload);
+            } else {
+              await db.collection('lockTimes').add(payload);
+            }
+            written++;
+          }
+          assistMsg('Set lock time (' + lockDisplay + ') on ' + written + ' day(s).', 'success');
+        } catch (err) {
+          console.error(err);
+          assistMsg('Schedule failed: ' + (err.message || err), 'error');
+        }
+      });
+
+      // Default dates to today
+      try {
+        const t = new Date();
+        const iso = t.toISOString().slice(0, 10);
+        ['assistSlateDate', 'assistGradeDate', 'assistSchedStart', 'assistSchedEnd'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el && !el.value) el.value = iso;
+        });
+      } catch (_) {}
     })();
 
   </script>

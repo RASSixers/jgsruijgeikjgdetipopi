@@ -4459,14 +4459,17 @@ renderQuestions();
         const picksSnapshot = await db.collection('picks').where('date', '==', date).get();
         if (picksSnapshot.empty) return;
 
+        // One document per user/date — updates overwrite answers, so counts stay correct
         const total = picksSnapshot.size;
-        const stats = {}; // { qIdx: { option: count } }
+        const stats = {}; // { qIdx: { optionKey: count } }
 
         picksSnapshot.docs.forEach(doc => {
           const answers = doc.data().answers || [];
           answers.forEach((ans, qIdx) => {
+            if (ans === undefined || ans === null || ans === '') return;
+            const key = String(ans);
             if (!stats[qIdx]) stats[qIdx] = {};
-            stats[qIdx][ans] = (stats[qIdx][ans] || 0) + 1;
+            stats[qIdx][key] = (stats[qIdx][key] || 0) + 1;
           });
         });
 
@@ -4477,7 +4480,7 @@ renderQuestions();
           if (!card) return;
 
           // For radio options, add percentages
-          if (q.question_type === 'over_under' || q.question_type === 'multiple_choice') {
+          if (q.question_type === 'over_under' || q.question_type === 'multiple_choice' || q.type === 'multiple' || q.type === 'multiple_choice' || !q.question_type) {
             const labels = card.querySelectorAll('.option.radio-option');
             labels.forEach(label => {
               const input = label.querySelector('input');
@@ -4546,9 +4549,11 @@ renderQuestions();
             // Disable inputs
             document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = true; });
           } else {
-            document.getElementById('submitBtn').disabled = false;
-            document.getElementById('submitBtn').textContent = 'Update Picks';
-            showMessage('Your picks are loaded. You can change them until lock time.', 'success');
+            const sb = document.getElementById('submitBtn');
+            sb.disabled = false;
+            sb.textContent = 'Update Picks';
+            sb.dataset.mode = 'update';
+            showMessage('Your picks are loaded. Change them anytime, then tap Update Picks before lock.', 'success');
           }
           renderConsensus(dateStr);
         } else if (isLocked) {
@@ -4660,11 +4665,12 @@ renderQuestions();
             userEmail: auth.currentUser.email,
             updatedAt: new Date().toISOString()
           });
-          showMessage('Picks updated successfully!', 'success');
+          showMessage('Picks updated successfully! Percentages refreshed.', 'success');
           submitBtn.disabled = false;
           submitBtn.textContent = 'Update Picks';
+          submitBtn.dataset.mode = 'update';
           isSubmitting = false;
-          try { renderConsensus(selectedPickDate); } catch (_) {}
+          try { await renderConsensus(selectedPickDate); } catch (_) {}
           return;
         }
         
@@ -4689,16 +4695,21 @@ renderQuestions();
             }
           }
         } catch (streakErr) { console.warn('Streak update failed', streakErr); }
-        showMessage(streakMsg, 'success');
-        submitBtn.disabled = true;
+        showMessage(streakMsg + ' You can still change picks until lock.', 'success');
+        submitBtn.disabled = false;
         submitBtn.textContent = 'Update Picks';
+        isSubmitting = false;
+        try { await renderConsensus(selectedPickDate); } catch (_) {}
       } catch (err) {
         console.error('Error saving picks:', err);
         showMessage(err.message || 'Submission failed', 'error');
-        // Release the lock so the user can try again if it was a transient error
         isSubmitting = false;
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Picks';
+        // If they already had picks, keep Update label
+        const btn = document.getElementById('submitBtn');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = (btn.textContent === 'Update Picks' || btn.dataset.mode === 'update') ? 'Update Picks' : 'Submit Picks';
+        }
       }
     });
 

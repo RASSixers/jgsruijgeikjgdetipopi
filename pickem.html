@@ -4443,8 +4443,8 @@ renderQuestions();
     // === ESPN-Style Date Slider ===
     let currentDateOffset = 0;
     const DATES_TO_SHOW = 7;
-    const PAST_DAYS = 30;
-    const FUTURE_DAYS = 14;
+    const PAST_DAYS = 45;
+    const FUTURE_DAYS = 280; // ~full season ahead so Oct–June are reachable
 
     function formatDateLabel(date) {
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -4473,7 +4473,7 @@ renderQuestions();
       const today = new Date();
       const dates = [];
 
-      // Generate past days (30 days back) and future days (14 days forward)
+      // Generate past days and future days through the season
       for (let i = -PAST_DAYS; i < FUTURE_DAYS; i++) {
         const date = new Date(today);
         date.setDate(date.getDate() + i);
@@ -4556,7 +4556,7 @@ renderQuestions();
       const startDate = new Date(today);
       startDate.setDate(startDate.getDate() - PAST_DAYS);
       const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + 200);
+      endDate.setDate(endDate.getDate() + 280);
       
       let currentDate = new Date(startDate);
       while (currentDate <= endDate) {
@@ -4611,7 +4611,7 @@ renderQuestions();
       const startDate = new Date(today);
       startDate.setDate(startDate.getDate() - PAST_DAYS);
       const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + 200);
+      endDate.setDate(endDate.getDate() + 280);
       
       let currentDate = new Date(startDate);
       let totalDates = 0;

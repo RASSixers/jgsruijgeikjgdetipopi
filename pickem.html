@@ -166,7 +166,6 @@
       margin: 2rem 0 1.5rem;
     }
     @media (max-width: 1024px) { .info-section { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 768px)  { .info-section { grid-template-columns: 1fr; } }
 
     .info-card {
       position: relative;
@@ -177,6 +176,46 @@
       overflow: hidden;
       transition: box-shadow .2s, border-color .2s, transform .2s;
     }
+    /* Accordion header: hidden on desktop */
+    .info-accordion-btn {
+      display: none;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border: none;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+      color: inherit;
+    }
+    .info-accordion-title {
+      font-family: 'Lexend', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .info-card.key-info .info-accordion-title { color: var(--sixers-blue); }
+    .info-card.updates .info-accordion-title { color: var(--green); }
+    .info-card.schedule .info-accordion-title { color: #d97706; }
+    .info-accordion-chevron {
+      width: 18px; height: 18px; flex-shrink: 0;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      opacity: 0.55;
+      transition: transform 0.2s ease;
+      margin-top: -4px;
+    }
+    .info-card.is-open .info-accordion-chevron {
+      transform: rotate(-135deg);
+      margin-top: 4px;
+    }
+
     .info-card::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0;
@@ -231,6 +270,89 @@
       margin-bottom: 0.75rem;
     }
 
+
+    @media (max-width: 768px) {
+      .info-section {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin: 1rem 0 1rem;
+      }
+      .info-card {
+        padding: 0;
+        border-radius: 10px;
+        transform: none !important;
+      }
+      .info-card:hover {
+        transform: none !important;
+        box-shadow: none;
+      }
+      .info-accordion-btn {
+        display: flex;
+        padding: 0.85rem 1rem;
+        min-height: 48px;
+      }
+      .info-card .info-content {
+        display: none;
+        padding: 0 1rem 1rem;
+        border-top: 1px solid var(--border-light);
+      }
+      .info-card.is-open .info-content {
+        display: block;
+      }
+      .info-card.is-open {
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      }
+
+      /* Date strip arrows */
+      .date-slider-controls {
+        display: grid !important;
+        grid-template-columns: 40px 1fr 40px;
+        align-items: center;
+        gap: 0.35rem;
+        width: 100%;
+        max-width: 100%;
+      }
+      .date-nav-btn {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        line-height: 1;
+        border-radius: 8px;
+      }
+      .date-picker-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto;
+        display: flex;
+        gap: 0.3rem;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+      }
+      .submit-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.55rem;
+      }
+      .submit-section .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+
+
+    @media (min-width: 769px) {
+      .info-accordion-btn { display: none !important; }
+      .info-card .info-content { display: block !important; }
+      .info-card { padding: 1.25rem 1.25rem 1.5rem; }
+    }
     /* Admin card editing */
     .info-card.editable-card { position: relative; }
     .info-card.editable-card:hover { outline: 2px dashed var(--sixers-blue); outline-offset: 3px; }
@@ -927,79 +1049,6 @@
     }
 
 
-    /* Collapsible info cards (mobile) */
-    .info-card-toggle {
-      display: none;
-      margin-left: auto;
-      border: none;
-      background: transparent;
-      color: inherit;
-      font-size: 1rem;
-      line-height: 1;
-      cursor: pointer;
-      padding: 0.15rem 0.35rem;
-      border-radius: 6px;
-    }
-    .info-content h2 {
-      width: 100%;
-    }
-    .info-card-head {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 0 0 1rem;
-      cursor: default;
-    }
-    .info-card-head h2 { margin: 0; flex: 1; }
-
-    @media (max-width: 768px) {
-      .info-card-toggle { display: inline-flex; align-items: center; justify-content: center; }
-      .info-card.collapsed .info-body { display: none; }
-      .info-card.collapsed .info-card-head { margin-bottom: 0; }
-      .info-card-head { cursor: pointer; user-select: none; }
-
-      .date-slider-controls {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.35rem;
-        width: 100%;
-      }
-      .date-nav-btn {
-        flex: 0 0 40px;
-        width: 40px;
-        height: 40px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        font-size: 1.25rem;
-        line-height: 1;
-      }
-      .date-picker-container {
-        flex: 1 1 auto;
-        min-width: 0;
-        justify-content: flex-start;
-      }
-
-      .submit-section {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: center;
-        gap: 0.6rem;
-        text-align: center;
-      }
-      .submit-section .btn {
-        width: 100%;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-      }
-    }
-
     /* Extra mobile stability */
     @media (max-width: 768px) {
       .main-container { overflow-x: hidden; width: 100%; }
@@ -1186,37 +1235,35 @@
 
 
 
-      <section class="info-section">
-        <!-- Key Information Card -->
-        <div class="info-card key-info collapsed" id="keyInfoCard">
+      <section class="info-section" id="infoSection">
+        <!-- Key Information -->
+        <div class="info-card key-info" id="keyInfoCard">
+          <button type="button" class="info-accordion-btn" aria-expanded="false">
+            <span class="info-accordion-title">Key Information</span>
+            <span class="info-accordion-chevron" aria-hidden="true"></span>
+          </button>
           <div class="info-content" id="keyInfoContent">
-            <div class="info-card-head" data-collapse-target="keyInfoCard">
-              <h2>Key Information</h2>
-              <button type="button" class="info-card-toggle" aria-label="Expand or collapse">▾</button>
-            </div>
-            <div class="info-body">
             <ul>
               <li>If a pickem does not show up right away, click the box for the pickem date and it should load</li>
               <li>When pickems lock for the day, the page will automatically prevent submissions - no refresh needed!</li>
               <li>For the leaderboard, your email will NOT show, only the username you choose</li>
               <li>Weekly leaderboards are now based on the week number assigned to each question</li>
             </ul>
-          </div>
-          <div class="card-edit-toolbar">
-            <button class="btn btn-primary" style="padding:8px 20px;font-size:12px;" onclick="saveCardInline('keyInfo')">Save</button>
-            <button class="btn btn-secondary" style="padding:8px 20px;font-size:12px;" onclick="cancelCardEdit('keyInfoCard','keyInfoContent')">Cancel</button>
-            <span id="keyInfoSaveMsg" style="font-size:12px;font-weight:700;color:var(--success);margin-left:8px;"></span>
+            <div class="card-edit-toolbar">
+              <button class="btn btn-primary" style="padding:8px 20px;font-size:12px;" onclick="saveCardInline('keyInfo')">Save</button>
+              <button class="btn btn-secondary" style="padding:8px 20px;font-size:12px;" onclick="cancelCardEdit('keyInfoCard','keyInfoContent')">Cancel</button>
+              <span id="keyInfoSaveMsg" style="font-size:12px;font-weight:700;color:var(--success);margin-left:8px;"></span>
+            </div>
           </div>
         </div>
 
-        <!-- Version & Updates Card -->
-        <div class="info-card updates" id="whatsNewCard" collapsed">
+        <!-- What's New -->
+        <div class="info-card updates" id="whatsNewCard">
+          <button type="button" class="info-accordion-btn" aria-expanded="false">
+            <span class="info-accordion-title">What's New</span>
+            <span class="info-accordion-chevron" aria-hidden="true"></span>
+          </button>
           <div class="info-content" id="whatsNewContent">
-            <div class="info-card-head" data-collapse-target="updatesCard">
-              <h2>What's New</h2>
-              <button type="button" class="info-card-toggle" aria-label="Expand or collapse">▾</button>
-            </div>
-            <div class="info-body">
             <div class="version-badge">V1.02</div>
             <p style="margin-bottom: 1.25rem; font-weight: 700; color: var(--ink);">Latest Updates</p>
             <ul>
@@ -1224,42 +1271,35 @@
               <li>Minor leaderboard bug fixes</li>
               <li>Fixed some page styling</li>
             </ul>
-          </div>
-          <div class="card-edit-toolbar">
-            <button class="btn btn-primary" style="padding:8px 20px;font-size:12px;" onclick="saveCardInline('whatsNew')">Save</button>
-            <button class="btn btn-secondary" style="padding:8px 20px;font-size:12px;" onclick="cancelCardEdit('whatsNewCard','whatsNewContent')">Cancel</button>
-            <span id="whatsNewSaveMsg" style="font-size:12px;font-weight:700;color:var(--success);margin-left:8px;"></span>
+            <div class="card-edit-toolbar">
+              <button class="btn btn-primary" style="padding:8px 20px;font-size:12px;" onclick="saveCardInline('whatsNew')">Save</button>
+              <button class="btn btn-secondary" style="padding:8px 20px;font-size:12px;" onclick="cancelCardEdit('whatsNewCard','whatsNewContent')">Cancel</button>
+              <span id="whatsNewSaveMsg" style="font-size:12px;font-weight:700;color:var(--success);margin-left:8px;"></span>
+            </div>
           </div>
         </div>
 
-        <!-- Schedule Card -->
-        <div class="info-card schedule" id="scheduleCard" collapsed">
+        <!-- Schedule -->
+        <div class="info-card schedule" id="scheduleCard">
+          <button type="button" class="info-accordion-btn" aria-expanded="false">
+            <span class="info-accordion-title">Schedule</span>
+            <span class="info-accordion-chevron" aria-hidden="true"></span>
+          </button>
           <div class="info-content" id="scheduleContent">
-            <div class="info-card-head" data-collapse-target="scheduleCard">
-              <h2>Schedule</h2>
-              <button type="button" class="info-card-toggle" aria-label="Expand or collapse">▾</button>
-            </div>
-            <div class="info-body">
             <ul>
+              <li>Picks open 72 hours before that day's lock time</li>
+              <li>Lock time is the earliest tip-off for that date</li>
+              <li>You can update your picks anytime before lock</li>
               <li>Check back for upcoming pick dates</li>
             </ul>
-          </div>
-          <div class="card-edit-toolbar">
-            <button class="btn btn-primary" style="padding:8px 20px;font-size:12px;" onclick="saveCardInline('schedule')">Save</button>
-            <button class="btn btn-secondary" style="padding:8px 20px;font-size:12px;" onclick="cancelCardEdit('scheduleCard','scheduleContent')">Cancel</button>
-            <span id="scheduleSaveMsg" style="font-size:12px;font-weight:700;color:var(--success);margin-left:8px;"></span>
+            <div class="card-edit-toolbar">
+              <button class="btn btn-primary" style="padding:8px 20px;font-size:12px;" onclick="saveCardInline('schedule')">Save</button>
+              <button class="btn btn-secondary" style="padding:8px 20px;font-size:12px;" onclick="cancelCardEdit('scheduleCard','scheduleContent')">Cancel</button>
+              <span id="scheduleSaveMsg" style="font-size:12px;font-weight:700;color:var(--success);margin-left:8px;"></span>
+            </div>
           </div>
         </div>
       </section>
-
-      <div class="auth-header">
-        <div class="user-info">
-          <span class="user-welcome">Welcome, <strong id="currentUser"></strong>!</span>
-          <span class="user-badge" id="userBadge">Player</span>
-          <span class="user-badge" id="userStreakBadge" style="display:none;background:rgba(237,23,76,0.12);color:#ED174C;"></span>
-        </div>
-        <button class="logout-btn" id="logoutBtn">Logout</button>
-      </div>
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="picks">Picks</button>
@@ -5848,67 +5888,20 @@ renderQuestions();
 
 
     // Info cards: collapse on mobile by default; toggle open/close
-    (function setupInfoCardCollapse() {
-      function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
-      function applyDefaultState() {
-        document.querySelectorAll('.info-section .info-card').forEach(card => {
-          if (isMobile()) card.classList.add('collapsed');
-          else card.classList.remove('collapsed');
-          const btn = card.querySelector('.info-card-toggle');
-          if (btn) btn.textContent = card.classList.contains('collapsed') ? '▸' : '▾';
+
+    (function setupInfoAccordions() {
+      const section = document.getElementById('infoSection');
+      if (!section) return;
+      section.querySelectorAll('.info-card').forEach(card => {
+        const btn = card.querySelector('.info-accordion-btn');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          if (window.matchMedia('(min-width: 769px)').matches) return;
+          const open = card.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
-      }
-      document.querySelectorAll('.info-section .info-card').forEach(card => {
-        // Ensure body wrapper exists
-        const content = card.querySelector('.info-content');
-        if (!content) return;
-        if (!content.querySelector('.info-card-head')) {
-          const h2 = content.querySelector('h2');
-          if (h2) {
-            const head = document.createElement('div');
-            head.className = 'info-card-head';
-            head.setAttribute('data-collapse-target', card.id || '');
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'info-card-toggle';
-            btn.setAttribute('aria-label', 'Expand or collapse');
-            btn.textContent = '▸';
-            h2.parentNode.insertBefore(head, h2);
-            head.appendChild(h2);
-            head.appendChild(btn);
-          }
-        }
-        if (!content.querySelector('.info-body')) {
-          const head = content.querySelector('.info-card-head');
-          const body = document.createElement('div');
-          body.className = 'info-body';
-          const nodes = Array.from(content.childNodes);
-          nodes.forEach(n => {
-            if (n === head) return;
-            body.appendChild(n);
-          });
-          content.appendChild(body);
-        }
-        const head = content.querySelector('.info-card-head');
-        if (head && !head._collapseBound) {
-          head._collapseBound = true;
-          head.addEventListener('click', (e) => {
-            if (!isMobile() && e.target.tagName !== 'BUTTON') return;
-            card.classList.toggle('collapsed');
-            const btn = card.querySelector('.info-card-toggle');
-            if (btn) btn.textContent = card.classList.contains('collapsed') ? '▸' : '▾';
-          });
-        }
-      });
-      applyDefaultState();
-      window.addEventListener('resize', () => {
-        // don't force-close if user opened on mobile; only expand all on desktop
-        if (!isMobile()) {
-          document.querySelectorAll('.info-section .info-card').forEach(c => c.classList.remove('collapsed'));
-        }
       });
     })();
-
 
     // ========== SEASON STANDINGS / LEAGUES / RECAP ==========
     function leagueMsg(t, type) {

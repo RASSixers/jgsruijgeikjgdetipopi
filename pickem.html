@@ -874,6 +874,149 @@
       .user-badge { font-size: 0.6rem; }
     }
 
+
+    /* Season / Leagues / Recap */
+    .league-panel { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+    .league-code { font-family: ui-monospace, monospace; font-weight: 700; letter-spacing: 0.08em; color: var(--sixers-blue); }
+    .recap-btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 1rem; }
+
+    /* Standings-style share graphic */
+    #pickem-social-export {
+      position: fixed; left: -10000px; top: 0; width: 1080px;
+      background: #fff; color: #0d0f1a; font-family: 'Lexend', system-ui, sans-serif;
+      z-index: -1;
+    }
+    #pickem-social-export .sg-page { padding: 48px 48px 40px; background: #fff; }
+    #pickem-social-export .sg-wordmark {
+      margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: #0d0f1a;
+    }
+    #pickem-social-export .sg-subtitle {
+      margin: 6px 0 28px; font-size: 13px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: #64748b;
+    }
+    #pickem-social-export .sg-stat-row {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    #pickem-social-export .sg-stat {
+      flex: 1; min-width: 120px; border: 1px solid #e4e8f0; border-radius: 12px;
+      padding: 14px 16px; background: #f6f8fc;
+    }
+    #pickem-social-export .sg-stat b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; }
+    #pickem-social-export .sg-stat span { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748b; }
+    #pickem-social-export .sg-list { list-style: none; margin: 0; padding: 0; }
+    #pickem-social-export .sg-list li {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid #eef2f7; font-size: 15px; font-weight: 600;
+    }
+    #pickem-social-export .sg-ok { color: #16a34a; }
+    #pickem-social-export .sg-no { color: #dc2626; }
+    #pickem-social-export .sg-bottom { text-align: center; margin-top: 36px; }
+    #pickem-social-export .sg-bottom-rule { width: 40px; height: 2px; background: #dbe3ee; margin: 0 auto 16px; }
+    #pickem-social-export .sg-bottom-mark { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+    #pickem-social-export .sg-bottom-url { margin: 8px 0 0; color: #64748b; font-size: 14px; font-weight: 500; }
+
+    .pickem-export-modal {
+      display: none; position: fixed; inset: 0; background: rgba(13,15,26,.62);
+      align-items: center; justify-content: center; z-index: 90; padding: 20px;
+    }
+    .pickem-export-modal.open { display: flex; }
+    .pickem-export-modal .modal-card {
+      background: #fff; border-radius: 20px; width: min(920px, calc(100vw - 32px));
+      max-height: calc(100vh - 32px); overflow: auto; padding: 24px;
+      box-shadow: 0 24px 80px rgba(13,15,26,.22);
+    }
+
+
+    /* Collapsible info cards (mobile) */
+    .info-card-toggle {
+      display: none;
+      margin-left: auto;
+      border: none;
+      background: transparent;
+      color: inherit;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.15rem 0.35rem;
+      border-radius: 6px;
+    }
+    .info-content h2 {
+      width: 100%;
+    }
+    .info-card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0 0 1rem;
+      cursor: default;
+    }
+    .info-card-head h2 { margin: 0; flex: 1; }
+
+    @media (max-width: 768px) {
+      .info-card-toggle { display: inline-flex; align-items: center; justify-content: center; }
+      .info-card.collapsed .info-body { display: none; }
+      .info-card.collapsed .info-card-head { margin-bottom: 0; }
+      .info-card-head { cursor: pointer; user-select: none; }
+
+      .date-slider-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        width: 100%;
+      }
+      .date-nav-btn {
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+      .date-picker-container {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: flex-start;
+      }
+
+      .submit-section {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 0.6rem;
+        text-align: center;
+      }
+      .submit-section .btn {
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+
+    /* Extra mobile stability */
+    @media (max-width: 768px) {
+      .main-container { overflow-x: hidden; width: 100%; }
+      .date-picker-container {
+        display: flex; gap: 0.35rem; overflow-x: auto; max-width: calc(100vw - 7rem);
+        -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      }
+      .date-picker-container::-webkit-scrollbar { display: none; }
+      .date-picker-btn { flex: 0 0 auto; min-width: 52px; padding: 0.45rem 0.4rem; }
+      .questions-container { width: 100%; max-width: 100%; }
+      .question-card { width: 100%; max-width: 100%; overflow: hidden; }
+      .leaderboard-table { width: 100%; }
+      .page-header-inner { overflow-wrap: anywhere; }
+      .tab-btn { -webkit-tap-highlight-color: transparent; }
+      input, select, textarea, button { max-width: 100%; }
+    }
+
     /* Touch-friendly option targets */
     @media (hover: none) {
       .option-label { min-height: 44px; }
@@ -1045,9 +1188,13 @@
 
       <section class="info-section">
         <!-- Key Information Card -->
-        <div class="info-card key-info" id="keyInfoCard">
+        <div class="info-card key-info collapsed" id="keyInfoCard">
           <div class="info-content" id="keyInfoContent">
-            <h2>Key Information</h2>
+            <div class="info-card-head" data-collapse-target="keyInfoCard">
+              <h2>Key Information</h2>
+              <button type="button" class="info-card-toggle" aria-label="Expand or collapse">▾</button>
+            </div>
+            <div class="info-body">
             <ul>
               <li>If a pickem does not show up right away, click the box for the pickem date and it should load</li>
               <li>When pickems lock for the day, the page will automatically prevent submissions - no refresh needed!</li>
@@ -1063,9 +1210,13 @@
         </div>
 
         <!-- Version & Updates Card -->
-        <div class="info-card updates" id="whatsNewCard">
+        <div class="info-card updates" id="whatsNewCard" collapsed">
           <div class="info-content" id="whatsNewContent">
-            <h2>What's New</h2>
+            <div class="info-card-head" data-collapse-target="updatesCard">
+              <h2>What's New</h2>
+              <button type="button" class="info-card-toggle" aria-label="Expand or collapse">▾</button>
+            </div>
+            <div class="info-body">
             <div class="version-badge">V1.02</div>
             <p style="margin-bottom: 1.25rem; font-weight: 700; color: var(--ink);">Latest Updates</p>
             <ul>
@@ -1082,9 +1233,13 @@
         </div>
 
         <!-- Schedule Card -->
-        <div class="info-card schedule" id="scheduleCard">
+        <div class="info-card schedule" id="scheduleCard" collapsed">
           <div class="info-content" id="scheduleContent">
-            <h2>Schedule</h2>
+            <div class="info-card-head" data-collapse-target="scheduleCard">
+              <h2>Schedule</h2>
+              <button type="button" class="info-card-toggle" aria-label="Expand or collapse">▾</button>
+            </div>
+            <div class="info-body">
             <ul>
               <li>Check back for upcoming pick dates</li>
             </ul>
@@ -1108,11 +1263,13 @@
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="picks">Picks</button>
-        <button class="tab-btn" data-tab="daily-lb">Daily Leaderboard</button>
-        <button class="tab-btn" data-tab="weekly-lb">Weekly Leaderboard</button>
-        <button class="tab-btn" data-tab="monthly-lb">Monthly Leaderboard</button>
+        <button class="tab-btn" data-tab="daily-lb">Daily</button>
+        <button class="tab-btn" data-tab="weekly-lb">Weekly</button>
+        <button class="tab-btn" data-tab="monthly-lb">Monthly</button>
+        <button class="tab-btn" data-tab="season-lb">Season</button>
+        <button class="tab-btn" data-tab="leagues">Leagues</button>
         <button class="tab-btn" data-tab="winners">Winners</button>
-        <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none;">Manage Questions</button>
+        <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none;">Manage</button>
       </div>
 
       <!-- Picks Tab -->
@@ -1135,6 +1292,10 @@
           <div class="progress-fill" id="progressFill"></div>
         </div>
 
+        <div class="recap-btn-row">
+          <button type="button" class="btn btn-secondary" id="shareRecapBtn">Share my recap card</button>
+          <span id="shareRecapStatus" style="font-size:0.8rem;color:var(--mid);"></span>
+        </div>
         <div id="questionsContainer" class="questions-container"></div>
         
         <!-- Lock Time Status Display -->
@@ -1228,6 +1389,75 @@
           </thead>
           <tbody id="monthlyLeaderboardBody"></tbody>
         </table>
+      </div>
+
+
+      <!-- Season Leaderboard -->
+      <div id="season-lb" class="tab-content">
+        <div style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+          <button type="button" class="btn btn-secondary" id="refreshSeasonBtn">Refresh</button>
+          <span style="font-size:0.8rem;color:var(--mid);">Ranked by correct picks, then streak, then tie-breaker accuracy</span>
+        </div>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th style="text-align:center;">Correct</th>
+              <th style="text-align:center;">Total</th>
+              <th style="text-align:center;">Acc%</th>
+              <th style="text-align:center;">Streak</th>
+              <th style="text-align:center;">TB Acc%</th>
+            </tr>
+          </thead>
+          <tbody id="seasonLeaderboardBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Group Leagues -->
+      <div id="leagues" class="tab-content">
+        <div class="league-panel">
+          <h3 style="margin:0 0 0.75rem;color:var(--sixers-blue);">Your leagues</h3>
+          <div id="myLeaguesList" style="margin-bottom:1rem;font-size:0.9rem;color:var(--mid);">Sign in to manage leagues.</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin-bottom:0.75rem;">
+            <div>
+              <label class="form-label">Create league name</label>
+              <input type="text" id="leagueCreateName" class="form-input" maxlength="40" placeholder="e.g. Work Crew" />
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button type="button" class="btn btn-primary" id="leagueCreateBtn" style="width:100%;">Create league</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;">
+            <div>
+              <label class="form-label">Join with invite code</label>
+              <input type="text" id="leagueJoinCode" class="form-input" maxlength="12" placeholder="ABC123" style="text-transform:uppercase;" />
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button type="button" class="btn btn-secondary" id="leagueJoinBtn" style="width:100%;">Join</button>
+            </div>
+          </div>
+          <div id="leagueMsg" class="message" style="margin-top:0.75rem;"></div>
+        </div>
+        <div class="league-panel">
+          <h3 style="margin:0 0 0.5rem;color:var(--sixers-blue);">League standings</h3>
+          <label class="form-label">Active league</label>
+          <select id="leagueSelect" class="form-input" style="margin-bottom:0.75rem;"></select>
+          <button type="button" class="btn btn-secondary" id="leagueRefreshBtn" style="margin-bottom:0.75rem;">Refresh standings</button>
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th style="text-align:center;">Correct</th>
+                <th style="text-align:center;">Total</th>
+                <th style="text-align:center;">Acc%</th>
+                <th style="text-align:center;">Streak</th>
+              </tr>
+            </thead>
+            <tbody id="leagueLeaderboardBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Winners Tab -->
@@ -1750,7 +1980,34 @@
     </div><!-- /appContainer -->
   </div><!-- /main-container -->
 
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="/js/engagement.js"></script>
+  
+  <div id="pickem-social-export" aria-hidden="true">
+    <div class="sg-page">
+      <p class="sg-wordmark">SixersHoops</p>
+      <p class="sg-subtitle" id="pickemSgSubtitle">PICK'EM RECAP</p>
+      <div class="sg-stat-row" id="pickemSgStats"></div>
+      <ul class="sg-list" id="pickemSgList"></ul>
+      <div class="sg-bottom">
+        <div class="sg-bottom-rule"></div>
+        <p class="sg-bottom-mark">SixersHoops</p>
+        <p class="sg-bottom-url">sixershoops.com/pickem</p>
+      </div>
+    </div>
+  </div>
+  <div class="pickem-export-modal" id="pickemExportModal">
+    <div class="modal-card">
+      <p class="modal-kicker" style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#006BB6;">Share</p>
+      <h2 style="margin:0 0 16px;font-size:1.5rem;font-weight:800;letter-spacing:-.03em;">Recap card ready</h2>
+      <img id="pickemExportPreview" alt="Recap preview" style="width:100%;border-radius:12px;border:1px solid #e4e8f0;"/>
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;">
+        <button type="button" class="btn btn-primary" id="pickemExportDownload">Download PNG</button>
+        <button type="button" class="btn btn-secondary" id="pickemExportClose">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script src="nav.js"></script>
   <script>
     // Firebase Logic (Unified with Navbar)
@@ -4064,8 +4321,7 @@
                 <p style="font-size: 48px; margin-bottom: 1rem;"></p>
                 <p style="font-weight: 700; font-size: 1.1rem; color: var(--ink); margin-bottom: 0.5rem;">Questions Coming Soon</p>
                 <p style="color: var(--muted); margin: 0; font-size: 0.95rem;">These questions will go live on</p>
-                <p style="color: #10b981; font-weight: 700; font-size: 1rem; margin-top: 0.5rem;">${estTime} EST</p>
-                <p style="color: var(--muted); margin-top: 1rem; font-size: 0.85rem;">Check back in ${minutesUntilLive} minute${minutesUntilLive !== 1 ? 's' : ''}</p>
+                <p style="color: #10b981; font-weight: 700; font-size: 1rem; margin-top: 0.5rem;">${estTime} ET</p>
               </div>
             `;
             todayQuestions = [];
@@ -4283,11 +4539,17 @@ renderQuestions();
             }
           });
           
-          document.getElementById('submitBtn').disabled = true;
-          document.getElementById('submitBtn').textContent = 'Already Submitted for This Date';
-          showMessage('You have already submitted your picks for this date!', 'success');
-          
-          // Show consensus view since they already picked
+          if (isLocked) {
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Locked — picks saved';
+            showMessage('Picks are locked for this date.', 'success');
+            // Disable inputs
+            document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = true; });
+          } else {
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').textContent = 'Update Picks';
+            showMessage('Your picks are loaded. You can change them until lock time.', 'success');
+          }
           renderConsensus(dateStr);
         } else if (isLocked) {
           console.log(` Date is locked but no submission found - disabling submit button`);
@@ -4391,10 +4653,18 @@ renderQuestions();
           .get();
         
         if (!existingPicksSnapshot.empty) {
-          console.log(` User already has a submission for this date - preventing duplicate`);
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Already Submitted for This Date';
-          showMessage('You have already submitted your picks for this date!', 'success');
+          console.log(' Updating existing picks for this date');
+          await existingPicksSnapshot.docs[0].ref.update({
+            answers: answers,
+            username: currentUser,
+            userEmail: auth.currentUser.email,
+            updatedAt: new Date().toISOString()
+          });
+          showMessage('Picks updated successfully!', 'success');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Update Picks';
+          isSubmitting = false;
+          try { renderConsensus(selectedPickDate); } catch (_) {}
           return;
         }
         
@@ -4421,7 +4691,7 @@ renderQuestions();
         } catch (streakErr) { console.warn('Streak update failed', streakErr); }
         showMessage(streakMsg, 'success');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Already Submitted for This Date';
+        submitBtn.textContent = 'Update Picks';
       } catch (err) {
         console.error('Error saving picks:', err);
         showMessage(err.message || 'Submission failed', 'error');
@@ -5562,6 +5832,434 @@ renderQuestions();
 
 
 
+
+
+
+
+    // Info cards: collapse on mobile by default; toggle open/close
+    (function setupInfoCardCollapse() {
+      function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
+      function applyDefaultState() {
+        document.querySelectorAll('.info-section .info-card').forEach(card => {
+          if (isMobile()) card.classList.add('collapsed');
+          else card.classList.remove('collapsed');
+          const btn = card.querySelector('.info-card-toggle');
+          if (btn) btn.textContent = card.classList.contains('collapsed') ? '▸' : '▾';
+        });
+      }
+      document.querySelectorAll('.info-section .info-card').forEach(card => {
+        // Ensure body wrapper exists
+        const content = card.querySelector('.info-content');
+        if (!content) return;
+        if (!content.querySelector('.info-card-head')) {
+          const h2 = content.querySelector('h2');
+          if (h2) {
+            const head = document.createElement('div');
+            head.className = 'info-card-head';
+            head.setAttribute('data-collapse-target', card.id || '');
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'info-card-toggle';
+            btn.setAttribute('aria-label', 'Expand or collapse');
+            btn.textContent = '▸';
+            h2.parentNode.insertBefore(head, h2);
+            head.appendChild(h2);
+            head.appendChild(btn);
+          }
+        }
+        if (!content.querySelector('.info-body')) {
+          const head = content.querySelector('.info-card-head');
+          const body = document.createElement('div');
+          body.className = 'info-body';
+          const nodes = Array.from(content.childNodes);
+          nodes.forEach(n => {
+            if (n === head) return;
+            body.appendChild(n);
+          });
+          content.appendChild(body);
+        }
+        const head = content.querySelector('.info-card-head');
+        if (head && !head._collapseBound) {
+          head._collapseBound = true;
+          head.addEventListener('click', (e) => {
+            if (!isMobile() && e.target.tagName !== 'BUTTON') return;
+            card.classList.toggle('collapsed');
+            const btn = card.querySelector('.info-card-toggle');
+            if (btn) btn.textContent = card.classList.contains('collapsed') ? '▸' : '▾';
+          });
+        }
+      });
+      applyDefaultState();
+      window.addEventListener('resize', () => {
+        // don't force-close if user opened on mobile; only expand all on desktop
+        if (!isMobile()) {
+          document.querySelectorAll('.info-section .info-card').forEach(c => c.classList.remove('collapsed'));
+        }
+      });
+    })();
+
+
+    // ========== SEASON STANDINGS / LEAGUES / RECAP ==========
+    function leagueMsg(t, type) {
+      if (typeof showMessage === 'function') showMessage(t, type || 'info', 'leagueMsg');
+    }
+
+    function randomInviteCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let s = '';
+      for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+      return s;
+    }
+
+    async function aggregateSeasonStats() {
+      // Aggregate all picks; rank by correct, then streak, then TB accuracy
+      const picksSnap = await db.collection('picks').get();
+      const byUser = {};
+      picksSnap.docs.forEach(doc => {
+        const d = doc.data();
+        const key = d.userId || d.userEmail || d.username || doc.id;
+        if (!byUser[key]) {
+          byUser[key] = {
+            username: d.username || d.userEmail || 'Player',
+            userId: d.userId || null,
+            correct: 0,
+            total: 0,
+            tbCorrect: 0,
+            tbTotal: 0,
+            dates: []
+          };
+        }
+        const u = byUser[key];
+        const c = Number(d.correctCount != null ? d.correctCount : d.correct) || 0;
+        const t = Number(d.totalCount != null ? d.totalCount : d.total) || (Array.isArray(d.answers) ? d.answers.length : 0);
+        // Prefer stored score fields; else skip raw answers without grading
+        if (d.correctCount != null || d.correct != null || d.score != null) {
+          u.correct += (d.score != null && d.correctCount == null && d.correct == null) ? Number(d.score) || 0 : c;
+          u.total += t || 0;
+        }
+        if (d.tbCorrect != null) u.tbCorrect += Number(d.tbCorrect) || 0;
+        if (d.tbTotal != null) u.tbTotal += Number(d.tbTotal) || 0;
+        if (d.date) u.dates.push(d.date);
+        if (d.username) u.username = d.username;
+      });
+
+      // Try user docs for streaks
+      const usersSnap = await db.collection('users').get().catch(() => null);
+      const streakMap = {};
+      if (usersSnap) {
+        usersSnap.docs.forEach(doc => {
+          const d = doc.data();
+          streakMap[doc.id] = Number(d.pickStreak) || Number(d.bestPickStreak) || 0;
+        });
+      }
+
+      const rows = Object.keys(byUser).map(k => {
+        const u = byUser[k];
+        const uniqueDays = Array.from(new Set(u.dates)).sort();
+        // consecutive day streak ending at latest date
+        let streak = 0;
+        if (uniqueDays.length) {
+          streak = 1;
+          for (let i = uniqueDays.length - 1; i > 0; i--) {
+            const a = new Date(uniqueDays[i] + 'T12:00:00');
+            const b = new Date(uniqueDays[i - 1] + 'T12:00:00');
+            const diff = (a - b) / 86400000;
+            if (diff === 1) streak++;
+            else break;
+          }
+        }
+        if (u.userId && streakMap[u.userId] != null) {
+          streak = Math.max(streak, streakMap[u.userId]);
+        }
+        const pct = u.total ? (u.correct / u.total) * 100 : 0;
+        const tbPct = u.tbTotal ? (u.tbCorrect / u.tbTotal) * 100 : 0;
+        return {
+          username: u.username,
+          correct_count: u.correct,
+          total_count: u.total,
+          percentage: Math.round(pct * 10) / 10,
+          streak: streak,
+          tb_pct: Math.round(tbPct * 10) / 10
+        };
+      });
+
+      rows.sort((a, b) => {
+        if (b.correct_count !== a.correct_count) return b.correct_count - a.correct_count;
+        if (b.streak !== a.streak) return b.streak - a.streak;
+        if (b.tb_pct !== a.tb_pct) return b.tb_pct - a.tb_pct;
+        return b.percentage - a.percentage;
+      });
+      return rows;
+    }
+
+    function renderSeasonTable(rows) {
+      const body = document.getElementById('seasonLeaderboardBody');
+      if (!body) return;
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No season data yet</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.slice(0, 100).map((r, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${r.username}</td>
+          <td style="text-align:center;">${r.correct_count}</td>
+          <td style="text-align:center;">${r.total_count}</td>
+          <td style="text-align:center;">${r.percentage}</td>
+          <td style="text-align:center;">${r.streak}</td>
+          <td style="text-align:center;">${r.tb_pct}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadSeasonLeaderboard() {
+      try {
+        const rows = await aggregateSeasonStats();
+        renderSeasonTable(rows);
+      } catch (e) {
+        console.error(e);
+        const body = document.getElementById('seasonLeaderboardBody');
+        if (body) body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--red);">Failed to load season standings</td></tr>';
+      }
+    }
+
+    document.getElementById('refreshSeasonBtn')?.addEventListener('click', loadSeasonLeaderboard);
+
+    // ---- Leagues ----
+    async function loadMyLeagues() {
+      const list = document.getElementById('myLeaguesList');
+      const select = document.getElementById('leagueSelect');
+      if (!list || !select) return;
+      if (!currentUser) {
+        list.textContent = 'Sign in to create or join leagues.';
+        select.innerHTML = '';
+        return;
+      }
+      try {
+        const snap = await db.collection('leagueMembers').where('userId', '==', currentUser.uid).get();
+        if (snap.empty) {
+          list.textContent = 'You are not in any leagues yet. Create one or join with a code.';
+          select.innerHTML = '';
+          return;
+        }
+        const leagues = [];
+        for (const doc of snap.docs) {
+          const mid = doc.data();
+          const ldoc = await db.collection('leagues').doc(mid.leagueId).get();
+          if (ldoc.exists) {
+            const L = ldoc.data();
+            leagues.push({ id: ldoc.id, name: L.name, code: L.code });
+          }
+        }
+        list.innerHTML = leagues.map(L =>
+          `<div style="margin-bottom:0.35rem;"><strong>${L.name}</strong> · code <span class="league-code">${L.code}</span></div>`
+        ).join('') || 'No leagues.';
+        select.innerHTML = leagues.map(L => `<option value="${L.id}">${L.name} (${L.code})</option>`).join('');
+      } catch (e) {
+        console.error(e);
+        list.textContent = 'Could not load leagues (check Firestore rules for leagues / leagueMembers).';
+      }
+    }
+
+    document.getElementById('leagueCreateBtn')?.addEventListener('click', async () => {
+      if (!currentUser) { leagueMsg('Sign in first.', 'error'); return; }
+      const name = (document.getElementById('leagueCreateName')?.value || '').trim();
+      if (!name) { leagueMsg('Enter a league name.', 'error'); return; }
+      try {
+        const code = randomInviteCode();
+        const ref = await db.collection('leagues').add({
+          name: name,
+          code: code,
+          createdBy: currentUser.uid,
+          createdAt: new Date().toISOString()
+        });
+        await db.collection('leagueMembers').add({
+          leagueId: ref.id,
+          userId: currentUser.uid,
+          username: currentUser.displayName || currentUser.email || 'Player',
+          joinedAt: new Date().toISOString()
+        });
+        leagueMsg('Created "' + name + '". Invite code: ' + code, 'success');
+        document.getElementById('leagueCreateName').value = '';
+        await loadMyLeagues();
+      } catch (e) {
+        console.error(e);
+        leagueMsg('Create failed: ' + (e.message || e) + ' — add Firestore rules for leagues.', 'error');
+      }
+    });
+
+    document.getElementById('leagueJoinBtn')?.addEventListener('click', async () => {
+      if (!currentUser) { leagueMsg('Sign in first.', 'error'); return; }
+      const code = (document.getElementById('leagueJoinCode')?.value || '').trim().toUpperCase();
+      if (!code) { leagueMsg('Enter an invite code.', 'error'); return; }
+      try {
+        const snap = await db.collection('leagues').where('code', '==', code).limit(1).get();
+        if (snap.empty) { leagueMsg('No league with that code.', 'error'); return; }
+        const leagueId = snap.docs[0].id;
+        const existing = await db.collection('leagueMembers')
+          .where('leagueId', '==', leagueId)
+          .where('userId', '==', currentUser.uid)
+          .limit(1).get();
+        if (!existing.empty) { leagueMsg('You are already in this league.', 'info'); return; }
+        await db.collection('leagueMembers').add({
+          leagueId: leagueId,
+          userId: currentUser.uid,
+          username: currentUser.displayName || currentUser.email || 'Player',
+          joinedAt: new Date().toISOString()
+        });
+        leagueMsg('Joined ' + (snap.docs[0].data().name || 'league') + '!', 'success');
+        document.getElementById('leagueJoinCode').value = '';
+        await loadMyLeagues();
+      } catch (e) {
+        console.error(e);
+        leagueMsg('Join failed: ' + (e.message || e), 'error');
+      }
+    });
+
+    document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () => {
+      const leagueId = document.getElementById('leagueSelect')?.value;
+      const body = document.getElementById('leagueLeaderboardBody');
+      if (!leagueId || !body) return;
+      try {
+        const members = await db.collection('leagueMembers').where('leagueId', '==', leagueId).get();
+        const ids = new Set(members.docs.map(d => d.data().userId));
+        const names = {};
+        members.docs.forEach(d => { names[d.data().userId] = d.data().username; });
+        const season = await aggregateSeasonStats();
+        // Match by username loosely if userId not on season rows
+        const filtered = season.filter(r => {
+          return members.docs.some(m => (m.data().username || '') === r.username);
+        });
+        if (!filtered.length) {
+          body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for members yet</td></tr>';
+          return;
+        }
+        body.innerHTML = filtered.map((r, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${r.username}</td>
+            <td style="text-align:center;">${r.correct_count}</td>
+            <td style="text-align:center;">${r.total_count}</td>
+            <td style="text-align:center;">${r.percentage}</td>
+            <td style="text-align:center;">${r.streak}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);">Failed to load</td></tr>';
+      }
+    });
+
+    // ---- Recap card (standings-style graphic) ----
+    let _lastRecapUrl = null;
+    async function buildRecapCard() {
+      const status = document.getElementById('shareRecapStatus');
+      if (status) status.textContent = 'Building…';
+      if (typeof html2canvas !== 'function') {
+        if (status) status.textContent = 'Share library not loaded.';
+        return;
+      }
+      if (!currentUser) {
+        if (status) status.textContent = 'Sign in to share a recap.';
+        return;
+      }
+      const dateStr = document.getElementById('pickDate')?.value || selectedPickDate;
+      if (!dateStr) {
+        if (status) status.textContent = 'Pick a date first.';
+        return;
+      }
+
+      // Load questions + user pick + correct answers
+      let questions = todayQuestions || [];
+      let answers = [];
+      let correctMap = {};
+      try {
+        const qSnap = await db.collection('questions').where('date', '==', dateStr).get();
+        if (!qSnap.empty) questions = qSnap.docs[0].data().items || questions;
+        const aSnap = await db.collection('correctAnswers').where('date', '==', dateStr).get();
+        if (!aSnap.empty) {
+          (aSnap.docs[0].data().answers || []).forEach(a => {
+            correctMap[a.questionId] = a.correctAnswer;
+          });
+        }
+        let pSnap = await db.collection('picks').where('date', '==', dateStr).where('userId', '==', currentUser.uid).get();
+        if (pSnap.empty) {
+          pSnap = await db.collection('picks').where('date', '==', dateStr).where('userEmail', '==', currentUser.email).get();
+        }
+        if (!pSnap.empty) answers = pSnap.docs[0].data().answers || [];
+      } catch (e) {
+        console.warn(e);
+      }
+
+      let correct = 0;
+      const lines = [];
+      questions.forEach((q, i) => {
+        const mine = answers[i];
+        const right = correctMap[i];
+        let ok = null;
+        if (right !== undefined && mine !== undefined && mine !== null && mine !== '') {
+          ok = String(mine).toLowerCase() === String(right).toLowerCase() || mine === right;
+          if (ok) correct++;
+        }
+        const label = (q.question || 'Q' + (i + 1)).slice(0, 64);
+        lines.push({ label: label, ok: ok, mine: mine });
+      });
+
+      const sub = document.getElementById('pickemSgSubtitle');
+      if (sub) sub.textContent = "PICK'EM RECAP · " + dateStr;
+      const stats = document.getElementById('pickemSgStats');
+      if (stats) {
+        stats.innerHTML = `
+          <div class="sg-stat"><b>${correct}/${questions.length || answers.length || 0}</b><span>Correct</span></div>
+          <div class="sg-stat"><b>${(currentUser.displayName || 'Player').slice(0, 14)}</b><span>Player</span></div>
+          <div class="sg-stat"><b>${dateStr}</b><span>Date</span></div>`;
+      }
+      const list = document.getElementById('pickemSgList');
+      if (list) {
+        list.innerHTML = lines.slice(0, 12).map(l => {
+          const mark = l.ok === true ? '✓' : (l.ok === false ? '✗' : '·');
+          const cls = l.ok === true ? 'sg-ok' : (l.ok === false ? 'sg-no' : '');
+          return `<li><span>${l.label}</span><span class="${cls}">${mark}</span></li>`;
+        }).join('') || '<li>No graded picks for this date yet</li>';
+      }
+
+      const node = document.querySelector('#pickem-social-export .sg-page');
+      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+      const url = canvas.toDataURL('image/png');
+      _lastRecapUrl = url;
+      const prev = document.getElementById('pickemExportPreview');
+      if (prev) prev.src = url;
+      const modal = document.getElementById('pickemExportModal');
+      if (modal) modal.classList.add('open');
+      if (status) status.textContent = 'Ready';
+    }
+
+    document.getElementById('shareRecapBtn')?.addEventListener('click', () => {
+      buildRecapCard().catch(err => {
+        console.error(err);
+        const status = document.getElementById('shareRecapStatus');
+        if (status) status.textContent = 'Failed to build card';
+      });
+    });
+    document.getElementById('pickemExportClose')?.addEventListener('click', () => {
+      document.getElementById('pickemExportModal')?.classList.remove('open');
+    });
+    document.getElementById('pickemExportDownload')?.addEventListener('click', () => {
+      if (!_lastRecapUrl) return;
+      const a = document.createElement('a');
+      a.href = _lastRecapUrl;
+      a.download = 'sixershoops-pickem-recap.png';
+      a.click();
+    });
+
+    // Load season/leagues when those tabs open
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        if (tab === 'season-lb') loadSeasonLeaderboard();
+        if (tab === 'leagues') loadMyLeagues();
+      });
+    });
 
 
     // ========== AUTO-SLATE (schedule + roster, no AI) ==========

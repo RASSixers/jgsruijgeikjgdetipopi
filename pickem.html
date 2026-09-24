@@ -1367,6 +1367,7 @@
         <button class="tab-btn" data-tab="weekly-lb">Weekly</button>
         <button class="tab-btn" data-tab="monthly-lb">Monthly</button>
         <button class="tab-btn" data-tab="season-lb">Season</button>
+        <button class="tab-btn" data-tab="archive-lb">Archive</button>
         <button class="tab-btn" data-tab="leagues">Leagues</button>
         <button class="tab-btn" data-tab="winners">Winners</button>
         <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none;">Manage</button>
@@ -1496,7 +1497,8 @@
       <div id="season-lb" class="tab-content">
         <div style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
           <button type="button" class="btn btn-secondary" id="refreshSeasonBtn">Refresh</button>
-          <span style="font-size:0.8rem;color:var(--mid);">Ranked by correct picks, then streak, then tie-breaker accuracy</span>
+          <span id="currentSeasonLabel" style="font-size:0.85rem;font-weight:700;color:var(--sixers-blue);"></span>
+          <span style="font-size:0.8rem;color:var(--mid);">Ranked by correct, then streak, then TB accuracy</span>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -1511,6 +1513,31 @@
             </tr>
           </thead>
           <tbody id="seasonLeaderboardBody"></tbody>
+        </table>
+      </div>
+
+
+      <!-- Archive Leaderboard -->
+      <div id="archive-lb" class="tab-content">
+        <div style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;">
+          <label class="form-label" style="margin:0;">Season</label>
+          <select id="archiveSeasonSelect" class="form-input" style="max-width:220px;"></select>
+          <button type="button" class="btn btn-secondary" id="refreshArchiveBtn">Refresh</button>
+          <span style="font-size:0.8rem;color:var(--mid);">Past seasons only (archived results)</span>
+        </div>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th style="text-align:center;">Correct</th>
+              <th style="text-align:center;">Total</th>
+              <th style="text-align:center;">Acc%</th>
+              <th style="text-align:center;">Streak</th>
+              <th style="text-align:center;">TB Acc%</th>
+            </tr>
+          </thead>
+          <tbody id="archiveLeaderboardBody"></tbody>
         </table>
       </div>
 
@@ -1798,6 +1825,21 @@
                 <p style="font-size:0.78rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.4;">
                   <strong>Generate draft</strong> saves privately. <strong>Publish</strong> goes live for users starting 72 hours before the earliest tip (lock = that tip time exactly).
                 </p>
+
+                
+                <div class="admin-form" style="margin:1rem 0;border:1px dashed rgba(0,107,182,0.35);padding:1rem;border-radius:12px;">
+                  <h3 style="margin:0 0 0.5rem;">Season &amp; week map</h3>
+                  <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.75rem;">
+                    Current season is stamped on new questions/picks. Generate weeks from <code>/data/schedule.json</code> game dates (7-day buckets from season start).
+                  </p>
+                  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
+                    <span id="adminSeasonBadge" style="font-weight:700;color:var(--sixers-blue);"></span>
+                    <button type="button" class="btn btn-secondary" id="genWeekMapBtn">Generate week map from schedule</button>
+                    <button type="button" class="btn btn-secondary" id="applyWeekToDateBtn">Fill week # for date above</button>
+                  </div>
+                  <pre id="weekMapPreview" style="margin:0;max-height:160px;overflow:auto;font-size:0.72rem;background:var(--chip,#f1f5f9);padding:0.65rem;border-radius:8px;white-space:pre-wrap;"></pre>
+                  <div id="weekMapMsg" class="message" style="margin-top:0.5rem;"></div>
+                </div>
 
                 <pre id="autoPreview" style="margin:0;padding:0.85rem;background:var(--chip,#f1f5f9);border-radius:8px;font-size:0.78rem;max-height:280px;overflow:auto;white-space:pre-wrap;"></pre>
               </div>
@@ -4763,7 +4805,8 @@ renderQuestions();
             answers: answers,
             username: currentUser,
             userEmail: auth.currentUser.email,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27'
           });
           showMessage('Picks updated successfully! Percentages refreshed.', 'success');
           submitBtn.disabled = false;
@@ -4780,7 +4823,8 @@ renderQuestions();
           userEmail: auth.currentUser.email,
           date: selectedPickDate,
           answers: answers,
-          submittedAt: new Date().toISOString()
+          submittedAt: new Date().toISOString(),
+          seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27'
         });
 
         console.log(` Picks saved with doc ID: ${pickRef.id}`);
@@ -5966,6 +6010,68 @@ renderQuestions();
       });
     })();
 
+
+    // ========== SEASON ID / ARCHIVE / WEEK MAP ==========
+    window.SixersSeason = {
+      currentSeasonId: '2026-27',
+      config: null,
+      weeks: [],
+      async load() {
+        try {
+          const res = await fetch('/data/season-weeks.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          this.config = await res.json();
+          this.currentSeasonId = this.config.currentSeasonId || '2026-27';
+          this.weeks = (this.config.weeks && this.config.weeks[this.currentSeasonId]) || [];
+        } catch (e) {
+          console.warn('season-weeks.json', e);
+          this.config = { currentSeasonId: '2026-27', seasons: { '2026-27': { label: '2026-27' }, '2025-26': { label: '2025-26 (Archive)', archived: true } }, weeks: {} };
+          this.currentSeasonId = '2026-27';
+          this.weeks = [];
+        }
+        const lab = document.getElementById('currentSeasonLabel');
+        if (lab) lab.textContent = 'Season ' + this.currentSeasonId;
+        const badge = document.getElementById('adminSeasonBadge');
+        if (badge) badge.textContent = 'Season ' + this.currentSeasonId;
+        const sel = document.getElementById('archiveSeasonSelect');
+        if (sel && this.config.seasons) {
+          const opts = Object.keys(this.config.seasons)
+            .filter(id => id !== this.currentSeasonId || this.config.seasons[id].archived)
+            .map(id => {
+              const s = this.config.seasons[id];
+              return '<option value="' + id + '">' + (s.label || id) + '</option>';
+            });
+          // Always include non-current seasons; if only current, still list 2025-26
+          if (!opts.length) {
+            sel.innerHTML = '<option value="2025-26">2025-26 (Archive)</option>';
+          } else {
+            sel.innerHTML = opts.join('');
+          }
+        }
+        return this;
+      },
+      weekForDate(dateStr) {
+        const list = this.weeks || [];
+        for (let i = 0; i < list.length; i++) {
+          const w = list[i];
+          if (dateStr >= w.start && dateStr <= w.end) return w.week;
+        }
+        // Fallback: compute from season start if present
+        const season = this.config && this.config.seasons && this.config.seasons[this.currentSeasonId];
+        if (season && season.start) {
+          const a = new Date(season.start + 'T12:00:00');
+          const b = new Date(dateStr + 'T12:00:00');
+          const days = Math.floor((b - a) / 86400000);
+          if (days >= 0) return Math.floor(days / 7) + 1;
+        }
+        return null;
+      }
+    };
+
+    // Load on boot
+    SixersSeason.load().catch(() => {});
+
+
     // ========== SEASON STANDINGS / LEAGUES / RECAP ==========
     function leagueMsg(t, type) {
       if (typeof showMessage === 'function') showMessage(t, type || 'info', 'leagueMsg');
@@ -5978,12 +6084,22 @@ renderQuestions();
       return s;
     }
 
-    async function aggregateSeasonStats() {
-      // Aggregate all picks; rank by correct, then streak, then TB accuracy
+    async function aggregateSeasonStats(seasonIdFilter) {
+      // Aggregate picks for a season; rank by correct, then streak, then TB accuracy
+      const targetSeason = seasonIdFilter || (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27';
       const picksSnap = await db.collection('picks').get();
       const byUser = {};
       picksSnap.docs.forEach(doc => {
         const d = doc.data();
+        // Current season: seasonId match OR missing seasonId treated as legacy/current only when viewing current
+        const sid = d.seasonId || null;
+        if (seasonIdFilter) {
+          // Archive view: only exact seasonId
+          if (sid !== targetSeason) return;
+        } else {
+          // Current season view: include docs with current id OR no seasonId (legacy this year)
+          if (sid && sid !== targetSeason) return;
+        }
         const key = d.userId || d.userEmail || d.username || doc.id;
         if (!byUser[key]) {
           byUser[key] = {
@@ -6095,6 +6211,32 @@ renderQuestions();
     }
 
     document.getElementById('refreshSeasonBtn')?.addEventListener('click', loadSeasonLeaderboard);
+
+    async function loadArchiveLeaderboard() {
+      const sel = document.getElementById('archiveSeasonSelect');
+      const sid = (sel && sel.value) || '2025-26';
+      const body = document.getElementById('archiveLeaderboardBody');
+      try {
+        const rows = await aggregateSeasonStats(sid);
+        if (!body) return;
+        if (!rows.length) {
+          body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No archived data for ' + sid + '. Tag old picks with seasonId in Firestore to show them here.</td></tr>';
+          return;
+        }
+        const medals = ['🥇', '🥈', '🥉'];
+        body.innerHTML = rows.slice(0, 100).map((r, i) => {
+          const rank = i < 3 ? (medals[i] + ' ' + (i + 1)) : String(i + 1);
+          return '<tr><td>' + rank + '</td><td>' + r.username + '</td><td style="text-align:center;">' + r.correct_count + '</td><td style="text-align:center;">' + r.total_count + '</td><td style="text-align:center;">' + r.percentage + '</td><td style="text-align:center;">' + r.streak + '</td><td style="text-align:center;">' + r.tb_pct + '</td></tr>';
+        }).join('');
+      } catch (e) {
+        console.error(e);
+        if (body) body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red);">Failed to load archive</td></tr>';
+      }
+    }
+    document.getElementById('refreshArchiveBtn')?.addEventListener('click', loadArchiveLeaderboard);
+    document.getElementById('archiveSeasonSelect')?.addEventListener('change', loadArchiveLeaderboard);
+
+
 
     // ---- Leagues ----
     async function loadMyLeagues() {
@@ -6328,6 +6470,7 @@ renderQuestions();
       btn.addEventListener('click', () => {
         const tab = btn.getAttribute('data-tab');
         if (tab === 'season-lb') loadSeasonLeaderboard();
+        if (tab === 'archive-lb') { SixersSeason.load().then(() => loadArchiveLeaderboard()); }
         if (tab === 'leagues') loadMyLeagues();
       });
     });
@@ -6706,7 +6849,12 @@ renderQuestions();
           msg('Find games for the date first, or enter an opponent manually.', 'error');
           return;
         }
-        const items = buildDailyTen(games, week);
+        let weekNum = week;
+        if (!weekNum && window.SixersSeason) {
+          const d = document.getElementById('autoSlateDate')?.value;
+          weekNum = SixersSeason.weekForDate(d);
+        }
+        const items = buildDailyTen(games, weekNum);
         let tip = document.getElementById('autoTipTime')?.value || '';
         if (!tip || tip === '19:30') {
           const tips = games.map(g => g.tipET).filter(Boolean).sort();
@@ -6732,7 +6880,12 @@ renderQuestions();
         if (!games.length) { msg('Find games for the date first, or enter an opponent manually.', 'error'); return; }
         const week = document.getElementById('autoSlateWeek')?.value;
         const replace = document.getElementById('autoReplace')?.checked;
-        const items = buildDailyTen(games, week);
+        let weekNum = week;
+        if (!weekNum && window.SixersSeason) {
+          const d = document.getElementById('autoSlateDate')?.value;
+          weekNum = SixersSeason.weekForDate(d);
+        }
+        const items = buildDailyTen(games, weekNum);
         const tip = document.getElementById('autoTipTime')?.value || games[0].tipET || '19:30';
         const opp = document.getElementById('autoOpponent')?.value || (games[0].awayName || games[0].homeName || '');
         const off = Number(document.getElementById('autoSlateLockOffset')?.value);
@@ -6749,7 +6902,7 @@ renderQuestions();
             await existing.docs[0].ref.update({
               items,
               updatedAt: new Date().toISOString(),
-              source: 'auto-slate', published: false, status: 'draft',
+              source: 'auto-slate', published: false, status: 'draft', seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27',
               opponent: opp,
               tipET: tip,
               gameCount: games.length
@@ -6759,7 +6912,7 @@ renderQuestions();
               date,
               items,
               createdAt: new Date().toISOString(),
-              source: 'auto-slate', published: false, status: 'draft',
+              source: 'auto-slate', published: false, status: 'draft', seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27',
               opponent: opp,
               tipET: tip,
               gameCount: games.length
@@ -6846,6 +6999,77 @@ renderQuestions();
           msg('Publish failed: ' + (err.message || err), 'error');
         }
       });
+
+
+      // Week map from schedule.json
+      document.getElementById('genWeekMapBtn')?.addEventListener('click', async () => {
+        const pre = document.getElementById('weekMapPreview');
+        const msg = document.getElementById('weekMapMsg');
+        try {
+          await SixersSeason.load();
+          const res = await fetch('/data/schedule.json', { cache: 'no-store' });
+          const data = await res.json();
+          const games = data.games || [];
+          const dates = Array.from(new Set(games.map(g => g.date).filter(Boolean))).sort();
+          if (!dates.length) {
+            if (pre) pre.textContent = 'No dates in /data/schedule.json — add games first.';
+            return;
+          }
+          const seasonStart = (SixersSeason.config.seasons[SixersSeason.currentSeasonId] || {}).start || dates[0];
+          const start = new Date(seasonStart + 'T12:00:00');
+          const byWeek = {};
+          dates.forEach(d => {
+            const cur = new Date(d + 'T12:00:00');
+            const week = Math.floor((cur - start) / 86400000 / 7) + 1;
+            if (week < 1) return;
+            if (!byWeek[week]) byWeek[week] = { week: week, dates: [] };
+            byWeek[week].dates.push(d);
+          });
+          const weeks = Object.keys(byWeek).map(Number).sort((a,b)=>a-b).map(w => {
+            const ds = byWeek[w].dates.sort();
+            return { week: w, start: ds[0], end: ds[ds.length - 1], gameDates: ds };
+          });
+          SixersSeason.weeks = weeks.map(({ week, start, end }) => ({ week, start, end }));
+          window._generatedWeekMap = weeks;
+          if (pre) {
+            pre.textContent = 'Season ' + SixersSeason.currentSeasonId + ' from schedule (' + dates.length + ' game dates):\n\n' +
+              weeks.map(w => 'Week ' + w.week + ': ' + w.start + ' → ' + w.end + ' (' + w.gameDates.length + ' days)').join('\n') +
+              '\n\nNote: This preview is in-memory for this session. To persist, copy into data/season-weeks.json → weeks["' + SixersSeason.currentSeasonId + '"].';
+          }
+          if (typeof showMessage === 'function') showMessage('Week map generated from schedule.json', 'success', 'weekMapMsg');
+        } catch (e) {
+          console.error(e);
+          if (pre) pre.textContent = 'Failed: ' + (e.message || e);
+        }
+      });
+
+      document.getElementById('applyWeekToDateBtn')?.addEventListener('click', async () => {
+        await SixersSeason.load();
+        const date = document.getElementById('autoSlateDate')?.value;
+        if (!date) return;
+        // Prefer in-memory generated map
+        if (window._generatedWeekMap) {
+          SixersSeason.weeks = window._generatedWeekMap.map(({ week, start, end }) => ({ week, start, end }));
+        }
+        const w = SixersSeason.weekForDate(date);
+        const weekInput = document.getElementById('autoSlateWeek');
+        if (w && weekInput) {
+          weekInput.value = w;
+          if (typeof showMessage === 'function') showMessage('Week ' + w + ' for ' + date, 'success', 'weekMapMsg');
+        } else if (typeof showMessage === 'function') {
+          showMessage('No week found for ' + date + '. Generate week map or set season start in season-weeks.json.', 'error', 'weekMapMsg');
+        }
+      });
+
+      // Auto-fill week when date changes
+      document.getElementById('autoSlateDate')?.addEventListener('change', async () => {
+        await SixersSeason.load();
+        const date = document.getElementById('autoSlateDate')?.value;
+        const w = SixersSeason.weekForDate(date);
+        const weekInput = document.getElementById('autoSlateWeek');
+        if (w && weekInput && !weekInput.value) weekInput.value = w;
+      });
+
 
       loadRoster().catch(() => {});
     })();

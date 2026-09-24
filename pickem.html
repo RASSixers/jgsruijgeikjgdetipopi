@@ -1369,7 +1369,6 @@
         <button class="tab-btn" data-tab="season-lb">Season</button>
         <button class="tab-btn" data-tab="archive-lb">Archive</button>
         <button class="tab-btn" data-tab="leagues">Leagues</button>
-        <button class="tab-btn" data-tab="winners">Winners</button>
         <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none;">Manage</button>
       </div>
 
@@ -1588,30 +1587,7 @@
       </div>
 
       <!-- Winners Tab -->
-      <div id="winners" class="tab-content">
-        <div style="margin-bottom: 2rem;">
-          <h2 style="color: var(--brand); margin-bottom: 1.5rem;"> Weekly Winners</h2>
-          
-          <div style="background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
-            <table class="leaderboard-table" style="margin-bottom: 0;">
-              <thead>
-                <tr>
-                  <th>Week</th>
-                  <th>Winner</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody id="publicWinnersTableBody">
-                <tr>
-                  <td colspan="3" style="text-align: center; padding: 3rem 2rem; color: var(--muted);">No winners yet</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
 
-      <!-- Admin Panel Tab -->
       <div id="admin" class="tab-content">
         <div class="admin-panel">
           <h2>Manage Today's Questions</h2>
@@ -2236,7 +2212,6 @@
         document.getElementById('userBadge').style.background = '#fef3c7';
         document.getElementById('userBadge').style.color = '#92400e';
         document.getElementById('adminTabBtn').style.display = 'block';
-        loadWinners();
       } else {
         document.getElementById('adminTabBtn').style.display = 'none';
       }
@@ -2268,7 +2243,18 @@
     }
 
     function isUserAdmin() {
-      return currentUserEmail === 'rhatus13@gmail.com';
+      // Allowed admin accounts (case-insensitive)
+      const email = (currentUserEmail || '').trim().toLowerCase();
+      if (!email) return false;
+      const ADMIN_EMAILS = [
+        'rhatus13@gmail.com',
+        'admin@sixershoops.com',
+        'sixershoops@gmail.com'
+      ];
+      if (ADMIN_EMAILS.includes(email)) return true;
+      // Any @sixershoops.com mailbox counts as admin
+      if (email.endsWith('@sixershoops.com')) return true;
+      return false;
     }
 
     function checkAdminPermission() {
@@ -5243,7 +5229,7 @@ renderQuestions();
           renderMonthSlider();
           loadLeaderboard('monthly', null, selectedMonth);
         }
-        if (tabName === 'winners') {
+        if (tabName === 'winners') { return;
           loadPublicWinners();
         }
       });

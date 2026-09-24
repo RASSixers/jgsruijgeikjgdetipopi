@@ -177,6 +177,50 @@
       transition: box-shadow .2s, border-color .2s, transform .2s;
     }
     /* Accordion header: hidden on desktop */
+
+    .info-desktop-title {
+      font-family: 'Lexend', sans-serif;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin: 0 0 1rem;
+    }
+    .info-card.key-info .info-desktop-title { color: var(--sixers-blue); }
+    .info-card.updates .info-desktop-title { color: var(--green); }
+    .info-card.schedule .info-desktop-title { color: #d97706; }
+
+    @media (max-width: 768px) {
+      .info-desktop-title { display: none !important; }
+      .info-accordion-btn {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: var(--ink) !important;
+      }
+      .info-accordion-title {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 0.8rem !important;
+        font-weight: 800 !important;
+        color: inherit !important;
+      }
+      .info-card.key-info .info-accordion-title { color: var(--sixers-blue) !important; }
+      .info-card.updates .info-accordion-title { color: #15803d !important; }
+      .info-card.schedule .info-accordion-title { color: #b45309 !important; }
+      .info-card.is-open .info-content {
+        display: block !important;
+        visibility: visible !important;
+      }
+      .info-card.is-open .info-content ul,
+      .info-card.is-open .info-content li,
+      .info-card.is-open .info-content p {
+        display: block !important;
+        visibility: visible !important;
+        color: var(--mid) !important;
+        opacity: 1 !important;
+      }
+    }
+
     .info-accordion-btn {
       display: none;
       width: 100%;
@@ -667,6 +711,19 @@
     :root.dark-mode .btn-secondary { background: var(--card-bg); border-color: var(--border-light); }
 
     /* ── LEADERBOARD TABLE ── */
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .rank-num { font-variant-numeric: tabular-nums; font-weight: 800; }
+    .rank-badge.rank-1 { color: #ca8a04; }
+    .rank-badge.rank-2 { color: #64748b; }
+    .rank-badge.rank-3 { color: #b45309; }
+
     .leaderboard-table {
       width: 100%; border-collapse: separate; border-spacing: 0;
       background: var(--card-bg);
@@ -1243,6 +1300,7 @@
             <span class="info-accordion-chevron" aria-hidden="true"></span>
           </button>
           <div class="info-content" id="keyInfoContent">
+            <h2 class="info-desktop-title">Key Information</h2>
             <ul>
               <li>If a pickem does not show up right away, click the box for the pickem date and it should load</li>
               <li>When pickems lock for the day, the page will automatically prevent submissions - no refresh needed!</li>
@@ -1264,6 +1322,7 @@
             <span class="info-accordion-chevron" aria-hidden="true"></span>
           </button>
           <div class="info-content" id="whatsNewContent">
+            <h2 class="info-desktop-title">What's New</h2>
             <div class="version-badge">V1.02</div>
             <p style="margin-bottom: 1.25rem; font-weight: 700; color: var(--ink);">Latest Updates</p>
             <ul>
@@ -1286,6 +1345,7 @@
             <span class="info-accordion-chevron" aria-hidden="true"></span>
           </button>
           <div class="info-content" id="scheduleContent">
+            <h2 class="info-desktop-title">Schedule</h2>
             <ul>
               <li>Picks open 72 hours before that day's lock time</li>
               <li>Lock time is the earliest tip-off for that date</li>
@@ -5472,11 +5532,14 @@ renderQuestions();
 
       console.log(` Rendering ${period} leaderboard with ${entries.length} entries`);
       
-      const medals = ['', '', ''];
+      const medals = ['🥇', '🥈', '🥉'];
       const bodyHtml = entries.map((entry, idx) => {
-        let rankDisplay = idx + 1;
+        const rankNum = idx + 1;
+        let rankDisplay = String(rankNum);
         if (idx < 3) {
-          rankDisplay = `<span class="rank-badge rank-${idx + 1}">${medals[idx]}</span>`;
+          rankDisplay = `<span class="rank-badge rank-${rankNum}" title="Rank ${rankNum}">${medals[idx]} <span class="rank-num">${rankNum}</span></span>`;
+        } else {
+          rankDisplay = `<span class="rank-num">${rankNum}</span>`;
         }
         
         return `
@@ -6003,9 +6066,12 @@ renderQuestions();
         body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No season data yet</td></tr>';
         return;
       }
-      body.innerHTML = rows.slice(0, 100).map((r, i) => `
+      const medals = ['🥇', '🥈', '🥉'];
+      body.innerHTML = rows.slice(0, 100).map((r, i) => {
+        const rank = i < 3 ? (medals[i] + ' ' + (i + 1)) : String(i + 1);
+        return `
         <tr>
-          <td>${i + 1}</td>
+          <td>${rank}</td>
           <td>${r.username}</td>
           <td style="text-align:center;">${r.correct_count}</td>
           <td style="text-align:center;">${r.total_count}</td>
@@ -6013,7 +6079,8 @@ renderQuestions();
           <td style="text-align:center;">${r.streak}</td>
           <td style="text-align:center;">${r.tb_pct}</td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
     }
 
     async function loadSeasonLeaderboard() {

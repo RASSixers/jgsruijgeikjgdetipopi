@@ -1,0 +1,53 @@
+{
+  "currentSeasonId": "2026-27",
+  "seasons": {
+    "2025-26": {
+      "label": "2025-26 (Archive)",
+      "archived": true,
+      "start": "2025-10-04",
+      "end": "2026-06-15"
+    },
+    "2026-27": {
+      "label": "2026-27",
+      "archived": false,
+      "start": "2026-10-03",
+      "end": "2027-06-20",
+      "preseasonStart": "2026-10-03",
+      "regularSeasonStart": "2026-10-21",
+      "note": "Week 1 begins NBA preseason (Oct 3). Adjust regularSeasonStart if the league calendar shifts."
+    }
+  },
+  "weeks": {
+    "2026-27": [
+      { "week": 1, "start": "2026-10-03", "end": "2026-10-09", "phase": "preseason" },
+      { "week": 2, "start": "2026-10-10", "end": "2026-10-16", "phase": "preseason" },
+      { "week": 3, "start": "2026-10-17", "end": "2026-10-23", "phase": "preseason_to_regular" },
+      { "week": 4, "start": "2026-10-24", "end": "2026-10-30", "phase": "regular" },
+      { "week": 5, "start": "2026-10-31", "end": "2026-11-06", "phase": "regular" },
+      { "week": 6, "start": "2026-11-07", "end": "2026-11-13", "phase": "regular" },
+      { "week": 7, "start": "2026-11-14", "end": "2026-11-20", "phase": "regular" },
+      { "week": 8, "start": "2026-11-21", "end": "2026-11-27", "phase": "regular" },
+      { "week": 9, "start": "2026-11-28", "end": "2026-12-04", "phase": "regular" },
+      { "week": 10, "start": "2026-12-05", "end": "2026-12-11", "phase": "regular" },
+      { "week": 11, "start": "2026-12-12", "end": "2026-12-18", "phase": "regular" },
+      { "week": 12, "start": "2026-12-19", "end": "2026-12-25", "phase": "regular" },
+      { "week": 13, "start": "2026-12-26", "end": "2027-01-01", "phase": "regular" },
+      { "week": 14, "start": "2027-01-02", "end": "2027-01-08", "phase": "regular" },
+      { "week": 15, "start": "2027-01-09", "end": "2027-01-15", "phase": "regular" },
+      { "week": 16, "start": "2027-01-16", "end": "2027-01-22", "phase": "regular" },
+      { "week": 17, "start": "2027-01-23", "end": "2027-01-29", "phase": "regular" },
+      { "week": 18, "start": "2027-01-30", "end": "2027-02-05", "phase": "regular" },
+      { "week": 19, "start": "2027-02-06", "end": "2027-02-12", "phase": "regular" },
+      { "week": 20, "start": "2027-02-13", "end": "2027-02-19", "phase": "regular" },
+      { "week": 21, "start": "2027-02-20", "end": "2027-02-26", "phase": "regular" },
+      { "week": 22, "start": "2027-02-27", "end": "2027-03-05", "phase": "regular" },
+      { "week": 23, "start": "2027-03-06", "end": "2027-03-12", "phase": "regular" },
+      { "week": 24, "start": "2027-03-13", "end": "2027-03-19", "phase": "regular" },
+      { "week": 25, "start": "2027-03-20", "end": "2027-03-26", "phase": "regular" },
+      { "week": 26, "start": "2027-03-27", "end": "2027-04-02", "phase": "regular" },
+      { "week": 27, "start": "2027-04-03", "end": "2027-04-09", "phase": "regular" },
+      { "week": 28, "start": "2027-04-10", "end": "2027-04-16", "phase": "regular" }
+    ],
+    "2025-26": []
+  }
+}

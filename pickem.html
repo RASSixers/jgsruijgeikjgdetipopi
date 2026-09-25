@@ -2160,7 +2160,11 @@
           currentUser = user.displayName || user.email.split('@')[0];
           currentUserEmail = user.email;
           localStorage.setItem('pickem_user', currentUser);
-          showApp();
+          try {
+            await showApp();
+          } catch (e) {
+            console.error('showApp failed', e);
+          }
         } else {
           currentUser = null;
           currentUserEmail = null;
@@ -2200,13 +2204,21 @@
       }
     }
 
-    function showApp() {
+    async function showApp() {
       document.getElementById('authContainer').style.display = 'none';
       document.getElementById('appContainer').style.display = 'block';
       document.getElementById('currentUser').textContent = currentUser;
-      
-      const isAdmin = isUserAdmin();
+
+      // Resolve admin from Firestore (not from a public email list)
+      let isAdmin = false;
+      try {
+        isAdmin = await resolveIsAdmin(auth.currentUser);
+      } catch (e) {
+        console.warn('resolveIsAdmin', e);
+        isAdmin = false;
+      }
       isCurrentUserAdmin = isAdmin;
+      console.log('Admin panel access:', isAdmin, 'uid:', auth.currentUser && auth.currentUser.uid);
       if (isAdmin) {
         document.getElementById('userBadge').textContent = 'Admin';
         document.getElementById('userBadge').style.background = '#fef3c7';
@@ -2242,18 +2254,75 @@
       });
     }
 
-    function isUserAdmin() {
-      // Allowed admin accounts (case-insensitive)
-      const email = (currentUserEmail || '').trim().toLowerCase();
-      if (!email) return false;
-      const ADMIN_EMAILS = [
-        'rhatus13@gmail.com',
-        'sixershoops@gmail.com'
-      ];
-      if (ADMIN_EMAILS.includes(email)) return true;
-      // Any @sixershoops.com mailbox counts as admin
-      if (email.endsWith('@sixershoops.com')) return true;
+    // Admin is stored in Firebase — never hardcode emails in public site code.
+    // Option A: document admins/{yourAuthUid} with { isAdmin: true }
+    // Option B: users/{yourAuthUid} with { isAdmin: true } or role: "admin"
+    async function waitForDb(maxMs) {
+      const limit = typeof maxMs === 'number' ? maxMs : 8000;
+      const start = Date.now();
+      while (Date.now() - start < limit) {
+        if (window.db) return window.db;
+        await new Promise(r => setTimeout(r, 50));
+      }
+      return window.db || null;
+    }
+
+    async function resolveIsAdmin(user) {
+      if (!user) return false;
+
+      // Wait for nav.js Firebase init (common race on first load)
+      const firestore = await waitForDb(8000);
+      if (!firestore) {
+        console.warn('resolveIsAdmin: Firestore not ready');
+        return false;
+      }
+
+      // 1) Preferred: admins/{uid} in Firestore (set in Console — not in page source)
+      try {
+        const adminDoc = await firestore.collection('admins').doc(user.uid).get();
+        if (adminDoc.exists) {
+          const d = adminDoc.data() || {};
+          if (d.isAdmin === false) {
+            console.log('Admin doc exists but isAdmin=false');
+            return false;
+          }
+          console.log('Admin via admins/' + user.uid);
+          return true;
+        }
+      } catch (e) {
+        console.warn('admins lookup', e);
+      }
+
+      // 2) users/{uid}.isAdmin or role
+      try {
+        const userDoc = await firestore.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          const d = userDoc.data() || {};
+          if (d.isAdmin === true || d.role === 'admin' || d.admin === true) {
+            console.log('Admin via users/' + user.uid);
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn('users admin lookup', e);
+      }
+
+      // 3) Match Firestore rules email fallback (same account you use for Google)
+      // This is only a client UI gate; real writes still enforced by rules.
+      try {
+        const email = (user.email || '').trim().toLowerCase();
+        if (email === 'rhatus13@gmail.com') {
+          console.log('Admin via auth email fallback (same as rules)');
+          return true;
+        }
+      } catch (_) {}
+
+      console.log('Not admin. uid=', user.uid, 'email=', user.email);
       return false;
+    }
+
+    function isUserAdmin() {
+      return !!isCurrentUserAdmin;
     }
 
     function checkAdminPermission() {

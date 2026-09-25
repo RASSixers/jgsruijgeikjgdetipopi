@@ -4085,7 +4085,8 @@
 
 
     // Calculate scores based on user picks and correct answers
-    async function calculateScoresForDate(date, weekNumberFilter = null) {
+    async function calculateScoresForDate(date, weekNumberFilter = null, opts) {
+      opts = opts || {};
       try {
         console.log(` calculateScoresForDate called for date: ${date}${weekNumberFilter ? ` (Week filter: ${weekNumberFilter})` : ''}`);
         
@@ -4185,6 +4186,13 @@
         
         picksSnapshot.forEach(pickDoc => {
           const pickData = pickDoc.data();
+          // Main boards: only current-season picks. Archive snapshots pass includeAllSeasons.
+          if (!opts.includeAllSeasons && typeof pickIsCurrentSeason === 'function' && !pickIsCurrentSeason(pickData)) {
+            return;
+          }
+          if (opts.seasonIdOnly && pickData.seasonId !== opts.seasonIdOnly) {
+            return;
+          }
           const userId = pickData.userId;
           const username = pickData.username || pickData.userEmail || userId;
           
@@ -6316,9 +6324,107 @@ renderQuestions();
         showMessage('Enter a season id and a cutoff date.', 'error', msgId);
         return;
       }
-      if (!confirm('Tag all picks on or before ' + before + ' as season "' + seasonId + '"?')) return;
+      if (!confirm('Archive daily/weekly/monthly boards for all dates on or before ' + before + ' as season "' + seasonId + '", then remove them from the main boards?')) return;
       try {
+        showMessage('Archiving leaderboards… this can take a minute.', 'info', msgId);
         const snap = await db.collection('picks').get();
+        const dates = Array.from(new Set(
+          snap.docs.map(d => d.data().date).filter(date => date && date <= before)
+        )).sort();
+
+        // Snapshot daily boards BEFORE tagging (so scores still compute)
+        let dailySaved = 0, weeklySaved = 0, monthlySaved = 0;
+        const weekMap = {}; // week -> { user scores }
+        const monthMap = {}; // YYYY-MM -> scores
+
+        for (const date of dates) {
+          const dailyScores = await calculateScoresForDate(date, null, { includeAllSeasons: true });
+          const entries = dailyScores.map(s => ({
+            username: s.username,
+            correct_count: s.correct,
+            total_count: s.total,
+            percentage: s.percentage
+          })).sort((a, b) => b.correct_count - a.correct_count);
+
+          await db.collection('leaderboardArchives').doc(seasonId + '_daily_' + date).set({
+            seasonId: seasonId,
+            period: 'daily',
+            key: date,
+            entries: entries,
+            archivedAt: new Date().toISOString()
+          }, { merge: true });
+          dailySaved++;
+
+          // week aggregation from question weekNumbers
+          try {
+            const qSnap = await db.collection('questions').where('date', '==', date).get();
+            let weekNum = null;
+            if (!qSnap.empty) {
+              const items = qSnap.docs[0].data().items || [];
+              const w = items.find(q => q.weekNumber != null);
+              if (w) weekNum = w.weekNumber;
+            }
+            if (weekNum != null) {
+              if (!weekMap[weekNum]) weekMap[weekNum] = {};
+              dailyScores.forEach(s => {
+                if (!weekMap[weekNum][s.username]) weekMap[weekNum][s.username] = { username: s.username, correct_count: 0, total_count: 0 };
+                weekMap[weekNum][s.username].correct_count += s.correct;
+                weekMap[weekNum][s.username].total_count += s.total;
+              });
+            }
+          } catch (_) {}
+
+          const monthKey = date.slice(0, 7);
+          if (!monthMap[monthKey]) monthMap[monthKey] = {};
+          dailyScores.forEach(s => {
+            if (!monthMap[monthKey][s.username]) monthMap[monthKey][s.username] = { username: s.username, correct_count: 0, total_count: 0 };
+            monthMap[monthKey][s.username].correct_count += s.correct;
+            monthMap[monthKey][s.username].total_count += s.total;
+          });
+        }
+
+        for (const weekNum of Object.keys(weekMap)) {
+          const entries = Object.values(weekMap[weekNum]).map(s => ({
+            ...s,
+            percentage: s.total_count ? ((s.correct_count / s.total_count) * 100).toFixed(1) : 0
+          })).sort((a, b) => b.correct_count - a.correct_count);
+          await db.collection('leaderboardArchives').doc(seasonId + '_weekly_' + weekNum).set({
+            seasonId: seasonId,
+            period: 'weekly',
+            key: String(weekNum),
+            entries: entries,
+            archivedAt: new Date().toISOString()
+          }, { merge: true });
+          weeklySaved++;
+        }
+
+        for (const monthKey of Object.keys(monthMap)) {
+          const entries = Object.values(monthMap[monthKey]).map(s => ({
+            ...s,
+            percentage: s.total_count ? ((s.correct_count / s.total_count) * 100).toFixed(1) : 0
+          })).sort((a, b) => b.correct_count - a.correct_count);
+          await db.collection('leaderboardArchives').doc(seasonId + '_monthly_' + monthKey).set({
+            seasonId: seasonId,
+            period: 'monthly',
+            key: monthKey,
+            entries: entries,
+            archivedAt: new Date().toISOString()
+          }, { merge: true });
+          monthlySaved++;
+        }
+
+        // Season total snapshot
+        try {
+          const seasonRows = await aggregateSeasonStats(null);
+          // Recompute from picks that will be archived
+          const archivedPicks = snap.docs.filter(d => {
+            const date = d.data().date || '';
+            return date && date <= before;
+          });
+          // Use existing aggregate after tagging is easier; save after tag
+        } catch (_) {}
+
+        // Tag picks so they leave main boards
         let n = 0;
         const batchSize = 400;
         let batch = db.batch();
@@ -6338,12 +6444,40 @@ renderQuestions();
           }
         }
         if (ops) await batch.commit();
-        showMessage('Tagged ' + n + ' pick(s) as ' + seasonId + '.', 'success', msgId);
+
+        // Season board from tagged picks
+        try {
+          const rows = await aggregateSeasonStats(seasonId);
+          const entries = rows.map(r => ({
+            username: r.username,
+            correct_count: r.correct_count,
+            total_count: r.total_count,
+            percentage: r.percentage,
+            streak: r.streak,
+            tb_pct: r.tb_pct
+          }));
+          await db.collection('leaderboardArchives').doc(seasonId + '_season_total').set({
+            seasonId: seasonId,
+            period: 'season',
+            key: 'total',
+            entries: entries,
+            archivedAt: new Date().toISOString()
+          }, { merge: true });
+        } catch (e) {
+          console.warn('season archive snapshot', e);
+        }
+
+        showMessage(
+          'Archived ' + dailySaved + ' daily, ' + weeklySaved + ' weekly, ' + monthlySaved + ' monthly boards. Tagged ' + n + ' pick(s) as ' + seasonId + '. Main boards now hide that data.',
+          'success',
+          msgId
+        );
       } catch (e) {
         console.error(e);
         showMessage('Archive failed: ' + (e.message || e), 'error', msgId);
       }
     });
+
 
     (function setupInfoAccordions() {
       const section = document.getElementById('infoSection');
@@ -6563,27 +6697,75 @@ renderQuestions();
 
     async function loadArchiveLeaderboard() {
       const sel = document.getElementById('archiveSeasonSelect');
-      const sid = (sel && sel.value) || '2025-26';
+      const periodSel = document.getElementById('archivePeriodSelect');
+      const keySel = document.getElementById('archiveKeySelect');
       const body = document.getElementById('archiveLeaderboardBody');
+      const sid = (sel && sel.value) || '2025-26';
+      const period = (periodSel && periodSel.value) || 'season';
+      if (!body) return;
       try {
-        const rows = await aggregateSeasonStats(sid);
-        if (!body) return;
-        if (!rows.length) {
-          body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No archived data for ' + sid + '. Tag old picks with seasonId in Firestore to show them here.</td></tr>';
+        const snap = await db.collection('leaderboardArchives')
+          .where('seasonId', '==', sid)
+          .where('period', '==', period)
+          .get();
+        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => String(a.key).localeCompare(String(b.key), undefined, { numeric: true }));
+        if (keySel) {
+          const prev = keySel.value;
+          if (!docs.length) {
+            keySel.innerHTML = '<option value="">No archived boards</option>';
+          } else {
+            keySel.innerHTML = docs.map(d => {
+              let label = d.key;
+              if (period === 'weekly') label = 'Week ' + d.key;
+              if (period === 'season') label = 'Season total';
+              if (period === 'monthly') label = d.key;
+              return '<option value="' + d.id + '">' + label + '</option>';
+            }).join('');
+            if (prev && [...keySel.options].some(o => o.value === prev)) keySel.value = prev;
+          }
+        }
+        let entries = [];
+        const docId = keySel && keySel.value;
+        if (docId) {
+          const hit = docs.find(d => d.id === docId);
+          if (hit) entries = hit.entries || [];
+        } else if (period === 'season') {
+          const rows = await aggregateSeasonStats(sid);
+          entries = rows.map(r => ({
+            username: r.username,
+            correct_count: r.correct_count,
+            total_count: r.total_count,
+            percentage: r.percentage,
+            streak: r.streak,
+            tb_pct: r.tb_pct
+          }));
+        }
+        if (!entries.length) {
+          body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No archived data for this selection. Use Manage → Archive boards + tag picks after the season.</td></tr>';
           return;
         }
-        const medals = ['🥇', '🥈', '🥉'];
-        body.innerHTML = rows.slice(0, 100).map((r, i) => {
-          const rank = i < 3 ? (medals[i] + ' ' + (i + 1)) : String(i + 1);
-          return '<tr><td>' + rank + '</td><td>' + r.username + '</td><td style="text-align:center;">' + r.correct_count + '</td><td style="text-align:center;">' + r.total_count + '</td><td style="text-align:center;">' + r.percentage + '</td><td style="text-align:center;">' + r.streak + '</td><td style="text-align:center;">' + r.tb_pct + '</td></tr>';
+        body.innerHTML = entries.slice(0, 100).map((r, i) => {
+          const rankNum = i + 1;
+          const rank = rankNum <= 3
+            ? ('<span class="rank-badge rank-' + rankNum + '"><span class="rank-num">' + rankNum + '</span></span>')
+            : String(rankNum);
+          return '<tr><td>' + rank + '</td><td>' + (r.username || '') + '</td>' +
+            '<td style="text-align:center;">' + (r.correct_count ?? '') + '</td>' +
+            '<td style="text-align:center;">' + (r.total_count ?? '') + '</td>' +
+            '<td style="text-align:center;">' + (r.percentage ?? '') + '</td>' +
+            '<td style="text-align:center;">' + (r.streak != null ? r.streak : '—') + '</td>' +
+            '<td style="text-align:center;">' + (r.tb_pct != null ? r.tb_pct : '—') + '</td></tr>';
         }).join('');
       } catch (e) {
         console.error(e);
-        if (body) body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red);">Failed to load archive</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red);">Failed to load archive (check rules for leaderboardArchives).</td></tr>';
       }
     }
     document.getElementById('refreshArchiveBtn')?.addEventListener('click', loadArchiveLeaderboard);
     document.getElementById('archiveSeasonSelect')?.addEventListener('change', loadArchiveLeaderboard);
+    document.getElementById('archivePeriodSelect')?.addEventListener('change', loadArchiveLeaderboard);
+    document.getElementById('archiveKeySelect')?.addEventListener('change', loadArchiveLeaderboard);
 
 
 

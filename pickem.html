@@ -1110,6 +1110,11 @@
     }
     .grp-modal-error.show { display: block; }
 
+    .archive-period-btn.active {
+      background: var(--sixers-blue) !important;
+      color: #fff !important;
+      border-color: var(--sixers-blue) !important;
+    }
     .grp-hero {
       background: var(--card-bg);
       color: var(--ink);
@@ -1708,11 +1713,28 @@
 
       <!-- Archive Leaderboard -->
       <div id="archive-lb" class="tab-content">
-        <div style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;">
+        <div style="margin-bottom:0.75rem;">
+          <h3 style="margin:0 0 0.35rem;font-size:1.1rem;font-weight:700;color:var(--ink);">Archived leaderboards</h3>
+          <p style="margin:0;font-size:0.85rem;color:var(--mid);line-height:1.45;">View saved daily, weekly, monthly, and season-total boards from past seasons. Live boards stay on the other tabs.</p>
+        </div>
+        <div style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center;">
           <label class="form-label" style="margin:0;">Season</label>
-          <select id="archiveSeasonSelect" class="form-input" style="max-width:220px;"></select>
+          <select id="archiveSeasonSelect" class="form-input" style="max-width:160px;"></select>
+          <div id="archivePeriodTabs" style="display:flex;flex-wrap:wrap;gap:0.35rem;">
+            <button type="button" class="btn btn-secondary archive-period-btn active" data-period="season" style="padding:0.4rem 0.75rem;">Season total</button>
+            <button type="button" class="btn btn-secondary archive-period-btn" data-period="daily" style="padding:0.4rem 0.75rem;">Daily</button>
+            <button type="button" class="btn btn-secondary archive-period-btn" data-period="weekly" style="padding:0.4rem 0.75rem;">Weekly</button>
+            <button type="button" class="btn btn-secondary archive-period-btn" data-period="monthly" style="padding:0.4rem 0.75rem;">Monthly</button>
+          </div>
+          <select id="archivePeriodSelect" class="form-input" style="display:none;">
+            <option value="season">Season total</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <label class="form-label" style="margin:0;" id="archiveKeyLabel">Date / week</label>
+          <select id="archiveKeySelect" class="form-input" style="max-width:200px;"></select>
           <button type="button" class="btn btn-secondary" id="refreshArchiveBtn">Refresh</button>
-          <span style="font-size:0.8rem;color:var(--mid);">Past seasons only (archived results)</span>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -2071,7 +2093,7 @@
             <div class="admin-form" style="margin-top:1.5rem;border:1px solid var(--border-light);border-radius:12px;padding:1rem;">
               <h3 style="margin:0 0 0.5rem;">Archive season results</h3>
               <p style="font-size:0.82rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.45;">
-                Tag picks before a date as a past season so they appear under the Archive tab (not the current Season board).
+                Saves every daily, weekly, monthly board and a season total for dates on or before the cutoff into Archive, then moves those picks off the main leaderboards.
               </p>
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.65rem;margin-bottom:0.75rem;">
                 <div>
@@ -2083,7 +2105,7 @@
                   <input type="date" id="archiveBeforeDate" class="form-input" />
                 </div>
               </div>
-              <button type="button" class="btn btn-primary" id="archiveSeasonBtn">Tag picks as archived season</button>
+              <button type="button" class="btn btn-primary" id="archiveSeasonBtn">Archive all daily, weekly, monthly + season total</button>
               <div id="archiveAdminMsg" class="message" style="margin-top:0.5rem;"></div>
             </div>
 
@@ -6742,52 +6764,79 @@ renderQuestions();
       const periodSel = document.getElementById('archivePeriodSelect');
       const keySel = document.getElementById('archiveKeySelect');
       const body = document.getElementById('archiveLeaderboardBody');
+      const keyLabel = document.getElementById('archiveKeyLabel');
       const sid = (sel && sel.value) || '2025-26';
       const period = (periodSel && periodSel.value) || 'season';
       if (!body) return;
+
+      if (keyLabel) {
+        keyLabel.textContent = period === 'daily' ? 'Date' : period === 'weekly' ? 'Week' : period === 'monthly' ? 'Month' : 'Board';
+        keyLabel.style.display = period === 'season' ? 'none' : '';
+      }
+      if (keySel) keySel.style.display = period === 'season' ? 'none' : '';
+
       try {
-        const snap = await db.collection('leaderboardArchives')
-          .where('seasonId', '==', sid)
-          .where('period', '==', period)
-          .get();
-        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-          .sort((a, b) => String(a.key).localeCompare(String(b.key), undefined, { numeric: true }));
-        if (keySel) {
+        // Single-field query (no composite index required); filter period in client
+        let snap;
+        try {
+          snap = await db.collection('leaderboardArchives').where('seasonId', '==', sid).get();
+        } catch (qErr) {
+          console.warn(qErr);
+          snap = await db.collection('leaderboardArchives').get();
+        }
+        let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .filter(d => d.seasonId === sid && d.period === period);
+
+        if (period === 'season' && !docs.length) {
+          // Fallback: live aggregate of tagged picks
+          const rows = await aggregateSeasonStats(sid);
+          if (rows && rows.length) {
+            docs = [{
+              id: sid + '_season_total',
+              key: 'total',
+              entries: rows.map(r => ({
+                username: r.username,
+                correct_count: r.correct_count,
+                total_count: r.total_count,
+                percentage: r.percentage,
+                streak: r.streak,
+                tb_pct: r.tb_pct
+              }))
+            }];
+          }
+        }
+
+        docs.sort((a, b) => String(a.key).localeCompare(String(b.key), undefined, { numeric: true }));
+
+        if (keySel && period !== 'season') {
           const prev = keySel.value;
           if (!docs.length) {
-            keySel.innerHTML = '<option value="">No archived boards</option>';
+            keySel.innerHTML = '<option value="">None saved yet</option>';
           } else {
             keySel.innerHTML = docs.map(d => {
               let label = d.key;
               if (period === 'weekly') label = 'Week ' + d.key;
-              if (period === 'season') label = 'Season total';
-              if (period === 'monthly') label = d.key;
               return '<option value="' + d.id + '">' + label + '</option>';
             }).join('');
             if (prev && [...keySel.options].some(o => o.value === prev)) keySel.value = prev;
           }
         }
+
         let entries = [];
-        const docId = keySel && keySel.value;
-        if (docId) {
-          const hit = docs.find(d => d.id === docId);
+        if (period === 'season') {
+          entries = (docs[0] && docs[0].entries) || [];
+        } else {
+          const docId = keySel && keySel.value;
+          const hit = docs.find(d => d.id === docId) || docs[0];
           if (hit) entries = hit.entries || [];
-        } else if (period === 'season') {
-          const rows = await aggregateSeasonStats(sid);
-          entries = rows.map(r => ({
-            username: r.username,
-            correct_count: r.correct_count,
-            total_count: r.total_count,
-            percentage: r.percentage,
-            streak: r.streak,
-            tb_pct: r.tb_pct
-          }));
         }
+
         if (!entries.length) {
-          body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No archived data for this selection. Use Manage → Archive boards + tag picks after the season.</td></tr>';
+          body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No archived ' + period + ' boards for ' + sid + ' yet.<br><br>Open <strong>Manage</strong> → <strong>Archive all daily, weekly, monthly + season total</strong> with season id <code>' + sid + '</code> and a cutoff date.</td></tr>';
           return;
         }
-        body.innerHTML = entries.slice(0, 100).map((r, i) => {
+
+        body.innerHTML = entries.slice(0, 150).map((r, i) => {
           const rankNum = i + 1;
           const rank = rankNum <= 3
             ? ('<span class="rank-badge rank-' + rankNum + '"><span class="rank-num">' + rankNum + '</span></span>')
@@ -6801,15 +6850,23 @@ renderQuestions();
         }).join('');
       } catch (e) {
         console.error(e);
-        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red);">Failed to load archive (check rules for leaderboardArchives).</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red);">Failed to load archive: ' + (e.message || e) + '</td></tr>';
       }
     }
+
+    document.querySelectorAll('.archive-period-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.archive-period-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const periodSel = document.getElementById('archivePeriodSelect');
+        if (periodSel) periodSel.value = btn.getAttribute('data-period');
+        loadArchiveLeaderboard();
+      });
+    });
     document.getElementById('refreshArchiveBtn')?.addEventListener('click', loadArchiveLeaderboard);
     document.getElementById('archiveSeasonSelect')?.addEventListener('change', loadArchiveLeaderboard);
     document.getElementById('archivePeriodSelect')?.addEventListener('change', loadArchiveLeaderboard);
     document.getElementById('archiveKeySelect')?.addEventListener('change', loadArchiveLeaderboard);
-
-
 
     // ---- Leagues ----
 

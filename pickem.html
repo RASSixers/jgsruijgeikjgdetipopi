@@ -1368,7 +1368,7 @@
         <button class="tab-btn" data-tab="monthly-lb">Monthly</button>
         <button class="tab-btn" data-tab="season-lb">Season</button>
         <button class="tab-btn" data-tab="archive-lb">Archive</button>
-        <button class="tab-btn" data-tab="leagues">Leagues</button>
+        <button class="tab-btn" data-tab="leagues">Groups</button>
         <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none; flex: 0 0 auto;">Manage</button>
       </div>
 
@@ -1543,31 +1543,36 @@
       <!-- Group Leagues -->
       <div id="leagues" class="tab-content">
         <div class="league-panel">
-          <h3 style="margin:0 0 0.75rem;color:var(--sixers-blue);">Your leagues</h3>
-          <div id="myLeaguesList" style="margin-bottom:1rem;font-size:0.9rem;color:var(--mid);">Sign in to manage leagues.</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin-bottom:0.75rem;">
-            <div>
-              <label class="form-label">Create league name</label>
-              <input type="text" id="leagueCreateName" class="form-input" maxlength="40" placeholder="e.g. Work Crew" />
+          <h3 style="margin:0 0 0.35rem;color:var(--sixers-blue);">Groups</h3>
+          <p style="font-size:0.85rem;color:var(--mid);margin:0 0 1rem;line-height:1.45;">
+            Create a private group with a name and password, or join a friend’s group with their name + password.
+          </p>
+          <div id="myLeaguesList" style="margin-bottom:1.25rem;"></div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;">
+            <div style="border:1px solid var(--border-light);border-radius:12px;padding:1rem;">
+              <h4 style="margin:0 0 0.75rem;font-size:0.9rem;">Create a group</h4>
+              <label class="form-label">Group name</label>
+              <input type="text" id="leagueCreateName" class="form-input" maxlength="40" placeholder="e.g. Work Crew" style="margin-bottom:0.65rem;" />
+              <label class="form-label">Password</label>
+              <input type="password" id="leagueCreatePassword" class="form-input" maxlength="40" placeholder="Share with friends" style="margin-bottom:0.75rem;" />
+              <button type="button" class="btn btn-primary" id="leagueCreateBtn" style="width:100%;">Create group</button>
             </div>
-            <div style="display:flex;align-items:flex-end;">
-              <button type="button" class="btn btn-primary" id="leagueCreateBtn" style="width:100%;">Create league</button>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;">
-            <div>
-              <label class="form-label">Join with invite code</label>
-              <input type="text" id="leagueJoinCode" class="form-input" maxlength="12" placeholder="ABC123" style="text-transform:uppercase;" />
-            </div>
-            <div style="display:flex;align-items:flex-end;">
-              <button type="button" class="btn btn-secondary" id="leagueJoinBtn" style="width:100%;">Join</button>
+            <div style="border:1px solid var(--border-light);border-radius:12px;padding:1rem;">
+              <h4 style="margin:0 0 0.75rem;font-size:0.9rem;">Join a group</h4>
+              <label class="form-label">Group name</label>
+              <input type="text" id="leagueJoinName" class="form-input" maxlength="40" placeholder="Exact group name" style="margin-bottom:0.65rem;" />
+              <label class="form-label">Password</label>
+              <input type="password" id="leagueJoinPassword" class="form-input" maxlength="40" placeholder="Group password" style="margin-bottom:0.75rem;" />
+              <button type="button" class="btn btn-secondary" id="leagueJoinBtn" style="width:100%;">Join group</button>
             </div>
           </div>
           <div id="leagueMsg" class="message" style="margin-top:0.75rem;"></div>
         </div>
+
         <div class="league-panel">
-          <h3 style="margin:0 0 0.5rem;color:var(--sixers-blue);">League standings</h3>
-          <label class="form-label">Active league</label>
+          <h3 style="margin:0 0 0.5rem;color:var(--sixers-blue);">Group standings</h3>
+          <label class="form-label">Select group</label>
           <select id="leagueSelect" class="form-input" style="margin-bottom:0.75rem;"></select>
           <button type="button" class="btn btn-secondary" id="leagueRefreshBtn" style="margin-bottom:0.75rem;">Refresh standings</button>
           <table class="leaderboard-table">
@@ -1585,8 +1590,6 @@
           </table>
         </div>
       </div>
-
-      <!-- Winners Tab -->
 
       <div id="admin" class="tab-content">
         <div class="admin-panel">
@@ -2211,11 +2214,14 @@
     }
 
     async function showApp() {
-      document.getElementById('authContainer').style.display = 'none';
-      document.getElementById('appContainer').style.display = 'block';
-      document.getElementById('currentUser').textContent = currentUser;
+      const authEl = document.getElementById('authContainer');
+      const appEl = document.getElementById('appContainer');
+      if (authEl) authEl.style.display = 'none';
+      if (appEl) appEl.style.display = 'block';
+      const cu = document.getElementById('currentUser');
+      if (cu) cu.textContent = currentUser || '';
 
-      // Resolve admin (Firestore doc preferred; email fallback matches rules)
+      // Resolve admin — never let missing DOM kill this
       let isAdmin = false;
       try {
         isAdmin = await resolveIsAdmin(auth.currentUser);
@@ -2223,10 +2229,14 @@
         console.warn('resolveIsAdmin', e);
         isAdmin = false;
       }
-      // Immediate fallback if resolve failed/race
-      if (!isAdmin && auth.currentUser && auth.currentUser.email) {
-        const em = String(auth.currentUser.email).trim().toLowerCase();
+      if (!isAdmin && auth.currentUser) {
+        const em = String(auth.currentUser.email || '').trim().toLowerCase();
         if (em === 'rhatus13@gmail.com') isAdmin = true;
+        try {
+          (auth.currentUser.providerData || []).forEach(p => {
+            if (String(p.email || '').trim().toLowerCase() === 'rhatus13@gmail.com') isAdmin = true;
+          });
+        } catch (_) {}
       }
       isCurrentUserAdmin = isAdmin;
       console.log('Admin panel access:', isAdmin, 'uid:', auth.currentUser && auth.currentUser.uid, 'email:', auth.currentUser && auth.currentUser.email);
@@ -2240,12 +2250,14 @@
           badge.style.display = '';
         }
         if (adminBtn) {
-          adminBtn.style.display = 'inline-block';
-          adminBtn.style.visibility = 'visible';
+          adminBtn.style.cssText = 'display:inline-block !important; visibility:visible !important; flex:0 0 auto;';
           adminBtn.hidden = false;
+          adminBtn.removeAttribute('hidden');
         }
-      } else {
-        if (adminBtn) adminBtn.style.display = 'none';
+        // Ensure Manage is scrolled into view on the tab strip
+        try { adminBtn && adminBtn.scrollIntoView({ inline: 'nearest', block: 'nearest' }); } catch (_) {}
+      } else if (adminBtn) {
+        adminBtn.style.display = 'none';
       }
       const pickWeekSection = document.getElementById('pickWeekSection');
       if (pickWeekSection) pickWeekSection.style.display = 'block';
@@ -6319,34 +6331,36 @@ renderQuestions();
       const list = document.getElementById('myLeaguesList');
       const select = document.getElementById('leagueSelect');
       if (!list || !select) return;
-      if (!currentUser) {
-        list.textContent = 'Sign in to create or join leagues.';
+      if (!auth || !auth.currentUser) {
+        list.innerHTML = '<p style="color:var(--mid);margin:0;">Sign in to create or join a group.</p>';
         select.innerHTML = '';
         return;
       }
       try {
-        const snap = await db.collection('leagueMembers').where('userId', '==', auth.currentUser.uid).get();
+        const firestore = window.db || db;
+        const snap = await firestore.collection('leagueMembers').where('userId', '==', auth.currentUser.uid).get();
         if (snap.empty) {
-          list.textContent = 'You are not in any leagues yet. Create one or join with a code.';
+          list.innerHTML = '<p style="color:var(--mid);margin:0;">You are not in any groups yet.</p>';
           select.innerHTML = '';
           return;
         }
         const leagues = [];
         for (const doc of snap.docs) {
           const mid = doc.data();
-          const ldoc = await db.collection('leagues').doc(mid.leagueId).get();
+          const ldoc = await firestore.collection('leagues').doc(mid.leagueId).get();
           if (ldoc.exists) {
             const L = ldoc.data();
-            leagues.push({ id: ldoc.id, name: L.name, code: L.code });
+            leagues.push({ id: ldoc.id, name: L.name || 'Group' });
           }
         }
-        list.innerHTML = leagues.map(L =>
-          `<div style="margin-bottom:0.35rem;"><strong>${L.name}</strong> · code <span class="league-code">${L.code}</span></div>`
-        ).join('') || 'No leagues.';
-        select.innerHTML = leagues.map(L => `<option value="${L.id}">${L.name} (${L.code})</option>`).join('');
+        // Show only the group name — no codes
+        list.innerHTML = leagues.length
+          ? ('<ul style="margin:0;padding-left:1.1rem;">' + leagues.map(L => '<li style="margin:0.25rem 0;font-weight:600;">' + L.name + '</li>').join('') + '</ul>')
+          : '<p style="color:var(--mid);margin:0;">No groups found.</p>';
+        select.innerHTML = leagues.map(L => '<option value="' + L.id + '">' + L.name + '</option>').join('');
       } catch (e) {
         console.error(e);
-        list.textContent = 'Could not load leagues (check Firestore rules for leagues / leagueMembers).';
+        list.innerHTML = '<p style="color:var(--red);margin:0;">Could not load groups.</p>';
       }
     }
 
@@ -6354,27 +6368,35 @@ renderQuestions();
       const u = auth && auth.currentUser;
       if (!u) { leagueMsg('Sign in first.', 'error'); return; }
       const name = (document.getElementById('leagueCreateName')?.value || '').trim();
-      if (!name) { leagueMsg('Enter a league name.', 'error'); return; }
+      const password = (document.getElementById('leagueCreatePassword')?.value || '').trim();
+      if (!name) { leagueMsg('Enter a group name.', 'error'); return; }
+      if (password.length < 4) { leagueMsg('Password must be at least 4 characters.', 'error'); return; }
       try {
         const firestore = window.db || db;
         if (!firestore) { leagueMsg('Database not ready — refresh and try again.', 'error'); return; }
-        const code = randomInviteCode();
-        const payload = {
-          name: String(name),
-          code: String(code),
+        // Prevent duplicate names (case-insensitive check among recent — best effort)
+        const existing = await firestore.collection('leagues').where('nameLower', '==', name.toLowerCase()).limit(1).get();
+        if (!existing.empty) {
+          leagueMsg('That group name is already taken. Choose another.', 'error');
+          return;
+        }
+        const ref = await firestore.collection('leagues').add({
+          name: name,
+          nameLower: name.toLowerCase(),
+          password: password,
+          code: password,
           createdBy: String(u.uid),
           createdAt: new Date().toISOString()
-        };
-        console.log('Creating league', payload, 'authEmail=', u.email);
-        const ref = await firestore.collection('leagues').add(payload);
+        });
         await firestore.collection('leagueMembers').add({
           leagueId: ref.id,
-          userId: u.uid,
+          userId: String(u.uid),
           username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
           joinedAt: new Date().toISOString()
         });
-        leagueMsg('Created "' + name + '". Invite code: ' + code, 'success');
+        leagueMsg('Created group "' + name + '". Share the name and password with friends.', 'success');
         document.getElementById('leagueCreateName').value = '';
+        document.getElementById('leagueCreatePassword').value = '';
         await loadMyLeagues();
       } catch (e) {
         console.error(e);
@@ -6384,26 +6406,40 @@ renderQuestions();
 
     document.getElementById('leagueJoinBtn')?.addEventListener('click', async () => {
       if (!auth || !auth.currentUser) { leagueMsg('Sign in first.', 'error'); return; }
-      const code = (document.getElementById('leagueJoinCode')?.value || '').trim().toUpperCase();
-      if (!code) { leagueMsg('Enter an invite code.', 'error'); return; }
+      const name = (document.getElementById('leagueJoinName')?.value || '').trim();
+      const password = (document.getElementById('leagueJoinPassword')?.value || '').trim();
+      if (!name || !password) { leagueMsg('Enter the group name and password.', 'error'); return; }
       try {
-        const snap = await db.collection('leagues').where('code', '==', code).limit(1).get();
-        if (snap.empty) { leagueMsg('No league with that code.', 'error'); return; }
-        const leagueId = snap.docs[0].id;
-        const existing = await db.collection('leagueMembers')
+        const firestore = window.db || db;
+        let snap = await firestore.collection('leagues').where('nameLower', '==', name.toLowerCase()).limit(5).get();
+        if (snap.empty) {
+          // Fallback: scan by exact name field
+          snap = await firestore.collection('leagues').where('name', '==', name).limit(5).get();
+        }
+        if (snap.empty) { leagueMsg('No group found with that name.', 'error'); return; }
+        let leagueDoc = null;
+        snap.docs.forEach(d => {
+          const data = d.data();
+          const pw = data.password || data.code || '';
+          if (pw === password) leagueDoc = d;
+        });
+        if (!leagueDoc) { leagueMsg('Wrong password for that group.', 'error'); return; }
+        const leagueId = leagueDoc.id;
+        const existing = await firestore.collection('leagueMembers')
           .where('leagueId', '==', leagueId)
           .where('userId', '==', auth.currentUser.uid)
           .limit(1).get();
-        if (!existing.empty) { leagueMsg('You are already in this league.', 'info'); return; }
+        if (!existing.empty) { leagueMsg('You are already in ' + (leagueDoc.data().name || 'this group') + '.', 'info'); return; }
         const u = auth.currentUser;
-        await db.collection('leagueMembers').add({
+        await firestore.collection('leagueMembers').add({
           leagueId: leagueId,
-          userId: u.uid,
+          userId: String(u.uid),
           username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
           joinedAt: new Date().toISOString()
         });
-        leagueMsg('Joined ' + (snap.docs[0].data().name || 'league') + '!', 'success');
-        document.getElementById('leagueJoinCode').value = '';
+        leagueMsg('Joined ' + (leagueDoc.data().name || 'group') + '!', 'success');
+        document.getElementById('leagueJoinName').value = '';
+        document.getElementById('leagueJoinPassword').value = '';
         await loadMyLeagues();
       } catch (e) {
         console.error(e);

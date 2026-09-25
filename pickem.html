@@ -1055,7 +1055,64 @@
 
 
     /* Season / Leagues / Recap */
+
+    /* ESPN-style Groups */
     .league-panel { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+    .grp-hero {
+      background: linear-gradient(135deg, #001a57 0%, #006BB6 55%, #0a7ec9 100%);
+      color: #fff; border-radius: 14px; padding: 1.35rem 1.25rem 1.25rem;
+      margin-bottom: 1rem; box-shadow: 0 8px 28px rgba(0,26,87,0.18);
+    }
+    .grp-hero h2 { margin: 0 0 0.35rem; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+    .grp-hero p { margin: 0; opacity: 0.9; font-size: 0.88rem; line-height: 1.45; }
+    .grp-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
+    .grp-actions .btn { border: none; font-weight: 700; }
+    .grp-btn-create { background: #fff !important; color: #006BB6 !important; }
+    .grp-btn-join { background: rgba(255,255,255,0.15) !important; color: #fff !important; border: 1px solid rgba(255,255,255,0.45) !important; }
+    .grp-card {
+      background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px;
+      padding: 1rem 1.1rem; margin-bottom: 0.65rem; cursor: pointer;
+      transition: border-color .15s, box-shadow .15s, transform .15s;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    }
+    .grp-card:hover { border-color: rgba(0,107,182,0.45); box-shadow: 0 4px 16px rgba(0,107,182,0.08); transform: translateY(-1px); }
+    .grp-card.active { border-color: #006BB6; box-shadow: 0 0 0 2px rgba(0,107,182,0.15); }
+    .grp-card-name { font-weight: 800; font-size: 1.05rem; color: var(--ink); letter-spacing: -0.02em; }
+    .grp-card-meta { font-size: 0.78rem; color: var(--mid); margin-top: 0.2rem; }
+    .grp-card-rank {
+      flex-shrink: 0; text-align: center; min-width: 64px; padding: 0.4rem 0.5rem;
+      background: rgba(0,107,182,0.08); border-radius: 10px;
+    }
+    .grp-card-rank b { display: block; font-size: 1.15rem; color: #006BB6; font-weight: 800; }
+    .grp-card-rank span { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mid); font-weight: 700; }
+    .grp-form-card {
+      background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px;
+      padding: 1.15rem; margin-bottom: 1rem; display: none;
+    }
+    .grp-form-card.open { display: block; }
+    .grp-form-card h3 { margin: 0 0 0.85rem; font-size: 1rem; font-weight: 800; color: var(--ink); }
+    .grp-detail-head {
+      display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+      gap: 0.75rem; margin-bottom: 1rem;
+    }
+    .grp-detail-title { margin: 0; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); }
+    .grp-detail-sub { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--mid); }
+    .grp-invite-box {
+      background: #f0f7fc; border: 1px dashed rgba(0,107,182,0.35); border-radius: 10px;
+      padding: 0.85rem 1rem; margin-bottom: 1rem; font-size: 0.85rem;
+    }
+    :root.dark-mode .grp-invite-box { background: rgba(0,107,182,0.12); }
+    .grp-invite-box strong { color: #006BB6; }
+    .grp-standings-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-light); }
+    .grp-standings-wrap .leaderboard-table { margin: 0; border: none; }
+    .grp-you-row td { background: rgba(0,107,182,0.07) !important; font-weight: 700; }
+    .grp-empty {
+      text-align: center; padding: 2.25rem 1.25rem; color: var(--mid);
+      border: 1px dashed var(--border-light); border-radius: 12px; margin-bottom: 1rem;
+    }
+    .grp-empty h3 { margin: 0 0 0.4rem; color: var(--ink); font-size: 1.1rem; }
+    #leagueSelect { display: none !important; }
+
     .league-code { font-family: ui-monospace, monospace; font-weight: 700; letter-spacing: 0.08em; color: var(--sixers-blue); }
     .recap-btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 1rem; }
 
@@ -1542,52 +1599,81 @@
 
       <!-- Group Leagues -->
       <div id="leagues" class="tab-content">
-        <div class="league-panel">
-          <h3 style="margin:0 0 0.35rem;color:var(--sixers-blue);">Groups</h3>
-          <p style="font-size:0.85rem;color:var(--mid);margin:0 0 1rem;line-height:1.45;">
-            Create a private group with a name and password, or join a friend’s group with their name + password.
-          </p>
-          <div id="myLeaguesList" style="margin-bottom:1.25rem;"></div>
-
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;">
-            <div style="border:1px solid var(--border-light);border-radius:12px;padding:1rem;">
-              <h4 style="margin:0 0 0.75rem;font-size:0.9rem;">Create a group</h4>
-              <label class="form-label">Group name</label>
-              <input type="text" id="leagueCreateName" class="form-input" maxlength="40" placeholder="e.g. Work Crew" style="margin-bottom:0.65rem;" />
-              <label class="form-label">Password</label>
-              <input type="password" id="leagueCreatePassword" class="form-input" maxlength="40" placeholder="Share with friends" style="margin-bottom:0.75rem;" />
-              <button type="button" class="btn btn-primary" id="leagueCreateBtn" style="width:100%;">Create group</button>
-            </div>
-            <div style="border:1px solid var(--border-light);border-radius:12px;padding:1rem;">
-              <h4 style="margin:0 0 0.75rem;font-size:0.9rem;">Join a group</h4>
-              <label class="form-label">Group name</label>
-              <input type="text" id="leagueJoinName" class="form-input" maxlength="40" placeholder="Exact group name" style="margin-bottom:0.65rem;" />
-              <label class="form-label">Password</label>
-              <input type="password" id="leagueJoinPassword" class="form-input" maxlength="40" placeholder="Group password" style="margin-bottom:0.75rem;" />
-              <button type="button" class="btn btn-secondary" id="leagueJoinBtn" style="width:100%;">Join group</button>
-            </div>
+        <div class="grp-hero">
+          <h2>Pick’em Groups</h2>
+          <p>Compete with friends — just like an ESPN tournament group. Create a private group, share the name &amp; password, and climb your group leaderboard.</p>
+          <div class="grp-actions">
+            <button type="button" class="btn grp-btn-create" id="grpShowCreateBtn">+ Create Group</button>
+            <button type="button" class="btn grp-btn-join" id="grpShowJoinBtn">Join Group</button>
           </div>
-          <div id="leagueMsg" class="message" style="margin-top:0.75rem;"></div>
         </div>
 
-        <div class="league-panel">
-          <h3 style="margin:0 0 0.5rem;color:var(--sixers-blue);">Group standings</h3>
-          <label class="form-label">Select group</label>
-          <select id="leagueSelect" class="form-input" style="margin-bottom:0.75rem;"></select>
-          <button type="button" class="btn btn-secondary" id="leagueRefreshBtn" style="margin-bottom:0.75rem;">Refresh standings</button>
-          <table class="leaderboard-table">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th style="text-align:center;">Correct</th>
-                <th style="text-align:center;">Total</th>
-                <th style="text-align:center;">Acc%</th>
-                <th style="text-align:center;">Streak</th>
-              </tr>
-            </thead>
-            <tbody id="leagueLeaderboardBody"></tbody>
-          </table>
+        <div id="leagueMsg" class="message"></div>
+
+        <!-- Create form -->
+        <div class="grp-form-card" id="grpCreateForm">
+          <h3>Create a group</h3>
+          <label class="form-label">Group name</label>
+          <input type="text" id="leagueCreateName" class="form-input" maxlength="40" placeholder="e.g. Office Bracket" style="margin-bottom:0.65rem;" />
+          <label class="form-label">Password</label>
+          <input type="password" id="leagueCreatePassword" class="form-input" maxlength="40" placeholder="Friends need this to join" style="margin-bottom:0.75rem;" />
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            <button type="button" class="btn btn-primary" id="leagueCreateBtn">Create Group</button>
+            <button type="button" class="btn btn-secondary" id="grpCancelCreateBtn">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Join form -->
+        <div class="grp-form-card" id="grpJoinForm">
+          <h3>Join a group</h3>
+          <label class="form-label">Group name</label>
+          <input type="text" id="leagueJoinName" class="form-input" maxlength="40" placeholder="Exact group name" style="margin-bottom:0.65rem;" />
+          <label class="form-label">Password</label>
+          <input type="password" id="leagueJoinPassword" class="form-input" maxlength="40" placeholder="Group password" style="margin-bottom:0.75rem;" />
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            <button type="button" class="btn btn-primary" id="leagueJoinBtn">Join Group</button>
+            <button type="button" class="btn btn-secondary" id="grpCancelJoinBtn">Cancel</button>
+          </div>
+        </div>
+
+        <!-- My groups list -->
+        <div id="grpListSection">
+          <h3 style="margin:0 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">My Groups</h3>
+          <div id="myLeaguesList"></div>
+        </div>
+
+        <!-- Active group detail -->
+        <div id="grpDetailSection" style="display:none;margin-top:1.25rem;">
+          <div class="grp-detail-head">
+            <div>
+              <button type="button" class="btn btn-secondary" id="grpBackBtn" style="margin-bottom:0.65rem;padding:0.35rem 0.7rem;font-size:0.78rem;">← All groups</button>
+              <h2 class="grp-detail-title" id="grpDetailName">Group</h2>
+              <p class="grp-detail-sub" id="grpDetailMeta"></p>
+            </div>
+            <button type="button" class="btn btn-secondary" id="leagueRefreshBtn">Refresh</button>
+          </div>
+          <div class="grp-invite-box" id="grpInviteBox" style="display:none;">
+            <div style="font-weight:700;margin-bottom:0.35rem;">Invite friends</div>
+            <div>Group: <strong id="grpInviteName"></strong></div>
+            <div>Password: <strong id="grpInvitePassword"></strong></div>
+            <div style="margin-top:0.35rem;font-size:0.78rem;color:var(--mid);">They open Groups → Join Group and enter both.</div>
+          </div>
+          <div class="grp-standings-wrap">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th style="text-align:center;">Correct</th>
+                  <th style="text-align:center;">Total</th>
+                  <th style="text-align:center;">Acc%</th>
+                  <th style="text-align:center;">Streak</th>
+                </tr>
+              </thead>
+              <tbody id="leagueLeaderboardBody"></tbody>
+            </table>
+          </div>
+          <select id="leagueSelect" aria-hidden="true"></select>
         </div>
       </div>
 
@@ -6327,21 +6413,50 @@ renderQuestions();
 
 
     // ---- Leagues ----
+
+    let _myGroupsCache = [];
+    let _activeGroupId = null;
+
+    function grpHideForms() {
+      document.getElementById('grpCreateForm')?.classList.remove('open');
+      document.getElementById('grpJoinForm')?.classList.remove('open');
+    }
+
+    document.getElementById('grpShowCreateBtn')?.addEventListener('click', () => {
+      grpHideForms();
+      document.getElementById('grpCreateForm')?.classList.add('open');
+      document.getElementById('leagueCreateName')?.focus();
+    });
+    document.getElementById('grpShowJoinBtn')?.addEventListener('click', () => {
+      grpHideForms();
+      document.getElementById('grpJoinForm')?.classList.add('open');
+      document.getElementById('leagueJoinName')?.focus();
+    });
+    document.getElementById('grpCancelCreateBtn')?.addEventListener('click', grpHideForms);
+    document.getElementById('grpCancelJoinBtn')?.addEventListener('click', grpHideForms);
+    document.getElementById('grpBackBtn')?.addEventListener('click', () => {
+      _activeGroupId = null;
+      document.getElementById('grpDetailSection').style.display = 'none';
+      document.getElementById('grpListSection').style.display = '';
+      loadMyLeagues();
+    });
+
     async function loadMyLeagues() {
       const list = document.getElementById('myLeaguesList');
       const select = document.getElementById('leagueSelect');
-      if (!list || !select) return;
+      if (!list) return;
       if (!auth || !auth.currentUser) {
-        list.innerHTML = '<p style="color:var(--mid);margin:0;">Sign in to create or join a group.</p>';
-        select.innerHTML = '';
+        list.innerHTML = '<div class="grp-empty"><h3>Sign in to play</h3><p>Sign in to create or join a Pick’em group.</p></div>';
+        _myGroupsCache = [];
         return;
       }
       try {
         const firestore = window.db || db;
         const snap = await firestore.collection('leagueMembers').where('userId', '==', auth.currentUser.uid).get();
         if (snap.empty) {
-          list.innerHTML = '<p style="color:var(--mid);margin:0;">You are not in any groups yet.</p>';
-          select.innerHTML = '';
+          _myGroupsCache = [];
+          list.innerHTML = '<div class="grp-empty"><h3>No groups yet</h3><p>Create a group for your friends, or join one with a name and password.</p></div>';
+          if (select) select.innerHTML = '';
           return;
         }
         const leagues = [];
@@ -6350,17 +6465,114 @@ renderQuestions();
           const ldoc = await firestore.collection('leagues').doc(mid.leagueId).get();
           if (ldoc.exists) {
             const L = ldoc.data();
-            leagues.push({ id: ldoc.id, name: L.name || 'Group' });
+            // member count
+            let memberCount = 0;
+            try {
+              const ms = await firestore.collection('leagueMembers').where('leagueId', '==', ldoc.id).get();
+              memberCount = ms.size;
+            } catch (_) {}
+            leagues.push({
+              id: ldoc.id,
+              name: L.name || 'Group',
+              password: L.password || L.code || '',
+              createdBy: L.createdBy || '',
+              memberCount: memberCount
+            });
           }
         }
-        // Show only the group name — no codes
-        list.innerHTML = leagues.length
-          ? ('<ul style="margin:0;padding-left:1.1rem;">' + leagues.map(L => '<li style="margin:0.25rem 0;font-weight:600;">' + L.name + '</li>').join('') + '</ul>')
-          : '<p style="color:var(--mid);margin:0;">No groups found.</p>';
-        select.innerHTML = leagues.map(L => '<option value="' + L.id + '">' + L.name + '</option>').join('');
+        _myGroupsCache = leagues;
+
+        // Rank in each group (season stats filtered by members)
+        let seasonRows = [];
+        try { seasonRows = await aggregateSeasonStats(null); } catch (_) {}
+
+        list.innerHTML = leagues.map(L => {
+          const membersSnapNames = []; // rank computed in openGroup
+          return '<div class="grp-card" data-group-id="' + L.id + '">' +
+            '<div><div class="grp-card-name">' + L.name + '</div>' +
+            '<div class="grp-card-meta">' + (L.memberCount || 0) + ' member' + (L.memberCount === 1 ? '' : 's') + '</div></div>' +
+            '<div class="grp-card-rank"><b>→</b><span>Open</span></div></div>';
+        }).join('');
+
+        list.querySelectorAll('.grp-card').forEach(card => {
+          card.addEventListener('click', () => openGroup(card.getAttribute('data-group-id')));
+        });
+
+        if (select) {
+          select.innerHTML = leagues.map(L => '<option value="' + L.id + '">' + L.name + '</option>').join('');
+        }
       } catch (e) {
         console.error(e);
-        list.innerHTML = '<p style="color:var(--red);margin:0;">Could not load groups.</p>';
+        list.innerHTML = '<div class="grp-empty"><h3>Could not load groups</h3><p>' + (e.message || e) + '</p></div>';
+      }
+    }
+
+    async function openGroup(groupId) {
+      const g = _myGroupsCache.find(x => x.id === groupId);
+      if (!g) return;
+      _activeGroupId = groupId;
+      document.getElementById('grpListSection').style.display = 'none';
+      document.getElementById('grpDetailSection').style.display = 'block';
+      document.getElementById('grpDetailName').textContent = g.name;
+      document.getElementById('grpDetailMeta').textContent = (g.memberCount || 0) + ' members · Season standings';
+
+      const inviteBox = document.getElementById('grpInviteBox');
+      const u = auth.currentUser;
+      if (u && g.createdBy === u.uid && g.password) {
+        inviteBox.style.display = 'block';
+        document.getElementById('grpInviteName').textContent = g.name;
+        document.getElementById('grpInvitePassword').textContent = g.password;
+      } else {
+        inviteBox.style.display = 'none';
+      }
+
+      const sel = document.getElementById('leagueSelect');
+      if (sel) sel.value = groupId;
+      await renderGroupStandings(groupId);
+    }
+
+    async function renderGroupStandings(groupId) {
+      const body = document.getElementById('leagueLeaderboardBody');
+      if (!body) return;
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--mid);">Loading standings…</td></tr>';
+      try {
+        const firestore = window.db || db;
+        const members = await firestore.collection('leagueMembers').where('leagueId', '==', groupId).get();
+        const memberUsernames = new Set();
+        const memberUids = new Set();
+        members.docs.forEach(d => {
+          const m = d.data();
+          if (m.username) memberUsernames.add(String(m.username).toLowerCase());
+          if (m.userId) memberUids.add(m.userId);
+        });
+        const season = await aggregateSeasonStats(null);
+        const filtered = season.filter(r => memberUsernames.has(String(r.username || '').toLowerCase()));
+        const myName = (auth.currentUser && (auth.currentUser.displayName || (auth.currentUser.email || '').split('@')[0]) || '').toLowerCase();
+        if (!filtered.length) {
+          body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for group members yet. Make picks to appear here.</td></tr>';
+          document.getElementById('grpDetailMeta').textContent = members.size + ' members · No scores yet';
+          return;
+        }
+        const medals = ['🥇', '🥈', '🥉'];
+        body.innerHTML = filtered.map((r, i) => {
+          const rank = i < 3 ? (medals[i] + ' ' + (i + 1)) : String(i + 1);
+          const isYou = myName && String(r.username || '').toLowerCase() === myName;
+          return '<tr class="' + (isYou ? 'grp-you-row' : '') + '">' +
+            '<td>' + rank + (isYou ? ' <span style="font-size:0.7rem;color:#006BB6;">YOU</span>' : '') + '</td>' +
+            '<td>' + r.username + '</td>' +
+            '<td style="text-align:center;">' + r.correct_count + '</td>' +
+            '<td style="text-align:center;">' + r.total_count + '</td>' +
+            '<td style="text-align:center;">' + r.percentage + '</td>' +
+            '<td style="text-align:center;">' + r.streak + '</td></tr>';
+        }).join('');
+        const myRank = filtered.findIndex(r => String(r.username || '').toLowerCase() === myName);
+        const meta = members.size + ' members';
+        document.getElementById('grpDetailMeta').textContent = myRank >= 0
+          ? (meta + ' · Your rank: #' + (myRank + 1) + ' of ' + filtered.length)
+          : (meta + ' · Season standings');
+      } catch (e) {
+        console.error(e);
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);">Failed to load standings</td></tr>';
       }
     }
 
@@ -6374,17 +6586,16 @@ renderQuestions();
       try {
         const firestore = window.db || db;
         if (!firestore) { leagueMsg('Database not ready — refresh and try again.', 'error'); return; }
-        // Prevent duplicate names (case-insensitive check among recent — best effort)
         const existing = await firestore.collection('leagues').where('nameLower', '==', name.toLowerCase()).limit(1).get();
         if (!existing.empty) {
-          leagueMsg('That group name is already taken. Choose another.', 'error');
+          leagueMsg('That group name is taken. Choose another.', 'error');
           return;
         }
         const ref = await firestore.collection('leagues').add({
-          name: name,
+          name: String(name),
           nameLower: name.toLowerCase(),
-          password: password,
-          code: password,
+          password: String(password),
+          code: String(password),
           createdBy: String(u.uid),
           createdAt: new Date().toISOString()
         });
@@ -6394,10 +6605,12 @@ renderQuestions();
           username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
           joinedAt: new Date().toISOString()
         });
-        leagueMsg('Created group "' + name + '". Share the name and password with friends.', 'success');
+        leagueMsg('Group "' + name + '" created. Share the name and password with friends.', 'success');
         document.getElementById('leagueCreateName').value = '';
         document.getElementById('leagueCreatePassword').value = '';
+        grpHideForms();
         await loadMyLeagues();
+        openGroup(ref.id);
       } catch (e) {
         console.error(e);
         leagueMsg('Create failed: ' + (e.message || e), 'error');
@@ -6413,7 +6626,6 @@ renderQuestions();
         const firestore = window.db || db;
         let snap = await firestore.collection('leagues').where('nameLower', '==', name.toLowerCase()).limit(5).get();
         if (snap.empty) {
-          // Fallback: scan by exact name field
           snap = await firestore.collection('leagues').where('name', '==', name).limit(5).get();
         }
         if (snap.empty) { leagueMsg('No group found with that name.', 'error'); return; }
@@ -6429,7 +6641,13 @@ renderQuestions();
           .where('leagueId', '==', leagueId)
           .where('userId', '==', auth.currentUser.uid)
           .limit(1).get();
-        if (!existing.empty) { leagueMsg('You are already in ' + (leagueDoc.data().name || 'this group') + '.', 'info'); return; }
+        if (!existing.empty) {
+          leagueMsg('You are already in this group.', 'info');
+          grpHideForms();
+          await loadMyLeagues();
+          openGroup(leagueId);
+          return;
+        }
         const u = auth.currentUser;
         await firestore.collection('leagueMembers').add({
           leagueId: leagueId,
@@ -6440,46 +6658,20 @@ renderQuestions();
         leagueMsg('Joined ' + (leagueDoc.data().name || 'group') + '!', 'success');
         document.getElementById('leagueJoinName').value = '';
         document.getElementById('leagueJoinPassword').value = '';
+        grpHideForms();
         await loadMyLeagues();
+        openGroup(leagueId);
       } catch (e) {
         console.error(e);
         leagueMsg('Join failed: ' + (e.message || e), 'error');
       }
     });
 
-    document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () => {
-      const leagueId = document.getElementById('leagueSelect')?.value;
-      const body = document.getElementById('leagueLeaderboardBody');
-      if (!leagueId || !body) return;
-      try {
-        const members = await db.collection('leagueMembers').where('leagueId', '==', leagueId).get();
-        const ids = new Set(members.docs.map(d => d.data().userId));
-        const names = {};
-        members.docs.forEach(d => { names[d.data().userId] = d.data().username; });
-        const season = await aggregateSeasonStats();
-        // Match by username loosely if userId not on season rows
-        const filtered = season.filter(r => {
-          return members.docs.some(m => (m.data().username || '') === r.username);
-        });
-        if (!filtered.length) {
-          body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for members yet</td></tr>';
-          return;
-        }
-        body.innerHTML = filtered.map((r, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${r.username}</td>
-            <td style="text-align:center;">${r.correct_count}</td>
-            <td style="text-align:center;">${r.total_count}</td>
-            <td style="text-align:center;">${r.percentage}</td>
-            <td style="text-align:center;">${r.streak}</td>
-          </tr>
-        `).join('');
-      } catch (e) {
-        console.error(e);
-        body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);">Failed to load</td></tr>';
-      }
+document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () => {
+      if (_activeGroupId) await renderGroupStandings(_activeGroupId);
+      else await loadMyLeagues();
     });
+
 
     // ---- Recap card (standings-style graphic) ----
     let _lastRecapUrl = null;

@@ -1369,7 +1369,7 @@
         <button class="tab-btn" data-tab="season-lb">Season</button>
         <button class="tab-btn" data-tab="archive-lb">Archive</button>
         <button class="tab-btn" data-tab="leagues">Leagues</button>
-        <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none;">Manage</button>
+        <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none; flex: 0 0 auto;">Manage</button>
       </div>
 
       <!-- Picks Tab -->
@@ -2137,9 +2137,15 @@
         setTimeout(initializeFirebase, 100);
         return;
       }
+      // db may lag a tick behind auth in nav.js
+      if (!window.db) {
+        setTimeout(initializeFirebase, 100);
+        return;
+      }
       auth = window.auth;
       db = window.db;
       firebaseReady = true;
+      console.log('Pickem Firebase ready');
       initAuth();
     }
     
@@ -2209,7 +2215,7 @@
       document.getElementById('appContainer').style.display = 'block';
       document.getElementById('currentUser').textContent = currentUser;
 
-      // Resolve admin from Firestore (not from a public email list)
+      // Resolve admin (Firestore doc preferred; email fallback matches rules)
       let isAdmin = false;
       try {
         isAdmin = await resolveIsAdmin(auth.currentUser);
@@ -2217,15 +2223,29 @@
         console.warn('resolveIsAdmin', e);
         isAdmin = false;
       }
+      // Immediate fallback if resolve failed/race
+      if (!isAdmin && auth.currentUser && auth.currentUser.email) {
+        const em = String(auth.currentUser.email).trim().toLowerCase();
+        if (em === 'rhatus13@gmail.com') isAdmin = true;
+      }
       isCurrentUserAdmin = isAdmin;
-      console.log('Admin panel access:', isAdmin, 'uid:', auth.currentUser && auth.currentUser.uid);
+      console.log('Admin panel access:', isAdmin, 'uid:', auth.currentUser && auth.currentUser.uid, 'email:', auth.currentUser && auth.currentUser.email);
+      const adminBtn = document.getElementById('adminTabBtn');
+      const badge = document.getElementById('userBadge');
       if (isAdmin) {
-        document.getElementById('userBadge').textContent = 'Admin';
-        document.getElementById('userBadge').style.background = '#fef3c7';
-        document.getElementById('userBadge').style.color = '#92400e';
-        document.getElementById('adminTabBtn').style.display = 'block';
+        if (badge) {
+          badge.textContent = 'Admin';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#92400e';
+          badge.style.display = '';
+        }
+        if (adminBtn) {
+          adminBtn.style.display = 'inline-block';
+          adminBtn.style.visibility = 'visible';
+          adminBtn.hidden = false;
+        }
       } else {
-        document.getElementById('adminTabBtn').style.display = 'none';
+        if (adminBtn) adminBtn.style.display = 'none';
       }
       const pickWeekSection = document.getElementById('pickWeekSection');
       if (pickWeekSection) pickWeekSection.style.display = 'block';
@@ -2270,52 +2290,54 @@
     async function resolveIsAdmin(user) {
       if (!user) return false;
 
-      // Wait for nav.js Firebase init (common race on first load)
+      // 0) Fast path — same account as Firestore rules (UI only; writes still rule-enforced)
+      const email = String(user.email || '').trim().toLowerCase();
+      if (email === 'rhatus13@gmail.com') {
+        console.log('Admin: email match', email);
+        return true;
+      }
+      // Also check providerData (Google sometimes differs)
+      try {
+        const providers = user.providerData || [];
+        for (let i = 0; i < providers.length; i++) {
+          const pe = String(providers[i].email || '').trim().toLowerCase();
+          if (pe === 'rhatus13@gmail.com') {
+            console.log('Admin: provider email match', pe);
+            return true;
+          }
+        }
+      } catch (_) {}
+
       const firestore = await waitForDb(8000);
       if (!firestore) {
         console.warn('resolveIsAdmin: Firestore not ready');
         return false;
       }
 
-      // 1) Preferred: admins/{uid} in Firestore (set in Console — not in page source)
       try {
         const adminDoc = await firestore.collection('admins').doc(user.uid).get();
         if (adminDoc.exists) {
           const d = adminDoc.data() || {};
-          if (d.isAdmin === false) {
-            console.log('Admin doc exists but isAdmin=false');
-            return false;
-          }
-          console.log('Admin via admins/' + user.uid);
+          if (d.isAdmin === false) return false;
+          console.log('Admin: admins/' + user.uid);
           return true;
         }
       } catch (e) {
         console.warn('admins lookup', e);
       }
 
-      // 2) users/{uid}.isAdmin or role
       try {
         const userDoc = await firestore.collection('users').doc(user.uid).get();
         if (userDoc.exists) {
           const d = userDoc.data() || {};
           if (d.isAdmin === true || d.role === 'admin' || d.admin === true) {
-            console.log('Admin via users/' + user.uid);
+            console.log('Admin: users/' + user.uid);
             return true;
           }
         }
       } catch (e) {
         console.warn('users admin lookup', e);
       }
-
-      // 3) Match Firestore rules email fallback (same account you use for Google)
-      // This is only a client UI gate; real writes still enforced by rules.
-      try {
-        const email = (user.email || '').trim().toLowerCase();
-        if (email === 'rhatus13@gmail.com') {
-          console.log('Admin via auth email fallback (same as rules)');
-          return true;
-        }
-      } catch (_) {}
 
       console.log('Not admin. uid=', user.uid, 'email=', user.email);
       return false;
@@ -6303,7 +6325,7 @@ renderQuestions();
         return;
       }
       try {
-        const snap = await db.collection('leagueMembers').where('userId', '==', currentUser.uid).get();
+        const snap = await db.collection('leagueMembers').where('userId', '==', auth.currentUser.uid).get();
         if (snap.empty) {
           list.textContent = 'You are not in any leagues yet. Create one or join with a code.';
           select.innerHTML = '';
@@ -6329,21 +6351,26 @@ renderQuestions();
     }
 
     document.getElementById('leagueCreateBtn')?.addEventListener('click', async () => {
-      if (!currentUser) { leagueMsg('Sign in first.', 'error'); return; }
+      const u = auth && auth.currentUser;
+      if (!u) { leagueMsg('Sign in first.', 'error'); return; }
       const name = (document.getElementById('leagueCreateName')?.value || '').trim();
       if (!name) { leagueMsg('Enter a league name.', 'error'); return; }
       try {
+        const firestore = window.db || db;
+        if (!firestore) { leagueMsg('Database not ready — refresh and try again.', 'error'); return; }
         const code = randomInviteCode();
-        const ref = await db.collection('leagues').add({
-          name: name,
-          code: code,
-          createdBy: currentUser.uid,
+        const payload = {
+          name: String(name),
+          code: String(code),
+          createdBy: String(u.uid),
           createdAt: new Date().toISOString()
-        });
-        await db.collection('leagueMembers').add({
+        };
+        console.log('Creating league', payload, 'authEmail=', u.email);
+        const ref = await firestore.collection('leagues').add(payload);
+        await firestore.collection('leagueMembers').add({
           leagueId: ref.id,
-          userId: currentUser.uid,
-          username: currentUser.displayName || currentUser.email || 'Player',
+          userId: u.uid,
+          username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
           joinedAt: new Date().toISOString()
         });
         leagueMsg('Created "' + name + '". Invite code: ' + code, 'success');
@@ -6351,12 +6378,12 @@ renderQuestions();
         await loadMyLeagues();
       } catch (e) {
         console.error(e);
-        leagueMsg('Create failed: ' + (e.message || e) + ' — add Firestore rules for leagues.', 'error');
+        leagueMsg('Create failed: ' + (e.message || e), 'error');
       }
     });
 
     document.getElementById('leagueJoinBtn')?.addEventListener('click', async () => {
-      if (!currentUser) { leagueMsg('Sign in first.', 'error'); return; }
+      if (!auth || !auth.currentUser) { leagueMsg('Sign in first.', 'error'); return; }
       const code = (document.getElementById('leagueJoinCode')?.value || '').trim().toUpperCase();
       if (!code) { leagueMsg('Enter an invite code.', 'error'); return; }
       try {
@@ -6365,13 +6392,14 @@ renderQuestions();
         const leagueId = snap.docs[0].id;
         const existing = await db.collection('leagueMembers')
           .where('leagueId', '==', leagueId)
-          .where('userId', '==', currentUser.uid)
+          .where('userId', '==', auth.currentUser.uid)
           .limit(1).get();
         if (!existing.empty) { leagueMsg('You are already in this league.', 'info'); return; }
+        const u = auth.currentUser;
         await db.collection('leagueMembers').add({
           leagueId: leagueId,
-          userId: currentUser.uid,
-          username: currentUser.displayName || currentUser.email || 'Player',
+          userId: u.uid,
+          username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
           joinedAt: new Date().toISOString()
         });
         leagueMsg('Joined ' + (snap.docs[0].data().name || 'league') + '!', 'success');

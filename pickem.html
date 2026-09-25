@@ -1060,11 +1060,13 @@
     .league-panel { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
 
     .grp-modal-overlay {
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(15, 23, 42, 0.45);
+      position: fixed; inset: 0; z-index: 100000;
+      background: rgba(15, 23, 42, 0.5);
       display: flex; align-items: center; justify-content: center;
       padding: 1rem;
       backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      pointer-events: auto;
     }
     .grp-modal {
       width: 100%; max-width: 380px;
@@ -1073,6 +1075,15 @@
       border-radius: 14px;
       padding: 1.35rem 1.25rem 1.2rem;
       box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+      pointer-events: auto;
+      position: relative;
+      z-index: 100001;
+    }
+    .grp-modal-actions .btn {
+      pointer-events: auto;
+      cursor: pointer;
+      min-height: 40px;
+      min-width: 88px;
     }
     .grp-modal h3 {
       margin: 0 0 0.35rem;
@@ -1527,12 +1538,12 @@
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="picks">Picks</button>
+        <button class="tab-btn" data-tab="leagues">Groups</button>
         <button class="tab-btn" data-tab="daily-lb">Daily</button>
         <button class="tab-btn" data-tab="weekly-lb">Weekly</button>
         <button class="tab-btn" data-tab="monthly-lb">Monthly</button>
         <button class="tab-btn" data-tab="season-lb">Season</button>
         <button class="tab-btn" data-tab="archive-lb">Archive</button>
-        <button class="tab-btn" data-tab="leagues">Groups</button>
         <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display: none; flex: 0 0 auto;">Manage</button>
       </div>
 
@@ -1746,7 +1757,8 @@
         </div>
 
         <div id="grpPublicSection">
-          <h3 style="margin:0 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">Public groups</h3>
+          <h3 style="margin:0 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">Browse groups</h3>
+          <p style="font-size:0.82rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.4;">Public groups can be joined anytime. Private groups show name and member count only — join with a password or invite link to see more.</p>
           <div id="grpPublicList" class="grp-public-grid"></div>
         </div>
 
@@ -6554,6 +6566,7 @@ renderQuestions();
     let _grpPwGroupId = null;
 
     function openPrivatePasswordModal(groupName) {
+      bindPasswordModalOnce();
       return new Promise((resolve) => {
         _grpPwResolve = resolve;
         const modal = document.getElementById('grpPasswordModal');
@@ -6562,13 +6575,16 @@ renderQuestions();
         const sub = document.getElementById('grpPwSubtitle');
         if (sub) {
           sub.textContent = groupName
-            ? ('Enter the password for “' + groupName + '” to join and view standings.')
+            ? ('Enter the password for "' + groupName + '" to join and view standings.')
             : 'Enter the password to join and view standings.';
         }
         if (err) err.classList.remove('show');
         if (input) { input.value = ''; }
-        if (modal) modal.style.display = 'flex';
-        setTimeout(() => input && input.focus(), 50);
+        if (modal) {
+          modal.style.display = 'flex';
+          modal.style.pointerEvents = 'auto';
+        }
+        setTimeout(() => { try { input && input.focus(); } catch(_){} }, 80);
       });
     }
 
@@ -6580,26 +6596,61 @@ renderQuestions();
       if (resolve) resolve(result);
     }
 
-    document.getElementById('grpPwCancel')?.addEventListener('click', () => closePrivatePasswordModal(null));
-    document.getElementById('grpPasswordModal')?.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'grpPasswordModal') closePrivatePasswordModal(null);
-    });
-    document.getElementById('grpPwSubmit')?.addEventListener('click', () => {
-      const pw = (document.getElementById('grpPwInput')?.value || '').trim();
-      if (!pw) {
-        const err = document.getElementById('grpPwError');
-        if (err) { err.textContent = 'Enter a password.'; err.classList.add('show'); }
-        return;
+    function bindPasswordModalOnce() {
+      if (window.__grpPwBound) return;
+      window.__grpPwBound = true;
+      const modal = document.getElementById('grpPasswordModal');
+      const panel = document.getElementById('grpPasswordModalPanel');
+      const cancel = document.getElementById('grpPwCancel');
+      const submit = document.getElementById('grpPwSubmit');
+      const input = document.getElementById('grpPwInput');
+      if (cancel) {
+        cancel.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closePrivatePasswordModal(null);
+        });
       }
-      closePrivatePasswordModal(pw);
-    });
-    document.getElementById('grpPwInput')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('grpPwSubmit')?.click();
+      if (submit) {
+        submit.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const pw = (input?.value || '').trim();
+          if (!pw) {
+            const err = document.getElementById('grpPwError');
+            if (err) { err.textContent = 'Enter a password.'; err.classList.add('show'); }
+            return;
+          }
+          closePrivatePasswordModal(pw);
+        });
       }
-      if (e.key === 'Escape') closePrivatePasswordModal(null);
-    });
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closePrivatePasswordModal(null);
+        });
+      }
+      if (panel) {
+        panel.addEventListener('click', (e) => e.stopPropagation());
+      }
+      if (input) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submit?.click();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            closePrivatePasswordModal(null);
+          }
+        });
+      }
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const m = document.getElementById('grpPasswordModal');
+          if (m && m.style.display !== 'none') closePrivatePasswordModal(null);
+        }
+      });
+    }
+    bindPasswordModalOnce();
 
 
 
@@ -6655,15 +6706,21 @@ renderQuestions();
     async function loadPublicGroups() {
       const list = document.getElementById('grpPublicList');
       if (!list) return;
-      if (!window.db && !db) {
-        list.innerHTML = '<div class="grp-empty"><p>Loading…</p></div>';
-        return;
-      }
       try {
         const firestore = window.db || db;
-        const snap = await firestore.collection('leagues').where('visibility', '==', 'public').limit(40).get();
+        if (!firestore) {
+          list.innerHTML = '<div class="grp-empty"><p>Loading…</p></div>';
+          return;
+        }
+        // Load all groups we can read; show public fully joinable, private as name + members only
+        let snap;
+        try {
+          snap = await firestore.collection('leagues').orderBy('createdAt', 'desc').limit(60).get();
+        } catch (_) {
+          snap = await firestore.collection('leagues').limit(60).get();
+        }
         if (snap.empty) {
-          list.innerHTML = '<div class="grp-empty"><p style="margin:0;">No public groups yet. Create one and set it to Public.</p></div>';
+          list.innerHTML = '<div class="grp-empty"><p style="margin:0;">No groups yet. Create the first one.</p></div>';
           return;
         }
         const rows = [];
@@ -6674,32 +6731,83 @@ renderQuestions();
             const ms = await firestore.collection('leagueMembers').where('leagueId', '==', doc.id).get();
             memberCount = ms.size;
           } catch (_) {}
-          rows.push({ id: doc.id, name: L.name || 'Group', memberCount, password: L.password || L.code || '' });
+          rows.push({
+            id: doc.id,
+            name: L.name || 'Group',
+            visibility: L.visibility || 'private',
+            memberCount: memberCount,
+            password: L.password || L.code || ''
+          });
         }
+        // Sort: public first, then by name
+        rows.sort((a, b) => {
+          if (a.visibility === 'public' && b.visibility !== 'public') return -1;
+          if (b.visibility === 'public' && a.visibility !== 'public') return 1;
+          return a.name.localeCompare(b.name);
+        });
         list.innerHTML = rows.map(L => {
           const inIt = _memberGroupIds.has(L.id);
-          return '<div class="grp-card" data-public-id="' + L.id + '">' +
-            '<div><div class="grp-card-name">' + L.name + ' <span class="grp-badge public">Public</span></div>' +
+          const isPublic = L.visibility === 'public';
+          const badge = isPublic
+            ? '<span class="grp-badge public">Public</span>'
+            : '<span class="grp-badge private">Private</span>';
+          let action = 'View';
+          if (inIt) action = 'Open';
+          else if (isPublic) action = 'Join';
+          else action = 'Lock';
+          const actionIcon = inIt ? '→' : (isPublic ? '+' : '•');
+          return '<div class="grp-card" data-browse-id="' + L.id + '" data-vis="' + L.visibility + '">' +
+            '<div><div class="grp-card-name">' + L.name + ' ' + badge + '</div>' +
             '<div class="grp-card-meta">' + L.memberCount + ' member' + (L.memberCount === 1 ? '' : 's') +
-            (inIt ? ' · You\'re in' : '') + '</div></div>' +
-            '<div class="grp-card-rank"><b>' + (inIt ? '→' : '+') + '</b><span>' + (inIt ? 'Open' : 'Join') + '</span></div></div>';
+            (inIt ? ' · Joined' : '') + '</div></div>' +
+            '<div class="grp-card-rank"><b>' + actionIcon + '</b><span>' + action + '</span></div></div>';
         }).join('');
         list.querySelectorAll('.grp-card').forEach(card => {
           card.addEventListener('click', async () => {
-            const id = card.getAttribute('data-public-id');
+            const id = card.getAttribute('data-browse-id');
+            const vis = card.getAttribute('data-vis');
             if (_memberGroupIds.has(id)) {
               openGroup(id);
               return;
             }
-            // Public: join with one click (still stores membership)
-            await joinPublicGroup(id);
+            if (vis === 'public') {
+              await joinPublicGroup(id);
+              return;
+            }
+            // Private, not a member — password modal only (no standings peek)
+            const nameEl = card.querySelector('.grp-card-name');
+            const gname = (nameEl ? nameEl.textContent : 'this group').replace(/Public|Private/gi, '').trim();
+            const row = rows.find(r => r.id === id);
+            const pw = await openPrivatePasswordModal(row ? row.name : gname);
+            if (pw == null) return;
+            if (!row || (row.password || '') !== pw) {
+              leagueMsg('Wrong password.', 'error');
+              return;
+            }
+            const u = auth && auth.currentUser;
+            if (!u) { leagueMsg('Sign in to join.', 'error'); return; }
+            try {
+              await firestore.collection('leagueMembers').add({
+                leagueId: id,
+                userId: String(u.uid),
+                username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
+                joinedAt: new Date().toISOString()
+              });
+              leagueMsg('Joined ' + (row.name || 'group') + '.', 'success');
+              await loadMyLeagues();
+              await loadPublicGroups();
+              openGroup(id);
+            } catch (err) {
+              leagueMsg('Join failed: ' + (err.message || err), 'error');
+            }
           });
         });
       } catch (e) {
         console.error(e);
-        list.innerHTML = '<div class="grp-empty"><p>Could not load public groups. (May need a Firestore index on visibility.)</p></div>';
+        list.innerHTML = '<div class="grp-empty"><p>Could not load groups.</p></div>';
       }
     }
+
 
     async function joinPublicGroup(groupId) {
       const u = auth && auth.currentUser;
@@ -7841,7 +7949,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
   <!-- Private group password modal -->
   <div id="grpPasswordModal" class="grp-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="grpPwTitle">
-    <div class="grp-modal">
+    <div class="grp-modal" id="grpPasswordModalPanel">
       <h3 id="grpPwTitle">This group is private</h3>
       <p id="grpPwSubtitle">Enter the password to join and view standings.</p>
       <label class="form-label" for="grpPwInput">Password</label>

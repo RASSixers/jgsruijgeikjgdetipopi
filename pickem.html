@@ -1106,6 +1106,57 @@
     .grp-standings-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-light); }
     .grp-standings-wrap .leaderboard-table { margin: 0; border: none; }
     .grp-you-row td { background: rgba(0,107,182,0.07) !important; font-weight: 700; }
+    
+    .grp-vis-toggle {
+      display: flex; gap: 0.5rem; margin: 0.5rem 0 0.85rem;
+    }
+    .grp-vis-toggle label {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      padding: 0.65rem 0.5rem; border: 1px solid var(--border-light); border-radius: 10px;
+      cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--mid);
+      background: var(--card-bg);
+    }
+    .grp-vis-toggle input { accent-color: #006BB6; }
+    .grp-vis-toggle label:has(input:checked) {
+      border-color: #006BB6; color: #006BB6; background: rgba(0,107,182,0.06);
+    }
+    .grp-public-grid { display: grid; gap: 0.65rem; margin-bottom: 1.25rem; }
+    .grp-badge {
+      display: inline-block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 999px;
+      vertical-align: middle; margin-left: 0.35rem;
+    }
+    .grp-badge.public { background: rgba(22,163,74,0.12); color: #15803d; }
+    .grp-badge.private { background: rgba(100,116,139,0.15); color: #475569; }
+    .grp-chat {
+      margin-top: 1.25rem; border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
+    }
+    .grp-chat-head {
+      padding: 0.75rem 1rem; font-weight: 800; font-size: 0.85rem;
+      background: rgba(0,107,182,0.06); border-bottom: 1px solid var(--border-light);
+    }
+    .grp-chat-log {
+      height: 220px; overflow-y: auto; padding: 0.85rem 1rem;
+      display: flex; flex-direction: column; gap: 0.65rem; background: var(--card-bg);
+    }
+    .grp-chat-msg {
+      max-width: 85%; padding: 0.5rem 0.75rem; border-radius: 12px;
+      background: rgba(0,0,0,0.04); font-size: 0.88rem; line-height: 1.4;
+    }
+    :root.dark-mode .grp-chat-msg { background: rgba(255,255,255,0.06); }
+    .grp-chat-msg.mine {
+      align-self: flex-end; background: rgba(0,107,182,0.12); color: var(--ink);
+    }
+    .grp-chat-meta { font-size: 0.68rem; color: var(--mid); margin-bottom: 0.15rem; font-weight: 600; }
+    .grp-chat-input-row {
+      display: flex; gap: 0.5rem; padding: 0.65rem; border-top: 1px solid var(--border-light);
+    }
+    .grp-chat-input-row .form-input { flex: 1; margin: 0; }
+    .grp-lock-note {
+      text-align: center; padding: 2rem 1rem; color: var(--mid);
+      border: 1px dashed var(--border-light); border-radius: 12px; margin: 0.5rem 0 1rem;
+    }
+
     .grp-empty {
       text-align: center; padding: 2.25rem 1.25rem; color: var(--mid);
       border: 1px dashed var(--border-light); border-radius: 12px; margin-bottom: 1rem;
@@ -1601,31 +1652,33 @@
       <div id="leagues" class="tab-content">
         <div class="grp-hero">
           <h2>Pick’em Groups</h2>
-          <p>Compete with friends — just like an ESPN tournament group. Create a private group, share the name &amp; password, and climb your group leaderboard.</p>
+          <p>Create a group, invite friends with a link or password, and compete on your own leaderboard.</p>
           <div class="grp-actions">
             <button type="button" class="btn grp-btn-create" id="grpShowCreateBtn">+ Create Group</button>
-            <button type="button" class="btn grp-btn-join" id="grpShowJoinBtn">Join Group</button>
+            <button type="button" class="btn grp-btn-join" id="grpShowJoinBtn">Join with password</button>
           </div>
         </div>
 
         <div id="leagueMsg" class="message"></div>
 
-        <!-- Create form -->
         <div class="grp-form-card" id="grpCreateForm">
           <h3>Create a group</h3>
           <label class="form-label">Group name</label>
-          <input type="text" id="leagueCreateName" class="form-input" maxlength="40" placeholder="e.g. Office Bracket" style="margin-bottom:0.65rem;" />
+          <input type="text" id="leagueCreateName" class="form-input" maxlength="40" placeholder="e.g. Office Crew" style="margin-bottom:0.65rem;" />
           <label class="form-label">Password</label>
-          <input type="password" id="leagueCreatePassword" class="form-input" maxlength="40" placeholder="Friends need this to join" style="margin-bottom:0.75rem;" />
+          <input type="password" id="leagueCreatePassword" class="form-input" maxlength="40" placeholder="Friends use this to join" style="margin-bottom:0.5rem;" />
+          <div class="grp-vis-toggle">
+            <label><input type="radio" name="grpVisibility" value="public" checked /> Public — listed for everyone</label>
+            <label><input type="radio" name="grpVisibility" value="private" /> Private — invite / password only</label>
+          </div>
           <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
             <button type="button" class="btn btn-primary" id="leagueCreateBtn">Create Group</button>
             <button type="button" class="btn btn-secondary" id="grpCancelCreateBtn">Cancel</button>
           </div>
         </div>
 
-        <!-- Join form -->
         <div class="grp-form-card" id="grpJoinForm">
-          <h3>Join a group</h3>
+          <h3>Join with password</h3>
           <label class="form-label">Group name</label>
           <input type="text" id="leagueJoinName" class="form-input" maxlength="40" placeholder="Exact group name" style="margin-bottom:0.65rem;" />
           <label class="form-label">Password</label>
@@ -1636,13 +1689,16 @@
           </div>
         </div>
 
-        <!-- My groups list -->
+        <div id="grpPublicSection">
+          <h3 style="margin:0 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">Public groups</h3>
+          <div id="grpPublicList" class="grp-public-grid"></div>
+        </div>
+
         <div id="grpListSection">
-          <h3 style="margin:0 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">My Groups</h3>
+          <h3 style="margin:1rem 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">My Groups</h3>
           <div id="myLeaguesList"></div>
         </div>
 
-        <!-- Active group detail -->
         <div id="grpDetailSection" style="display:none;margin-top:1.25rem;">
           <div class="grp-detail-head">
             <div>
@@ -1656,22 +1712,39 @@
             <div style="font-weight:700;margin-bottom:0.35rem;">Invite friends</div>
             <div>Group: <strong id="grpInviteName"></strong></div>
             <div>Password: <strong id="grpInvitePassword"></strong></div>
-            <div style="margin-top:0.35rem;font-size:0.78rem;color:var(--mid);">They open Groups → Join Group and enter both.</div>
+            <div style="margin-top:0.5rem;word-break:break-all;">Link: <strong id="grpInviteLink"></strong></div>
+            <button type="button" class="btn btn-secondary" id="grpCopyInviteBtn" style="margin-top:0.55rem;padding:0.4rem 0.75rem;font-size:0.78rem;">Copy invite link</button>
+            <div style="margin-top:0.35rem;font-size:0.78rem;color:var(--mid);">Share the link, or the name + password.</div>
           </div>
-          <div class="grp-standings-wrap">
-            <table class="leaderboard-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Player</th>
-                  <th style="text-align:center;">Correct</th>
-                  <th style="text-align:center;">Total</th>
-                  <th style="text-align:center;">Acc%</th>
-                  <th style="text-align:center;">Streak</th>
-                </tr>
-              </thead>
-              <tbody id="leagueLeaderboardBody"></tbody>
-            </table>
+          <div id="grpStandingsGate" class="grp-lock-note" style="display:none;">
+            <div style="font-size:1.5rem;margin-bottom:0.35rem;">🔒</div>
+            <div style="font-weight:700;color:var(--ink);margin-bottom:0.25rem;">Private group</div>
+            <div>Join with the password or invite link to see standings and chat.</div>
+          </div>
+          <div id="grpStandingsArea">
+            <div class="grp-standings-wrap">
+              <table class="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th style="text-align:center;">Correct</th>
+                    <th style="text-align:center;">Total</th>
+                    <th style="text-align:center;">Acc%</th>
+                    <th style="text-align:center;">Streak</th>
+                  </tr>
+                </thead>
+                <tbody id="leagueLeaderboardBody"></tbody>
+              </table>
+            </div>
+            <div class="grp-chat" id="grpChatSection">
+              <div class="grp-chat-head">Group chat</div>
+              <div class="grp-chat-log" id="grpChatLog"></div>
+              <div class="grp-chat-input-row">
+                <input type="text" class="form-input" id="grpChatInput" maxlength="400" placeholder="Message the group…" />
+                <button type="button" class="btn btn-primary" id="grpChatSendBtn">Send</button>
+              </div>
+            </div>
           </div>
           <select id="leagueSelect" aria-hidden="true"></select>
         </div>
@@ -2370,6 +2443,7 @@
         console.log(' Weeks loaded, initializing leaderboard pickers');
         initializeLeaderboardPickers();
       });
+      setTimeout(() => { try { handleJoinGroupQuery(); } catch(_){} }, 500);
     }
 
     // Admin is stored in Firebase — never hardcode emails in public site code.
@@ -6414,12 +6488,27 @@ renderQuestions();
 
     // ---- Leagues ----
 
+
     let _myGroupsCache = [];
     let _activeGroupId = null;
+    let _grpChatUnsub = null;
+    let _memberGroupIds = new Set();
 
     function grpHideForms() {
       document.getElementById('grpCreateForm')?.classList.remove('open');
       document.getElementById('grpJoinForm')?.classList.remove('open');
+    }
+
+    function grpInviteUrl(groupId) {
+      try {
+        const u = new URL(window.location.href);
+        u.searchParams.set('joinGroup', groupId);
+        u.hash = '';
+        // land on groups tab when possible
+        return u.toString().split('#')[0] + (u.search ? '' : '') ;
+      } catch (_) {
+        return window.location.origin + window.location.pathname + '?joinGroup=' + encodeURIComponent(groupId);
+      }
     }
 
     document.getElementById('grpShowCreateBtn')?.addEventListener('click', () => {
@@ -6436,17 +6525,104 @@ renderQuestions();
     document.getElementById('grpCancelJoinBtn')?.addEventListener('click', grpHideForms);
     document.getElementById('grpBackBtn')?.addEventListener('click', () => {
       _activeGroupId = null;
+      if (_grpChatUnsub) { try { _grpChatUnsub(); } catch(_){} _grpChatUnsub = null; }
       document.getElementById('grpDetailSection').style.display = 'none';
       document.getElementById('grpListSection').style.display = '';
+      document.getElementById('grpPublicSection').style.display = '';
       loadMyLeagues();
+      loadPublicGroups();
     });
+
+    document.getElementById('grpCopyInviteBtn')?.addEventListener('click', async () => {
+      const link = document.getElementById('grpInviteLink')?.textContent || '';
+      try {
+        await navigator.clipboard.writeText(link);
+        leagueMsg('Invite link copied.', 'success');
+      } catch (_) {
+        leagueMsg('Copy failed — select the link manually.', 'error');
+      }
+    });
+
+    async function loadPublicGroups() {
+      const list = document.getElementById('grpPublicList');
+      if (!list) return;
+      if (!window.db && !db) {
+        list.innerHTML = '<div class="grp-empty"><p>Loading…</p></div>';
+        return;
+      }
+      try {
+        const firestore = window.db || db;
+        const snap = await firestore.collection('leagues').where('visibility', '==', 'public').limit(40).get();
+        if (snap.empty) {
+          list.innerHTML = '<div class="grp-empty"><p style="margin:0;">No public groups yet. Create one and set it to Public.</p></div>';
+          return;
+        }
+        const rows = [];
+        for (const doc of snap.docs) {
+          const L = doc.data();
+          let memberCount = 0;
+          try {
+            const ms = await firestore.collection('leagueMembers').where('leagueId', '==', doc.id).get();
+            memberCount = ms.size;
+          } catch (_) {}
+          rows.push({ id: doc.id, name: L.name || 'Group', memberCount, password: L.password || L.code || '' });
+        }
+        list.innerHTML = rows.map(L => {
+          const inIt = _memberGroupIds.has(L.id);
+          return '<div class="grp-card" data-public-id="' + L.id + '">' +
+            '<div><div class="grp-card-name">' + L.name + ' <span class="grp-badge public">Public</span></div>' +
+            '<div class="grp-card-meta">' + L.memberCount + ' member' + (L.memberCount === 1 ? '' : 's') +
+            (inIt ? ' · You\'re in' : '') + '</div></div>' +
+            '<div class="grp-card-rank"><b>' + (inIt ? '→' : '+') + '</b><span>' + (inIt ? 'Open' : 'Join') + '</span></div></div>';
+        }).join('');
+        list.querySelectorAll('.grp-card').forEach(card => {
+          card.addEventListener('click', async () => {
+            const id = card.getAttribute('data-public-id');
+            if (_memberGroupIds.has(id)) {
+              openGroup(id);
+              return;
+            }
+            // Public: join with one click (still stores membership)
+            await joinPublicGroup(id);
+          });
+        });
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = '<div class="grp-empty"><p>Could not load public groups. (May need a Firestore index on visibility.)</p></div>';
+      }
+    }
+
+    async function joinPublicGroup(groupId) {
+      const u = auth && auth.currentUser;
+      if (!u) { leagueMsg('Sign in to join a group.', 'error'); return; }
+      try {
+        const firestore = window.db || db;
+        const existing = await firestore.collection('leagueMembers')
+          .where('leagueId', '==', groupId).where('userId', '==', u.uid).limit(1).get();
+        if (existing.empty) {
+          await firestore.collection('leagueMembers').add({
+            leagueId: groupId,
+            userId: String(u.uid),
+            username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
+            joinedAt: new Date().toISOString()
+          });
+        }
+        leagueMsg('Joined group!', 'success');
+        await loadMyLeagues();
+        await loadPublicGroups();
+        openGroup(groupId);
+      } catch (e) {
+        console.error(e);
+        leagueMsg('Join failed: ' + (e.message || e), 'error');
+      }
+    }
 
     async function loadMyLeagues() {
       const list = document.getElementById('myLeaguesList');
-      const select = document.getElementById('leagueSelect');
       if (!list) return;
+      _memberGroupIds = new Set();
       if (!auth || !auth.currentUser) {
-        list.innerHTML = '<div class="grp-empty"><h3>Sign in to play</h3><p>Sign in to create or join a Pick’em group.</p></div>';
+        list.innerHTML = '<div class="grp-empty"><h3>Sign in to play</h3><p>Sign in to create or join a group.</p></div>';
         _myGroupsCache = [];
         return;
       }
@@ -6455,8 +6631,7 @@ renderQuestions();
         const snap = await firestore.collection('leagueMembers').where('userId', '==', auth.currentUser.uid).get();
         if (snap.empty) {
           _myGroupsCache = [];
-          list.innerHTML = '<div class="grp-empty"><h3>No groups yet</h3><p>Create a group for your friends, or join one with a name and password.</p></div>';
-          if (select) select.innerHTML = '';
+          list.innerHTML = '<div class="grp-empty"><h3>No groups yet</h3><p>Create a group or join a public one above.</p></div>';
           return;
         }
         const leagues = [];
@@ -6465,70 +6640,99 @@ renderQuestions();
           const ldoc = await firestore.collection('leagues').doc(mid.leagueId).get();
           if (ldoc.exists) {
             const L = ldoc.data();
-            // member count
             let memberCount = 0;
             try {
               const ms = await firestore.collection('leagueMembers').where('leagueId', '==', ldoc.id).get();
               memberCount = ms.size;
             } catch (_) {}
+            _memberGroupIds.add(ldoc.id);
             leagues.push({
               id: ldoc.id,
               name: L.name || 'Group',
               password: L.password || L.code || '',
               createdBy: L.createdBy || '',
+              visibility: L.visibility || 'private',
               memberCount: memberCount
             });
           }
         }
         _myGroupsCache = leagues;
-
-        // Rank in each group (season stats filtered by members)
-        let seasonRows = [];
-        try { seasonRows = await aggregateSeasonStats(null); } catch (_) {}
-
         list.innerHTML = leagues.map(L => {
-          const membersSnapNames = []; // rank computed in openGroup
+          const badge = L.visibility === 'public'
+            ? '<span class="grp-badge public">Public</span>'
+            : '<span class="grp-badge private">Private</span>';
           return '<div class="grp-card" data-group-id="' + L.id + '">' +
-            '<div><div class="grp-card-name">' + L.name + '</div>' +
+            '<div><div class="grp-card-name">' + L.name + ' ' + badge + '</div>' +
             '<div class="grp-card-meta">' + (L.memberCount || 0) + ' member' + (L.memberCount === 1 ? '' : 's') + '</div></div>' +
             '<div class="grp-card-rank"><b>→</b><span>Open</span></div></div>';
         }).join('');
-
         list.querySelectorAll('.grp-card').forEach(card => {
           card.addEventListener('click', () => openGroup(card.getAttribute('data-group-id')));
         });
-
-        if (select) {
-          select.innerHTML = leagues.map(L => '<option value="' + L.id + '">' + L.name + '</option>').join('');
-        }
+        const select = document.getElementById('leagueSelect');
+        if (select) select.innerHTML = leagues.map(L => '<option value="' + L.id + '">' + L.name + '</option>').join('');
       } catch (e) {
         console.error(e);
         list.innerHTML = '<div class="grp-empty"><h3>Could not load groups</h3><p>' + (e.message || e) + '</p></div>';
       }
     }
 
-    async function openGroup(groupId) {
-      const g = _myGroupsCache.find(x => x.id === groupId);
-      if (!g) return;
+    async function openGroup(groupId, opts) {
+      opts = opts || {};
+      const firestore = window.db || db;
+      let g = _myGroupsCache.find(x => x.id === groupId);
+      if (!g) {
+        try {
+          const ldoc = await firestore.collection('leagues').doc(groupId).get();
+          if (!ldoc.exists) { leagueMsg('Group not found.', 'error'); return; }
+          const L = ldoc.data();
+          g = {
+            id: groupId,
+            name: L.name || 'Group',
+            password: L.password || L.code || '',
+            createdBy: L.createdBy || '',
+            visibility: L.visibility || 'private',
+            memberCount: 0
+          };
+        } catch (e) {
+          leagueMsg('Could not open group.', 'error');
+          return;
+        }
+      }
       _activeGroupId = groupId;
       document.getElementById('grpListSection').style.display = 'none';
+      document.getElementById('grpPublicSection').style.display = 'none';
       document.getElementById('grpDetailSection').style.display = 'block';
       document.getElementById('grpDetailName').textContent = g.name;
-      document.getElementById('grpDetailMeta').textContent = (g.memberCount || 0) + ' members · Season standings';
+      const visLabel = g.visibility === 'public' ? 'Public' : 'Private';
+      document.getElementById('grpDetailMeta').textContent = visLabel + ' group';
 
+      const isMember = _memberGroupIds.has(groupId);
+      const isPrivate = g.visibility !== 'public';
+
+      // Invite box: members (esp. creator) can share
       const inviteBox = document.getElementById('grpInviteBox');
-      const u = auth.currentUser;
-      if (u && g.createdBy === u.uid && g.password) {
+      if (isMember) {
         inviteBox.style.display = 'block';
         document.getElementById('grpInviteName').textContent = g.name;
-        document.getElementById('grpInvitePassword').textContent = g.password;
+        document.getElementById('grpInvitePassword').textContent = g.password || '—';
+        document.getElementById('grpInviteLink').textContent = grpInviteUrl(groupId);
       } else {
         inviteBox.style.display = 'none';
       }
 
-      const sel = document.getElementById('leagueSelect');
-      if (sel) sel.value = groupId;
+      const gate = document.getElementById('grpStandingsGate');
+      const area = document.getElementById('grpStandingsArea');
+      if (isPrivate && !isMember) {
+        gate.style.display = 'block';
+        area.style.display = 'none';
+        document.getElementById('grpDetailMeta').textContent = 'Private · join to view standings & chat';
+        return;
+      }
+      gate.style.display = 'none';
+      area.style.display = 'block';
       await renderGroupStandings(groupId);
+      startGroupChat(groupId);
     }
 
     async function renderGroupStandings(groupId) {
@@ -6539,18 +6743,15 @@ renderQuestions();
         const firestore = window.db || db;
         const members = await firestore.collection('leagueMembers').where('leagueId', '==', groupId).get();
         const memberUsernames = new Set();
-        const memberUids = new Set();
         members.docs.forEach(d => {
           const m = d.data();
           if (m.username) memberUsernames.add(String(m.username).toLowerCase());
-          if (m.userId) memberUids.add(m.userId);
         });
         const season = await aggregateSeasonStats(null);
         const filtered = season.filter(r => memberUsernames.has(String(r.username || '').toLowerCase()));
         const myName = (auth.currentUser && (auth.currentUser.displayName || (auth.currentUser.email || '').split('@')[0]) || '').toLowerCase();
         if (!filtered.length) {
-          body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for group members yet. Make picks to appear here.</td></tr>';
-          document.getElementById('grpDetailMeta').textContent = members.size + ' members · No scores yet';
+          body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for members yet.</td></tr>';
           return;
         }
         const medals = ['🥇', '🥈', '🥉'];
@@ -6566,13 +6767,79 @@ renderQuestions();
             '<td style="text-align:center;">' + r.streak + '</td></tr>';
         }).join('');
         const myRank = filtered.findIndex(r => String(r.username || '').toLowerCase() === myName);
-        const meta = members.size + ' members';
-        document.getElementById('grpDetailMeta').textContent = myRank >= 0
-          ? (meta + ' · Your rank: #' + (myRank + 1) + ' of ' + filtered.length)
-          : (meta + ' · Season standings');
+        document.getElementById('grpDetailMeta').textContent = members.size + ' members' +
+          (myRank >= 0 ? ' · Your rank: #' + (myRank + 1) : '');
       } catch (e) {
         console.error(e);
         body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);">Failed to load standings</td></tr>';
+      }
+    }
+
+    function startGroupChat(groupId) {
+      const log = document.getElementById('grpChatLog');
+      if (!log) return;
+      if (_grpChatUnsub) { try { _grpChatUnsub(); } catch(_){} _grpChatUnsub = null; }
+      log.innerHTML = '<div style="color:var(--mid);font-size:0.85rem;">Loading chat…</div>';
+      const firestore = window.db || db;
+      try {
+        _grpChatUnsub = firestore.collection('leagueChats').doc(groupId).collection('messages')
+          .orderBy('createdAt', 'asc').limit(100)
+          .onSnapshot(snap => {
+            const uid = auth.currentUser && auth.currentUser.uid;
+            if (snap.empty) {
+              log.innerHTML = '<div style="color:var(--mid);font-size:0.85rem;">No messages yet. Say hi.</div>';
+              return;
+            }
+            log.innerHTML = snap.docs.map(d => {
+              const m = d.data();
+              const mine = uid && m.userId === uid;
+              const when = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate() : (m.createdAt ? new Date(m.createdAt) : null);
+              const time = when && !isNaN(when) ? when.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+              return '<div class="grp-chat-msg' + (mine ? ' mine' : '') + '">' +
+                '<div class="grp-chat-meta">' + (m.username || 'Player') + (time ? ' · ' + time : '') + '</div>' +
+                '<div>' + escapeHtml(m.text || '') + '</div></div>';
+            }).join('');
+            log.scrollTop = log.scrollHeight;
+          }, err => {
+            console.warn(err);
+            log.innerHTML = '<div style="color:var(--mid);font-size:0.85rem;">Chat unavailable (check Firestore rules for leagueChats).</div>';
+          });
+      } catch (e) {
+        log.innerHTML = '<div style="color:var(--mid);font-size:0.85rem;">Chat unavailable.</div>';
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    document.getElementById('grpChatSendBtn')?.addEventListener('click', sendGroupChat);
+    document.getElementById('grpChatInput')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); sendGroupChat(); }
+    });
+
+    async function sendGroupChat() {
+      if (!_activeGroupId || !auth || !auth.currentUser) return;
+      if (!_memberGroupIds.has(_activeGroupId)) {
+        leagueMsg('Join the group to chat.', 'error');
+        return;
+      }
+      const input = document.getElementById('grpChatInput');
+      const text = (input?.value || '').trim();
+      if (!text) return;
+      try {
+        const firestore = window.db || db;
+        const u = auth.currentUser;
+        await firestore.collection('leagueChats').doc(_activeGroupId).collection('messages').add({
+          text: text.slice(0, 400),
+          userId: u.uid,
+          username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = '';
+      } catch (e) {
+        console.error(e);
+        leagueMsg('Message failed: ' + (e.message || e), 'error');
       }
     }
 
@@ -6581,11 +6848,11 @@ renderQuestions();
       if (!u) { leagueMsg('Sign in first.', 'error'); return; }
       const name = (document.getElementById('leagueCreateName')?.value || '').trim();
       const password = (document.getElementById('leagueCreatePassword')?.value || '').trim();
+      const vis = (document.querySelector('input[name="grpVisibility"]:checked') || {}).value || 'public';
       if (!name) { leagueMsg('Enter a group name.', 'error'); return; }
       if (password.length < 4) { leagueMsg('Password must be at least 4 characters.', 'error'); return; }
       try {
         const firestore = window.db || db;
-        if (!firestore) { leagueMsg('Database not ready — refresh and try again.', 'error'); return; }
         const existing = await firestore.collection('leagues').where('nameLower', '==', name.toLowerCase()).limit(1).get();
         if (!existing.empty) {
           leagueMsg('That group name is taken. Choose another.', 'error');
@@ -6596,6 +6863,7 @@ renderQuestions();
           nameLower: name.toLowerCase(),
           password: String(password),
           code: String(password),
+          visibility: vis === 'public' ? 'public' : 'private',
           createdBy: String(u.uid),
           createdAt: new Date().toISOString()
         });
@@ -6605,11 +6873,12 @@ renderQuestions();
           username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
           joinedAt: new Date().toISOString()
         });
-        leagueMsg('Group "' + name + '" created. Share the name and password with friends.', 'success');
+        leagueMsg('Group "' + name + '" created (' + vis + ').', 'success');
         document.getElementById('leagueCreateName').value = '';
         document.getElementById('leagueCreatePassword').value = '';
         grpHideForms();
         await loadMyLeagues();
+        await loadPublicGroups();
         openGroup(ref.id);
       } catch (e) {
         console.error(e);
@@ -6625,41 +6894,32 @@ renderQuestions();
       try {
         const firestore = window.db || db;
         let snap = await firestore.collection('leagues').where('nameLower', '==', name.toLowerCase()).limit(5).get();
-        if (snap.empty) {
-          snap = await firestore.collection('leagues').where('name', '==', name).limit(5).get();
-        }
+        if (snap.empty) snap = await firestore.collection('leagues').where('name', '==', name).limit(5).get();
         if (snap.empty) { leagueMsg('No group found with that name.', 'error'); return; }
         let leagueDoc = null;
         snap.docs.forEach(d => {
           const data = d.data();
-          const pw = data.password || data.code || '';
-          if (pw === password) leagueDoc = d;
+          if ((data.password || data.code || '') === password) leagueDoc = d;
         });
         if (!leagueDoc) { leagueMsg('Wrong password for that group.', 'error'); return; }
         const leagueId = leagueDoc.id;
         const existing = await firestore.collection('leagueMembers')
-          .where('leagueId', '==', leagueId)
-          .where('userId', '==', auth.currentUser.uid)
-          .limit(1).get();
-        if (!existing.empty) {
-          leagueMsg('You are already in this group.', 'info');
-          grpHideForms();
-          await loadMyLeagues();
-          openGroup(leagueId);
-          return;
+          .where('leagueId', '==', leagueId).where('userId', '==', auth.currentUser.uid).limit(1).get();
+        if (existing.empty) {
+          const u = auth.currentUser;
+          await firestore.collection('leagueMembers').add({
+            leagueId: leagueId,
+            userId: String(u.uid),
+            username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
+            joinedAt: new Date().toISOString()
+          });
         }
-        const u = auth.currentUser;
-        await firestore.collection('leagueMembers').add({
-          leagueId: leagueId,
-          userId: String(u.uid),
-          username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
-          joinedAt: new Date().toISOString()
-        });
         leagueMsg('Joined ' + (leagueDoc.data().name || 'group') + '!', 'success');
         document.getElementById('leagueJoinName').value = '';
         document.getElementById('leagueJoinPassword').value = '';
         grpHideForms();
         await loadMyLeagues();
+        await loadPublicGroups();
         openGroup(leagueId);
       } catch (e) {
         console.error(e);
@@ -6667,10 +6927,66 @@ renderQuestions();
       }
     });
 
+    // Handle ?joinGroup= invite links
+    async function handleJoinGroupQuery() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const gid = params.get('joinGroup');
+        if (!gid) return;
+        // switch to groups tab
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelector('.tab-btn[data-tab="leagues"]')?.classList.add('active');
+        document.getElementById('leagues')?.classList.add('active');
+        if (!auth || !auth.currentUser) {
+          leagueMsg('Sign in, then open this invite link again to join.', 'info');
+          return;
+        }
+        await loadMyLeagues();
+        if (_memberGroupIds.has(gid)) {
+          openGroup(gid);
+          return;
+        }
+        const firestore = window.db || db;
+        const ldoc = await firestore.collection('leagues').doc(gid).get();
+        if (!ldoc.exists) { leagueMsg('Invite link is invalid.', 'error'); return; }
+        const L = ldoc.data();
+        if (L.visibility === 'public') {
+          await joinPublicGroup(gid);
+          return;
+        }
+        // Private: prompt password
+        const pw = window.prompt('This group is private. Enter the password to join:');
+        if (pw == null) return;
+        if ((L.password || L.code || '') !== pw) {
+          leagueMsg('Wrong password.', 'error');
+          return;
+        }
+        const u = auth.currentUser;
+        await firestore.collection('leagueMembers').add({
+          leagueId: gid,
+          userId: String(u.uid),
+          username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
+          joinedAt: new Date().toISOString()
+        });
+        await loadMyLeagues();
+        openGroup(gid);
+        leagueMsg('Joined ' + (L.name || 'group') + '!', 'success');
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
 document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () => {
-      if (_activeGroupId) await renderGroupStandings(_activeGroupId);
-      else await loadMyLeagues();
+      if (_activeGroupId) {
+        await renderGroupStandings(_activeGroupId);
+        startGroupChat(_activeGroupId);
+      } else {
+        await loadMyLeagues();
+        await loadPublicGroups();
+      }
     });
+
 
 
     // ---- Recap card (standings-style graphic) ----
@@ -6781,7 +7097,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const tab = btn.getAttribute('data-tab');
         if (tab === 'season-lb') loadSeasonLeaderboard();
         if (tab === 'archive-lb') { SixersSeason.load().then(() => loadArchiveLeaderboard()); }
-        if (tab === 'leagues') loadMyLeagues();
+        if (tab === 'leagues') { loadMyLeagues().then(() => loadPublicGroups()); handleJoinGroupQuery(); }
       });
     });
 

@@ -720,9 +720,9 @@
       white-space: nowrap;
     }
     .rank-num { font-variant-numeric: tabular-nums; font-weight: 800; }
-    .rank-badge.rank-1 { color: #ca8a04; }
-    .rank-badge.rank-2 { color: #64748b; }
-    .rank-badge.rank-3 { color: #b45309; }
+    .rank-badge.rank-1 { color: #92400e; background: #fef3c7; border-radius: 8px; padding: 0.2rem 0.55rem; }
+    .rank-badge.rank-2 { color: #334155; background: #e2e8f0; border-radius: 8px; padding: 0.2rem 0.55rem; }
+    .rank-badge.rank-3 { color: #9a3412; background: #ffedd5; border-radius: 8px; padding: 0.2rem 0.55rem; }
 
     .leaderboard-table {
       width: 100%; border-collapse: separate; border-spacing: 0;
@@ -1387,6 +1387,21 @@
   </style>
 </head>
 <body>
+
+  <!-- Private group password modal -->
+  <div id="grpPasswordModal" class="grp-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="grpPwTitle">
+    <div class="grp-modal" id="grpPasswordModalPanel">
+      <h3 id="grpPwTitle">This group is private</h3>
+      <p id="grpPwSubtitle">Enter the password to join and view standings.</p>
+      <label class="form-label" for="grpPwInput">Password</label>
+      <input type="password" id="grpPwInput" class="form-input" maxlength="40" placeholder="Group password" autocomplete="off" />
+      <div class="grp-modal-error" id="grpPwError">Incorrect password. Try again.</div>
+      <div class="grp-modal-actions">
+        <button type="button" class="btn btn-secondary" id="grpPwCancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="grpPwSubmit">Join group</button>
+      </div>
+    </div>
+  </div>
   <div class="main-container">
     <!-- Login/Register Section -->
     <div id="authContainer" class="auth-section" style="display: none;">
@@ -1756,15 +1771,17 @@
           </div>
         </div>
 
-        <div id="grpPublicSection">
-          <h3 style="margin:0 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">Browse groups</h3>
-          <p style="font-size:0.82rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.4;">Public groups can be joined anytime. Private groups show name and member count only — join with a password or invite link to see more.</p>
-          <div id="grpPublicList" class="grp-public-grid"></div>
+        <div id="grpListSection">
+          <h3 style="margin:0 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">My Groups</h3>
+          <div id="myLeaguesList"></div>
         </div>
 
-        <div id="grpListSection">
-          <h3 style="margin:1rem 0 0.65rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">My Groups</h3>
-          <div id="myLeaguesList"></div>
+        <div id="grpPublicSection">
+          <h3 style="margin:1.25rem 0 0.5rem;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);font-weight:700;">Browse groups</h3>
+          <p style="font-size:0.82rem;color:var(--mid);margin:0 0 0.65rem;line-height:1.4;">Public groups: join anytime. Private groups: name and member count only. Use a password or invite link to join.</p>
+          <input type="search" id="grpSearchInput" class="form-input" placeholder="Search groups…" style="margin-bottom:0.65rem;" />
+          <div id="grpPublicList" class="grp-public-grid"></div>
+          <div id="grpBrowsePager" style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.75rem;"></div>
         </div>
 
         <div id="grpDetailSection" style="display:none;margin-top:1.25rem;">
@@ -2050,6 +2067,26 @@
                 <pre id="autoPreview" style="margin:0;padding:0.85rem;background:var(--chip,#f1f5f9);border-radius:8px;font-size:0.78rem;max-height:280px;overflow:auto;white-space:pre-wrap;"></pre>
               </div>
             </div>
+
+            <div class="admin-form" style="margin-top:1.5rem;border:1px solid var(--border-light);border-radius:12px;padding:1rem;">
+              <h3 style="margin:0 0 0.5rem;">Archive season results</h3>
+              <p style="font-size:0.82rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.45;">
+                Tag picks before a date as a past season so they appear under the Archive tab (not the current Season board).
+              </p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.65rem;margin-bottom:0.75rem;">
+                <div>
+                  <label class="form-label">Archive season id</label>
+                  <input type="text" id="archiveSeasonIdInput" class="form-input" placeholder="e.g. 2025-26" value="2025-26" />
+                </div>
+                <div>
+                  <label class="form-label">Picks on or before</label>
+                  <input type="date" id="archiveBeforeDate" class="form-input" />
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary" id="archiveSeasonBtn">Tag picks as archived season</button>
+              <div id="archiveAdminMsg" class="message" style="margin-top:0.5rem;"></div>
+            </div>
+
 <div id="editLeaderboardTab" style="display: none;">
               <div class="admin-form">
                 <h3 style="margin-top: 0;">Direct Leaderboard Editor</h3>
@@ -2272,49 +2309,7 @@
           </div>
 
 
-          <h3 style="margin-top: 2rem;">Manage Weekly Winners</h3>
-          <p style="color: #64748b; margin-bottom: 1.5rem;">Add and manage weekly winners for the competition.</p>
-
-          <div class="admin-form">
-            <div class="form-group">
-              <label class="form-label">Week Number</label>
-              <input type="text" id="adminWinnersWeek" class="form-input" placeholder="e.g., 1 or Week 1" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Winner Username</label>
-              <input type="text" id="adminWinnersUsername" class="form-input" placeholder="Enter the winning player's username" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Score</label>
-              <input type="number" id="adminWinnersScore" class="form-input" placeholder="Enter the winning score" min="0" />
-            </div>
-
-            <button class="btn btn-primary" id="adminAddWinnerBtn" style="width: 100%;">Add Winner</button>
-          </div>
-
-          <div class="admin-questions-list">
-            <h3 style="margin-top: 0;">Weekly Winners</h3>
-            <div id="adminWinnersMessage" class="message"></div>
-            <div style="overflow-x: auto;">
-              <table id="adminWinnersTable" style="width: 100%; border-collapse: collapse; display: none;">
-                <thead>
-                  <tr style="background: #f8fafc; border-bottom: 2px solid var(--border);">
-                    <th style="padding: 14px; text-align: left; font-weight: 900; color: var(--brand);">Week</th>
-                    <th style="padding: 14px; text-align: left; font-weight: 900; color: var(--brand);">Winner</th>
-                    <th style="padding: 14px; text-align: center; font-weight: 900; color: var(--brand);">Score</th>
-                    <th style="padding: 14px; text-align: center; font-weight: 900; color: var(--brand);">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="adminWinnersTableBody">
-                </tbody>
-              </table>
-              <div id="noWinnersMessage" style="text-align: center; padding: 60px 20px; color: var(--muted); background: rgba(0,0,0,0.02); border-radius: 12px; border: 1px solid var(--border);">
-                <p style="font-size: 36px; margin-bottom: 10px;"></p>
-                <p style="font-weight: 600; font-size: 1rem;">No winners added yet</p>
-              </div>
-            </div>
+          
           </div>
 
           <!-- Info Cards Editor -->
@@ -5892,12 +5887,11 @@ renderQuestions();
 
       console.log(` Rendering ${period} leaderboard with ${entries.length} entries`);
       
-      const medals = ['🥇', '🥈', '🥉'];
       const bodyHtml = entries.map((entry, idx) => {
         const rankNum = idx + 1;
         let rankDisplay = String(rankNum);
         if (idx < 3) {
-          rankDisplay = `<span class="rank-badge rank-${rankNum}" title="Rank ${rankNum}">${medals[idx]} <span class="rank-num">${rankNum}</span></span>`;
+          rankDisplay = `<span class="rank-badge rank-${rankNum}" title="Rank ${rankNum}"><span class="rank-num">${rankNum}</span></span>`;
         } else {
           rankDisplay = `<span class="rank-num">${rankNum}</span>`;
         }
@@ -6312,6 +6306,45 @@ renderQuestions();
 
     // Info cards: collapse on mobile by default; toggle open/close
 
+
+    document.getElementById('archiveSeasonBtn')?.addEventListener('click', async () => {
+      if (!checkAdminPermission()) return;
+      const seasonId = (document.getElementById('archiveSeasonIdInput')?.value || '').trim();
+      const before = document.getElementById('archiveBeforeDate')?.value;
+      const msgId = 'archiveAdminMsg';
+      if (!seasonId || !before) {
+        showMessage('Enter a season id and a cutoff date.', 'error', msgId);
+        return;
+      }
+      if (!confirm('Tag all picks on or before ' + before + ' as season "' + seasonId + '"?')) return;
+      try {
+        const snap = await db.collection('picks').get();
+        let n = 0;
+        const batchSize = 400;
+        let batch = db.batch();
+        let ops = 0;
+        for (const doc of snap.docs) {
+          const d = doc.data();
+          const date = d.date || '';
+          if (date && date <= before) {
+            batch.update(doc.ref, { seasonId: seasonId });
+            n++;
+            ops++;
+            if (ops >= batchSize) {
+              await batch.commit();
+              batch = db.batch();
+              ops = 0;
+            }
+          }
+        }
+        if (ops) await batch.commit();
+        showMessage('Tagged ' + n + ' pick(s) as ' + seasonId + '.', 'success', msgId);
+      } catch (e) {
+        console.error(e);
+        showMessage('Archive failed: ' + (e.message || e), 'error', msgId);
+      }
+    });
+
     (function setupInfoAccordions() {
       const section = document.getElementById('infoSection');
       if (!section) return;
@@ -6558,6 +6591,9 @@ renderQuestions();
 
 
     let _myGroupsCache = [];
+    let _grpBrowseAll = [];
+    let _grpBrowsePage = 0;
+    const GRP_PAGE_SIZE = 10;
     let _activeGroupId = null;
     let _grpChatUnsub = null;
     let _memberGroupIds = new Set();
@@ -6597,25 +6633,24 @@ renderQuestions();
     }
 
     function bindPasswordModalOnce() {
+      const modal = document.getElementById('grpPasswordModal');
+      const cancel = document.getElementById('grpPwCancel');
+      if (!modal || !cancel) return; // modal is after this script — wait until DOM has it
       if (window.__grpPwBound) return;
       window.__grpPwBound = true;
-      const modal = document.getElementById('grpPasswordModal');
       const panel = document.getElementById('grpPasswordModalPanel');
-      const cancel = document.getElementById('grpPwCancel');
       const submit = document.getElementById('grpPwSubmit');
       const input = document.getElementById('grpPwInput');
-      if (cancel) {
-        cancel.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          closePrivatePasswordModal(null);
-        });
-      }
+      cancel.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closePrivatePasswordModal(null);
+      });
       if (submit) {
         submit.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          const pw = (input?.value || '').trim();
+          const pw = (input && input.value || '').trim();
           if (!pw) {
             const err = document.getElementById('grpPwError');
             if (err) { err.textContent = 'Enter a password.'; err.classList.add('show'); }
@@ -6624,19 +6659,15 @@ renderQuestions();
           closePrivatePasswordModal(pw);
         });
       }
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) closePrivatePasswordModal(null);
-        });
-      }
-      if (panel) {
-        panel.addEventListener('click', (e) => e.stopPropagation());
-      }
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closePrivatePasswordModal(null);
+      });
+      if (panel) panel.addEventListener('click', (e) => e.stopPropagation());
       if (input) {
         input.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
-            submit?.click();
+            if (submit) submit.click();
           } else if (e.key === 'Escape') {
             e.preventDefault();
             closePrivatePasswordModal(null);
@@ -6644,13 +6675,17 @@ renderQuestions();
         });
       }
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          const m = document.getElementById('grpPasswordModal');
-          if (m && m.style.display !== 'none') closePrivatePasswordModal(null);
-        }
+        if (e.key !== 'Escape') return;
+        const m = document.getElementById('grpPasswordModal');
+        if (m && m.style.display !== 'none' && m.style.display !== '') closePrivatePasswordModal(null);
       });
     }
-    bindPasswordModalOnce();
+    // Bind after full DOM ready (modal HTML is below this script)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindPasswordModalOnce);
+    } else {
+      setTimeout(bindPasswordModalOnce, 0);
+    }
 
 
 
@@ -6739,72 +6774,103 @@ renderQuestions();
             password: L.password || L.code || ''
           });
         }
+
         // Sort: public first, then by name
         rows.sort((a, b) => {
           if (a.visibility === 'public' && b.visibility !== 'public') return -1;
           if (b.visibility === 'public' && a.visibility !== 'public') return 1;
           return a.name.localeCompare(b.name);
         });
-        list.innerHTML = rows.map(L => {
-          const inIt = _memberGroupIds.has(L.id);
-          const isPublic = L.visibility === 'public';
-          const badge = isPublic
-            ? '<span class="grp-badge public">Public</span>'
-            : '<span class="grp-badge private">Private</span>';
-          let action = 'View';
-          if (inIt) action = 'Open';
-          else if (isPublic) action = 'Join';
-          else action = 'Lock';
-          const actionIcon = inIt ? '→' : (isPublic ? '+' : '•');
-          return '<div class="grp-card" data-browse-id="' + L.id + '" data-vis="' + L.visibility + '">' +
-            '<div><div class="grp-card-name">' + L.name + ' ' + badge + '</div>' +
-            '<div class="grp-card-meta">' + L.memberCount + ' member' + (L.memberCount === 1 ? '' : 's') +
-            (inIt ? ' · Joined' : '') + '</div></div>' +
-            '<div class="grp-card-rank"><b>' + actionIcon + '</b><span>' + action + '</span></div></div>';
-        }).join('');
-        list.querySelectorAll('.grp-card').forEach(card => {
-          card.addEventListener('click', async () => {
-            const id = card.getAttribute('data-browse-id');
-            const vis = card.getAttribute('data-vis');
-            if (_memberGroupIds.has(id)) {
-              openGroup(id);
-              return;
-            }
-            if (vis === 'public') {
-              await joinPublicGroup(id);
-              return;
-            }
-            // Private, not a member — password modal only (no standings peek)
-            const nameEl = card.querySelector('.grp-card-name');
-            const gname = (nameEl ? nameEl.textContent : 'this group').replace(/Public|Private/gi, '').trim();
-            const row = rows.find(r => r.id === id);
-            const pw = await openPrivatePasswordModal(row ? row.name : gname);
-            if (pw == null) return;
-            if (!row || (row.password || '') !== pw) {
-              leagueMsg('Wrong password.', 'error');
-              return;
-            }
-            const u = auth && auth.currentUser;
-            if (!u) { leagueMsg('Sign in to join.', 'error'); return; }
-            try {
-              await firestore.collection('leagueMembers').add({
-                leagueId: id,
-                userId: String(u.uid),
-                username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
-                joinedAt: new Date().toISOString()
-              });
-              leagueMsg('Joined ' + (row.name || 'group') + '.', 'success');
-              await loadMyLeagues();
-              await loadPublicGroups();
-              openGroup(id);
-            } catch (err) {
-              leagueMsg('Join failed: ' + (err.message || err), 'error');
-            }
-          });
-        });
+        _grpBrowseAll = rows;
+        _grpBrowsePage = 0;
+        renderBrowsePage();
       } catch (e) {
         console.error(e);
         list.innerHTML = '<div class="grp-empty"><p>Could not load groups.</p></div>';
+      }
+    }
+
+    document.getElementById('grpSearchInput')?.addEventListener('input', () => {
+      _grpBrowsePage = 0;
+      renderBrowsePage();
+    });
+
+    function renderBrowsePage() {
+      const list = document.getElementById('grpPublicList');
+      const pager = document.getElementById('grpBrowsePager');
+      if (!list) return;
+      const q = ((document.getElementById('grpSearchInput') || {}).value || '').trim().toLowerCase();
+      let rows = _grpBrowseAll || [];
+      if (q) rows = rows.filter(L => (L.name || '').toLowerCase().includes(q));
+      const totalPages = Math.max(1, Math.ceil(rows.length / GRP_PAGE_SIZE));
+      if (_grpBrowsePage >= totalPages) _grpBrowsePage = totalPages - 1;
+      if (_grpBrowsePage < 0) _grpBrowsePage = 0;
+      const slice = rows.slice(_grpBrowsePage * GRP_PAGE_SIZE, (_grpBrowsePage + 1) * GRP_PAGE_SIZE);
+      if (!slice.length) {
+        list.innerHTML = '<div class="grp-empty"><p style="margin:0;">No groups match your search.</p></div>';
+        if (pager) pager.innerHTML = '';
+        return;
+      }
+      list.innerHTML = slice.map(L => {
+        const inIt = _memberGroupIds.has(L.id);
+        const isPublic = L.visibility === 'public';
+        const badge = isPublic
+          ? '<span class="grp-badge public">Public</span>'
+          : '<span class="grp-badge private">Private</span>';
+        let action = 'View';
+        if (inIt) action = 'Open';
+        else if (isPublic) action = 'Join';
+        else action = 'Lock';
+        const actionIcon = inIt ? '→' : (isPublic ? '+' : '•');
+        return '<div class="grp-card" data-browse-id="' + L.id + '" data-vis="' + L.visibility + '">' +
+          '<div><div class="grp-card-name">' + L.name + ' ' + badge + '</div>' +
+          '<div class="grp-card-meta">' + L.memberCount + ' member' + (L.memberCount === 1 ? '' : 's') +
+          (inIt ? ' · Joined' : '') + '</div></div>' +
+          '<div class="grp-card-rank"><b>' + actionIcon + '</b><span>' + action + '</span></div></div>';
+      }).join('');
+      list.querySelectorAll('.grp-card').forEach(card => {
+        card.addEventListener('click', async () => {
+          const id = card.getAttribute('data-browse-id');
+          const vis = card.getAttribute('data-vis');
+          if (_memberGroupIds.has(id)) { openGroup(id); return; }
+          if (vis === 'public') { await joinPublicGroup(id); return; }
+          const row = (_grpBrowseAll || []).find(r => r.id === id);
+          const pw = await openPrivatePasswordModal(row ? row.name : 'this group');
+          if (pw == null) return;
+          if (!row || (row.password || '') !== pw) {
+            leagueMsg('Wrong password.', 'error');
+            return;
+          }
+          const u = auth && auth.currentUser;
+          if (!u) { leagueMsg('Sign in to join.', 'error'); return; }
+          try {
+            const firestore = window.db || db;
+            await firestore.collection('leagueMembers').add({
+              leagueId: id,
+              userId: String(u.uid),
+              username: u.displayName || (u.email ? u.email.split('@')[0] : 'Player'),
+              joinedAt: new Date().toISOString()
+            });
+            leagueMsg('Joined ' + (row.name || 'group') + '.', 'success');
+            await loadMyLeagues();
+            await loadPublicGroups();
+            openGroup(id);
+          } catch (err) {
+            leagueMsg('Join failed: ' + (err.message || err), 'error');
+          }
+        });
+      });
+      if (pager) {
+        if (totalPages <= 1) {
+          pager.innerHTML = rows.length ? ('<span style="font-size:0.8rem;color:var(--mid);">' + rows.length + ' group' + (rows.length === 1 ? '' : 's') + '</span>') : '';
+        } else {
+          pager.innerHTML =
+            '<button type="button" class="btn btn-secondary" id="grpPagePrev" ' + (_grpBrowsePage <= 0 ? 'disabled' : '') + ' style="padding:0.35rem 0.75rem;">Prev</button>' +
+            '<span style="font-size:0.82rem;color:var(--mid);">Page ' + (_grpBrowsePage + 1) + ' of ' + totalPages + '</span>' +
+            '<button type="button" class="btn btn-secondary" id="grpPageNext" ' + (_grpBrowsePage >= totalPages - 1 ? 'disabled' : '') + ' style="padding:0.35rem 0.75rem;">Next</button>';
+          document.getElementById('grpPagePrev')?.addEventListener('click', () => { _grpBrowsePage--; renderBrowsePage(); });
+          document.getElementById('grpPageNext')?.addEventListener('click', () => { _grpBrowsePage++; renderBrowsePage(); });
+        }
       }
     }
 
@@ -7947,20 +8013,6 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
   </script>
 
-  <!-- Private group password modal -->
-  <div id="grpPasswordModal" class="grp-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="grpPwTitle">
-    <div class="grp-modal" id="grpPasswordModalPanel">
-      <h3 id="grpPwTitle">This group is private</h3>
-      <p id="grpPwSubtitle">Enter the password to join and view standings.</p>
-      <label class="form-label" for="grpPwInput">Password</label>
-      <input type="password" id="grpPwInput" class="form-input" maxlength="40" placeholder="Group password" autocomplete="off" />
-      <div class="grp-modal-error" id="grpPwError">Incorrect password. Try again.</div>
-      <div class="grp-modal-actions">
-        <button type="button" class="btn btn-secondary" id="grpPwCancel">Cancel</button>
-        <button type="button" class="btn btn-primary" id="grpPwSubmit">Join group</button>
-      </div>
-    </div>
-  </div>
 
 </body>
 </html>

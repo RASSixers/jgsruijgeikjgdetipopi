@@ -2003,6 +2003,15 @@
                   No AI key. Builds questions from the NBA schedule (ESPN feed when available), your local schedule file, and the Sixers roster JSON.
                   Review the preview, then save.
                 </p>
+                <div style="margin:0.75rem 0 1rem;padding:0.85rem;border:1px solid var(--border-light);border-radius:10px;background:rgba(0,107,182,0.04);">
+                  <div style="font-weight:700;margin-bottom:0.35rem;font-size:0.9rem;">Auto-grade from final scores</div>
+                  <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.65rem;line-height:1.4;">
+                    Pulls finished NBA games for the selected date (ESPN) and fills correct answers for winner-style questions (Team A vs Team B). Over/unders and prop-style questions still need manual marking for accuracy.
+                  </p>
+                  <button type="button" class="btn btn-primary" id="autoGradeFromEspnBtn">Auto-grade winners for this date</button>
+                  <div id="autoGradeMsg" class="message" style="margin-top:0.5rem;"></div>
+                </div>
+
 
                 <div id="autoSlateMsg" class="message"></div>
 
@@ -2072,19 +2081,7 @@
                 </p>
 
                 
-                <div class="admin-form" style="margin:1rem 0;border:1px dashed rgba(0,107,182,0.35);padding:1rem;border-radius:12px;">
-                  <h3 style="margin:0 0 0.5rem;">Season &amp; week map</h3>
-                  <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.75rem;">
-                    Current season is stamped on new questions/picks. Generate weeks from <code>/data/schedule.json</code> game dates (7-day buckets from season start).
-                  </p>
-                  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
-                    <span id="adminSeasonBadge" style="font-weight:700;color:var(--sixers-blue);"></span>
-                    <button type="button" class="btn btn-secondary" id="genWeekMapBtn">Generate week map from schedule</button>
-                    <button type="button" class="btn btn-secondary" id="applyWeekToDateBtn">Fill week # for date above</button>
-                  </div>
-                  <pre id="weekMapPreview" style="margin:0;max-height:160px;overflow:auto;font-size:0.72rem;background:var(--chip,#f1f5f9);padding:0.65rem;border-radius:8px;white-space:pre-wrap;"></pre>
-                  <div id="weekMapMsg" class="message" style="margin-top:0.5rem;"></div>
-                </div>
+                
 
                 <pre id="autoPreview" style="margin:0;padding:0.85rem;background:var(--chip,#f1f5f9);border-radius:8px;font-size:0.78rem;max-height:280px;overflow:auto;white-space:pre-wrap;"></pre>
               </div>
@@ -6161,11 +6158,36 @@ renderQuestions();
           _cardOriginals[key] = html;
         });
 
-        if (isCurrentUserAdmin) enableCardEditing();
+        if (isCurrentUserAdmin) {
+          ensureInfoCardToolbars();
+          enableCardEditing();
+        }
       } catch (err) { console.error('Error loading info cards:', err); }
     }
 
+
+    function ensureInfoCardToolbars() {
+      const specs = [
+        { contentId: 'keyInfoContent', key: 'keyInfo', msgId: 'keyInfoSaveMsg', cardId: 'keyInfoCard' },
+        { contentId: 'whatsNewContent', key: 'whatsNew', msgId: 'whatsNewSaveMsg', cardId: 'whatsNewCard' },
+        { contentId: 'scheduleContent', key: 'schedule', msgId: 'scheduleSaveMsg', cardId: 'scheduleCard' },
+      ];
+      specs.forEach(({ contentId, key, msgId, cardId }) => {
+        const el = document.getElementById(contentId);
+        if (!el) return;
+        if (el.querySelector('.card-edit-toolbar')) return;
+        const bar = document.createElement('div');
+        bar.className = 'card-edit-toolbar';
+        bar.innerHTML =
+          '<button type="button" class="btn btn-primary" style="padding:8px 20px;font-size:12px;" onclick="saveCardInline(\'' + key + '\')">Save</button>' +
+          '<button type="button" class="btn btn-secondary" style="padding:8px 20px;font-size:12px;" onclick="cancelCardEdit(\'' + cardId + '\',\'' + contentId + '\')">Cancel</button>' +
+          '<span id="' + msgId + '" style="font-size:12px;font-weight:700;color:var(--success);margin-left:8px;"></span>';
+        el.appendChild(bar);
+      });
+    }
+
     function enableCardEditing() {
+
       // Avoid adding duplicate edit buttons on re-calls
       if (document.querySelector('.card-edit-btn')) return;
       [
@@ -6200,41 +6222,67 @@ renderQuestions();
       if (!card || !content) return;
       card.classList.remove('editing-active');
       content.contentEditable = 'false';
-      const key = contentId.replace('Content', '');
-      if (_cardOriginals[key] !== undefined) content.innerHTML = _cardOriginals[key];
+      const key = contentId === 'keyInfoContent' ? 'keyInfo'
+        : contentId === 'whatsNewContent' ? 'whatsNew'
+        : contentId === 'scheduleContent' ? 'schedule'
+        : contentId.replace('Content', '');
+      if (_cardOriginals[key] !== undefined) {
+        const toolbar = content.querySelector('.card-edit-toolbar');
+        const tb = toolbar ? toolbar.outerHTML : '';
+        content.innerHTML = _cardOriginals[key] + tb;
+      }
+      ensureInfoCardToolbars();
     };
 
     window.saveCardInline = async function(key) {
-      if (!checkAdminPermission()) return;
+      if (!checkAdminPermission()) {
+        alert('Sign in as admin to save.');
+        return;
+      }
       const contentId = key === 'keyInfo' ? 'keyInfoContent' : key === 'whatsNew' ? 'whatsNewContent' : 'scheduleContent';
       const cardId    = key === 'keyInfo' ? 'keyInfoCard'    : key === 'whatsNew' ? 'whatsNewCard'    : 'scheduleCard';
       const msgId     = key === 'keyInfo' ? 'keyInfoSaveMsg' : key === 'whatsNew' ? 'whatsNewSaveMsg' : 'scheduleSaveMsg';
       const content   = document.getElementById(contentId);
       const cardEl    = document.getElementById(cardId);
-      const msgEl     = document.getElementById(msgId);
+      let msgEl     = document.getElementById(msgId);
       if (!content) return;
 
-      const html = content.innerHTML;
+      // Ensure toolbar + message span exist
+      if (!msgEl) {
+        ensureInfoCardToolbars();
+        msgEl = document.getElementById(msgId);
+      }
+
+      const html = content.innerHTML.replace(/<div class="card-edit-toolbar"[\s\S]*?<\/div>\s*$/i, '');
+      const firestore = window.db || db;
+      if (!firestore) {
+        if (msgEl) { msgEl.style.color = 'var(--error)'; msgEl.textContent = 'Database not ready — refresh'; }
+        return;
+      }
 
       try {
-        // Save the html directly — no bullets arrays, no complex parsing
-        await db.collection('siteContent').doc('infoCards').set(
-          { [key]: { html } },
+        await firestore.collection('siteContent').doc('infoCards').set(
+          { [key]: { html: html, updatedAt: new Date().toISOString() } },
           { merge: true }
         );
         _cardOriginals[key] = html;
-        cardEl.classList.remove('editing-active');
+        if (cardEl) cardEl.classList.remove('editing-active');
         content.contentEditable = 'false';
+        // re-attach toolbar without wiping saved content
+        ensureInfoCardToolbars();
+        msgEl = document.getElementById(msgId);
         if (msgEl) {
-          msgEl.textContent = '✓ Saved!';
-          setTimeout(() => { msgEl.textContent = ''; }, 2500);
+          msgEl.style.color = 'var(--success)';
+          msgEl.textContent = 'Saved';
+          setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 3000);
         }
       } catch (err) {
         console.error('Error saving card:', err);
         if (msgEl) {
           msgEl.style.color = 'var(--error)';
-          msgEl.textContent = 'Error — try again';
-          setTimeout(() => { msgEl.textContent = ''; msgEl.style.color = 'var(--success)'; }, 3000);
+          msgEl.textContent = (err && err.code === 'permission-denied')
+            ? 'Permission denied — admin + siteContent rules'
+            : ('Save failed: ' + (err.message || err));
         }
       }
     };
@@ -6680,6 +6728,113 @@ renderQuestions();
       } catch (e) {
         console.error(e);
         showMessage('Reset failed: ' + (e.message || e), 'error', msgId);
+      }
+    });
+
+
+
+    document.getElementById('autoGradeFromEspnBtn')?.addEventListener('click', async () => {
+      if (!checkAdminPermission()) return;
+      const dateEl = document.getElementById('markAnswersDate') || document.getElementById('correctAnswersDate') || document.getElementById('pickDate');
+      const date = (dateEl && dateEl.value) || '';
+      const msgId = 'autoGradeMsg';
+      if (!date) {
+        showMessage('Select a date first.', 'error', msgId);
+        return;
+      }
+      try {
+        showMessage('Loading final scores…', 'info', msgId);
+        const url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' + date.replace(/-/g, '');
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('ESPN HTTP ' + res.status);
+        const data = await res.json();
+        const winners = {}; // name lower -> winner display name
+        const finals = [];
+        (data.events || []).forEach(ev => {
+          const comp = (ev.competitions && ev.competitions[0]) || {};
+          const status = (comp.status && comp.status.type && comp.status.type.name) || '';
+          const completed = status === 'STATUS_FINAL' || (comp.status && comp.status.type && comp.status.type.completed);
+          if (!completed) return;
+          const competitors = comp.competitors || [];
+          const home = competitors.find(c => c.homeAway === 'home') || competitors[0];
+          const away = competitors.find(c => c.homeAway === 'away') || competitors[1];
+          if (!home || !away) return;
+          const homeName = (home.team && (home.team.displayName || home.team.name)) || '';
+          const awayName = (away.team && (away.team.displayName || away.team.name)) || '';
+          const homeScore = parseInt(home.score, 10);
+          const awayScore = parseInt(away.score, 10);
+          if (isNaN(homeScore) || isNaN(awayScore)) return;
+          const winner = homeScore > awayScore ? homeName : awayName;
+          const loser = homeScore > awayScore ? awayName : homeName;
+          finals.push({ homeName, awayName, homeScore, awayScore, winner, loser });
+          [homeName, awayName, home.team && home.team.abbreviation, away.team && away.team.abbreviation].forEach(n => {
+            if (n) winners[String(n).toLowerCase()] = winner;
+          });
+        });
+        if (!finals.length) {
+          showMessage('No final games found for ' + date + ' yet. Try again after games finish.', 'error', msgId);
+          return;
+        }
+
+        // Load questions for date
+        const qSnap = await db.collection('questions').where('date', '==', date).get();
+        if (qSnap.empty) {
+          showMessage('No questions for ' + date, 'error', msgId);
+          return;
+        }
+        const items = qSnap.docs[0].data().items || [];
+        const answers = [];
+        let graded = 0;
+        items.forEach((q, idx) => {
+          const textQ = (q.question || q.text || '').toLowerCase();
+          const opts = (q.options || []).map(o => typeof o === 'string' ? o : (o.label || o.text || ''));
+          let correct = null;
+          // Winner questions: match if two team names appear in question or options
+          for (const f of finals) {
+            const hn = f.homeName.toLowerCase();
+            const an = f.awayName.toLowerCase();
+            const mentionsBoth = (textQ.includes(hn.split(' ').pop()) || textQ.includes(hn)) && (textQ.includes(an.split(' ').pop()) || textQ.includes(an));
+            const optsHaveTeams = opts.some(o => o.toLowerCase().includes(f.homeName.split(' ').pop().toLowerCase()) || o.toLowerCase() === hn)
+              && opts.some(o => o.toLowerCase().includes(f.awayName.split(' ').pop().toLowerCase()) || o.toLowerCase() === an);
+            if (mentionsBoth || optsHaveTeams || textQ.includes('win') && (textQ.includes(hn) || textQ.includes(an))) {
+              // pick option closest to winner
+              const winLow = f.winner.toLowerCase();
+              const match = opts.find(o => o.toLowerCase() === winLow || winLow.includes(o.toLowerCase()) || o.toLowerCase().includes(f.winner.split(' ').pop().toLowerCase()));
+              if (match) {
+                correct = match;
+                break;
+              }
+            }
+          }
+          if (correct != null) {
+            answers.push({ questionId: idx, correctAnswer: correct });
+            graded++;
+          }
+        });
+        if (!graded) {
+          showMessage('Found ' + finals.length + ' final(s) but could not match winner questions. Mark remaining manually.', 'error', msgId);
+          return;
+        }
+        // Merge with existing correctAnswers
+        const aSnap = await db.collection('correctAnswers').where('date', '==', date).get();
+        let existing = [];
+        if (!aSnap.empty) existing = aSnap.docs[0].data().answers || [];
+        const byId = {};
+        existing.forEach(a => { byId[a.questionId] = a; });
+        answers.forEach(a => { byId[a.questionId] = a; });
+        const merged = Object.keys(byId).map(k => byId[k]);
+        if (!aSnap.empty) {
+          await aSnap.docs[0].ref.set({ date, answers: merged, updatedAt: new Date().toISOString(), source: 'auto-espn' }, { merge: true });
+        } else {
+          await db.collection('correctAnswers').add({ date, answers: merged, updatedAt: new Date().toISOString(), source: 'auto-espn' });
+        }
+        showMessage('Auto-graded ' + graded + ' of ' + items.length + ' questions from ' + finals.length + ' final game(s). Review Mark Correct Answers for the rest.', 'success', msgId);
+        // Refresh mark UI if present
+        const loadBtn = document.getElementById('loadAnswersBtn') || document.getElementById('loadMarkAnswersBtn');
+        if (loadBtn) loadBtn.click();
+      } catch (e) {
+        console.error(e);
+        showMessage('Auto-grade failed: ' + (e.message || e), 'error', msgId);
       }
     });
 

@@ -2004,11 +2004,11 @@
                   Review the preview, then save.
                 </p>
                 <div style="margin:0.75rem 0 1rem;padding:0.85rem;border:1px solid var(--border-light);border-radius:10px;background:rgba(0,107,182,0.04);">
-                  <div style="font-weight:700;margin-bottom:0.35rem;font-size:0.9rem;">Auto-grade from final scores</div>
+                  <div style="font-weight:700;margin-bottom:0.35rem;font-size:0.9rem;">Auto-grade (full slate)</div>
                   <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.65rem;line-height:1.4;">
-                    Pulls finished NBA games for the selected date (ESPN) and fills correct answers for winner-style questions (Team A vs Team B). Over/unders and prop-style questions still need manual marking for accuracy.
+                    After games are final, grades all Auto-Slate questions from ESPN scores and box scores (winners, totals, margins, doubles, team stats). Questions need the grade metadata from Auto-Slate.
                   </p>
-                  <button type="button" class="btn btn-primary" id="autoGradeFromEspnBtn">Auto-grade winners for this date</button>
+                  <button type="button" class="btn btn-primary" id="autoGradeFromEspnBtn">Auto-grade all for this date</button>
                   <div id="autoGradeMsg" class="message" style="margin-top:0.5rem;"></div>
                 </div>
 
@@ -6733,103 +6733,304 @@ renderQuestions();
 
 
 
+    
     document.getElementById('autoGradeFromEspnBtn')?.addEventListener('click', async () => {
       if (!checkAdminPermission()) return;
-      const dateEl = document.getElementById('markAnswersDate') || document.getElementById('correctAnswersDate') || document.getElementById('pickDate');
+      const dateEl = document.getElementById('markAnswersDate')
+        || document.getElementById('correctAnswersDate')
+        || document.getElementById('autoSlateDate')
+        || document.getElementById('pickDate');
       const date = (dateEl && dateEl.value) || '';
       const msgId = 'autoGradeMsg';
       if (!date) {
         showMessage('Select a date first.', 'error', msgId);
         return;
       }
+
+      function norm(s) {
+        return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      }
+      function teamMatch(a, b) {
+        const na = norm(a), nb = norm(b);
+        if (!na || !nb) return false;
+        return na === nb || na.includes(nb) || nb.includes(na);
+      }
+      function findFinal(finals, meta) {
+        if (!meta) return null;
+        if (meta.eventId) {
+          const byId = finals.find(f => String(f.eventId) === String(meta.eventId));
+          if (byId) return byId;
+        }
+        return finals.find(f =>
+          (teamMatch(f.homeName, meta.home) && teamMatch(f.awayName, meta.away))
+          || (teamMatch(f.homeName, meta.away) && teamMatch(f.awayName, meta.home))
+          || (teamMatch(f.homeAbbr, meta.homeAbbr) && teamMatch(f.awayAbbr, meta.awayAbbr))
+        ) || null;
+      }
+
+      async function fetchBox(eventId) {
+        if (!eventId) return null;
+        try {
+          const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=' + eventId);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch (_) { return null; }
+      }
+
+      function boxTeamStats(summary) {
+        // returns { home: {reb,ast,to,fgPct,fouls,pts}, away: {...}, players: [], periods }
+        const out = { home: {}, away: {}, players: [], halfHome: 0, halfAway: 0 };
+        try {
+          const box = summary.boxscore || {};
+          const teams = box.teams || [];
+          teams.forEach(t => {
+            const side = (t.homeAway === 'home') ? 'home' : 'away';
+            const stats = {};
+            (t.statistics || []).forEach(s => {
+              const name = (s.name || s.displayValue || '').toLowerCase();
+              const val = parseFloat(s.displayValue != null ? s.displayValue : s.value);
+              if (name.includes('rebound')) stats.reb = val;
+              if (name.includes('assist')) stats.ast = val;
+              if (name.includes('turnover')) stats.to = val;
+              if (name.includes('fieldgoalpct') || name === 'field goal pct' || (s.abbreviation || '').toLowerCase() === 'fg%') stats.fgPct = val;
+              if (name.includes('foul')) stats.fouls = val;
+              if (name.includes('point') && !name.includes('paint')) stats.pts = val;
+            });
+            out[side] = stats;
+          });
+          const players = box.players || [];
+          players.forEach(teamBlock => {
+            (teamBlock.statistics || []).forEach(statGroup => {
+              (statGroup.athletes || []).forEach(ath => {
+                const statsArr = ath.stats || [];
+                // ESPN often uses ordered stats; also try statistics object
+                let pts = 0, reb = 0, ast = 0, stl = 0, blk = 0;
+                if (ath.stats && Array.isArray(ath.stats)) {
+                  // common order varies; use labels if present
+                }
+                const s = ath.athlete || ath;
+                const name = (s.displayName || s.shortName || '');
+                // parse from statistics array on athlete
+                const statMap = {};
+                (ath.stats || []).forEach((v, i) => { statMap[i] = v; });
+                // Better: ath.statistics as key values in newer API
+                if (Array.isArray(ath.stats) && ath.stats.length >= 3) {
+                  // try last numbers - unreliable; use summary leaders instead
+                }
+                out.players.push({ name: name, raw: ath });
+              });
+            });
+          });
+          // leaders for double-doubles
+          const leaders = summary.leaders || [];
+          // period scores for half
+          const plays = summary.plays; // skip
+          const header = summary.header || {};
+          const comps = (header.competitions && header.competitions[0]) || {};
+          const competitors = comps.competitors || [];
+          competitors.forEach(c => {
+            const side = c.homeAway === 'home' ? 'home' : 'away';
+            const linescores = c.linescores || [];
+            // sum first two periods for half
+            let half = 0;
+            linescores.slice(0, 2).forEach(ls => { half += parseFloat(ls.value || ls.displayValue || 0) || 0; });
+            if (side === 'home') out.halfHome = half;
+            else out.halfAway = half;
+            if (c.score != null) out[side].pts = parseFloat(c.score);
+          });
+          // player stats from boxscore players with keys
+          out.doubleDoubles = 0;
+          out.tripleDoubles = 0;
+          try {
+            (box.players || []).forEach(teamBlock => {
+              (teamBlock.statistics || []).forEach(sg => {
+                const keys = (sg.names || sg.keys || []);
+                (sg.athletes || []).forEach(ath => {
+                  if (ath.athlete && ath.athlete.displayName === undefined && ath.didNotPlay) return;
+                  const vals = ath.stats || [];
+                  const get = (label) => {
+                    const lab = label.toLowerCase();
+                    let idx = keys.findIndex(k => String(k).toLowerCase() === lab || String(k).toLowerCase().includes(lab));
+                    if (idx < 0 && typeof label === 'string') {
+                      // abbreviations
+                      const map = { pts: 'points', reb: 'rebounds', ast: 'assists', stl: 'steals', blk: 'blocks' };
+                    }
+                    const abbrMap = { PTS: 'pts', REB: 'reb', AST: 'ast', STL: 'stl', BLK: 'blk' };
+                    return null;
+                  };
+                  // ESPN keys often: MIN, PTS, REB, AST, ...
+                  const keyList = (sg.keys || sg.names || []).map(k => String(k).toUpperCase());
+                  const obj = {};
+                  keyList.forEach((k, i) => { obj[k] = parseFloat(vals[i]) || 0; });
+                  const pts = obj.PTS || 0, reb = obj.REB || 0, ast = obj.AST || 0, stl = obj.STL || 0, blk = obj.BLK || 0;
+                  const cats = [pts >= 10, reb >= 10, ast >= 10, stl >= 10, blk >= 10].filter(Boolean).length;
+                  if (cats >= 2) out.doubleDoubles++;
+                  if (cats >= 3) out.tripleDoubles++;
+                });
+              });
+            });
+          } catch (_) {}
+        } catch (_) {}
+        return out;
+      }
+
       try {
-        showMessage('Loading final scores…', 'info', msgId);
+        showMessage('Loading finals + box scores…', 'info', msgId);
         const url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' + date.replace(/-/g, '');
         const res = await fetch(url);
         if (!res.ok) throw new Error('ESPN HTTP ' + res.status);
         const data = await res.json();
-        const winners = {}; // name lower -> winner display name
         const finals = [];
-        (data.events || []).forEach(ev => {
+        for (const ev of (data.events || [])) {
           const comp = (ev.competitions && ev.competitions[0]) || {};
-          const status = (comp.status && comp.status.type && comp.status.type.name) || '';
-          const completed = status === 'STATUS_FINAL' || (comp.status && comp.status.type && comp.status.type.completed);
-          if (!completed) return;
+          const status = (comp.status && comp.status.type) || {};
+          const completed = status.completed || status.name === 'STATUS_FINAL';
+          if (!completed) continue;
           const competitors = comp.competitors || [];
           const home = competitors.find(c => c.homeAway === 'home') || competitors[0];
           const away = competitors.find(c => c.homeAway === 'away') || competitors[1];
-          if (!home || !away) return;
-          const homeName = (home.team && (home.team.displayName || home.team.name)) || '';
-          const awayName = (away.team && (away.team.displayName || away.team.name)) || '';
+          if (!home || !away) continue;
           const homeScore = parseInt(home.score, 10);
           const awayScore = parseInt(away.score, 10);
-          if (isNaN(homeScore) || isNaN(awayScore)) return;
-          const winner = homeScore > awayScore ? homeName : awayName;
-          const loser = homeScore > awayScore ? awayName : homeName;
-          finals.push({ homeName, awayName, homeScore, awayScore, winner, loser });
-          [homeName, awayName, home.team && home.team.abbreviation, away.team && away.team.abbreviation].forEach(n => {
-            if (n) winners[String(n).toLowerCase()] = winner;
+          if (isNaN(homeScore) || isNaN(awayScore)) continue;
+          finals.push({
+            eventId: ev.id,
+            homeName: (home.team && (home.team.displayName || home.team.name)) || '',
+            awayName: (away.team && (away.team.displayName || away.team.name)) || '',
+            homeAbbr: (home.team && home.team.abbreviation) || '',
+            awayAbbr: (away.team && away.team.abbreviation) || '',
+            homeScore, awayScore,
+            winner: homeScore > awayScore
+              ? ((home.team && (home.team.displayName || home.team.name)) || '')
+              : ((away.team && (away.team.displayName || away.team.name)) || ''),
+            margin: Math.abs(homeScore - awayScore),
+            total: homeScore + awayScore
           });
-        });
+        }
         if (!finals.length) {
-          showMessage('No final games found for ' + date + ' yet. Try again after games finish.', 'error', msgId);
+          showMessage('No final games yet for ' + date + '. Run again after games finish.', 'error', msgId);
           return;
         }
 
-        // Load questions for date
+        // Preload box scores
+        const boxes = {};
+        for (const f of finals) {
+          const sum = await fetchBox(f.eventId);
+          if (sum) boxes[f.eventId] = boxTeamStats(sum);
+        }
+
         const qSnap = await db.collection('questions').where('date', '==', date).get();
         if (qSnap.empty) {
           showMessage('No questions for ' + date, 'error', msgId);
           return;
         }
-        const items = qSnap.docs[0].data().items || [];
+        const qDoc = qSnap.docs[0];
+        const items = qDoc.data().items || [];
         const answers = [];
         let graded = 0;
+        let skipped = 0;
+
         items.forEach((q, idx) => {
-          const textQ = (q.question || q.text || '').toLowerCase();
+          const meta = q.meta || {};
+          const grade = meta.grade || meta.bankKey || '';
           const opts = (q.options || []).map(o => typeof o === 'string' ? o : (o.label || o.text || ''));
+          const f = findFinal(finals, meta);
           let correct = null;
-          // Winner questions: match if two team names appear in question or options
-          for (const f of finals) {
-            const hn = f.homeName.toLowerCase();
-            const an = f.awayName.toLowerCase();
-            const mentionsBoth = (textQ.includes(hn.split(' ').pop()) || textQ.includes(hn)) && (textQ.includes(an.split(' ').pop()) || textQ.includes(an));
-            const optsHaveTeams = opts.some(o => o.toLowerCase().includes(f.homeName.split(' ').pop().toLowerCase()) || o.toLowerCase() === hn)
-              && opts.some(o => o.toLowerCase().includes(f.awayName.split(' ').pop().toLowerCase()) || o.toLowerCase() === an);
-            if (mentionsBoth || optsHaveTeams || textQ.includes('win') && (textQ.includes(hn) || textQ.includes(an))) {
-              // pick option closest to winner
-              const winLow = f.winner.toLowerCase();
-              const match = opts.find(o => o.toLowerCase() === winLow || winLow.includes(o.toLowerCase()) || o.toLowerCase().includes(f.winner.split(' ').pop().toLowerCase()));
-              if (match) {
-                correct = match;
-                break;
+
+          if (!f && grade !== 'filler') {
+            // try fuzzy from question text
+            skipped++;
+            return;
+          }
+
+          if (grade === 'winner' || grade === 'win') {
+            correct = opts.find(o => teamMatch(o, f.winner)) || f.winner;
+          } else if (grade === 'total') {
+            const line = meta.line != null ? Number(meta.line) : 220.5;
+            correct = f.total > line ? 'Over' : 'Under';
+          } else if (grade === 'margin_ge') {
+            const m = meta.margin != null ? Number(meta.margin) : 10;
+            correct = f.margin >= m ? 'Yes' : 'No';
+          } else if (grade === 'home_wins') {
+            correct = f.homeScore > f.awayScore ? 'Yes' : 'No';
+          } else if (grade === 'away_wins') {
+            correct = f.awayScore > f.homeScore ? 'Yes' : 'No';
+          } else if (grade === 'both_score_ge') {
+            const p = meta.points != null ? Number(meta.points) : 110;
+            correct = (f.homeScore >= p && f.awayScore >= p) ? 'Yes' : 'No';
+          } else if (grade === 'either_score_ge') {
+            const p = meta.points != null ? Number(meta.points) : 120;
+            correct = (f.homeScore >= p || f.awayScore >= p) ? 'Yes' : 'No';
+          } else if (grade === 'halftime_leader') {
+            const box = boxes[f.eventId];
+            if (box) {
+              if (box.halfHome === box.halfAway) {
+                // pick first option or skip
+                correct = null;
+              } else {
+                const lead = box.halfHome > box.halfAway ? f.homeName : f.awayName;
+                correct = opts.find(o => teamMatch(o, lead)) || lead;
               }
             }
+          } else if (grade === 'double_double') {
+            const box = boxes[f.eventId];
+            if (box) correct = (box.doubleDoubles > 0) ? 'Yes' : 'No';
+          } else if (grade === 'triple_double') {
+            const box = boxes[f.eventId];
+            if (box) correct = (box.tripleDoubles > 0) ? 'Yes' : 'No';
+          } else if (grade === 'fg50') {
+            const box = boxes[f.eventId];
+            if (box) {
+              const h = box.home.fgPct || 0, a = box.away.fgPct || 0;
+              // ESPN may store as 45.2 or 0.452
+              const hh = h > 1 ? h : h * 100;
+              const aa = a > 1 ? a : a * 100;
+              correct = (hh >= 50 || aa >= 50) ? 'Yes' : 'No';
+            }
+          } else if (grade === 'more_rebounds' || grade === 'more_assists' || grade === 'more_turnovers') {
+            const box = boxes[f.eventId];
+            if (box) {
+              const key = grade === 'more_rebounds' ? 'reb' : grade === 'more_assists' ? 'ast' : 'to';
+              const hv = box.home[key] || 0, av = box.away[key] || 0;
+              if (hv === av) correct = null;
+              else {
+                const lead = hv > av ? f.homeName : f.awayName;
+                correct = opts.find(o => teamMatch(o, lead)) || lead;
+              }
+            }
+          } else {
+            // fallback: winner-style from options
+            if (f && opts.length === 2) {
+              const w = opts.find(o => teamMatch(o, f.winner));
+              if (w) correct = w;
+            }
           }
+
           if (correct != null) {
-            answers.push({ questionId: idx, correctAnswer: correct });
+            // Prefer exact option match
+            const exact = opts.find(o => o === correct || norm(o) === norm(correct));
+            answers.push({ questionId: idx, correctAnswer: exact || correct });
             graded++;
+          } else {
+            skipped++;
           }
         });
+
         if (!graded) {
-          showMessage('Found ' + finals.length + ' final(s) but could not match winner questions. Mark remaining manually.', 'error', msgId);
+          showMessage('Could not grade any questions. Use Auto-Slate so questions include grade metadata, and wait until games are final.', 'error', msgId);
           return;
         }
-        // Merge with existing correctAnswers
+
         const aSnap = await db.collection('correctAnswers').where('date', '==', date).get();
-        let existing = [];
-        if (!aSnap.empty) existing = aSnap.docs[0].data().answers || [];
         const byId = {};
-        existing.forEach(a => { byId[a.questionId] = a; });
+        if (!aSnap.empty) (aSnap.docs[0].data().answers || []).forEach(a => { byId[a.questionId] = a; });
         answers.forEach(a => { byId[a.questionId] = a; });
         const merged = Object.keys(byId).map(k => byId[k]);
-        if (!aSnap.empty) {
-          await aSnap.docs[0].ref.set({ date, answers: merged, updatedAt: new Date().toISOString(), source: 'auto-espn' }, { merge: true });
-        } else {
-          await db.collection('correctAnswers').add({ date, answers: merged, updatedAt: new Date().toISOString(), source: 'auto-espn' });
-        }
-        showMessage('Auto-graded ' + graded + ' of ' + items.length + ' questions from ' + finals.length + ' final game(s). Review Mark Correct Answers for the rest.', 'success', msgId);
-        // Refresh mark UI if present
+        const payload = { date, answers: merged, updatedAt: new Date().toISOString(), source: 'auto-espn-full' };
+        if (!aSnap.empty) await aSnap.docs[0].ref.set(payload, { merge: true });
+        else await db.collection('correctAnswers').add(payload);
+
+        showMessage('Auto-graded ' + graded + ' / ' + items.length + ' questions (' + finals.length + ' final games).' + (skipped ? ' ' + skipped + ' need review.' : ''), 'success', msgId);
         const loadBtn = document.getElementById('loadAnswersBtn') || document.getElementById('loadMarkAnswersBtn');
         if (loadBtn) loadBtn.click();
       } catch (e) {
@@ -8136,26 +8337,23 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
       // Question bank (from your Quick Presets) — filled with team names when applied to a game
       const QUESTION_BANK = [
-        { key: 'win', template: 'Who will win: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'ot', template: 'Will there be overtime in {away} vs {home}?', options: ['Yes', 'No'] },
-        { key: 'score_first', template: 'Who will score first: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'more_points', template: 'Who will have more points: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'more_assists', template: 'Who will have more assists: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'more_rebounds', template: 'Who will have more rebounds: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'more_steals', template: 'Who will have more steals: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'more_blocks', template: 'Who will have more blocks: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'more_to', template: 'Who will have more turnovers: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'more_threes', template: 'Who will make more 3-pointers: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'ou', template: 'Will the total score be OVER or UNDER {line} in {away} vs {home}?', options: ['Over', 'Under'], needsLine: true },
-        { key: 'halftime', template: 'Which team will lead at halftime: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'first_100', template: 'Which team will score 100 points first: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'fg50', template: 'Will either team shoot above 50% from the field in {away} vs {home}?', options: ['Yes', 'No'] },
-        { key: 'double_double', template: 'Will a player record a double-double in {away} vs {home}?', options: ['Yes', 'No'] },
-        { key: 'triple_double', template: 'Will there be a triple-double recorded in {away} vs {home}?', options: ['Yes', 'No'] },
-        { key: 'q4', template: 'Which team will win the 4th quarter: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'fast_break', template: 'Which team will have more fast break points: {away} vs {home}?', options: ['{away}', '{home}'] },
-        { key: 'fouls', template: 'Which team will commit more fouls: {away} vs {home}?', options: ['{away}', '{home}'] }
-      ];
+        // Only types we can auto-grade from ESPN finals + box score
+        { key: 'win', template: 'Who will win: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'winner' },
+        { key: 'total', template: 'Will the total points in {away} vs {home} go Over or Under {line}?', options: ['Over', 'Under'], needsLine: true, grade: 'total' },
+        { key: 'margin10', template: 'Will {away} vs {home} be decided by 10 or more points?', options: ['Yes', 'No'], grade: 'margin_ge', margin: 10 },
+        { key: 'home_win', template: 'Will the home team ({home}) beat {away}?', options: ['Yes', 'No'], grade: 'home_wins' },
+        { key: 'away_win', template: 'Will the away team ({away}) beat {home}?', options: ['Yes', 'No'], grade: 'away_wins' },
+        { key: 'both_110', template: 'Will both teams score 110+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'both_score_ge', points: 110 },
+        { key: 'either_120', template: 'Will either team score 120+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'either_score_ge', points: 120 },
+        { key: 'combined_220', template: 'Will {away} vs {home} combine for Over or Under 220.5 points?', options: ['Over', 'Under'], grade: 'total', line: 220.5 },
+        { key: 'halftime_leader', template: 'Which team will lead at half in {away} vs {home}?', options: ['{away}', '{home}'], grade: 'halftime_leader' },
+        { key: 'double_double', template: 'Will a player record a double-double in {away} vs {home}?', options: ['Yes', 'No'], grade: 'double_double' },
+        { key: 'triple_double', template: 'Will there be a triple-double in {away} vs {home}?', options: ['Yes', 'No'], grade: 'triple_double' },
+        { key: 'fg50', template: 'Will either team shoot 50%+ from the field in {away} vs {home}?', options: ['Yes', 'No'], grade: 'fg50' },
+        { key: 'more_rebounds', template: 'Which team will have more rebounds: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_rebounds' },
+        { key: 'more_assists', template: 'Which team will have more assists: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_assists' },
+        { key: 'more_turnovers', template: 'Which team will have more turnovers: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_turnovers' }
+      ]
 
       function fillTemplate(str, home, away, line) {
         return String(str || '')
@@ -8239,7 +8437,11 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           addQ(
             fillTemplate('Who will win: {away} vs {home}?', home, away),
             fillOptions(['{away}', '{home}'], home, away),
-            { gameIndex: i, bankKey: 'win' }
+            {
+              gameIndex: i, bankKey: 'win', grade: 'winner',
+              home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
+              eventId: g.eventId || null
+            }
           );
         }
 
@@ -8264,7 +8466,13 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
               const line = bi.needsLine ? suggestTotalLine(home, away) : null;
               usedKeys.add(uk);
               usedBankKeys.add(bi.key);
-              addQ(fillTemplate(bi.template, home, away, line), fillOptions(bi.options, home, away), { gameIndex: gi, bankKey: bi.key, line: line });
+              addQ(fillTemplate(bi.template, home, away, line != null ? line : bi.line), fillOptions(bi.options, home, away), {
+                gameIndex: gi, bankKey: bi.key, grade: bi.grade || bi.key,
+                line: line != null ? line : (bi.line != null ? bi.line : null),
+                margin: bi.margin, points: bi.points,
+                home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
+                eventId: g.eventId || null
+              });
               break;
             }
           }
@@ -8285,7 +8493,13 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
                   const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
                   const line = bi.needsLine ? suggestTotalLine(home, away) : null;
                   usedKeys.add(uk);
-                  addQ(fillTemplate(bi.template, home, away, line), fillOptions(bi.options, home, away), { gameIndex: gi, bankKey: bi.key, line: line });
+                  addQ(fillTemplate(bi.template, home, away, line != null ? line : bi.line), fillOptions(bi.options, home, away), {
+                gameIndex: gi, bankKey: bi.key, grade: bi.grade || bi.key,
+                line: line != null ? line : (bi.line != null ? bi.line : null),
+                margin: bi.margin, points: bi.points,
+                home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
+                eventId: g.eventId || null
+              });
                   added = true;
                   break;
                 }

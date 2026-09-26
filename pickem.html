@@ -2106,6 +2106,16 @@
                 </div>
               </div>
               <button type="button" class="btn btn-primary" id="archiveSeasonBtn">Archive all daily, weekly, monthly + season total</button>
+              <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-light);">
+                <h4 style="margin:0 0 0.4rem;font-size:0.9rem;">New season cleanup</h4>
+                <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.65rem;line-height:1.4;">
+                  Removes invalid archive weeks (e.g. 44, 46). Resets live picks/questions that are <strong>not</strong> tagged with an archived season id. Archive collection is left alone.
+                </p>
+                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                  <button type="button" class="btn btn-secondary" id="cleanupBadWeeksBtn">Remove invalid weekly archives</button>
+                  <button type="button" class="btn btn-secondary" id="resetLiveSeasonBtn" style="border-color:#b91c1c;color:#b91c1c;">Reset live (non-archived) data</button>
+                </div>
+              </div>
               <div id="archiveAdminMsg" class="message" style="margin-top:0.5rem;"></div>
             </div>
 
@@ -2524,10 +2534,10 @@
       loadPublicWinners();
       loadInfoCards();
       
-      loadWeeks().then(() => {
-        console.log(' Weeks loaded, initializing leaderboard pickers');
+      (window.SixersSeason ? SixersSeason.load() : Promise.resolve()).then(() => {
+        console.log(' Season weeks loaded, initializing leaderboard pickers');
         initializeLeaderboardPickers();
-      });
+      }).catch(() => initializeLeaderboardPickers());
       setTimeout(() => { try { handleJoinGroupQuery(); } catch(_){} }, 500);
     }
 
@@ -5413,16 +5423,33 @@ renderQuestions();
         return;
       }
       
+      // Prefer schedule from data/season-weeks.json (Week 1 = preseason start)
       const weeks = [];
-      for (let i = 1; i <= 20; i++) {
-        weeks.push({
-          value: i,
-          label: `Week ${i}`
+      const sched = (window.SixersSeason && SixersSeason.weeks) || [];
+      if (sched.length) {
+        sched.forEach(w => {
+          weeks.push({
+            value: w.week,
+            label: 'Week ' + w.week,
+            start: w.start,
+            end: w.end
+          });
         });
+      } else {
+        for (let i = 1; i <= 28; i++) {
+          weeks.push({ value: i, label: 'Week ' + i });
+        }
       }
 
       if (selectedWeek === null && weeks.length > 0) {
-        selectedWeek = weeks[6].value;
+        // Prefer current week from schedule, else Week 1
+        let cur = 1;
+        if (window.SixersSeason && typeof SixersSeason.weekForDate === 'function') {
+          const today = formatDateForComparison(new Date());
+          const w = SixersSeason.weekForDate(today);
+          if (w) cur = w;
+        }
+        selectedWeek = weeks.find(x => x.value === cur) ? cur : weeks[0].value;
       }
 
       const visibleWeeks = weeks.slice(currentWeekOffset, currentWeekOffset + WEEKS_TO_SHOW);
@@ -6422,16 +6449,13 @@ renderQuestions();
                 if (w) weekNum = w.weekNumber;
               }
             } catch (_) {}
-            if (weekNum == null) {
-              // fallback: ISO week from date
-              const dt = new Date(date + 'T12:00:00');
-              if (!isNaN(dt)) {
-                const t = new Date(dt.getTime());
-                t.setHours(0, 0, 0, 0);
-                t.setDate(t.getDate() + 3 - (t.getDay() + 6) % 7);
-                const week1 = new Date(t.getFullYear(), 0, 4);
-                weekNum = 1 + Math.round(((t - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-              }
+            if (weekNum == null && window.SixersSeason && typeof SixersSeason.weekForDate === 'function') {
+              weekNum = SixersSeason.weekForDate(date);
+            }
+            // Only use real pickem weeks (1–40). Never ISO calendar weeks like 44/46.
+            if (weekNum != null) {
+              weekNum = Number(weekNum);
+              if (!(weekNum >= 1 && weekNum <= 40)) weekNum = null;
             }
             if (weekNum != null) {
               if (!weekMap[weekNum]) weekMap[weekNum] = {};
@@ -6542,6 +6566,123 @@ renderQuestions();
         showMessage('Archive failed: ' + (e.message || e) + ' — check console and that leaderboardArchives rules allow admin write.', 'error', msgId);
       }
     });
+
+
+    document.getElementById('cleanupBadWeeksBtn')?.addEventListener('click', async () => {
+      if (!checkAdminPermission()) return;
+      const msgId = 'archiveAdminMsg';
+      if (!confirm('Delete archived weekly boards with invalid week numbers (outside 1–40, e.g. 44 and 46)? Daily/monthly/season archives are not touched.')) return;
+      try {
+        showMessage('Cleaning invalid weekly archives…', 'info', msgId);
+        const snap = await db.collection('leaderboardArchives').where('period', '==', 'weekly').get();
+        let n = 0;
+        let batch = db.batch();
+        let ops = 0;
+        for (const doc of snap.docs) {
+          const k = Number(doc.data().key);
+          if (!(k >= 1 && k <= 40)) {
+            batch.delete(doc.ref);
+            n++;
+            ops++;
+            if (ops >= 400) {
+              await batch.commit();
+              batch = db.batch();
+              ops = 0;
+            }
+          }
+        }
+        if (ops) await batch.commit();
+        showMessage('Removed ' + n + ' invalid weekly archive doc(s).', 'success', msgId);
+        if (typeof loadArchiveLeaderboard === 'function') loadArchiveLeaderboard();
+      } catch (e) {
+        console.error(e);
+        showMessage('Cleanup failed: ' + (e.message || e), 'error', msgId);
+      }
+    });
+
+    document.getElementById('resetLiveSeasonBtn')?.addEventListener('click', async () => {
+      if (!checkAdminPermission()) return;
+      const msgId = 'archiveAdminMsg';
+      const cur = (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27';
+      if (!confirm('Reset ALL live (non-archived) pickem data?\\n\\nThis deletes picks and questions that are NOT tagged with an old season id (Archive is kept).\\n\\nCurrent season will be: ' + cur)) return;
+      if (!confirm('Final confirm: live picks/questions will be deleted. Archived season boards stay.')) return;
+      try {
+        showMessage('Resetting live data…', 'info', msgId);
+        let deletedPicks = 0, deletedQs = 0, deletedAnswers = 0, deletedLocks = 0;
+
+        // Picks: keep if seasonId is set and is NOT the current season (archived seasons)
+        const picksSnap = await db.collection('picks').get();
+        let batch = db.batch();
+        let ops = 0;
+        const commitBatch = async () => {
+          if (ops) { await batch.commit(); batch = db.batch(); ops = 0; }
+        };
+        for (const doc of picksSnap.docs) {
+          const d = doc.data() || {};
+          const sid = d.seasonId;
+          // Keep archived seasons only
+          if (sid && sid !== cur) continue;
+          batch.delete(doc.ref);
+          deletedPicks++;
+          ops++;
+          if (ops >= 400) await commitBatch();
+        }
+        await commitBatch();
+
+        // Questions: same rule — keep only if seasonId is an archived season
+        const qSnap = await db.collection('questions').get();
+        for (const doc of qSnap.docs) {
+          const d = doc.data() || {};
+          const sid = d.seasonId;
+          if (sid && sid !== cur) continue;
+          batch.delete(doc.ref);
+          deletedQs++;
+          ops++;
+          if (ops >= 400) await commitBatch();
+        }
+        await commitBatch();
+
+        // Correct answers / lock times without archived seasonId
+        try {
+          const aSnap = await db.collection('correctAnswers').get();
+          for (const doc of aSnap.docs) {
+            const d = doc.data() || {};
+            if (d.seasonId && d.seasonId !== cur) continue;
+            batch.delete(doc.ref);
+            deletedAnswers++;
+            ops++;
+            if (ops >= 400) await commitBatch();
+          }
+          await commitBatch();
+        } catch (_) {}
+
+        try {
+          const lSnap = await db.collection('lockTimes').get();
+          for (const doc of lSnap.docs) {
+            const d = doc.data() || {};
+            if (d.seasonId && d.seasonId !== cur) continue;
+            batch.delete(doc.ref);
+            deletedLocks++;
+            ops++;
+            if (ops >= 400) await commitBatch();
+          }
+          await commitBatch();
+        } catch (_) {}
+
+        showMessage(
+          'Live reset done. Deleted picks: ' + deletedPicks + ', questions: ' + deletedQs +
+          ', answers: ' + deletedAnswers + ', locks: ' + deletedLocks +
+          '. Archive left intact. Week map uses data/season-weeks.json (Week 1 starts ' +
+          ((SixersSeason.config && SixersSeason.config.seasons[cur] && SixersSeason.config.seasons[cur].start) || 'see schedule') + ').',
+          'success',
+          msgId
+        );
+      } catch (e) {
+        console.error(e);
+        showMessage('Reset failed: ' + (e.message || e), 'error', msgId);
+      }
+    });
+
 
     (function setupInfoAccordions() {
       const section = document.getElementById('infoSection');
@@ -6785,7 +6926,12 @@ renderQuestions();
           snap = await db.collection('leaderboardArchives').get();
         }
         let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-          .filter(d => d.seasonId === sid && d.period === period);
+          .filter(d => d.seasonId === sid && d.period === period)
+          .filter(d => {
+            if (period !== 'weekly') return true;
+            const k = Number(d.key);
+            return k >= 1 && k <= 40;
+          });
 
         if (period === 'season' && !docs.length) {
           // Fallback: live aggregate of tagged picks

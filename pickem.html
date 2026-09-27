@@ -2055,28 +2055,6 @@
                 <div id="autoGamesList" style="margin-bottom:1rem; font-size:0.85rem;"></div>
 
 
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:0.75rem; margin-bottom:1rem;">
-                  <div>
-                    <label class="form-label">Opponent (manual override)</label>
-                    <input type="text" id="autoOpponent" class="form-input" placeholder="e.g. Boston Celtics" />
-                  </div>
-                  <div>
-                    <label class="form-label">Tip time (ET, 24h)</label>
-                    <input type="time" id="autoTipTime" class="form-input" value="19:30" />
-                  </div>
-                  <div>
-                    <label class="form-label">Home / Away</label>
-                    <select id="autoHomeAway" class="form-input">
-                      <option value="home">Sixers home</option>
-                      <option value="away">Sixers away</option>
-                    </select>
-                  </div>
-                </div>
-
-                <p style="font-size:0.85rem;color:var(--mid);margin:0 0 0.75rem;line-height:1.45;">
-                  Always builds <strong>exactly 10 questions</strong>: uses all games that day (or as many as fit),
-                  then fills the rest from the random question bank. Over/Unders use .5 lines so there is no push.
-                </p>
 
                 <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;font-size:0.85rem;">
                   <input type="checkbox" id="autoReplace" checked />
@@ -8352,9 +8330,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             if (!g) return;
             const phiHome = g.home === 'PHI' || /76ers|philadelphia/i.test(g.homeName || '');
             const opp = phiHome ? (g.awayName || g.away) : (g.homeName || g.home);
-            document.getElementById('autoOpponent').value = opp;
-            document.getElementById('autoTipTime').value = g.tipET || '19:30';
-            document.getElementById('autoHomeAway').value = phiHome ? 'home' : 'away';
+            const tipEl = document.getElementById('autoTipTime');
+            if (tipEl) tipEl.value = g.tipET || '19:30';
             msg('Selected: ' + g.name, 'success');
           });
         });
@@ -8429,27 +8406,27 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const list = (games && games.length) ? games.slice() : [];
         // If no games, synthesize a placeholder so bank still works with manual opponent
         if (!list.length) {
-          const opp = (document.getElementById('autoOpponent')?.value || 'Opponent').trim();
-          const ha = document.getElementById('autoHomeAway')?.value || 'home';
-          list.push({
-            homeName: ha === 'home' ? 'Philadelphia 76ers' : opp,
-            awayName: ha === 'home' ? opp : 'Philadelphia 76ers',
-            home: ha === 'home' ? 'PHI' : 'OPP',
-            away: ha === 'home' ? 'OPP' : 'PHI'
-          });
+          // No games — cannot build a real slate
+          return items;
         }
 
         function addQ(question, options, meta) {
           if (items.length >= TARGET) return false;
-          items.push({
-            question: question,
+          const cleanMeta = {};
+          if (meta && typeof meta === 'object') {
+            Object.keys(meta).forEach(k => {
+              if (meta[k] !== undefined) cleanMeta[k] = meta[k] === undefined ? null : meta[k];
+            });
+          }
+          const row = {
+            question: String(question || ''),
             type: 'multiple',
-            options: options,
-            isTieBreaker: false,
-            weekNumber: week,
-            dayOfWeek: null,
-            meta: meta || null
-          });
+            options: Array.isArray(options) ? options.map(o => String(o)) : [],
+            isTieBreaker: false
+          };
+          if (week != null && week !== '') row.weekNumber = Number(week);
+          if (Object.keys(cleanMeta).length) row.meta = cleanMeta;
+          items.push(row);
           return true;
         }
 
@@ -8466,7 +8443,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             {
               gameIndex: i, bankKey: 'win', grade: 'winner',
               home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
-              eventId: g.eventId || null
+              eventId: g.eventId ? String(g.eventId) : null
             }
           );
         }
@@ -8497,7 +8474,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
                 line: line != null ? line : (bi.line != null ? bi.line : null),
                 margin: bi.margin, points: bi.points,
                 home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
-                eventId: g.eventId || null
+                eventId: g.eventId ? String(g.eventId) : null
               });
               break;
             }
@@ -8524,7 +8501,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
                 line: line != null ? line : (bi.line != null ? bi.line : null),
                 margin: bi.margin, points: bi.points,
                 home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
-                eventId: g.eventId || null
+                eventId: g.eventId ? String(g.eventId) : null
               });
                   added = true;
                   break;
@@ -8547,18 +8524,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       }
 
       function getGamesForBuild() {
-        // Prefer selected/found games; if empty use manual single matchup
         if (foundGames && foundGames.length) return foundGames;
-        const opp = (document.getElementById('autoOpponent')?.value || '').trim();
-        if (!opp) return [];
-        const ha = document.getElementById('autoHomeAway')?.value || 'home';
-        return [{
-          homeName: ha === 'home' ? 'Philadelphia 76ers' : opp,
-          awayName: ha === 'home' ? opp : 'Philadelphia 76ers',
-          home: ha === 'home' ? 'PHI' : 'OPP',
-          away: ha === 'home' ? 'OPP' : 'PHI',
-          tipET: document.getElementById('autoTipTime')?.value || '19:30'
-        }];
+        return [];
       }
 
       function lockTimeFromTip(tipHHMM, offsetMin) {
@@ -8737,8 +8704,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           weekNum = SixersSeason.weekForDate(d);
         }
         const items = buildDailyTen(games, weekNum);
-        const tip = document.getElementById('autoTipTime')?.value || games[0].tipET || '19:30';
-        const opp = document.getElementById('autoOpponent')?.value || (games[0].awayName || games[0].homeName || '');
+        const tip = (games[0] && games[0].tipET) || '19:30';
+        const opp = (games[0] && (games[0].awayName || games[0].homeName)) || '';
         const off = Number(document.getElementById('autoSlateLockOffset')?.value);
         const lock = lockTimeFromTip(tip, off);
 
@@ -8754,9 +8721,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
               items,
               updatedAt: new Date().toISOString(),
               source: 'auto-slate', published: false, status: 'draft', seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27',
-              opponent: opp,
-              tipET: tip,
-              gameCount: games.length
+              tipET: tip || '19:30',
+              gameCount: games.length || 0
             });
           } else {
             await db.collection('questions').add({
@@ -8764,9 +8730,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
               items,
               createdAt: new Date().toISOString(),
               source: 'auto-slate', published: false, status: 'draft', seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27',
-              opponent: opp,
-              tipET: tip,
-              gameCount: games.length
+              tipET: tip || '19:30',
+              gameCount: games.length || 0
             });
           }
 
@@ -8876,6 +8841,25 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         return games;
       }
 
+      
+      function sanitizeForFirestore(value) {
+        if (value === undefined) return null;
+        if (value === null) return null;
+        if (Array.isArray(value)) {
+          return value.map(sanitizeForFirestore).filter(v => v !== undefined);
+        }
+        if (Object.prototype.toString.call(value) === '[object Object]') {
+          const out = {};
+          Object.keys(value).forEach(k => {
+            const v = value[k];
+            if (v === undefined) return; // drop undefined keys
+            out[k] = sanitizeForFirestore(v);
+          });
+          return out;
+        }
+        return value;
+      }
+
       async function publishSlateForDate(dateStr, opts) {
         opts = opts || {};
         const games = await gatherGamesForDate(dateStr);
@@ -8894,7 +8878,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const seasonId = (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27';
 
         const existing = await db.collection('questions').where('date', '==', dateStr).get();
-        const payload = {
+        if (!items.length) return { ok: false, reason: 'no_questions' };
+        let payload = {
           date: dateStr,
           items: items,
           updatedAt: new Date().toISOString(),
@@ -8902,19 +8887,20 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           published: true,
           status: 'published',
           publishedAt: new Date().toISOString(),
-          seasonId: seasonId,
-          tipET: tip24,
+          seasonId: seasonId || '2026-27',
+          tipET: tip24 || '19:30',
           gameCount: games.length
         };
+        payload = sanitizeForFirestore(payload);
         if (!existing.empty) {
-          // Don't overwrite if already published with items unless force
           const cur = existing.docs[0].data() || {};
           if (cur.published && cur.items && cur.items.length && !opts.force) {
             return { ok: true, reason: 'already_published', count: cur.items.length };
           }
-          await existing.docs[0].ref.update(payload);
+          await existing.docs[0].ref.set(payload, { merge: true });
         } else {
           payload.createdAt = new Date().toISOString();
+          payload = sanitizeForFirestore(payload);
           await db.collection('questions').add(payload);
         }
 

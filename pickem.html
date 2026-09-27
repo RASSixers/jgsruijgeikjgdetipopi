@@ -2027,6 +2027,10 @@
                     </select>
                   </div>
                   <div>
+                    <label class="form-label">Lock date override</label>
+                    <input type="date" id="autoLockDateOverride" class="form-input" />
+                  </div>
+                  <div>
                     <label class="form-label">Lock time override (ET)</label>
                     <input type="time" id="autoLockOverride" class="form-input" />
                   </div>
@@ -4026,14 +4030,30 @@
           return;
         }
 
-        const lockTime = snapshot.docs[0].data().lockTime;
-        const isImmediatelyLocked = snapshot.docs[0].data().immediateLock === true;
-        const isLocked = await areSubmissionsLocked(date, lockTime);
+        const lockDoc = snapshot.docs[0].data() || {};
+        const lockTime = lockDoc.lockTime;
+        const isImmediatelyLocked = lockDoc.immediateLock === true;
+        // Use lockDate if set (override), else the pickem date
+        const isLocked = await areSubmissionsLocked(lockDoc.lockDate || date, lockTime);
 
         if (isLocked) {
           document.getElementById('lockTimeStatus').style.display = 'block';
           document.getElementById('countdownTimer').style.display = 'none';
-          const lockReason = isImmediatelyLocked ? 'Submissions have been manually closed by an admin.' : `Submissions are closed. Lock time was ${lockTime} EST.`;
+          let lockReason;
+          if (isImmediatelyLocked) {
+            lockReason = 'Submissions have been manually closed by an admin.';
+          } else {
+            const lockData = snapshot.docs[0].data() || {};
+            const lockDateLabel = lockData.lockDate || date;
+            // Format date nicely
+            let datePretty = lockDateLabel;
+            try {
+              const [yy, mm, dd] = String(lockDateLabel).split('-').map(Number);
+              datePretty = new Date(yy, mm - 1, dd).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            } catch (_) {}
+            const timeLabel = lockTime || lockData.lockTime24 || '';
+            lockReason = 'Submissions are closed. Locked at ' + timeLabel + ' ET on ' + datePretty + '.';
+          }
           document.getElementById('lockTimeStatusMessage').textContent = lockReason;
           if (!hasSubmitted) {
             document.getElementById('submitBtn').disabled = true;
@@ -8580,7 +8600,9 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
       document.getElementById('autoSlateDate')?.addEventListener('change', () => {
         syncWeekFromDate();
-        // clear games list until fetch
+        const d = document.getElementById('autoSlateDate')?.value;
+        const ld = document.getElementById('autoLockDateOverride');
+        if (ld && d && !ld.value) ld.value = d;
       });
       // initial
       setTimeout(syncWeekFromDate, 500);
@@ -8754,6 +8776,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       try {
         const el = document.getElementById('autoSlateDate');
         if (el && !el.value) el.value = todayISO();
+        const ld = document.getElementById('autoLockDateOverride');
+        if (ld && !ld.value && el) ld.value = el.value;
       } catch (_) {}
 
             document.getElementById('autoPublishBtn')?.addEventListener('click', async () => {
@@ -8837,8 +8861,11 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
         const tips = games.map(g => g.tipET).filter(Boolean).sort();
         let tip24 = tips[0] || '19:30';
-        // Manual lock override (time only) takes priority
+        let lockDateStr = dateStr;
+        // Manual lock override: date + time (ET)
+        const lockDateOv = document.getElementById('autoLockDateOverride')?.value;
         const lockOv = document.getElementById('autoLockOverride')?.value;
+        if (lockDateOv) lockDateStr = lockDateOv;
         if (lockOv) tip24 = lockOv;
         const off = Number(document.getElementById('autoSlateLockOffset')?.value || 0);
         if (!lockOv && off > 0 && tip24) {
@@ -8890,9 +8917,17 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const lock12 = h + ':' + m + ' ' + ampm;
         try {
           const lockSnap = await db.collection('lockTimes').where('date', '==', dateStr).get();
+          const [ly, lmo, ld] = lockDateStr.split('-').map(Number);
+          const [lhh, lmm] = tip24.split(':').map(Number);
+          const lockLocal = new Date(ly, lmo - 1, ld, lhh, lmm, 0, 0);
           const lockPayload = sanitizeForFirestore({
-            date: dateStr, lockTime: lock12, lockTime24: tip24,
-            updatedAt: new Date().toISOString(), source: draft ? 'auto-slate-draft' : 'auto-slate-publish'
+            date: dateStr,
+            lockDate: lockDateStr,
+            lockTime: lock12,
+            lockTime24: tip24,
+            lockDateTime: lockLocal.toISOString(),
+            updatedAt: new Date().toISOString(),
+            source: draft ? 'auto-slate-draft' : 'auto-slate-publish'
           });
           if (!lockSnap.empty) await lockSnap.docs[0].ref.set(lockPayload, { merge: true });
           else await db.collection('lockTimes').add(Object.assign({ immediateLock: false, createdAt: new Date().toISOString() }, lockPayload));

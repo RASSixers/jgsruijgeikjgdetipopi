@@ -6797,6 +6797,8 @@ renderQuestions();
               if (name.includes('turnover')) stats.to = val;
               if (name.includes('fieldgoalpct') || name === 'field goal pct' || (s.abbreviation || '').toLowerCase() === 'fg%') stats.fgPct = val;
               if (name.includes('foul')) stats.fouls = val;
+              if (name.includes('steal')) stats.stl = val;
+              if (name.includes('block')) stats.blk = val;
               if (name.includes('point') && !name.includes('paint')) stats.pts = val;
             });
             out[side] = stats;
@@ -6837,8 +6839,9 @@ renderQuestions();
             // sum first two periods for half
             let half = 0;
             linescores.slice(0, 2).forEach(ls => { half += parseFloat(ls.value || ls.displayValue || 0) || 0; });
-            if (side === 'home') out.halfHome = half;
-            else out.halfAway = half;
+            const q1 = linescores[0] ? (parseFloat(linescores[0].value || linescores[0].displayValue || 0) || 0) : 0;
+            if (side === 'home') { out.halfHome = half; out.q1Home = q1; }
+            else { out.halfAway = half; out.q1Away = q1; }
             if (c.score != null) out[side].pts = parseFloat(c.score);
           });
           // player stats from boxscore players with keys
@@ -6896,6 +6899,9 @@ renderQuestions();
           const homeScore = parseInt(home.score, 10);
           const awayScore = parseInt(away.score, 10);
           if (isNaN(homeScore) || isNaN(awayScore)) continue;
+          const periodCount = (comp.status && comp.status.period) || 0;
+          const detail = (status.detail || status.description || '').toLowerCase();
+          const overtime = periodCount > 4 || detail.includes('ot') || detail.includes('overtime');
           finals.push({
             eventId: ev.id,
             homeName: (home.team && (home.team.displayName || home.team.name)) || '',
@@ -6907,7 +6913,8 @@ renderQuestions();
               ? ((home.team && (home.team.displayName || home.team.name)) || '')
               : ((away.team && (away.team.displayName || away.team.name)) || ''),
             margin: Math.abs(homeScore - awayScore),
-            total: homeScore + awayScore
+            total: homeScore + awayScore,
+            overtime: !!overtime
           });
         }
         if (!finals.length) {
@@ -6990,10 +6997,41 @@ renderQuestions();
               const aa = a > 1 ? a : a * 100;
               correct = (hh >= 50 || aa >= 50) ? 'Yes' : 'No';
             }
-          } else if (grade === 'more_rebounds' || grade === 'more_assists' || grade === 'more_turnovers') {
+          }  else if (grade === 'overtime') {
+            correct = f.overtime ? 'Yes' : 'No';
+          } else if (grade === 'q1_leader') {
+            const box = boxes[f.eventId];
+            if (box && box.q1Home != null && box.q1Away != null) {
+              if (box.q1Home === box.q1Away) correct = null;
+              else {
+                const lead = box.q1Home > box.q1Away ? f.homeName : f.awayName;
+                correct = opts.find(o => teamMatch(o, lead)) || lead;
+              }
+            }
+          } else if (grade === 'higher_half') {
+            const box = boxes[f.eventId];
+            if (box && box.halfHome != null) {
+              const first = (box.halfHome || 0) + (box.halfAway || 0);
+              const second = (f.total || 0) - first;
+              if (first === second) correct = null;
+              else correct = first > second ? '1st half' : '2nd half';
+            }
+          } else if (grade === 'higher_fg') {
             const box = boxes[f.eventId];
             if (box) {
-              const key = grade === 'more_rebounds' ? 'reb' : grade === 'more_assists' ? 'ast' : 'to';
+              let h = box.home.fgPct || 0, a = box.away.fgPct || 0;
+              const hh = h > 1 ? h : h * 100;
+              const aa = a > 1 ? a : a * 100;
+              if (hh === aa) correct = null;
+              else {
+                const lead = hh > aa ? f.homeName : f.awayName;
+                correct = opts.find(o => teamMatch(o, lead)) || lead;
+              }
+            }
+          } else if (grade === 'more_rebounds' || grade === 'more_assists' || grade === 'more_turnovers' || grade === 'more_steals' || grade === 'more_blocks') {
+            const box = boxes[f.eventId];
+            if (box) {
+              const key = grade === 'more_rebounds' ? 'reb' : grade === 'more_assists' ? 'ast' : grade === 'more_steals' ? 'stl' : grade === 'more_blocks' ? 'blk' : 'to';
               const hv = box.home[key] || 0, av = box.away[key] || 0;
               if (hv === av) correct = null;
               else {
@@ -8340,22 +8378,26 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
       // Question bank (from your Quick Presets) — filled with team names when applied to a game
       const QUESTION_BANK = [
-        // Only types we can auto-grade from ESPN finals + box score
+        // All types auto-grade from public ESPN scoreboard + box score (no paid API)
         { key: 'win', template: 'Who will win: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'winner' },
         { key: 'total', template: 'Will the total points in {away} vs {home} go Over or Under {line}?', options: ['Over', 'Under'], needsLine: true, grade: 'total' },
         { key: 'margin10', template: 'Will {away} vs {home} be decided by 10 or more points?', options: ['Yes', 'No'], grade: 'margin_ge', margin: 10 },
-        { key: 'home_win', template: 'Will the home team ({home}) beat {away}?', options: ['Yes', 'No'], grade: 'home_wins' },
-        { key: 'away_win', template: 'Will the away team ({away}) beat {home}?', options: ['Yes', 'No'], grade: 'away_wins' },
+        { key: 'margin5', template: 'Will {away} vs {home} be decided by 5 or more points?', options: ['Yes', 'No'], grade: 'margin_ge', margin: 5 },
         { key: 'both_110', template: 'Will both teams score 110+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'both_score_ge', points: 110 },
         { key: 'either_120', template: 'Will either team score 120+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'either_score_ge', points: 120 },
         { key: 'combined_220', template: 'Will {away} vs {home} combine for Over or Under 220.5 points?', options: ['Over', 'Under'], grade: 'total', line: 220.5 },
         { key: 'halftime_leader', template: 'Which team will lead at half in {away} vs {home}?', options: ['{away}', '{home}'], grade: 'halftime_leader' },
+        { key: 'q1_leader', template: 'Which team will lead after the 1st quarter: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'q1_leader' },
+        { key: 'higher_half', template: 'Which half will have more total points in {away} vs {home}?', options: ['1st half', '2nd half'], grade: 'higher_half' },
+        { key: 'overtime', template: 'Will {away} vs {home} go to overtime?', options: ['Yes', 'No'], grade: 'overtime' },
         { key: 'double_double', template: 'Will a player record a double-double in {away} vs {home}?', options: ['Yes', 'No'], grade: 'double_double' },
-        { key: 'triple_double', template: 'Will there be a triple-double in {away} vs {home}?', options: ['Yes', 'No'], grade: 'triple_double' },
         { key: 'fg50', template: 'Will either team shoot 50%+ from the field in {away} vs {home}?', options: ['Yes', 'No'], grade: 'fg50' },
+        { key: 'higher_fg', template: 'Which team will shoot a higher field-goal %: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'higher_fg' },
         { key: 'more_rebounds', template: 'Which team will have more rebounds: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_rebounds' },
         { key: 'more_assists', template: 'Which team will have more assists: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_assists' },
-        { key: 'more_turnovers', template: 'Which team will have more turnovers: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_turnovers' }
+        { key: 'more_turnovers', template: 'Which team will have more turnovers: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_turnovers' },
+        { key: 'more_steals', template: 'Which team will have more steals: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_steals' },
+        { key: 'more_blocks', template: 'Which team will have more blocks: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_blocks' }
       ]
 
       function fillTemplate(str, home, away, line) {

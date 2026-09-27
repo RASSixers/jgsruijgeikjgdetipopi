@@ -4843,7 +4843,18 @@ renderQuestions();
       container.innerHTML = todayQuestions.map((q, i) => {
         let optionsHtml = '';
 
-        if (q.question_type === 'over_under') {
+        // Normalize options: array from Auto-Slate OR comma-separated string from manual admin
+        function normalizeOptions(raw) {
+          if (!raw && raw !== 0) return [];
+          if (Array.isArray(raw)) return raw.map(o => String(typeof o === 'object' ? (o.label || o.text || o.value || '') : o).trim()).filter(Boolean);
+          if (typeof raw === 'string') return raw.split(',').map(s => s.trim()).filter(Boolean);
+          return [];
+        }
+
+        const qType = q.question_type || q.type || '';
+        const opts = normalizeOptions(q.options);
+
+        if (qType === 'over_under' || (opts.length === 2 && opts[0] === 'Over' && opts[1] === 'Under')) {
           optionsHtml = `
             <label class="option radio-option">
               <input type="radio" name="q${i}" value="Over">
@@ -4854,19 +4865,23 @@ renderQuestions();
               <span>Under</span>
             </label>
           `;
-        } else if (q.question_type === 'multiple_choice') {
-          // Parse comma-separated options
-          const options = q.options ? q.options.split(',').map(opt => opt.trim()) : [];
-          optionsHtml = options.map(opt => `
-            <label class="option radio-option">
-              <input type="radio" name="q${i}" value="${opt}">
-              <span>${opt}</span>
-            </label>
-          `).join('');
-        } else if (q.question_type === 'numeric') {
+        } else if (qType === 'numeric' && !opts.length) {
           optionsHtml = `
             <input type="number" name="q${i}" class="text-input" placeholder="Enter your answer">
           `;
+        } else if (opts.length) {
+          // multiple_choice, type:multiple, or any question with options array
+          optionsHtml = opts.map(opt => {
+            const safe = String(opt).replace(/"/g, '&quot;');
+            return `
+            <label class="option radio-option">
+              <input type="radio" name="q${i}" value="${safe}">
+              <span>${safe}</span>
+            </label>`;
+          }).join('');
+        } else if (qType === 'multiple_choice' || qType === 'multiple' || qType === 'multiple_choice' || !qType) {
+          // Fallback empty
+          optionsHtml = '<div style="color:var(--mid);font-size:0.85rem;">No answer choices on this question.</div>';
         }
 
         return `
@@ -8446,7 +8461,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           const row = {
             question: String(question || ''),
             type: 'multiple',
-            options: Array.isArray(options) ? options.map(o => String(o)) : [],
+            question_type: 'multiple_choice',
+            options: Array.isArray(options) ? options.map(o => String(o)).filter(Boolean) : [],
             isTieBreaker: false
           };
           if (week != null && week !== '') row.weekNumber = Number(week);

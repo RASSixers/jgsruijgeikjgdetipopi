@@ -3013,7 +3013,7 @@
         <div class="admin-question-item">
           <div class="admin-question-item-content">
             <div class="admin-question-item-text">${index + 1}. ${q.question}</div>
-            <div class="admin-question-item-type">${q.question_type === 'over_under' ? 'Over/Under' : q.question_type === 'multiple_choice' ? 'Multiple Choice' : 'Numeric'}</div>
+            <div class="admin-question-item-type">${q.question_type === 'over_under' ? 'Over/Under' : (q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple') ? 'Multiple Choice' : 'Numeric'}</div>
             ${q.isTieBreaker ? `<div style="display: inline-block; background: var(--brand); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; margin-top: 4px;"> TIE-BREAKER</div>` : ''}
             ${q.options ? `<div class="admin-question-item-options">Options: ${q.options}</div>` : ''}
             ${q.weekNumber || q.dayOfWeek ? `<div class="admin-question-item-options" style="color: #3b82f6; margin-top: 0.5rem; font-weight: 600;"> Week: ${q.weekNumber || '-'} | Day: ${q.dayOfWeek || '-'}</div>` : ''}
@@ -3139,7 +3139,7 @@
         const snapshot = await db.collection('questions').where('date', '==', dateInput).get();
         
         if (snapshot.empty) {
-          showMessage('No questions found for this date', 'info', 'markAnswersMessage');
+          showMessage('No questions found for ' + dateInput + '. Create & publish a slate for that date first.', 'info', 'markAnswersMessage');
           questionsForAnswers = [];
           document.getElementById('answersList').innerHTML = '';
           document.getElementById('saveCorrectAnswersBtn').style.display = 'none';
@@ -3147,19 +3147,29 @@
         }
 
         const doc = snapshot.docs[0];
-        const data = doc.data();
-        questionsForAnswers = (data.items || []).map((q, idx) => ({
+        const data = doc.data() || {};
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (!items.length) {
+          showMessage('Question doc exists for ' + dateInput + ' but has 0 items. Re-create the slate.', 'error', 'markAnswersMessage');
+          questionsForAnswers = [];
+          document.getElementById('answersList').innerHTML = '';
+          document.getElementById('saveCorrectAnswersBtn').style.display = 'none';
+          return;
+        }
+        questionsForAnswers = items.map((q, idx) => ({
           ...q,
+          question_type: q.question_type || (q.type === 'multiple' ? 'multiple_choice' : q.question_type) || 'multiple_choice',
           questionId: idx,
           docId: doc.id,
-          weekNumber: q.weekNumber || null,
+          weekNumber: q.weekNumber != null ? q.weekNumber : null,
           dayOfWeek: q.dayOfWeek || null
         }));
 
         renderAnswersForm();
-        renderPickDistribution(dateInput);
+        try { renderPickDistribution(dateInput); } catch (e) { console.warn(e); }
         document.getElementById('saveCorrectAnswersBtn').style.display = 'block';
-        showMessage('Questions loaded successfully', 'success', 'markAnswersMessage');
+        const st = data.status || (data.published === false ? 'draft' : 'published');
+        showMessage('Loaded ' + questionsForAnswers.length + ' questions (' + st + ').', 'success', 'markAnswersMessage');
       } catch (err) {
         console.error('Error loading questions:', err);
         showMessage('Error loading questions', 'error', 'markAnswersMessage');
@@ -3181,6 +3191,13 @@
       });
       showMessage(` Marked ${count} Over/Under questions as ${val}`, 'success', 'markAnswersMessage');
     };
+
+    function normalizeQuestionOptions(raw) {
+      if (raw == null) return [];
+      if (Array.isArray(raw)) return raw.map(o => String(typeof o === 'object' ? (o.label || o.text || o.value || '') : o).trim()).filter(Boolean);
+      if (typeof raw === 'string') return raw.split(',').map(s => s.trim()).filter(Boolean);
+      return [];
+    }
 
     function renderAnswersForm() {
       const container = document.getElementById('answersList');
@@ -3207,8 +3224,8 @@
               </label>
             </div>
           `;
-        } else if (q.question_type === 'multiple_choice') {
-          const options = q.options.split(',').map(opt => opt.trim());
+        } else if ((q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple')) {
+          const options = normalizeQuestionOptions(q.options);
           answerInput = `
             <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--brand); font-weight: 600; margin-bottom: 0.25rem;">✓ Select all correct answers (multiple allowed)</div>
             <div style="margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
@@ -3231,7 +3248,7 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
               <div>
                 <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem;">${idx + 1}. ${q.question}</div>
-                <div style="color: var(--muted); font-size: 0.85rem;">${q.question_type === 'over_under' ? 'Over/Under' : q.question_type === 'multiple_choice' ? 'Multiple Choice' : 'Numeric'}</div>
+                <div style="color: var(--muted); font-size: 0.85rem;">${q.question_type === 'over_under' ? 'Over/Under' : (q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple') ? 'Multiple Choice' : 'Numeric'}</div>
                 ${q.isTieBreaker ? `<div style="display: inline-block; background: var(--brand); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; margin-top: 4px;"> TIE-BREAKER</div>` : ''}
                 ${q.weekNumber || q.dayOfWeek ? `<div style="color: #3b82f6; font-size: 0.85rem; font-weight: 600; margin-top: 0.25rem;"> Week: ${q.weekNumber || '-'} | Day: ${q.dayOfWeek || '-'}</div>` : ''}
               </div>
@@ -3260,7 +3277,7 @@
               radio.checked = true;
               updateAnswerIndicator(idx);
             }
-          } else if (q.question_type === 'multiple_choice') {
+          } else if ((q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple')) {
             // correctAnswer may be a single string or an array
             const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
             answers.forEach(ans => {
@@ -4938,7 +4955,7 @@
           if (!card) return;
 
           // For radio options, add percentages
-          if (q.question_type === 'over_under' || q.question_type === 'multiple_choice' || q.type === 'multiple' || q.type === 'multiple_choice' || !q.question_type) {
+          if (q.question_type === 'over_under' || (q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple') || q.type === 'multiple' || q.type === 'multiple_choice' || !q.question_type) {
             const labels = card.querySelectorAll('.option.radio-option');
             labels.forEach(label => {
               const input = label.querySelector('input');
@@ -5057,8 +5074,9 @@
         console.log(` Checking lock status for date: ${selectedPickDate}`);
         const lockSnapshot = await db.collection('lockTimes').where('date', '==', selectedPickDate).get();
         if (!lockSnapshot.empty) {
-          const lockTime = lockSnapshot.docs[0].data().lockTime;
-          const isLocked = await areSubmissionsLocked(selectedPickDate, lockTime);
+          const lockDoc = lockSnapshot.docs[0].data() || {};
+          const lockTime = lockDoc.lockTime;
+          const isLocked = await areSubmissionsLocked(lockDoc.lockDate || selectedPickDate, lockTime, lockDoc);
           console.log(` Lock time found: ${lockTime}, isLocked: ${isLocked}`);
           if (isLocked) {
             console.log(` Submissions BLOCKED - date is locked`);

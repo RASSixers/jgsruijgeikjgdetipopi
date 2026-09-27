@@ -4691,115 +4691,73 @@
 
     async function loadQuestionsForDate(dateStr, weekNumber = null) {
       if (!currentUser) return;
+      const container = document.getElementById('questionsContainer');
       try {
-        console.log(` Loading questions for date: ${dateStr} (type: ${typeof dateStr}), week: ${weekNumber || 'any'}`);
         selectedPickDate = dateStr;
-        
-        // Show loading state
-        const container = document.getElementById('questionsContainer');
-        container.innerHTML = '<div class="loading-state"> Loading questions...</div>';
-        
-        // Debug: Check all questions in collection
-        const allDocs = await db.collection('questions').get();
-        console.log(` DEBUG - Total questions documents in collection: ${allDocs.size}`);
-        allDocs.forEach(doc => {
-          const data = doc.data();
-          console.log(`  Document - Date: "${data.date}" (type: ${typeof data.date}), Items count: ${data.items?.length || 0}`);
-        });
-        
+        if (container) container.innerHTML = '<div class="loading-state">Loading questions…</div>';
+
+        // Only query this date (no full-collection scan — avoids permission/size failures)
         const snapshot = await db.collection('questions').where('date', '==', dateStr).get();
-        
-        console.log(`Found ${snapshot.size} document(s) matching query for ${dateStr}`);
-        
+
         if (snapshot.empty) {
-          console.warn(` No questions found for ${dateStr}`);
-          console.warn(`  Searched for exact match: "${dateStr}"`);
-          console.warn(`  Are there any questions saved at all? Check collection above.`);
           todayQuestions = [];
-          renderQuestions();
+          if (container) container.innerHTML = '<div class="empty-state">No questions for this date yet.</div>';
+          const submitBtn = document.getElementById('submitBtn');
+          if (submitBtn) submitBtn.disabled = true;
           return;
         }
 
-        const docs = snapshot.docs;
-        if (docs.length > 0) {
-          const questionData = docs[0].data();
-          if (questionData.published === false || questionData.status === 'draft') {
-            if (!(typeof isUserAdmin === 'function' && isUserAdmin())) {
-              todayQuestions = [];
-              const container = document.getElementById('questionsContainer');
-              if (container) container.innerHTML = '<div class="empty-state"><p>Questions for this date are not published yet.</p></div>';
-              return;
+        const questionData = snapshot.docs[0].data() || {};
+        const isDraft = questionData.published === false || questionData.status === 'draft';
+        const admin = (typeof isUserAdmin === 'function' && isUserAdmin()) || !!isCurrentUserAdmin;
+
+        if (isDraft && !admin) {
+          todayQuestions = [];
+          if (container) container.innerHTML = '<div class="empty-state"><p>Questions for this date are not published yet.</p></div>';
+          return;
+        }
+
+        let allQuestions = Array.isArray(questionData.items) ? questionData.items : [];
+        // weekNumber filter only when explicitly set and questions have weekNumbers
+        if (weekNumber != null && weekNumber !== '' && !isNaN(Number(weekNumber))) {
+          const filtered = allQuestions.filter(q => q.weekNumber == weekNumber || q.weekNumber === Number(weekNumber));
+          // If filter would wipe everything (e.g. leftover week control), show all
+          todayQuestions = filtered.length ? filtered : allQuestions;
+        } else {
+          todayQuestions = allQuestions;
+        }
+
+        // Schedule gate (non-admins)
+        if (!admin) {
+          try {
+            const scheduleSnapshot = await db.collection('questionSchedules').where('questionsDate', '==', dateStr).get();
+            if (!scheduleSnapshot.empty) {
+              const scheduleData = scheduleSnapshot.docs[0].data() || {};
+              if (scheduleData.goLiveDateTime) {
+                const goLiveDateTime = new Date(scheduleData.goLiveDateTime);
+                const now = new Date();
+                if (!isNaN(goLiveDateTime.getTime()) && now < goLiveDateTime) {
+                  const estTime = goLiveDateTime.toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                  if (container) {
+                    container.innerHTML = '<div class="empty-state"><p style="font-weight:700;">Questions coming soon</p><p style="color:var(--muted);">Live ' + estTime + ' ET</p></div>';
+                  }
+                  todayQuestions = [];
+                  return;
+                }
+              }
             }
-          }
-          let allQuestions = questionData.items || [];
-          
-          if (weekNumber !== null) {
-            todayQuestions = allQuestions.filter(q => q.weekNumber === weekNumber);
-            console.log(` Loaded ${todayQuestions.length}/${allQuestions.length} questions for ${dateStr} (Week ${weekNumber}):`, todayQuestions);
-          } else {
-            todayQuestions = allQuestions;
-            console.log(` Loaded ${todayQuestions.length} questions for ${dateStr}:`, todayQuestions);
-          }
-        }
-        
-        // Check if questions are scheduled to go live later
-        const scheduleSnapshot = await db.collection('questionSchedules').where('questionsDate', '==', dateStr).get();
-        
-        if (!scheduleSnapshot.empty) {
-          const scheduleData = scheduleSnapshot.docs[0].data();
-          
-          // Parse the go-live time
-          let goLiveDateTime;
-          if (typeof scheduleData.goLiveDateTime === 'string') {
-            goLiveDateTime = new Date(scheduleData.goLiveDateTime);
-          } else if (scheduleData.goLiveDateTime && scheduleData.goLiveDateTime.toDate) {
-            // Firestore Timestamp
-            goLiveDateTime = scheduleData.goLiveDateTime.toDate();
-          } else {
-            goLiveDateTime = new Date(`${scheduleData.goLiveDate}T${scheduleData.goLiveTime}`);
-          }
-          
-          const now = new Date();
-          const timeUntilLive = goLiveDateTime - now;
-          
-          console.log(` Go-Live Schedule Found:`, {
-            questionsDate: dateStr,
-            goLiveDateTime: goLiveDateTime.toISOString(),
-            currentTime: now.toISOString(),
-            timeUntilLiveMs: timeUntilLive,
-            isLive: timeUntilLive <= 0,
-            goLiveDateTimeType: typeof scheduleData.goLiveDateTime
-          });
-          
-          if (timeUntilLive > 0) {
-            console.log(` Questions not yet live. Time until go-live: ${timeUntilLive}ms`);
-            const minutesUntilLive = Math.ceil(timeUntilLive / 60000);
-            const estTime = goLiveDateTime.toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const container = document.getElementById('questionsContainer');
-            container.innerHTML = `
-              <div class="empty-state" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(16, 185, 129, 0.3); border-left: 4px solid #10b981;">
-                <p style="font-size: 48px; margin-bottom: 1rem;"></p>
-                <p style="font-weight: 700; font-size: 1.1rem; color: var(--ink); margin-bottom: 0.5rem;">Questions Coming Soon</p>
-                <p style="color: var(--muted); margin: 0; font-size: 0.95rem;">These questions will go live on</p>
-                <p style="color: #10b981; font-weight: 700; font-size: 1rem; margin-top: 0.5rem;">${estTime} ET</p>
-              </div>
-            `;
-            todayQuestions = [];
-            return;
-          }
-        }
-        
-        
-        if (!(typeof isUserAdmin === 'function' && isUserAdmin())) {
+          } catch (e) { console.warn('schedule check', e); }
+
           try {
             const lockSnap = await db.collection('lockTimes').where('date', '==', dateStr).get();
             if (!lockSnap.empty) {
               const lt = lockSnap.docs[0].data().lockTime;
               const win = getPickWindowStatus(dateStr, lt);
-              if (win.reason === 'not-yet') {
+              if (win && win.reason === 'not-yet' && win.openDate) {
                 const est = win.openDate.toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-                document.getElementById('questionsContainer').innerHTML =
-                  '<div class="empty-state"><p style="font-weight:700;">Questions open 72 hours before lock</p><p style="color:var(--muted);">Opens ' + est + ' ET</p></div>';
+                if (container) {
+                  container.innerHTML = '<div class="empty-state"><p style="font-weight:700;">Questions open 72 hours before lock</p><p style="color:var(--muted);">Opens ' + est + ' ET</p></div>';
+                }
                 todayQuestions = [];
                 return;
               }
@@ -4807,20 +4765,25 @@
           } catch (e) { console.warn('pick window', e); }
         }
 
-renderQuestions();
-        
-        // Check if already submitted for this date
-        await checkSubmissionForDate(dateStr);
+        try {
+          renderQuestions();
+        } catch (re) {
+          console.error('renderQuestions', re);
+          if (container) {
+            container.innerHTML = '<div class="empty-state"><p>Could not display questions.</p><p style="color:var(--muted);font-size:0.85rem;">' + (re.message || re) + '</p></div>';
+          }
+          return;
+        }
 
-        // Check and display lock status for this date
-        await checkAndDisplayLockStatus(dateStr);
-        
-        // Render consensus data
-        await renderConsensus(dateStr);
+        try { await checkSubmissionForDate(dateStr); } catch (e) { console.warn('checkSubmission', e); }
+        try { await checkAndDisplayLockStatus(dateStr); } catch (e) { console.warn('lock status', e); }
+        try { await renderConsensus(dateStr); } catch (e) { console.warn('consensus', e); }
       } catch (err) {
         console.error('Error loading questions:', err);
-        console.error('Error details:', err.message);
-        showMessage('Could not load questions. Please try again.', 'error');
+        if (container) {
+          container.innerHTML = '<div class="empty-state"><p>Could not load questions.</p><p style="color:var(--muted);font-size:0.85rem;">' + (err && err.message ? err.message : 'Try again') + '</p></div>';
+        }
+        try { showMessage('Could not load questions: ' + (err && err.message ? err.message : 'try again'), 'error'); } catch (_) {}
       }
     }
 
@@ -5268,10 +5231,9 @@ renderQuestions();
       container.querySelectorAll('.date-picker-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const dateValue = btn.dataset.date;
-          const selectedWeek = document.getElementById('selectedPickWeek').value ? parseInt(document.getElementById('selectedPickWeek').value) : null;
           document.getElementById('pickDate').value = dateValue;
           renderDateSlider();
-          loadQuestionsForDate(dateValue, selectedWeek);
+          loadQuestionsForDate(dateValue);
         });
       });
     }

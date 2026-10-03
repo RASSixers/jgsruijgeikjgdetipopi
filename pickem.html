@@ -1614,7 +1614,7 @@
         
         <div class="submit-section">
           <button type="button" class="btn btn-primary" id="submitBtn">Submit Picks</button>
-          <p id="editUntilLockHint" style="margin:0.5rem 0 0;font-size:0.8rem;color:var(--mid);text-align:center;">You can change picks after submitting until the lock time.</p>
+          <p id="editUntilLockHint" style="margin:0.5rem 0 0;font-size:0.8rem;color:var(--mid);text-align:center;">Clicks are saved as a draft. If you finish all questions but forget to submit, they auto-submit at lock (while this page is open). You can still Update Picks until lock.</p>
           <button type="button" class="btn btn-secondary" id="clearBtn">Clear All</button>
         </div>
       </div>
@@ -4829,6 +4829,20 @@
         }
 
         try { await checkSubmissionForDate(dateStr); } catch (e) { console.warn('checkSubmission', e); }
+        // Restore unsubmitted clicks from draft; schedule auto-submit at lock
+        try {
+          const existing = await db.collection('picks')
+            .where('userId', '==', auth.currentUser.uid)
+            .where('date', '==', dateStr)
+            .get();
+          if (existing.empty) {
+            const draft = loadDraftPicks(dateStr);
+            if (draft && Array.isArray(draft.answers)) {
+              applyAnswersToForm(draft.answers);
+            }
+          }
+          await scheduleAutoSubmitAtLock(dateStr);
+        } catch (e) { console.warn('draft/auto-submit setup', e); }
         try { await checkAndDisplayLockStatus(dateStr); } catch (e) { console.warn('lock status', e); }
         try { await renderConsensus(dateStr); } catch (e) { console.warn('consensus', e); }
       } catch (err) {
@@ -4919,6 +4933,214 @@
       console.log(` Event listeners attached to ${document.querySelectorAll('input[name^="q"]').length} input elements`);
     }
 
+    // --- Draft picks: auto-save clicks; auto-submit at lock if never submitted ---
+    let _autoSubmitTimer = null;
+    let _autoSubmitRunning = false;
+
+    function draftStorageKey(dateStr) {
+      const uid = (auth.currentUser && auth.currentUser.uid) || 'anon';
+      return 'sixers_pick_draft_' + uid + '_' + dateStr;
+    }
+
+    function collectCurrentAnswers() {
+      const answers = [];
+      let allAnswered = true;
+      (todayQuestions || []).forEach((q, i) => {
+        const radio = document.querySelector('input[name="q' + i + '"]:checked');
+        const input = document.querySelector('input[name="q' + i + '"]');
+        if (radio) {
+          answers.push(radio.value);
+        } else if (input && input.type === 'number' && input.value !== '') {
+          answers.push(parseFloat(input.value));
+        } else {
+          allAnswered = false;
+          answers.push(null);
+        }
+      });
+      return { answers, allAnswered, total: (todayQuestions || []).length };
+    }
+
+    function saveDraftPicks(dateStr) {
+      if (!dateStr || !auth.currentUser) return;
+      const { answers, allAnswered, total } = collectCurrentAnswers();
+      if (!total) return;
+      try {
+        localStorage.setItem(draftStorageKey(dateStr), JSON.stringify({
+          date: dateStr,
+          answers: answers,
+          allAnswered: allAnswered,
+          savedAt: new Date().toISOString()
+        }));
+      } catch (_) {}
+    }
+
+    function loadDraftPicks(dateStr) {
+      if (!dateStr) return null;
+      try {
+        const raw = localStorage.getItem(draftStorageKey(dateStr));
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (_) { return null; }
+    }
+
+    function clearDraftPicks(dateStr) {
+      try { localStorage.removeItem(draftStorageKey(dateStr)); } catch (_) {}
+    }
+
+    function applyAnswersToForm(answers) {
+      if (!Array.isArray(answers)) return;
+      answers.forEach((answer, i) => {
+        if (answer == null || answer === '') return;
+        const radio = document.querySelector('input[name="q' + i + '"][value="' + String(answer).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]');
+        if (radio) radio.checked = true;
+        else {
+          const input = document.querySelector('input[name="q' + i + '"]');
+          if (input && input.type === 'number') input.value = answer;
+        }
+      });
+      try { updateProgress(); } catch (_) {}
+    }
+
+    async function persistAnswersToFirestore(dateStr, answers, opts) {
+      opts = opts || {};
+      if (!auth.currentUser || !dateStr || !answers || !answers.length) return false;
+      if (answers.some(a => a == null || a === '')) return false;
+
+      // Block if already locked (unless forceAtLock just before/at lock)
+      try {
+        const lockSnap = await db.collection('lockTimes').where('date', '==', dateStr).get();
+        if (!lockSnap.empty) {
+          const lockDoc = lockSnap.docs[0].data() || {};
+          const locked = await areSubmissionsLocked(lockDoc.lockDate || dateStr, lockDoc.lockTime, lockDoc);
+          if (locked && !opts.forceAtLock) return false;
+        }
+      } catch (_) {}
+
+      const existing = await db.collection('picks')
+        .where('userId', '==', auth.currentUser.uid)
+        .where('date', '==', dateStr)
+        .get();
+      const payload = {
+        userId: auth.currentUser.uid,
+        username: currentUser,
+        userEmail: auth.currentUser.email,
+        date: dateStr,
+        answers: answers,
+        seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27',
+        updatedAt: new Date().toISOString()
+      };
+      if (opts.auto) payload.autoSubmittedAt = new Date().toISOString();
+      if (!existing.empty) {
+        await existing.docs[0].ref.update(payload);
+      } else {
+        payload.submittedAt = new Date().toISOString();
+        await db.collection('picks').add(payload);
+      }
+      clearDraftPicks(dateStr);
+      return true;
+    }
+
+    function getLockMomentMs(dateStr, lockDoc) {
+      lockDoc = lockDoc || {};
+      if (lockDoc.lockDateTime) {
+        const t = new Date(lockDoc.lockDateTime).getTime();
+        if (!isNaN(t)) return t;
+      }
+      const lockDateStr = lockDoc.lockDate || dateStr;
+      const time24 = lockDoc.lockTime24
+        || ((typeof convert12To24 === 'function' && lockDoc.lockTime) ? convert12To24(lockDoc.lockTime) : null)
+        || '23:59';
+      try {
+        const [y, m, d] = String(lockDateStr).split('-').map(Number);
+        const [hh, mm] = String(time24).split(':').map(Number);
+        const now = (typeof getESTNow === 'function') ? getESTNow() : new Date();
+        const lockMoment = new Date(now);
+        lockMoment.setFullYear(y, m - 1, d);
+        lockMoment.setHours(hh || 0, mm || 0, 0, 0);
+        return lockMoment.getTime();
+      } catch (_) {
+        return null;
+      }
+    }
+
+    async function scheduleAutoSubmitAtLock(dateStr) {
+      if (_autoSubmitTimer) {
+        clearTimeout(_autoSubmitTimer);
+        _autoSubmitTimer = null;
+      }
+      if (!dateStr || !auth.currentUser) return;
+      try {
+        const lockSnap = await db.collection('lockTimes').where('date', '==', dateStr).get();
+        if (lockSnap.empty) return;
+        const lockDoc = lockSnap.docs[0].data() || {};
+        const lockMs = getLockMomentMs(dateStr, lockDoc);
+        if (!lockMs) return;
+        const delay = lockMs - Date.now();
+        const run = async () => {
+          if (_autoSubmitRunning) return;
+          _autoSubmitRunning = true;
+          try {
+            // Prefer form answers; fall back to draft
+            let { answers, allAnswered } = collectCurrentAnswers();
+            if (!allAnswered) {
+              const draft = loadDraftPicks(dateStr);
+              if (draft && draft.allAnswered && Array.isArray(draft.answers)) {
+                answers = draft.answers;
+                allAnswered = true;
+              }
+            }
+            if (!allAnswered) return; // incomplete — do not auto-submit partial
+
+            // Skip if already in Firestore
+            const existing = await db.collection('picks')
+              .where('userId', '==', auth.currentUser.uid)
+              .where('date', '==', dateStr)
+              .get();
+            if (!existing.empty) {
+              clearDraftPicks(dateStr);
+              return;
+            }
+
+            const ok = await persistAnswersToFirestore(dateStr, answers, { auto: true, forceAtLock: true });
+            if (ok) {
+              showMessage('Picks auto-submitted at lock. Your answers are saved.', 'success');
+              const sb = document.getElementById('submitBtn');
+              if (sb) {
+                sb.disabled = true;
+                sb.textContent = 'Locked — picks saved';
+                sb.dataset.mode = 'locked';
+              }
+              document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = true; });
+              try { await renderConsensus(dateStr); } catch (_) {}
+            }
+          } catch (e) {
+            console.warn('auto-submit at lock failed', e);
+          } finally {
+            _autoSubmitRunning = false;
+          }
+        };
+        // Auto-submit at lock, or rescue a complete unsubmitted draft up to 24h after lock
+        if (delay <= 0) {
+          if (delay >= -24 * 60 * 60 * 1000) run();
+        } else {
+          // Cap setTimeout (max ~24d); for longer, poll every minute
+          if (delay > 2147483647) {
+            _autoSubmitTimer = setInterval(() => {
+              if (Date.now() >= lockMs) {
+                clearInterval(_autoSubmitTimer);
+                _autoSubmitTimer = null;
+                run();
+              }
+            }, 30000);
+          } else {
+            _autoSubmitTimer = setTimeout(run, delay);
+          }
+        }
+      } catch (e) {
+        console.warn('scheduleAutoSubmitAtLock', e);
+      }
+    }
+
     function updateProgress() {
       const total = todayQuestions.length;
       let answered = 0;
@@ -4941,8 +5163,14 @@
         }
       });
       
-      const percent = (answered / total) * 100;
-      document.getElementById('progressFill').style.width = percent + '%';
+      const percent = total ? (answered / total) * 100 : 0;
+      const fill = document.getElementById('progressFill');
+      if (fill) fill.style.width = percent + '%';
+
+      // Auto-save draft as user clicks
+      if (selectedPickDate && auth.currentUser) {
+        saveDraftPicks(selectedPickDate);
+      }
     }
 
     async function renderConsensus(date) {
@@ -5158,6 +5386,7 @@
             updatedAt: new Date().toISOString(),
             seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27'
           });
+          clearDraftPicks(selectedPickDate);
           showMessage('Picks updated. Your new answers are saved.', 'success');
           submitBtn.disabled = false;
           submitBtn.textContent = 'Picks Updated ✓';
@@ -5194,6 +5423,7 @@
             }
           }
         } catch (streakErr) { console.warn('Streak update failed', streakErr); }
+        clearDraftPicks(selectedPickDate);
         showMessage(streakMsg + ' You can still update picks until lock.', 'success');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Update Picks';

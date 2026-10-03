@@ -7056,16 +7056,32 @@
     async function runFullAutoGrade(dateOverride, opts) {
       opts = opts || {};
       if (!checkAdminPermission()) return { ok: false };
-      const dateEl = document.getElementById('markAnswersDate')
-        || document.getElementById('correctAnswersDate')
-        || document.getElementById('autoSlateDate')
-        || document.getElementById('pickDate');
-      const date = dateOverride || (dateEl && dateEl.value) || '';
+      // Prefer Auto-Slate date (has value); markAnswersDate exists empty and was blocking
+      function resolveGradeDate() {
+        if (dateOverride) return dateOverride;
+        const ids = ['autoSlateDate', 'markAnswersDate', 'correctAnswersDate', 'pickDate', 'adminDate'];
+        for (let i = 0; i < ids.length; i++) {
+          const el = document.getElementById(ids[i]);
+          if (el && el.value) return el.value;
+        }
+        // Fallback: today ET
+        try {
+          if (typeof todayISO === 'function') return todayISO();
+        } catch (_) {}
+        const n = new Date();
+        return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
+      }
+      const date = resolveGradeDate();
       const msgId = 'autoGradeMsg';
       if (!date) {
-        if (!opts.quiet) showMessage('Select a date first.', 'error', msgId);
+        if (!opts.quiet) showMessage('Please select a date in Auto-Slate first.', 'error', msgId);
         return { ok: false };
       }
+      // Keep markAnswersDate in sync for answer form
+      try {
+        const mad = document.getElementById('markAnswersDate');
+        if (mad && !mad.value) mad.value = date;
+      } catch (_) {}
 
       function norm(s) {
         return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -7235,8 +7251,8 @@
           });
         }
         if (!finals.length) {
-          showMessage('No final games yet for ' + date + '. Run again after games finish.', 'error', msgId);
-          return;
+          showMessage('Games not ended yet for ' + date + '. No final scores available — try again after the games finish.', 'error', msgId);
+          return { ok: false, reason: 'not_final' };
         }
 
         // Preload box scores
@@ -7388,16 +7404,34 @@
         if (!aSnap.empty) await aSnap.docs[0].ref.set(payload, { merge: true });
         else await db.collection('correctAnswers').add(payload);
 
-        showMessage('Auto-graded ' + graded + ' / ' + items.length + ' questions (' + finals.length + ' final games).' + (skipped ? ' ' + skipped + ' need review.' : ''), 'success', msgId);
-        const loadBtn = document.getElementById('loadAnswersBtn') || document.getElementById('loadMarkAnswersBtn');
-        if (loadBtn) loadBtn.click();
+        if (graded > 0) {
+          showMessage('Success — auto-graded ' + graded + ' of ' + items.length + ' questions (' + finals.length + ' final game' + (finals.length === 1 ? '' : 's') + ').' + (skipped ? ' ' + skipped + ' still need review.' : ''), 'success', msgId);
+        } else {
+          showMessage('Could not grade any questions yet. Games may still be in progress, or questions need Auto-Slate grade metadata.', 'error', msgId);
+        }
+        try {
+          const mad = document.getElementById('markAnswersDate');
+          if (mad) mad.value = date;
+          const loadBtn = document.getElementById('loadQuestionsForAnswersBtn');
+          if (loadBtn) loadBtn.click();
+        } catch (_) {}
+        return { ok: graded > 0, graded: graded, skipped: skipped };
       } catch (e) {
         console.error(e);
         showMessage('Auto-grade failed: ' + (e.message || e), 'error', msgId);
+        return { ok: false };
       }
     };
     window.runFullAutoGrade = runFullAutoGrade;
-    document.getElementById('autoGradeFromEspnBtn')?.addEventListener('click', () => { runFullAutoGrade(); });
+    document.getElementById('autoGradeFromEspnBtn')?.addEventListener('click', async () => {
+      const d = document.getElementById('autoSlateDate')?.value;
+      if (!d) {
+        showMessage('Please select a date in Auto-Slate first.', 'error', 'autoGradeMsg');
+        return;
+      }
+      showMessage('Grading ' + d + '…', 'info', 'autoGradeMsg');
+      await runFullAutoGrade(d);
+    });
 
     (function setupInfoAccordions() {
       const section = document.getElementById('infoSection');

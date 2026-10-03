@@ -4042,8 +4042,23 @@
         if (snapshot.empty) {
           document.getElementById('lockTimeStatus').style.display = 'none';
           document.getElementById('countdownTimer').style.display = 'none';
+          document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = false; });
+          const cb = document.getElementById('clearBtn');
+          if (cb) cb.disabled = false;
           if (!hasSubmitted) {
-            document.getElementById('submitBtn').disabled = false;
+            const sb = document.getElementById('submitBtn');
+            if (sb) {
+              sb.disabled = false;
+              sb.textContent = 'Submit Picks';
+              sb.dataset.mode = 'submit';
+            }
+          } else {
+            const sb = document.getElementById('submitBtn');
+            if (sb) {
+              sb.disabled = false;
+              sb.textContent = 'Update Picks';
+              sb.dataset.mode = 'update';
+            }
           }
           return;
         }
@@ -4118,12 +4133,29 @@
             }
 
             if (!hasSubmitted) {
-              document.getElementById('submitBtn').disabled = false;
-              document.getElementById('submitBtn').textContent = 'Submit Picks';
+              const sb = document.getElementById('submitBtn');
+              if (sb) {
+                sb.disabled = false;
+                sb.textContent = 'Submit Picks';
+                sb.dataset.mode = 'submit';
+              }
             }
+            document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = false; });
+            const cb = document.getElementById('clearBtn');
+            if (cb) cb.disabled = false;
           } else {
             document.getElementById('lockTimeStatus').style.display = 'none';
             document.getElementById('countdownTimer').style.display = 'none';
+            // Open with no countdown — ensure inputs usable
+            document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = false; });
+            if (!hasSubmitted) {
+              const sb = document.getElementById('submitBtn');
+              if (sb) {
+                sb.disabled = false;
+                sb.textContent = 'Submit Picks';
+                sb.dataset.mode = 'submit';
+              }
+            }
           }
         }
       } catch (err) {
@@ -4746,7 +4778,27 @@
       if (!currentUser) return;
       const container = document.getElementById('questionsContainer');
       try {
+        // Cancel prior date timers so they can't disable the new form
+        clearAutoSubmitTimer();
+        try { clearInterval(window.countdownInterval); } catch (_) {}
+        window.countdownInterval = null;
+
         selectedPickDate = dateStr;
+
+        // Reset controls so a locked previous date can't leave inputs stuck
+        const sb0 = document.getElementById('submitBtn');
+        if (sb0) {
+          sb0.disabled = false;
+          sb0.textContent = 'Submit Picks';
+          sb0.dataset.mode = 'submit';
+        }
+        const cb0 = document.getElementById('clearBtn');
+        if (cb0) cb0.disabled = false;
+        const lockBanner = document.getElementById('lockTimeStatus');
+        if (lockBanner) lockBanner.style.display = 'none';
+        const cd = document.getElementById('countdownTimer');
+        if (cd) cd.style.display = 'none';
+
         if (container) container.innerHTML = '<div class="loading-state">Loading questions…</div>';
 
         // Only query this date (no full-collection scan — avoids permission/size failures)
@@ -4927,10 +4979,9 @@
       console.log(`   Question cards in DOM: ${document.querySelectorAll('.question-card').length}`);
 
       document.querySelectorAll('input[name^="q"]').forEach(input => {
+        input.disabled = false;
         input.addEventListener('change', updateProgress);
       });
-      
-      console.log(` Event listeners attached to ${document.querySelectorAll('input[name^="q"]').length} input elements`);
     }
 
     // --- Draft picks: auto-save clicks; auto-submit at lock if never submitted ---
@@ -5063,11 +5114,16 @@
       }
     }
 
-    async function scheduleAutoSubmitAtLock(dateStr) {
+    function clearAutoSubmitTimer() {
       if (_autoSubmitTimer) {
-        clearTimeout(_autoSubmitTimer);
+        try { clearTimeout(_autoSubmitTimer); } catch (_) {}
+        try { clearInterval(_autoSubmitTimer); } catch (_) {}
         _autoSubmitTimer = null;
       }
+    }
+
+    async function scheduleAutoSubmitAtLock(dateStr) {
+      clearAutoSubmitTimer();
       if (!dateStr || !auth.currentUser) return;
       try {
         const lockSnap = await db.collection('lockTimes').where('date', '==', dateStr).get();
@@ -5103,15 +5159,18 @@
 
             const ok = await persistAnswersToFirestore(dateStr, answers, { auto: true, forceAtLock: true });
             if (ok) {
-              showMessage('Picks auto-submitted at lock. Your answers are saved.', 'success');
-              const sb = document.getElementById('submitBtn');
-              if (sb) {
-                sb.disabled = true;
-                sb.textContent = 'Locked — picks saved';
-                sb.dataset.mode = 'locked';
+              // Only update UI if user is still viewing this date
+              if (selectedPickDate === dateStr) {
+                showMessage('Picks auto-submitted at lock. Your answers are saved.', 'success');
+                const sb = document.getElementById('submitBtn');
+                if (sb) {
+                  sb.disabled = true;
+                  sb.textContent = 'Locked — picks saved';
+                  sb.dataset.mode = 'locked';
+                }
+                document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = true; });
+                try { await renderConsensus(dateStr); } catch (_) {}
               }
-              document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = true; });
-              try { await renderConsensus(dateStr); } catch (_) {}
             }
           } catch (e) {
             console.warn('auto-submit at lock failed', e);
@@ -5127,8 +5186,7 @@
           if (delay > 2147483647) {
             _autoSubmitTimer = setInterval(() => {
               if (Date.now() >= lockMs) {
-                clearInterval(_autoSubmitTimer);
-                _autoSubmitTimer = null;
+                clearAutoSubmitTimer();
                 run();
               }
             }, 30000);

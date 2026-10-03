@@ -5236,47 +5236,57 @@
         const picksSnapshot = await db.collection('picks').where('date', '==', date).get();
         if (picksSnapshot.empty) return;
 
-        // One document per user/date — updates overwrite answers, so counts stay correct
-        const total = picksSnapshot.size;
-        const stats = {}; // { qIdx: { optionKey: count } }
-
+        // Dedupe: one entry per user (latest wins) so double-submits don't skew %
+        const byUser = {};
         picksSnapshot.docs.forEach(doc => {
-          const answers = doc.data().answers || [];
+          const data = doc.data() || {};
+          const uid = data.userId || data.userEmail || doc.id;
+          const ts = Date.parse(data.updatedAt || data.submittedAt || data.autoSubmittedAt || 0) || 0;
+          if (!byUser[uid] || ts >= byUser[uid].ts) {
+            byUser[uid] = { answers: data.answers || [], ts: ts };
+          }
+        });
+        const uniquePicks = Object.values(byUser);
+        const totalUsers = uniquePicks.length;
+        if (!totalUsers) return;
+
+        const stats = {}; // { qIdx: { optionKey: count } }
+        const answeredCount = {}; // { qIdx: number who answered }
+
+        uniquePicks.forEach(p => {
+          const answers = p.answers || [];
           answers.forEach((ans, qIdx) => {
             if (ans === undefined || ans === null || ans === '') return;
             const key = String(ans);
             if (!stats[qIdx]) stats[qIdx] = {};
             stats[qIdx][key] = (stats[qIdx][key] || 0) + 1;
+            answeredCount[qIdx] = (answeredCount[qIdx] || 0) + 1;
           });
         });
 
-        // Update UI for each question
         todayQuestions.forEach((q, i) => {
           const qStats = stats[i] || {};
-          const card = document.querySelector(`.question-card[data-index="${i}"]`);
+          const card = document.querySelector('.question-card[data-index="' + i + '"]');
           if (!card) return;
+          const denom = answeredCount[i] || totalUsers;
+          if (!denom) return;
 
-          // For radio options, add percentages
-          if (q.question_type === 'over_under' || (q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple') || q.type === 'multiple' || q.type === 'multiple_choice' || !q.question_type) {
-            const labels = card.querySelectorAll('.option.radio-option');
-            labels.forEach(label => {
-              const input = label.querySelector('input');
-              if (input) {
-                const val = input.value;
-                const count = qStats[val] || 0;
-                const percent = ((count / total) * 100).toFixed(0);
-                
-                // Add or update badge
-                let badge = label.querySelector('.consensus-badge');
-                if (!badge) {
-                  badge = document.createElement('span');
-                  badge.className = 'consensus-badge';
-                  label.appendChild(badge);
-                }
-                badge.textContent = `${percent}% of fans`;
-              }
-            });
-          }
+          const labels = card.querySelectorAll('.option.radio-option');
+          labels.forEach(label => {
+            const input = label.querySelector('input');
+            if (!input) return;
+            const val = input.value;
+            const count = qStats[val] || 0;
+            const percent = Math.round((count / denom) * 100);
+
+            let badge = label.querySelector('.consensus-badge');
+            if (!badge) {
+              badge = document.createElement('span');
+              badge.className = 'consensus-badge';
+              label.appendChild(badge);
+            }
+            badge.textContent = percent + '% of fans';
+          });
         });
       } catch (err) {
         console.error('Error rendering consensus:', err);

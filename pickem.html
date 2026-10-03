@@ -1614,6 +1614,7 @@
         
         <div class="submit-section">
           <button type="button" class="btn btn-primary" id="submitBtn">Submit Picks</button>
+          <p id="editUntilLockHint" style="margin:0.5rem 0 0;font-size:0.8rem;color:var(--mid);text-align:center;">You can change picks after submitting until the lock time.</p>
           <button type="button" class="btn btn-secondary" id="clearBtn">Clear All</button>
         </div>
       </div>
@@ -4072,11 +4073,26 @@
             lockReason = 'Submissions are closed. Locked at ' + timeLabel + ' ET on ' + datePretty + '.';
           }
           document.getElementById('lockTimeStatusMessage').textContent = lockReason;
-          if (!hasSubmitted) {
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('submitBtn').textContent = 'Submissions Closed';
+          const sb = document.getElementById('submitBtn');
+          if (sb) {
+            sb.disabled = true;
+            sb.textContent = hasSubmitted ? 'Locked — picks saved' : 'Submissions Closed';
+            sb.dataset.mode = 'locked';
           }
+          const cb = document.getElementById('clearBtn');
+          if (cb) cb.disabled = true;
+          document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = true; });
         } else {
+          // Still open — if they already submitted, keep Update mode (checkSubmissionForDate also sets this)
+          if (hasSubmitted) {
+            const sb = document.getElementById('submitBtn');
+            if (sb) {
+              sb.disabled = false;
+              sb.textContent = 'Update Picks';
+              sb.dataset.mode = 'update';
+            }
+            document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = false; });
+          }
           const timeUntil = getTimeUntilLock(date, lockTime);
           if (timeUntil && timeUntil.diff > 0) {
             document.getElementById('lockTimeStatus').style.display = 'none';
@@ -5028,7 +5044,7 @@
             sb.disabled = false;
             sb.textContent = 'Update Picks';
             sb.dataset.mode = 'update';
-            showMessage('Your picks are loaded. Change them anytime, then tap Update Picks before lock.', 'success');
+            showMessage('Picks loaded. Edit anytime, then tap Update Picks before lock.', 'success');
           }
           renderConsensus(dateStr);
         } else if (isLocked) {
@@ -5142,11 +5158,16 @@
             updatedAt: new Date().toISOString(),
             seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27'
           });
-          showMessage('Picks updated successfully! Percentages refreshed.', 'success');
+          showMessage('Picks updated. Your new answers are saved.', 'success');
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Update Picks';
+          submitBtn.textContent = 'Picks Updated ✓';
           submitBtn.dataset.mode = 'update';
           isSubmitting = false;
+          setTimeout(() => {
+            if (submitBtn && submitBtn.dataset.mode === 'update' && !submitBtn.disabled) {
+              submitBtn.textContent = 'Update Picks';
+            }
+          }, 2000);
           try { await renderConsensus(selectedPickDate); } catch (_) {}
           return;
         }
@@ -5173,7 +5194,7 @@
             }
           }
         } catch (streakErr) { console.warn('Streak update failed', streakErr); }
-        showMessage(streakMsg + ' You can still change picks until lock.', 'success');
+        showMessage(streakMsg + ' You can still update picks until lock.', 'success');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Update Picks';
         isSubmitting = false;

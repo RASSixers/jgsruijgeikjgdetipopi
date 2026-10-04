@@ -1293,7 +1293,109 @@
     #leagueSelect { display: none !important; }
 
     .league-code { font-family: ui-monospace, monospace; font-weight: 700; letter-spacing: 0.08em; color: var(--sixers-blue); }
-    .recap-btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 1rem; }
+    
+    .season-lb-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.85rem;
+      margin-bottom: 1.15rem;
+      padding: 1rem 1.15rem;
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(0,107,182,0.06), rgba(0,107,182,0.02));
+    }
+    .season-lb-kicker {
+      margin: 0 0 0.2rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--sixers-blue, #006BB6);
+    }
+    .season-lb-title {
+      margin: 0 0 0.25rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .season-lb-sub {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--mid);
+      line-height: 1.4;
+    }
+    .recap-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.85rem 0 1rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .recap-btn-row .btn { min-width: 140px; }
+
+    /* Share graphic — brand centered at top */
+    #pickem-social-export .sg-wordmark {
+      margin: 0 auto 4px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #006BB6;
+    }
+    #pickem-social-export .sg-subtitle {
+      text-align: center;
+      margin: 0 0 28px;
+    }
+    #pickem-social-export .sg-bottom-mark { display: none; }
+
+    .grp-period-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 0 0 0.85rem;
+    }
+    .grp-period-controls input[type="date"],
+    .grp-period-controls select {
+      max-width: 180px;
+    }
+
+    @media (max-width: 768px) {
+      .date-slider-controls {
+        display: grid !important;
+        grid-template-columns: 40px 1fr 40px;
+        align-items: center;
+        justify-items: center;
+        gap: 0.35rem;
+        width: 100%;
+      }
+      .date-picker-container {
+        justify-content: center !important;
+        width: 100% !important;
+      }
+      .date-nav-btn {
+        justify-self: center;
+      }
+      .recap-btn-row {
+        flex-direction: column;
+        width: 100%;
+      }
+      .recap-btn-row .btn {
+        width: 100%;
+        max-width: 320px;
+      }
+      .season-lb-header {
+        flex-direction: column;
+      }
+      .season-lb-header .btn {
+        width: 100%;
+      }
+    }
+
 
     /* Standings-style share graphic */
     #pickem-social-export {
@@ -1644,8 +1746,8 @@
         </div>
 
         <div class="recap-btn-row">
-          <button type="button" class="btn btn-secondary" id="shareRecapBtn">Share my recap card</button>
-          <span id="shareRecapStatus" style="font-size:0.8rem;color:var(--mid);"></span>
+          <button type="button" class="btn btn-secondary" id="sharePicksBtn">Share my picks</button>
+          <button type="button" class="btn btn-secondary" id="shareResultsBtn">Share my results</button>
         </div>
         <div id="questionsContainer" class="questions-container"></div>
         
@@ -1746,10 +1848,13 @@
 
       <!-- Season Leaderboard -->
       <div id="season-lb" class="tab-content">
-        <div style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+        <div class="season-lb-header">
+          <div class="season-lb-header-text">
+            <p class="season-lb-kicker">Season standings</p>
+            <h3 class="season-lb-title" id="currentSeasonLabel">Season</h3>
+            <p class="season-lb-sub">Ranked by correct answers, then streak, then tiebreaker accuracy</p>
+          </div>
           <button type="button" class="btn btn-secondary" id="refreshSeasonBtn">Refresh</button>
-          <span id="currentSeasonLabel" style="font-size:0.85rem;font-weight:700;color:var(--sixers-blue);"></span>
-          <span style="font-size:0.8rem;color:var(--mid);">Ranked by correct, then streak, then TB accuracy</span>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -1880,11 +1985,25 @@
               </div>
             </div>
           </div>
-          <div id="grpPeriodTabs" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.75rem 0 0.85rem;">
+          <div id="grpPeriodTabs" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.75rem 0 0.5rem;">
             <button type="button" class="btn btn-secondary grp-period-btn active" data-grp-period="daily" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Daily</button>
             <button type="button" class="btn btn-secondary grp-period-btn" data-grp-period="weekly" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Weekly</button>
             <button type="button" class="btn btn-secondary grp-period-btn" data-grp-period="monthly" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Monthly</button>
             <button type="button" class="btn btn-secondary grp-period-btn" data-grp-period="overall" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Overall</button>
+          </div>
+          <div id="grpPeriodControls" class="grp-period-controls">
+            <div id="grpCtrlDaily" style="display:flex;align-items:center;gap:0.4rem;">
+              <label class="form-label" style="margin:0;font-size:0.78rem;">Date</label>
+              <input type="date" id="grpLbDate" class="form-input" style="padding:0.35rem 0.5rem;" />
+            </div>
+            <div id="grpCtrlWeekly" style="display:none;align-items:center;gap:0.4rem;">
+              <label class="form-label" style="margin:0;font-size:0.78rem;">Week</label>
+              <select id="grpLbWeek" class="form-input" style="padding:0.35rem 0.5rem;min-width:140px;"></select>
+            </div>
+            <div id="grpCtrlMonthly" style="display:none;align-items:center;gap:0.4rem;">
+              <label class="form-label" style="margin:0;font-size:0.78rem;">Month</label>
+              <input type="month" id="grpLbMonth" class="form-input" style="padding:0.35rem 0.5rem;" />
+            </div>
           </div>
           <div class="grp-invite-box" id="grpInviteBox" style="display:none;">
             <div style="font-weight:700;margin-bottom:0.35rem;">Invite friends</div>
@@ -8562,6 +8681,7 @@
       document.getElementById('grpListSection').style.display = 'none';
       document.getElementById('grpPublicSection').style.display = 'none';
       document.getElementById('grpDetailSection').style.display = 'block';
+      try { setupGrpPeriodControls(_grpStandingsPeriod || 'daily'); } catch (_) {}
       document.getElementById('grpDetailName').textContent = g.name;
       const visLabel = g.visibility === 'public' ? 'Public' : 'Private';
       document.getElementById('grpDetailMeta').textContent = visLabel + ' group';
@@ -8617,12 +8737,44 @@
       startGroupChat(groupId);
     }
 
-    let _grpStandingsPeriod = 'overall';
+    let _grpStandingsPeriod = 'daily';
 
-    async function buildLeaderboardEntries(period) {
+    function setupGrpPeriodControls(period) {
+      const d = document.getElementById('grpCtrlDaily');
+      const w = document.getElementById('grpCtrlWeekly');
+      const m = document.getElementById('grpCtrlMonthly');
+      if (d) d.style.display = period === 'daily' ? 'flex' : 'none';
+      if (w) w.style.display = period === 'weekly' ? 'flex' : 'none';
+      if (m) m.style.display = period === 'monthly' ? 'flex' : 'none';
+      if (period === 'daily') {
+        const el = document.getElementById('grpLbDate');
+        if (el && !el.value) el.value = formatDateForComparison(new Date());
+      }
+      if (period === 'weekly') {
+        const sel = document.getElementById('grpLbWeek');
+        if (sel && !sel.options.length) {
+          const weeks = (window.SixersSeason && SixersSeason.weeks) || [];
+          sel.innerHTML = weeks.map(x => '<option value="' + x.week + '">Week ' + x.week + ' (' + x.start + ')</option>').join('')
+            || '<option value="1">Week 1</option>';
+          sel.value = String(getCurrentWeekNumber());
+        }
+      }
+      if (period === 'monthly') {
+        const el = document.getElementById('grpLbMonth');
+        if (el && !el.value) {
+          const n = new Date();
+          el.value = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+        }
+      }
+    }
+
+
+
+    async function buildLeaderboardEntries(period, opts) {
+      opts = opts || {};
       // Returns same shape as main leaderboards: correct_count, total_count, percentage, streak, username
       if (period === 'daily') {
-        const dateToUse = formatDateForComparison(new Date());
+        const dateToUse = opts.date || formatDateForComparison(new Date());
         const dailyScores = await calculateScoresForDate(dateToUse, null);
         return dailyScores.map(score => ({
           username: score.username,
@@ -8633,7 +8785,7 @@
         })).sort((a, b) => b.correct_count - a.correct_count);
       }
       if (period === 'weekly') {
-        const weekNumber = getCurrentWeekNumber();
+        const weekNumber = opts.week != null ? Number(opts.week) : getCurrentWeekNumber();
         const range = getWeekRangeFromSchedule(weekNumber);
         if (!range) return [];
         const picksSnap = await db.collection('picks').get();
@@ -8662,9 +8814,18 @@
         })).sort((a, b) => b.correct_count - a.correct_count);
       }
       if (period === 'monthly') {
-        const now = new Date();
-        const startDateStr = formatDateForComparison(new Date(now.getFullYear(), now.getMonth(), 1));
-        const endDateStr = formatDateForComparison(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+        let y, m;
+        if (opts.month && /^\d{4}-\d{2}$/.test(opts.month)) {
+          const parts = opts.month.split('-');
+          y = parseInt(parts[0], 10);
+          m = parseInt(parts[1], 10) - 1;
+        } else {
+          const now = new Date();
+          y = now.getFullYear();
+          m = now.getMonth();
+        }
+        const startDateStr = formatDateForComparison(new Date(y, m, 1));
+        const endDateStr = formatDateForComparison(new Date(y, m + 1, 0));
         const picksSnap = await db.collection('picks').get();
         const datesInRange = new Set();
         picksSnap.docs.forEach(doc => {
@@ -8708,7 +8869,15 @@
           const m = d.data();
           if (m.username) memberUsernames.add(String(m.username).toLowerCase());
         });
-        const all = await buildLeaderboardEntries(period === 'overall' ? 'overall' : period);
+        const opts = {};
+        if (period === 'daily') {
+          opts.date = document.getElementById('grpLbDate')?.value || formatDateForComparison(new Date());
+        } else if (period === 'weekly') {
+          opts.week = document.getElementById('grpLbWeek')?.value || getCurrentWeekNumber();
+        } else if (period === 'monthly') {
+          opts.month = document.getElementById('grpLbMonth')?.value || '';
+        }
+        const all = await buildLeaderboardEntries(period === 'overall' ? 'overall' : period, opts);
         const filtered = (all || []).filter(r => memberUsernames.has(String(r.username || '').toLowerCase()));
         const myName = (auth.currentUser && (auth.currentUser.displayName || (auth.currentUser.email || '').split('@')[0]) || '').toLowerCase();
         if (!filtered.length) {
@@ -8752,7 +8921,9 @@
             b.style.border = '1px solid var(--border-light)';
           }
         });
-        await renderGroupStandings(_activeGroupId, periodBtn.getAttribute('data-grp-period'));
+        const p = periodBtn.getAttribute('data-grp-period');
+        setupGrpPeriodControls(p);
+        await renderGroupStandings(_activeGroupId, p);
         return;
       }
 
@@ -8784,6 +8955,16 @@
         await confirmDeleteGroup(_activeGroupId);
         return;
       }
+    });
+
+    document.getElementById('grpLbDate')?.addEventListener('change', () => {
+      if (_activeGroupId) renderGroupStandings(_activeGroupId, 'daily');
+    });
+    document.getElementById('grpLbWeek')?.addEventListener('change', () => {
+      if (_activeGroupId) renderGroupStandings(_activeGroupId, 'weekly');
+    });
+    document.getElementById('grpLbMonth')?.addEventListener('change', () => {
+      if (_activeGroupId) renderGroupStandings(_activeGroupId, 'monthly');
     });
 
     async function confirmDeleteGroup(groupId) {
@@ -9090,6 +9271,130 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
     // ---- Recap card (standings-style graphic) ----
     let _lastRecapUrl = null;
     
+    
+    async function fillShareGraphic(mode, dateStr) {
+      // mode: 'picks' | 'results'
+      const user = auth.currentUser;
+      if (!user) return false;
+      let questions = todayQuestions || [];
+      let answers = [];
+      let correctMap = {};
+      try {
+        const qSnap = await db.collection('questions').where('date', '==', dateStr).get();
+        if (!qSnap.empty) questions = qSnap.docs[0].data().items || questions;
+        if (mode === 'results') {
+          const aSnap = await db.collection('correctAnswers').where('date', '==', dateStr).get();
+          if (!aSnap.empty) {
+            (aSnap.docs[0].data().answers || []).forEach(a => { correctMap[a.questionId] = a.correctAnswer; });
+          }
+        }
+        let pSnap = await db.collection('picks').where('date', '==', dateStr).where('userId', '==', user.uid).get();
+        if (pSnap.empty && user.email) {
+          pSnap = await db.collection('picks').where('date', '==', dateStr).where('userEmail', '==', user.email).get();
+        }
+        // Prefer live form answers if viewing that date
+        if (selectedPickDate === dateStr) {
+          const live = [];
+          let all = true;
+          questions.forEach((q, i) => {
+            const radio = document.querySelector('input[name="q' + i + '"]:checked');
+            const input = document.querySelector('input[name="q' + i + '"]');
+            if (radio) live.push(radio.value);
+            else if (input && input.type === 'number' && input.value !== '') live.push(parseFloat(input.value));
+            else { live.push(null); all = false; }
+          });
+          if (live.some(x => x != null)) answers = live;
+        }
+        if (!answers.length && !pSnap.empty) answers = pSnap.docs[0].data().answers || [];
+      } catch (e) { console.warn(e); }
+
+      const name = String(user.displayName || (user.email || '').split('@')[0] || 'Player').slice(0, 18);
+      let correct = 0;
+      const lines = [];
+      questions.forEach((q, i) => {
+        const mine = answers[i];
+        const label = String(q.question || ('Q' + (i + 1))).slice(0, 72);
+        if (mode === 'picks') {
+          lines.push({ label: label, detail: mine != null && mine !== '' ? String(mine) : '—', ok: null });
+        } else {
+          const right = correctMap[i];
+          let ok = null;
+          if (right != null && mine != null && mine !== '') {
+            ok = String(mine).toLowerCase() === String(right).toLowerCase() || mine === right;
+            if (ok) correct++;
+          }
+          lines.push({
+            label: label,
+            detail: (mine != null ? String(mine) : '—') + (right != null ? ' → ' + right : ''),
+            ok: ok
+          });
+        }
+      });
+
+      const sub = document.getElementById('pickemSgSubtitle');
+      if (sub) sub.textContent = (mode === 'picks' ? 'MY PICKS' : 'MY RESULTS') + ' · ' + dateStr;
+      const stats = document.getElementById('pickemSgStats');
+      if (stats) {
+        if (mode === 'picks') {
+          const filled = answers.filter(a => a != null && a !== '').length;
+          stats.innerHTML =
+            '<div class="sg-stat"><b>' + filled + '/' + questions.length + '</b><span>Picks set</span></div>' +
+            '<div class="sg-stat"><b>' + name + '</b><span>Player</span></div>' +
+            '<div class="sg-stat"><b>' + dateStr + '</b><span>Date</span></div>';
+        } else {
+          const totalQ = questions.length || answers.length || 0;
+          const pct = totalQ ? Math.round((correct / totalQ) * 100) : 0;
+          stats.innerHTML =
+            '<div class="sg-stat"><b>' + correct + '/' + totalQ + '</b><span>Correct</span></div>' +
+            '<div class="sg-stat"><b>' + pct + '%</b><span>Accuracy</span></div>' +
+            '<div class="sg-stat"><b>' + name + '</b><span>Player</span></div>';
+        }
+      }
+      const list = document.getElementById('pickemSgList');
+      if (list) {
+        list.innerHTML = lines.map(l => {
+          if (mode === 'picks') {
+            return '<li><span>' + l.label + '</span><span>' + l.detail + '</span></li>';
+          }
+          const mark = l.ok === true ? '✓' : (l.ok === false ? '✗' : '·');
+          const cls = l.ok === true ? 'sg-ok' : (l.ok === false ? 'sg-no' : '');
+          return '<li><span>' + l.label + '</span><span class="' + cls + '">' + mark + '</span></li>';
+        }).join('') || '<li>No picks for this date</li>';
+      }
+      return true;
+    }
+
+    async function exportShareGraphic(mode) {
+      if (typeof html2canvas !== 'function') return;
+      if (!auth.currentUser) return;
+      const dateStr = document.getElementById('pickDate')?.value || selectedPickDate;
+      if (!dateStr) return;
+      await fillShareGraphic(mode, dateStr);
+      const node = document.querySelector('#pickem-social-export .sg-page');
+      if (!node) return;
+      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+      const url = canvas.toDataURL('image/png');
+      const prev = document.getElementById('pickemExportPreview');
+      if (prev) prev.src = url;
+      const modal = document.getElementById('pickemExportModal');
+      if (modal) modal.classList.add('open');
+      const title = modal && modal.querySelector('h2');
+      if (title) title.textContent = mode === 'picks' ? 'Picks card ready' : 'Results card ready';
+      const dl = document.getElementById('pickemExportDownload');
+      if (dl) {
+        dl.onclick = () => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'sixershoops-' + mode + '-' + dateStr + '.png';
+          a.click();
+        };
+      }
+    }
+
+    document.getElementById('sharePicksBtn')?.addEventListener('click', () => exportShareGraphic('picks'));
+    document.getElementById('shareResultsBtn')?.addEventListener('click', () => exportShareGraphic('results'));
+
+
     async function shareStandingsCard(scope, period, groupId) {
       // scope: 'global' | 'group'
       const status = document.getElementById('shareRecapStatus');
@@ -9167,12 +9472,12 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           a.click();
         };
       }
-      if (status) status.textContent = 'Card ready.';
+      
     }
 
     async function buildRecapCard() {
       const status = document.getElementById('shareRecapStatus');
-      if (status) status.textContent = 'Building…';
+      
       if (typeof html2canvas !== 'function') {
         if (status) status.textContent = 'Share library not loaded.';
         return;

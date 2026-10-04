@@ -621,6 +621,48 @@
     :root.dark-mode .question-card { background: var(--card-bg); border-color: var(--border-light); }
     :root.dark-mode .question-card.answered { background: rgba(22,163,74,0.05); }
 
+    /* Graded results on prior days */
+    .question-card.result-correct {
+      border-color: rgba(22, 163, 74, 0.45);
+      background: linear-gradient(135deg, rgba(22,163,74,0.08), rgba(22,163,74,0.02));
+    }
+    .question-card.result-correct::before { background: #16a34a; }
+    .question-card.result-wrong {
+      border-color: rgba(239, 68, 68, 0.45);
+      background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02));
+    }
+    .question-card.result-wrong::before { background: #ef4444; }
+    .question-card.result-pending {
+      border-color: rgba(148, 163, 184, 0.35);
+    }
+    .result-pill {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .result-pill.correct { background: rgba(22,163,74,0.15); color: #15803d; }
+    .result-pill.wrong { background: rgba(239,68,68,0.15); color: #b91c1c; }
+    .result-pill.pending { background: rgba(148,163,184,0.2); color: var(--mid); }
+    .option.radio-option.result-pick-correct {
+      outline: 2px solid rgba(22,163,74,0.55);
+      background: rgba(22,163,74,0.08);
+      border-radius: 10px;
+    }
+    .option.radio-option.result-pick-wrong {
+      outline: 2px solid rgba(239,68,68,0.45);
+      background: rgba(239,68,68,0.06);
+      border-radius: 10px;
+    }
+    .option.radio-option.result-answer-key {
+      outline: 2px dashed rgba(22,163,74,0.5);
+      border-radius: 10px;
+    }
+
+
     .question-number {
       font-size: 0.6rem; font-weight: 600; color: var(--mid);
       text-transform: uppercase; letter-spacing: .14em; margin-bottom: 6px;
@@ -4800,6 +4842,8 @@
         if (cd) cd.style.display = 'none';
 
         if (container) container.innerHTML = '<div class="loading-state">Loading questions…</div>';
+        const oldBar = document.getElementById('resultsSummaryBar');
+        if (oldBar) oldBar.style.display = 'none';
 
         // Only query this date (no full-collection scan — avoids permission/size failures)
         const snapshot = await db.collection('questions').where('date', '==', dateStr).get();
@@ -4897,6 +4941,7 @@
         } catch (e) { console.warn('draft/auto-submit setup', e); }
         try { await checkAndDisplayLockStatus(dateStr); } catch (e) { console.warn('lock status', e); }
         try { await renderConsensus(dateStr); } catch (e) { console.warn('consensus', e); }
+        try { await applyGradedResults(dateStr); } catch (e) { console.warn('graded results', e); }
       } catch (err) {
         console.error('Error loading questions:', err);
         if (container) {
@@ -5228,6 +5273,130 @@
       // Auto-save draft as user clicks
       if (selectedPickDate && auth.currentUser) {
         saveDraftPicks(selectedPickDate);
+      }
+    }
+
+
+    function answersMatch(userAns, correctAns) {
+      if (userAns == null || correctAns == null) return false;
+      if (Array.isArray(correctAns)) {
+        return correctAns.map(String).some(c => answersMatch(userAns, c));
+      }
+      const a = String(userAns).trim().toLowerCase();
+      const b = String(correctAns).trim().toLowerCase();
+      if (a === b) return true;
+      // soft team name match
+      const na = a.replace(/[^a-z0-9]/g, '');
+      const nb = b.replace(/[^a-z0-9]/g, '');
+      return na && nb && (na === nb || na.includes(nb) || nb.includes(na));
+    }
+
+    async function applyGradedResults(dateStr) {
+      try {
+        if (!dateStr || !auth.currentUser) return;
+        const cards = document.querySelectorAll('#questionsContainer .question-card');
+        if (!cards.length) return;
+
+        // Clear prior result UI
+        cards.forEach(card => {
+          card.classList.remove('result-correct', 'result-wrong', 'result-pending');
+          card.querySelectorAll('.result-pill').forEach(el => el.remove());
+          card.querySelectorAll('.option.radio-option').forEach(lab => {
+            lab.classList.remove('result-pick-correct', 'result-pick-wrong', 'result-answer-key');
+          });
+        });
+
+        const aSnap = await db.collection('correctAnswers').where('date', '==', dateStr).get();
+        if (aSnap.empty) return; // not graded — show picks only, no pending labels
+
+
+        const ansDoc = aSnap.docs[0].data() || {};
+        const list = Array.isArray(ansDoc.answers) ? ansDoc.answers : [];
+        const byQ = {};
+        list.forEach(a => {
+          if (a && a.questionId != null) byQ[Number(a.questionId)] = a.correctAnswer;
+        });
+
+        const pSnap = await db.collection('picks')
+          .where('userId', '==', auth.currentUser.uid)
+          .where('date', '==', dateStr)
+          .get();
+        if (pSnap.empty) return; // no picks to score for this user
+
+        // latest pick doc
+        let best = pSnap.docs[0];
+        pSnap.docs.forEach(d => {
+          const t = Date.parse((d.data() || {}).updatedAt || (d.data() || {}).submittedAt || 0) || 0;
+          const bt = Date.parse((best.data() || {}).updatedAt || (best.data() || {}).submittedAt || 0) || 0;
+          if (t >= bt) best = d;
+        });
+        const userAnswers = (best.data() || {}).answers || [];
+
+        let correctCount = 0;
+        let gradedCount = 0;
+
+        cards.forEach(card => {
+          const i = parseInt(card.getAttribute('data-index'), 10);
+          if (isNaN(i)) return;
+          const correct = byQ[i];
+          const userAns = userAnswers[i];
+          if (correct === undefined || correct === null || correct === '') {
+            return; // skip ungraded questions — no label
+          }
+          gradedCount++;
+          const ok = answersMatch(userAns, correct);
+          if (ok) correctCount++;
+          card.classList.add(ok ? 'result-correct' : 'result-wrong');
+
+          // highlight user's pick + correct answer
+          card.querySelectorAll('.option.radio-option').forEach(lab => {
+            const input = lab.querySelector('input');
+            if (!input) return;
+            const val = input.value;
+            if (userAns != null && answersMatch(val, userAns)) {
+              lab.classList.add(ok ? 'result-pick-correct' : 'result-pick-wrong');
+            }
+            if (!ok && answersMatch(val, correct)) {
+              lab.classList.add('result-answer-key');
+            }
+          });
+
+          const pill = document.createElement('div');
+          pill.className = 'result-pill ' + (ok ? 'correct' : 'wrong');
+          if (ok) {
+            pill.textContent = 'Correct';
+          } else {
+            const show = Array.isArray(correct) ? correct.join(', ') : String(correct);
+            pill.textContent = 'Incorrect — answer: ' + show;
+          }
+          const opts = card.querySelector('.options');
+          if (opts) opts.appendChild(pill);
+          else card.appendChild(pill);
+        });
+
+        // Summary banner above questions
+        let bar = document.getElementById('resultsSummaryBar');
+        if (!bar) {
+          bar = document.createElement('div');
+          bar.id = 'resultsSummaryBar';
+          bar.style.cssText = 'margin:0 0 1rem;padding:0.75rem 1rem;border-radius:12px;font-weight:700;font-size:0.9rem;';
+          const container = document.getElementById('questionsContainer');
+          if (container && container.parentNode) {
+            container.parentNode.insertBefore(bar, container);
+          }
+        }
+        if (gradedCount > 0) {
+          bar.style.display = 'block';
+          bar.style.background = correctCount === gradedCount
+            ? 'rgba(22,163,74,0.12)'
+            : 'rgba(0,107,182,0.08)';
+          bar.style.border = '1px solid rgba(0,0,0,0.06)';
+          bar.textContent = 'Your results: ' + correctCount + ' / ' + gradedCount + ' correct';
+        } else {
+          bar.style.display = 'none';
+        }
+      } catch (e) {
+        console.warn('applyGradedResults', e);
       }
     }
 
@@ -8661,13 +8830,20 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           try {
             if (ev.date) {
               const dt = new Date(ev.date);
-              tipET = String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0');
+              // Always lock in Eastern Time, not the browser's local zone
+              tipET = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'America/New_York',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              }).format(dt);
             }
           } catch (_) {}
           return {
             source: 'espn',
             date: dateStr,
             tipET: tipET || '19:30',
+            tipISO: ev.date || null,
             home: homeAbbr,
             away: awayAbbr,
             homeName: homeName,
@@ -9230,14 +9406,30 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         });
         if (!items.length) return { ok: false, reason: 'no_questions' };
 
-        const tips = games.map(g => g.tipET).filter(Boolean).sort();
-        let tip24 = tips[0] || '19:30';
+        // Lock = earliest tip-off that day (ET), unless admin overrides
+        function earliestTipET(list) {
+          let best = null; // minutes from midnight
+          let bestStr = null;
+          (list || []).forEach(g => {
+            const t = (g && g.tipET) ? String(g.tipET).trim() : '';
+            if (!t || !/^\d{1,2}:\d{2}/.test(t)) return;
+            const parts = t.split(':');
+            const mins = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+            if (best == null || mins < best) {
+              best = mins;
+              bestStr = String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0');
+            }
+          });
+          return bestStr || '19:30';
+        }
+        let tip24 = earliestTipET(games);
         let lockDateStr = dateStr;
-        // Manual lock override: date + time (ET)
+        // Manual override only if filled in
         const lockDateOv = document.getElementById('autoLockDateOverride')?.value;
         const lockOv = document.getElementById('autoLockOverride')?.value;
         if (lockDateOv) lockDateStr = lockDateOv;
         if (lockOv) tip24 = lockOv;
+        // Offset only applies when NOT using manual time override
         const off = Number(document.getElementById('autoSlateLockOffset')?.value || 0);
         if (!lockOv && off > 0 && tip24) {
           try {
@@ -9391,7 +9583,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           runAutoPipeline(document.getElementById('autoPipelineStatus')).catch(() => {});
         }
       }, 4000);
-      // Re-run every 30 minutes while page open
+      // Re-run every 10 minutes while admin page is open
       setInterval(() => {
         if (typeof isCurrentUserAdmin !== 'undefined' && isCurrentUserAdmin && window.db) {
           runAutoPipeline(null).catch(() => {});

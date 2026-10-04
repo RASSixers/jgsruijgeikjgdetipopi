@@ -1864,13 +1864,27 @@
         </div>
 
         <div id="grpDetailSection" style="display:none;margin-top:1.25rem;">
-          <div class="grp-detail-head">
+          <div class="grp-detail-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem;flex-wrap:wrap;">
             <div>
               <button type="button" class="btn btn-secondary" id="grpBackBtn" style="margin-bottom:0.65rem;padding:0.35rem 0.7rem;font-size:0.78rem;">← All groups</button>
               <h2 class="grp-detail-title" id="grpDetailName">Group</h2>
               <p class="grp-detail-sub" id="grpDetailMeta"></p>
             </div>
-            <button type="button" class="btn btn-secondary" id="leagueRefreshBtn">Refresh</button>
+            <div style="display:flex;align-items:center;gap:0.4rem;position:relative;">
+              <button type="button" class="btn btn-secondary" id="leagueRefreshBtn">Refresh</button>
+              <button type="button" class="btn btn-secondary" id="grpMenuBtn" title="More" style="min-width:2.25rem;padding:0.4rem 0.55rem;font-weight:800;">⋯</button>
+              <div id="grpMenuDropdown" style="display:none;position:absolute;right:0;top:110%;z-index:40;min-width:180px;background:var(--card-bg,#fff);border:1px solid var(--border-light);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);padding:0.35rem;">
+                <button type="button" class="btn btn-secondary" id="grpMenuCopyInvite" style="width:100%;justify-content:flex-start;border:none;background:transparent;text-align:left;padding:0.55rem 0.75rem;">Copy invite link</button>
+                <button type="button" class="btn btn-secondary" id="grpMenuShare" style="width:100%;justify-content:flex-start;border:none;background:transparent;text-align:left;padding:0.55rem 0.75rem;">Share standings card</button>
+                <button type="button" id="grpMenuDelete" style="width:100%;text-align:left;padding:0.55rem 0.75rem;border:none;background:transparent;color:#b91c1c;font-weight:700;cursor:pointer;border-radius:8px;">Delete group</button>
+              </div>
+            </div>
+          </div>
+          <div id="grpPeriodTabs" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.75rem 0 0.85rem;">
+            <button type="button" class="btn btn-secondary grp-period-btn active" data-grp-period="daily" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Daily</button>
+            <button type="button" class="btn btn-secondary grp-period-btn" data-grp-period="weekly" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Weekly</button>
+            <button type="button" class="btn btn-secondary grp-period-btn" data-grp-period="monthly" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Monthly</button>
+            <button type="button" class="btn btn-secondary grp-period-btn" data-grp-period="overall" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Overall</button>
           </div>
           <div class="grp-invite-box" id="grpInviteBox" style="display:none;">
             <div style="font-weight:700;margin-bottom:0.35rem;">Invite friends</div>
@@ -6334,6 +6348,23 @@
       console.log(' Monthly refresh button listener attached');
     }
 
+    
+    function getWeekRangeFromSchedule(weekNumber) {
+      const weeks = (window.SixersSeason && SixersSeason.weeks) || [];
+      const w = weeks.find(x => Number(x.week) === Number(weekNumber));
+      if (w && w.start && w.end) return { startDate: w.start, endDate: w.end, week: w.week };
+      return null;
+    }
+
+    function getCurrentWeekNumber() {
+      const today = formatDateForComparison(new Date());
+      if (window.SixersSeason && typeof SixersSeason.weekForDate === 'function') {
+        const w = SixersSeason.weekForDate(today);
+        if (w != null) return Number(w);
+      }
+      return 1;
+    }
+
     async function loadLeaderboard(period, weekNumber = null, monthOffset = null, selectedDate = null) {
       try {
         console.log(`loadLeaderboard called for period: ${period}, weekNumber: ${weekNumber}, monthOffset: ${monthOffset}, selectedDate: ${selectedDate}`);
@@ -6355,21 +6386,26 @@
         
         if (period === 'weekly') {
           if (weekNumber === null || weekNumber === undefined) {
-            renderLeaderboard(period, []);
-            return;
+            weekNumber = getCurrentWeekNumber();
           }
 
-          // Load the date range for this week from weekSchedules collection
-          const scheduleSnap = await db.collection('weekSchedules').where('weekNumber', '==', weekNumber).get();
-          if (scheduleSnap.empty) {
-            console.warn('No week schedule found for week ' + weekNumber);
-            renderLeaderboard(period, []);
-            return;
+          // Prefer hardwired season-weeks.json; fall back to Firestore weekSchedules
+          let startDate, endDate;
+          const fromFile = getWeekRangeFromSchedule(weekNumber);
+          if (fromFile) {
+            startDate = fromFile.startDate;
+            endDate = fromFile.endDate;
+          } else {
+            const scheduleSnap = await db.collection('weekSchedules').where('weekNumber', '==', Number(weekNumber)).get();
+            if (scheduleSnap.empty) {
+              console.warn('No week range for week ' + weekNumber);
+              renderLeaderboard(period, []);
+              return;
+            }
+            const schedData = scheduleSnap.docs[0].data();
+            startDate = schedData.startDate;
+            endDate = schedData.endDate;
           }
-
-          const schedData = scheduleSnap.docs[0].data();
-          const startDate = schedData.startDate; // YYYY-MM-DD
-          const endDate   = schedData.endDate;   // YYYY-MM-DD
 
           // Find all pick dates that fall within the range
           const picksSnap = await db.collection('picks').get();
@@ -6540,25 +6576,43 @@
     
     // Initialize leaderboard pickers when app first shows
     function initializeLeaderboardPickers() {
-      console.log(' Initializing leaderboard pickers');
+      try { renderDailyDatePicker(); } catch (err) { console.error(err); }
+      try { renderWeekSlider(); } catch (err) { console.error(err); }
+      try { renderMonthSlider(); } catch (err) { console.error(err); }
+
+      // Default to current day / week / month / season
       try {
-        console.log(' Rendering daily date picker');
-        renderDailyDatePicker();
-      } catch (err) {
-        console.error(' Error rendering daily date picker:', err);
-      }
+        const today = formatDateForComparison(new Date());
+        const dailyEl = document.getElementById('dailyLbDate');
+        if (dailyEl && !dailyEl.value) dailyEl.value = today;
+        loadLeaderboard('daily', null, null, (dailyEl && dailyEl.value) || today);
+      } catch (e) { console.warn(e); }
       try {
-        console.log(' Rendering week slider');
-        renderWeekSlider();
-      } catch (err) {
-        console.error(' Error rendering week slider:', err);
-      }
+        const cw = getCurrentWeekNumber();
+        selectedWeek = cw;
+        // Center week slider on current week
+        const weeks = (window.SixersSeason && SixersSeason.weeks) || [];
+        const idx = weeks.findIndex(w => Number(w.week) === Number(cw));
+        if (idx >= 0) {
+          currentWeekOffset = Math.max(0, Math.min(idx - 2, Math.max(0, weeks.length - WEEKS_TO_SHOW)));
+          try { renderWeekSlider(); } catch (_) {}
+        }
+        // mark active button
+        setTimeout(() => {
+          document.querySelectorAll('[data-week]').forEach(btn => {
+            if (Number(btn.dataset.week) === Number(cw)) btn.classList.add('active');
+            else btn.classList.remove('active');
+          });
+        }, 0);
+        loadLeaderboard('weekly', cw);
+      } catch (e) { console.warn(e); }
       try {
-        console.log(' Rendering month slider');
-        renderMonthSlider();
-      } catch (err) {
-        console.error(' Error rendering month slider:', err);
-      }
+        selectedMonth = 0;
+        loadLeaderboard('monthly', null, 0);
+      } catch (e) { console.warn(e); }
+      try {
+        if (typeof loadSeasonLeaderboard === 'function') loadSeasonLeaderboard();
+      } catch (e) { console.warn(e); }
     }
 
     // === Week Schedule Manager ===
@@ -7809,19 +7863,59 @@
     }
 
     async function aggregateSeasonStats(seasonIdFilter) {
-      // Aggregate picks for a season; rank by correct, then streak, then TB accuracy
       const targetSeason = seasonIdFilter || (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27';
       const picksSnap = await db.collection('picks').get();
-      const byUser = {};
+      const dates = new Set();
+      const allowedUsers = null; // optional filter later for groups
       picksSnap.docs.forEach(doc => {
-        const d = doc.data();
-        // Current season: seasonId match OR missing seasonId treated as legacy/current only when viewing current
+        const d = doc.data() || {};
         const sid = d.seasonId || null;
         if (seasonIdFilter) {
-          // Archive view: only exact seasonId
           if (sid !== targetSeason) return;
         } else {
-          // Current season view: include docs with current id OR no seasonId (legacy this year)
+          if (sid && sid !== targetSeason) return;
+        }
+        if (d.date) dates.add(d.date);
+      });
+
+      const byUser = {};
+      for (const date of dates) {
+        let dailyScores = [];
+        try {
+          dailyScores = await calculateScoresForDate(date, null);
+        } catch (e) {
+          console.warn('season score', date, e);
+          continue;
+        }
+        dailyScores.forEach(dayScore => {
+          const key = dayScore.userId || dayScore.username;
+          if (!key) return;
+          if (!byUser[key]) {
+            byUser[key] = {
+              username: dayScore.username || 'Player',
+              userId: dayScore.userId || null,
+              correct: 0,
+              total: 0,
+              tbCorrect: 0,
+              tbTotal: 0,
+              dates: []
+            };
+          }
+          const u = byUser[key];
+          u.correct += Number(dayScore.correct) || 0;
+          u.total += Number(dayScore.total) || 0;
+          if (dayScore.username) u.username = dayScore.username;
+          u.dates.push(date);
+        });
+      }
+      // legacy path kept empty — scores come from graded answers above
+      if (false) {
+      picksSnap.docs.forEach(doc => {
+        const d = doc.data();
+        const sid = d.seasonId || null;
+        if (seasonIdFilter) {
+          if (sid !== targetSeason) return;
+        } else {
           if (sid && sid !== targetSeason) return;
         }
         const key = d.userId || d.userEmail || d.username || doc.id;
@@ -7839,7 +7933,6 @@
         const u = byUser[key];
         const c = Number(d.correctCount != null ? d.correctCount : d.correct) || 0;
         const t = Number(d.totalCount != null ? d.totalCount : d.total) || (Array.isArray(d.answers) ? d.answers.length : 0);
-        // Prefer stored score fields; else skip raw answers without grading
         if (d.correctCount != null || d.correct != null || d.score != null) {
           u.correct += (d.score != null && d.correctCount == null && d.correct == null) ? Number(d.score) || 0 : c;
           u.total += t || 0;
@@ -7849,6 +7942,7 @@
         if (d.date) u.dates.push(d.date);
         if (d.username) u.username = d.username;
       });
+      }
 
       // Try user docs for streaks
       const usersSnap = await db.collection('users').get().catch(() => null);
@@ -8523,7 +8617,86 @@
       startGroupChat(groupId);
     }
 
-    async function renderGroupStandings(groupId) {
+    let _grpStandingsPeriod = 'overall';
+
+    async function buildLeaderboardEntries(period) {
+      // Returns same shape as main leaderboards: correct_count, total_count, percentage, streak, username
+      if (period === 'daily') {
+        const dateToUse = formatDateForComparison(new Date());
+        const dailyScores = await calculateScoresForDate(dateToUse, null);
+        return dailyScores.map(score => ({
+          username: score.username,
+          correct_count: score.correct,
+          total_count: score.total,
+          percentage: score.percentage,
+          streak: 0
+        })).sort((a, b) => b.correct_count - a.correct_count);
+      }
+      if (period === 'weekly') {
+        const weekNumber = getCurrentWeekNumber();
+        const range = getWeekRangeFromSchedule(weekNumber);
+        if (!range) return [];
+        const picksSnap = await db.collection('picks').get();
+        const datesInRange = new Set();
+        picksSnap.docs.forEach(doc => {
+          const d = doc.data().date;
+          if (d && d >= range.startDate && d <= range.endDate) datesInRange.add(d);
+        });
+        const userScoresMap = {};
+        for (const date of datesInRange) {
+          const dailyScores = await calculateScoresForDate(date, null);
+          dailyScores.forEach(dayScore => {
+            if (!userScoresMap[dayScore.username]) {
+              userScoresMap[dayScore.username] = { username: dayScore.username, totalCorrect: 0, totalQuestions: 0 };
+            }
+            userScoresMap[dayScore.username].totalCorrect += dayScore.correct;
+            userScoresMap[dayScore.username].totalQuestions += dayScore.total;
+          });
+        }
+        return Object.values(userScoresMap).map(score => ({
+          username: score.username,
+          correct_count: score.totalCorrect,
+          total_count: score.totalQuestions,
+          percentage: score.totalQuestions > 0 ? ((score.totalCorrect / score.totalQuestions) * 100).toFixed(1) : 0,
+          streak: 0
+        })).sort((a, b) => b.correct_count - a.correct_count);
+      }
+      if (period === 'monthly') {
+        const now = new Date();
+        const startDateStr = formatDateForComparison(new Date(now.getFullYear(), now.getMonth(), 1));
+        const endDateStr = formatDateForComparison(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+        const picksSnap = await db.collection('picks').get();
+        const datesInRange = new Set();
+        picksSnap.docs.forEach(doc => {
+          const d = doc.data().date;
+          if (d && d >= startDateStr && d <= endDateStr) datesInRange.add(d);
+        });
+        const userScoresMap = {};
+        for (const date of datesInRange) {
+          const dailyScores = await calculateScoresForDate(date, null);
+          dailyScores.forEach(dayScore => {
+            if (!userScoresMap[dayScore.username]) {
+              userScoresMap[dayScore.username] = { username: dayScore.username, totalCorrect: 0, totalQuestions: 0 };
+            }
+            userScoresMap[dayScore.username].totalCorrect += dayScore.correct;
+            userScoresMap[dayScore.username].totalQuestions += dayScore.total;
+          });
+        }
+        return Object.values(userScoresMap).map(score => ({
+          username: score.username,
+          correct_count: score.totalCorrect,
+          total_count: score.totalQuestions,
+          percentage: score.totalQuestions > 0 ? ((score.totalCorrect / score.totalQuestions) * 100).toFixed(1) : 0,
+          streak: 0
+        })).sort((a, b) => b.correct_count - a.correct_count);
+      }
+      // overall / season
+      return await aggregateSeasonStats(null);
+    }
+
+    async function renderGroupStandings(groupId, period) {
+      period = period || _grpStandingsPeriod || 'overall';
+      _grpStandingsPeriod = period;
       const body = document.getElementById('leagueLeaderboardBody');
       if (!body) return;
       body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--mid);">Loading standings…</td></tr>';
@@ -8535,11 +8708,11 @@
           const m = d.data();
           if (m.username) memberUsernames.add(String(m.username).toLowerCase());
         });
-        const season = await aggregateSeasonStats(null);
-        const filtered = season.filter(r => memberUsernames.has(String(r.username || '').toLowerCase()));
+        const all = await buildLeaderboardEntries(period === 'overall' ? 'overall' : period);
+        const filtered = (all || []).filter(r => memberUsernames.has(String(r.username || '').toLowerCase()));
         const myName = (auth.currentUser && (auth.currentUser.displayName || (auth.currentUser.email || '').split('@')[0]) || '').toLowerCase();
         if (!filtered.length) {
-          body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for members yet.</td></tr>';
+          body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for members yet on this board.</td></tr>';
           return;
         }
         body.innerHTML = filtered.map((r, i) => {
@@ -8551,16 +8724,158 @@
             '<td style="text-align:center;">' + r.correct_count + '</td>' +
             '<td style="text-align:center;">' + r.total_count + '</td>' +
             '<td style="text-align:center;">' + r.percentage + '</td>' +
-            '<td style="text-align:center;">' + r.streak + '</td></tr>';
+            '<td style="text-align:center;">' + (r.streak != null ? r.streak : '—') + '</td></tr>';
         }).join('');
         const myRank = filtered.findIndex(r => String(r.username || '').toLowerCase() === myName);
-        document.getElementById('grpDetailMeta').textContent = members.size + ' members' +
+        const periodLabel = period === 'overall' ? 'Overall' : period.charAt(0).toUpperCase() + period.slice(1);
+        document.getElementById('grpDetailMeta').textContent = members.size + ' members · ' + periodLabel +
           (myRank >= 0 ? ' · Your rank: #' + (myRank + 1) : '');
       } catch (e) {
         console.error(e);
         body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);">Failed to load standings</td></tr>';
       }
     }
+
+    // Group period tabs + ⋮ menu
+    document.addEventListener('click', async (e) => {
+      const periodBtn = e.target && e.target.closest && e.target.closest('.grp-period-btn');
+      if (periodBtn && _activeGroupId) {
+        document.querySelectorAll('.grp-period-btn').forEach(b => {
+          b.classList.toggle('active', b === periodBtn);
+          if (b === periodBtn) {
+            b.style.background = '#e0e7ff';
+            b.style.color = 'var(--brand)';
+            b.style.border = '2px solid var(--brand)';
+          } else {
+            b.style.background = 'transparent';
+            b.style.color = 'var(--muted)';
+            b.style.border = '1px solid var(--border-light)';
+          }
+        });
+        await renderGroupStandings(_activeGroupId, periodBtn.getAttribute('data-grp-period'));
+        return;
+      }
+
+      const menuBtn = e.target && e.target.closest && e.target.closest('#grpMenuBtn');
+      const menu = document.getElementById('grpMenuDropdown');
+      if (menuBtn && menu) {
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        return;
+      }
+      if (menu && !e.target.closest('#grpMenuDropdown') && !e.target.closest('#grpMenuBtn')) {
+        menu.style.display = 'none';
+      }
+
+      if (e.target && e.target.id === 'grpMenuCopyInvite') {
+        const link = document.getElementById('grpInviteLink')?.textContent;
+        if (link) {
+          try { await navigator.clipboard.writeText(link); leagueMsg('Invite link copied.', 'success'); } catch (_) {}
+        }
+        if (menu) menu.style.display = 'none';
+        return;
+      }
+      if (e.target && e.target.id === 'grpMenuShare') {
+        if (menu) menu.style.display = 'none';
+        try { await shareStandingsCard('group', _grpStandingsPeriod || 'overall', _activeGroupId); } catch (err) { console.warn(err); }
+        return;
+      }
+      if (e.target && e.target.id === 'grpMenuDelete') {
+        if (menu) menu.style.display = 'none';
+        await confirmDeleteGroup(_activeGroupId);
+        return;
+      }
+    });
+
+    async function confirmDeleteGroup(groupId) {
+      if (!groupId || !auth.currentUser) return;
+      const firestore = window.db || db;
+      let g = _myGroupsCache.find(x => x.id === groupId);
+      try {
+        if (!g) {
+          const doc = await firestore.collection('leagues').doc(groupId).get();
+          if (!doc.exists) { leagueMsg('Group not found.', 'error'); return; }
+          g = { id: groupId, ...(doc.data() || {}) };
+        }
+      } catch (e) {
+        leagueMsg('Could not load group.', 'error');
+        return;
+      }
+      if (g.createdBy && g.createdBy !== auth.currentUser.uid) {
+        leagueMsg('Only the group creator can delete this group.', 'error');
+        return;
+      }
+
+      // Modal: type DELETE within 30s
+      const existing = document.getElementById('grpDeleteModal');
+      if (existing) existing.remove();
+      const modal = document.createElement('div');
+      modal.id = 'grpDeleteModal';
+      modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:1rem;';
+      modal.innerHTML = '<div style="background:var(--card-bg,#fff);border-radius:16px;max-width:400px;width:100%;padding:1.25rem 1.35rem;box-shadow:0 20px 50px rgba(0,0,0,0.2);">' +
+        '<h3 style="margin:0 0 0.5rem;font-size:1.1rem;">Delete group?</h3>' +
+        '<p style="margin:0 0 0.75rem;font-size:0.88rem;color:var(--mid);line-height:1.45;">This permanently removes <strong>' + (g.name || 'this group') + '</strong>, members, and chat. Data cannot be recovered.</p>' +
+        '<p style="margin:0 0 0.5rem;font-size:0.85rem;">Type <strong>delete</strong> to confirm <span id="grpDeleteTimer">(30s)</span></p>' +
+        '<input type="text" id="grpDeleteInput" class="form-input" placeholder="delete" autocomplete="off" style="width:100%;margin-bottom:0.75rem;" />' +
+        '<div style="display:flex;gap:0.5rem;justify-content:flex-end;">' +
+        '<button type="button" class="btn btn-secondary" id="grpDeleteCancel">Cancel</button>' +
+        '<button type="button" class="btn btn-primary" id="grpDeleteConfirm" style="background:#b91c1c;border-color:#b91c1c;" disabled>Delete</button>' +
+        '</div></div>';
+      document.body.appendChild(modal);
+
+      let left = 30;
+      const timerEl = document.getElementById('grpDeleteTimer');
+      const input = document.getElementById('grpDeleteInput');
+      const confirmBtn = document.getElementById('grpDeleteConfirm');
+      const tick = setInterval(() => {
+        left--;
+        if (timerEl) timerEl.textContent = '(' + left + 's)';
+        if (left <= 0) {
+          clearInterval(tick);
+          modal.remove();
+          leagueMsg('Delete timed out. Try again.', 'info');
+        }
+      }, 1000);
+
+      const close = () => { clearInterval(tick); modal.remove(); };
+      document.getElementById('grpDeleteCancel').onclick = close;
+      input.oninput = () => {
+        confirmBtn.disabled = String(input.value || '').trim().toLowerCase() !== 'delete';
+      };
+      confirmBtn.onclick = async () => {
+        if (String(input.value || '').trim().toLowerCase() !== 'delete') return;
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Deleting…';
+        try {
+          // members
+          const mem = await firestore.collection('leagueMembers').where('leagueId', '==', groupId).get();
+          const batch = firestore.batch();
+          mem.docs.forEach(d => batch.delete(d.ref));
+          batch.delete(firestore.collection('leagues').doc(groupId));
+          await batch.commit();
+          // chat messages best-effort
+          try {
+            const chat = await firestore.collection('leagueChats').doc(groupId).collection('messages').limit(200).get();
+            const b2 = firestore.batch();
+            chat.docs.forEach(d => b2.delete(d.ref));
+            await b2.commit();
+          } catch (_) {}
+          close();
+          leagueMsg('Group deleted. This cannot be undone.', 'success');
+          document.getElementById('grpDetailSection').style.display = 'none';
+          document.getElementById('grpListSection').style.display = 'block';
+          document.getElementById('grpPublicSection').style.display = 'block';
+          if (typeof loadMyGroups === 'function') loadMyGroups();
+          if (typeof loadPublicGroups === 'function') loadPublicGroups();
+        } catch (err) {
+          console.error(err);
+          leagueMsg('Delete failed: ' + (err.message || err), 'error');
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Delete';
+        }
+      };
+      setTimeout(() => input.focus(), 50);
+    }
+
 
     function startGroupChat(groupId) {
       const log = document.getElementById('grpChatLog');
@@ -8774,6 +9089,87 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
     // ---- Recap card (standings-style graphic) ----
     let _lastRecapUrl = null;
+    
+    async function shareStandingsCard(scope, period, groupId) {
+      // scope: 'global' | 'group'
+      const status = document.getElementById('shareRecapStatus');
+      if (typeof html2canvas !== 'function') {
+        if (status) status.textContent = 'Share library not loaded.';
+        return;
+      }
+      const user = auth.currentUser;
+      if (!user) {
+        if (status) status.textContent = 'Sign in to share.';
+        return;
+      }
+      period = period || 'daily';
+      if (status) status.textContent = 'Building card…';
+
+      let entries = [];
+      try {
+        if (scope === 'group' && groupId) {
+          const firestore = window.db || db;
+          const members = await firestore.collection('leagueMembers').where('leagueId', '==', groupId).get();
+          const names = new Set();
+          members.docs.forEach(d => {
+            const m = d.data();
+            if (m.username) names.add(String(m.username).toLowerCase());
+          });
+          const all = await buildLeaderboardEntries(period === 'overall' ? 'overall' : period);
+          entries = (all || []).filter(r => names.has(String(r.username || '').toLowerCase()));
+        } else {
+          entries = await buildLeaderboardEntries(period === 'overall' ? 'overall' : period);
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+
+      const myName = (user.displayName || (user.email || '').split('@')[0] || 'Player').trim();
+      const myIdx = entries.findIndex(r => String(r.username || '').toLowerCase() === myName.toLowerCase());
+      const myRow = myIdx >= 0 ? entries[myIdx] : null;
+      const periodLabel = period === 'overall' ? 'Overall' : period.charAt(0).toUpperCase() + period.slice(1);
+      const scopeLabel = scope === "group" ? "Group" : "Pickem";
+
+      const sub = document.getElementById('pickemSgSubtitle');
+      if (sub) sub.textContent = scopeLabel.toUpperCase() + ' · ' + periodLabel.toUpperCase();
+      const stats = document.getElementById('pickemSgStats');
+      if (stats) {
+        stats.innerHTML =
+          '<div class="sg-stat"><b>#' + (myIdx >= 0 ? (myIdx + 1) : '—') + '</b><span>Your rank</span></div>' +
+          '<div class="sg-stat"><b>' + (myRow ? myRow.correct_count + '/' + myRow.total_count : '—') + '</b><span>Correct</span></div>' +
+          '<div class="sg-stat"><b>' + (myRow ? myRow.percentage + '%' : '—') + '</b><span>Accuracy</span></div>';
+      }
+      const list = document.getElementById('pickemSgList');
+      if (list) {
+        list.innerHTML = entries.slice(0, 10).map((r, i) => {
+          const you = String(r.username || '').toLowerCase() === myName.toLowerCase();
+          return '<li><span>' + (i + 1) + '. ' + r.username + (you ? ' (you)' : '') + '</span><span>' + r.correct_count + '/' + r.total_count + '</span></li>';
+        }).join('') || '<li>No standings yet</li>';
+      }
+
+      const node = document.querySelector('#pickem-social-export .sg-page');
+      if (!node) {
+        if (status) status.textContent = 'Share template missing.';
+        return;
+      }
+      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+      const url = canvas.toDataURL('image/png');
+      const prev = document.getElementById('pickemExportPreview');
+      if (prev) prev.src = url;
+      const modal = document.getElementById('pickemExportModal');
+      if (modal) modal.classList.add('open');
+      const dl = document.getElementById('pickemExportDownload');
+      if (dl) {
+        dl.onclick = () => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'sixershoops-' + scope + '-' + period + '.png';
+          a.click();
+        };
+      }
+      if (status) status.textContent = 'Card ready.';
+    }
+
     async function buildRecapCard() {
       const status = document.getElementById('shareRecapStatus');
       if (status) status.textContent = 'Building…';
@@ -8828,13 +9224,15 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       });
 
       const sub = document.getElementById('pickemSgSubtitle');
-      if (sub) sub.textContent = "PICK'EM RECAP · " + dateStr;
+      if (sub) sub.textContent = "DAILY RECAP · " + dateStr;
       const stats = document.getElementById('pickemSgStats');
       if (stats) {
-        stats.innerHTML = `
-          <div class="sg-stat"><b>${correct}/${questions.length || answers.length || 0}</b><span>Correct</span></div>
-          <div class="sg-stat"><b>${(currentUser.displayName || 'Player').slice(0, 14)}</b><span>Player</span></div>
-          <div class="sg-stat"><b>${dateStr}</b><span>Date</span></div>`;
+        const totalQ = questions.length || answers.length || 0;
+        const pct = totalQ ? Math.round((correct / totalQ) * 100) : 0;
+        stats.innerHTML =
+          '<div class="sg-stat"><b>' + correct + '/' + totalQ + '</b><span>Correct</span></div>' +
+          '<div class="sg-stat"><b>' + pct + '%</b><span>Accuracy</span></div>' +
+          '<div class="sg-stat"><b>' + String(currentUser.displayName || 'Player').slice(0, 14) + '</b><span>Player</span></div>';
       }
       const list = document.getElementById('pickemSgList');
       if (list) {
@@ -8855,6 +9253,12 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       if (modal) modal.classList.add('open');
       if (status) status.textContent = 'Ready';
     }
+
+    
+    document.getElementById('shareDailyLbBtn')?.addEventListener('click', () => shareStandingsCard('global', 'daily'));
+    document.getElementById('shareWeeklyLbBtn')?.addEventListener('click', () => shareStandingsCard('global', 'weekly'));
+    document.getElementById('shareMonthlyLbBtn')?.addEventListener('click', () => shareStandingsCard('global', 'monthly'));
+    document.getElementById('shareSeasonLbBtn')?.addEventListener('click', () => shareStandingsCard('global', 'overall'));
 
     document.getElementById('shareRecapBtn')?.addEventListener('click', () => {
       buildRecapCard().catch(err => {

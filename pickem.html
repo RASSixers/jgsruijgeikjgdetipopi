@@ -769,6 +769,13 @@
       white-space: nowrap;
     }
     .rank-num { font-variant-numeric: tabular-nums; font-weight: 800; }
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.75rem;
+      font-weight: 800;
+    }
     .rank-badge.rank-1 { color: #92400e; background: #fef3c7; border-radius: 8px; padding: 0.2rem 0.55rem; }
     .rank-badge.rank-2 { color: #334155; background: #e2e8f0; border-radius: 8px; padding: 0.2rem 0.55rem; }
     .rank-badge.rank-3 { color: #9a3412; background: #ffedd5; border-radius: 8px; padding: 0.2rem 0.55rem; }
@@ -1656,7 +1663,7 @@
         
         <div class="submit-section">
           <button type="button" class="btn btn-primary" id="submitBtn">Submit Picks</button>
-          <p id="editUntilLockHint" style="margin:0.5rem 0 0;font-size:0.8rem;color:var(--mid);text-align:center;">Clicks are saved as a draft. If you finish all questions but forget to submit, they auto-submit at lock (while this page is open). You can still Update Picks until lock.</p>
+
           <button type="button" class="btn btn-secondary" id="clearBtn">Clear All</button>
         </div>
       </div>
@@ -2081,17 +2088,19 @@
                 <p id="autoWeekHint" style="font-size:0.8rem;color:var(--mid);margin:0 0 0.75rem;"></p>
 
                 <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.85rem;font-size:0.85rem;">
-                  <input type="checkbox" id="autoReplace" checked />
-                  Replace existing for this date
+                  <input type="checkbox" id="autoReplace" />
+                  Replace existing for this date (required to rebuild)
                 </label>
 
                 <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;">
                   <button type="button" class="btn btn-primary" id="autoCreateForDateBtn">Create questions</button>
                   <button type="button" class="btn btn-primary" id="autoPublishBtn" style="background:#059669;">Publish</button>
+                  <button type="button" class="btn btn-secondary" id="autoLoadExistingBtn">Load existing</button>
                   <button type="button" class="btn btn-secondary" id="autoFetchGamesBtn">Load games</button>
                   <button type="button" class="btn btn-secondary" id="autoPreviewBtn">Preview</button>
                   <button type="button" class="btn btn-secondary" id="autoGradeFromEspnBtn">Auto-grade</button>
                 </div>
+                <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.75rem;">Already generated? Use <strong>Load existing</strong> to review/edit. To rebuild, check <strong>Replace existing</strong> first.</p>
 
                 <div id="autoGradeMsg" class="message" style="margin-bottom:0.5rem;"></div>
                 <div id="autoGamesList" style="margin-bottom:0.75rem;font-size:0.85rem;"></div>
@@ -5815,6 +5824,15 @@
     // === Daily Leaderboard Date Picker ===
     let currentDailyDateOffset = 0;
     
+    
+    function formatRankBadge(rankNum) {
+      const n = Number(rankNum) || 0;
+      if (n >= 1 && n <= 3) {
+        return '<span class="rank-badge rank-' + n + '" title="Rank ' + n + '"><span class="rank-num">' + n + '</span></span>';
+      }
+      return '<span class="rank-num">' + n + '</span>';
+    }
+
     function renderDailyDatePicker() {
       console.log(' renderDailyDatePicker called');
       const container = document.getElementById('dailyDatePickerContainer');
@@ -7888,9 +7906,8 @@
         body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--mid);">No season data yet</td></tr>';
         return;
       }
-      const medals = ['🥇', '🥈', '🥉'];
       body.innerHTML = rows.slice(0, 100).map((r, i) => {
-        const rank = i < 3 ? (medals[i] + ' ' + (i + 1)) : String(i + 1);
+        const rank = formatRankBadge(i + 1);
         return `
         <tr>
           <td>${rank}</td>
@@ -8525,9 +8542,8 @@
           body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mid);">No scored picks for members yet.</td></tr>';
           return;
         }
-        const medals = ['🥇', '🥈', '🥉'];
         body.innerHTML = filtered.map((r, i) => {
-          const rank = i < 3 ? (medals[i] + ' ' + (i + 1)) : String(i + 1);
+          const rank = formatRankBadge(i + 1);
           const isYou = myName && String(r.username || '').toLowerCase() === myName;
           return '<tr class="' + (isYou ? 'grp-you-row' : '') + '">' +
             '<td>' + rank + (isYou ? ' <span style="font-size:0.7rem;color:#006BB6;">YOU</span>' : '') + '</td>' +
@@ -9264,9 +9280,24 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const date = document.getElementById('autoSlateDate')?.value;
         if (!date) { msg('Choose a date.', 'error'); return; }
         syncWeekFromDate();
-        msg('Creating questions…', 'info');
         try {
-          const r = await publishSlateForDate(date, { force: true, draft: true });
+          const existing = await db.collection('questions').where('date', '==', date).get();
+          let hasItems = false;
+          if (!existing.empty) {
+            for (const d of existing.docs) {
+              if (((d.data() || {}).items || []).length) { hasItems = true; break; }
+            }
+          }
+          const replace = !!document.getElementById('autoReplace')?.checked;
+          if (hasItems && !replace) {
+            msg('Questions already exist for ' + date + '. Check “Replace existing” to overwrite, or Load existing to edit.', 'error');
+            return;
+          }
+          if (hasItems && replace) {
+            if (!confirm('Replace all questions for ' + date + '? This cannot be undone.')) return;
+          }
+          msg('Creating questions…', 'info');
+          const r = await publishSlateForDate(date, { force: hasItems && replace, draft: true });
           if (!r.ok) {
             msg(r.reason === 'no_games' ? 'No games found for that date.'
               : (r.reason === 'no_questions' ? 'Could not build questions.' : ('Create failed: ' + (r.reason || 'unknown'))), 'error');
@@ -9288,6 +9319,60 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         } catch (e) {
           console.error(e);
           msg('Create failed: ' + (e.message || e), 'error');
+        }
+      });
+
+      
+      document.getElementById('autoLoadExistingBtn')?.addEventListener('click', async () => {
+        if (!checkAdminPermission()) return;
+        const date = document.getElementById('autoSlateDate')?.value;
+        if (!date) { msg('Choose a date.', 'error'); return; }
+        try {
+          msg('Loading existing questions…', 'info');
+          const snap = await db.collection('questions').where('date', '==', date).get();
+          if (snap.empty) {
+            msg('No questions saved for ' + date + '.', 'error');
+            return;
+          }
+          let doc = snap.docs[0];
+          for (const d of snap.docs) {
+            if (((d.data() || {}).items || []).length) { doc = d; break; }
+          }
+          const data = doc.data() || {};
+          const items = Array.isArray(data.items) ? data.items : [];
+          if (!items.length) {
+            msg('Document exists but has 0 questions.', 'error');
+            return;
+          }
+          // Fill preview
+          const pre = document.getElementById('autoPreview');
+          if (pre) {
+            pre.textContent = items.map(function(q, i) {
+              const opts = Array.isArray(q.options) ? q.options.join(' | ') : (q.options || '');
+              return (i + 1) + '. ' + (q.question || '') + (opts ? '\\n   ' + opts : '');
+            }).join('\\n\\n');
+          }
+          // Also load into Manual questions editor (adminQuestions)
+          if (typeof adminQuestions !== 'undefined') {
+            adminQuestions = items.map(q => Object.assign({}, q, {
+              tempId: Date.now() + Math.random(),
+              weekNumber: q.weekNumber != null ? q.weekNumber : null
+            }));
+            try {
+              if (typeof renderAdminQuestions === 'function') renderAdminQuestions();
+              else if (typeof renderAdminQuestionsList === 'function') renderAdminQuestionsList();
+            } catch (_) {}
+          }
+          // Sync mark answers date
+          const mad = document.getElementById('markAnswersDate');
+          if (mad) mad.value = date;
+          const ad = document.getElementById('adminDate');
+          if (ad) ad.value = date;
+          const st = data.status || (data.published === false ? 'draft' : 'published');
+          msg('Loaded ' + items.length + ' questions (' + st + '). Open Manual questions to edit wording, then save. Or Grade to set answers.', 'success');
+        } catch (e) {
+          console.error(e);
+          msg('Load failed: ' + (e.message || e), 'error');
         }
       });
 
@@ -9435,10 +9520,21 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const date = document.getElementById('autoSlateDate')?.value;
         if (!date) { msg('Choose a date.', 'error'); return; }
         syncWeekFromDate();
-        msg('Publishing…', 'info');
         try {
-          // Publish existing questions for date; rebuild if missing
-          const r = await publishSlateForDate(date, { force: true, draft: false });
+          const existing = await db.collection('questions').where('date', '==', date).get();
+          let hasItems = false;
+          if (!existing.empty) {
+            for (const d of existing.docs) {
+              if (((d.data() || {}).items || []).length) { hasItems = true; break; }
+            }
+          }
+          const replace = !!document.getElementById('autoReplace')?.checked;
+          // Publishing existing draft is OK without replace; rebuilding from scratch needs replace
+          if (hasItems && replace) {
+            if (!confirm('Re-generate and publish over existing questions for ' + date + '?')) return;
+          }
+          msg('Publishing…', 'info');
+          const r = await publishSlateForDate(date, { force: !!replace, draft: false });
           if (!r.ok) {
             msg(r.reason === 'no_games' ? 'No games for that date.' : ('Publish failed: ' + (r.reason || 'unknown')), 'error');
             return;
@@ -9498,16 +9594,33 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       async function publishSlateForDate(dateStr, opts) {
         opts = opts || {};
         const draft = !!opts.draft;
-        const games = await gatherGamesForDate(dateStr);
-        if (!games.length) return { ok: false, reason: 'no_games' };
+        const force = !!opts.force;
         let weekNum = opts.week;
         if (weekNum == null || weekNum === '') {
           if (window.SixersSeason) weekNum = SixersSeason.weekForDate(dateStr);
         }
-        const items = buildDailyTen(games, weekNum);
-        items.forEach(q => {
-          if (weekNum != null && weekNum !== '') q.weekNumber = Number(weekNum);
-        });
+
+        // If not forcing, keep existing items when publishing (don't rebuild over edits)
+        let items = null;
+        let games = [];
+        const existingSnap = await db.collection('questions').where('date', '==', dateStr).get();
+        if (!force && !existingSnap.empty) {
+          const cur = existingSnap.docs[0].data() || {};
+          if (Array.isArray(cur.items) && cur.items.length) {
+            items = cur.items.slice();
+            games = []; // lock still from ESPN if needed below
+          }
+        }
+        if (!items) {
+          games = await gatherGamesForDate(dateStr);
+          if (!games.length) return { ok: false, reason: 'no_games' };
+          items = buildDailyTen(games, weekNum);
+          items.forEach(q => {
+            if (weekNum != null && weekNum !== '') q.weekNumber = Number(weekNum);
+          });
+        } else {
+          try { games = await gatherGamesForDate(dateStr); } catch (_) { games = []; }
+        }
         if (!items.length) return { ok: false, reason: 'no_questions' };
 
         // Lock = earliest tip-off that day (ET), unless admin overrides

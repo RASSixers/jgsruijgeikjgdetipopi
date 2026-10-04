@@ -3171,51 +3171,96 @@
 
     document.getElementById('loadQuestionsForAnswersBtn').addEventListener('click', async () => {
       if (!checkAdminPermission()) return;
-      
-      const dateInput = document.getElementById('markAnswersDate').value;
+
+      // Prefer Mark Answers date; fall back to Auto-Slate / admin date after generate
+      let dateInput = (document.getElementById('markAnswersDate')?.value || '').trim();
       if (!dateInput) {
-        showMessage('Please select a date', 'error', 'markAnswersMessage');
+        dateInput = (document.getElementById('autoSlateDate')?.value
+          || document.getElementById('adminDate')?.value
+          || document.getElementById('pickDate')?.value
+          || '').trim();
+        const mad = document.getElementById('markAnswersDate');
+        if (mad && dateInput) mad.value = dateInput;
+      }
+      if (!dateInput) {
+        showMessage('Please select a date (Mark Correct Answers or Auto-Slate).', 'error', 'markAnswersMessage');
         return;
       }
 
       try {
+        showMessage('Loading questions for ' + dateInput + '…', 'info', 'markAnswersMessage');
         const snapshot = await db.collection('questions').where('date', '==', dateInput).get();
-        
+
         if (snapshot.empty) {
           showMessage('No questions found for ' + dateInput + '. Create & publish a slate for that date first.', 'info', 'markAnswersMessage');
           questionsForAnswers = [];
-          document.getElementById('answersList').innerHTML = '';
-          document.getElementById('saveCorrectAnswersBtn').style.display = 'none';
+          const list = document.getElementById('answersList');
+          if (list) list.innerHTML = '';
+          const saveBtn = document.getElementById('saveCorrectAnswersBtn');
+          if (saveBtn) saveBtn.style.display = 'none';
           return;
         }
 
-        const doc = snapshot.docs[0];
+        // Prefer published doc with items; else first doc that has items
+        let doc = snapshot.docs[0];
+        for (const d of snapshot.docs) {
+          const data = d.data() || {};
+          if (Array.isArray(data.items) && data.items.length) {
+            if (data.published !== false && data.status !== 'draft') {
+              doc = d;
+              break;
+            }
+            doc = d;
+          }
+        }
         const data = doc.data() || {};
         const items = Array.isArray(data.items) ? data.items : [];
         if (!items.length) {
-          showMessage('Question doc exists for ' + dateInput + ' but has 0 items. Re-create the slate.', 'error', 'markAnswersMessage');
+          showMessage('Question doc for ' + dateInput + ' has 0 items. Re-create the slate.', 'error', 'markAnswersMessage');
           questionsForAnswers = [];
-          document.getElementById('answersList').innerHTML = '';
-          document.getElementById('saveCorrectAnswersBtn').style.display = 'none';
+          const list = document.getElementById('answersList');
+          if (list) list.innerHTML = '';
           return;
         }
-        questionsForAnswers = items.map((q, idx) => ({
-          ...q,
-          question_type: q.question_type || (q.type === 'multiple' ? 'multiple_choice' : q.question_type) || 'multiple_choice',
-          questionId: idx,
-          docId: doc.id,
-          weekNumber: q.weekNumber != null ? q.weekNumber : null,
-          dayOfWeek: q.dayOfWeek || null
-        }));
 
-        renderAnswersForm();
+        questionsForAnswers = items.map((q, idx) => {
+          const opts = Array.isArray(q.options) ? q.options : (typeof q.options === 'string' ? q.options.split(',').map(s => s.trim()) : []);
+          let qtype = q.question_type || q.type || 'multiple_choice';
+          if (qtype === 'multiple') qtype = 'multiple_choice';
+          // Treat Over/Under option pairs as over_under for the marking UI
+          if (
+            opts.length === 2 &&
+            String(opts[0]).toLowerCase() === 'over' &&
+            String(opts[1]).toLowerCase() === 'under'
+          ) {
+            qtype = 'over_under';
+          }
+          return {
+            ...q,
+            options: opts,
+            question_type: qtype,
+            questionId: idx,
+            docId: doc.id,
+            weekNumber: q.weekNumber != null ? q.weekNumber : null,
+            dayOfWeek: q.dayOfWeek || null
+          };
+        });
+
+        try {
+          renderAnswersForm();
+        } catch (re) {
+          console.error('renderAnswersForm', re);
+          showMessage('Loaded questions but form failed: ' + (re.message || re), 'error', 'markAnswersMessage');
+          return;
+        }
         try { renderPickDistribution(dateInput); } catch (e) { console.warn(e); }
-        document.getElementById('saveCorrectAnswersBtn').style.display = 'block';
+        const saveBtn = document.getElementById('saveCorrectAnswersBtn');
+        if (saveBtn) saveBtn.style.display = 'block';
         const st = data.status || (data.published === false ? 'draft' : 'published');
         showMessage('Loaded ' + questionsForAnswers.length + ' questions (' + st + ').', 'success', 'markAnswersMessage');
       } catch (err) {
         console.error('Error loading questions:', err);
-        showMessage('Error loading questions', 'error', 'markAnswersMessage');
+        showMessage('Error loading questions: ' + (err.message || err), 'error', 'markAnswersMessage');
       }
     });
 
@@ -9150,6 +9195,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const d = document.getElementById('autoSlateDate')?.value;
         const ld = document.getElementById('autoLockDateOverride');
         if (ld && d && !ld.value) ld.value = d;
+        const mad = document.getElementById('markAnswersDate');
+        if (mad && d) mad.value = d;
       });
       // initial
       setTimeout(syncWeekFromDate, 500);
@@ -9171,6 +9218,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             return;
           }
           const w = document.getElementById('autoSlateWeek')?.value;
+          try { const mad = document.getElementById('markAnswersDate'); if (mad && date) mad.value = date; } catch(_){}
           msg('Draft saved: ' + (r.count || 10) + ' questions' + (w ? ' (Week ' + w + ')' : '') + '. Hit Publish when ready.', 'success');
           const games = foundGames || [];
           const weekNum = w || (window.SixersSeason && SixersSeason.weekForDate(date));
@@ -9341,6 +9389,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             return;
           }
           const lockOv = document.getElementById('autoLockOverride')?.value;
+          try { const mad = document.getElementById('markAnswersDate'); if (mad && date) mad.value = date; } catch(_){}
           msg('Published ' + date + (lockOv ? ' (lock override ' + lockOv + ' ET)' : '') + '.', 'success');
         } catch (e) {
           console.error(e);

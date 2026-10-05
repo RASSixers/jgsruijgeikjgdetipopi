@@ -12,6 +12,8 @@ let refreshTimer = null;
 let pbpTimer = null;
 let pbpInflight = false;
 let lastScoreboardCheck = 0;
+let lastGoodSummary = null;
+let lastGoodEventId = null;
 let injuryByAbbr = {};
 let featuredEvent = null;
 let allEventsCache = [];
@@ -249,10 +251,14 @@ function renderLiveBoard(summary, event) {
   const awayAbbr = get(away, "team.abbreviation", get(away, "team.shortDisplayName", "AWAY"));
   const homeAbbr = get(home, "team.abbreviation", get(home, "team.shortDisplayName", "HOME"));
 
-  // ESPN returns plays oldest→newest; show newest first
-  let plays = get(summary, "plays", []) || [];
-  if (!plays.length) plays = get(summary, "drives.previous", []) || []; // rare fallback
-  plays = plays.slice().reverse().slice(0, 14);
+  // ESPN returns plays oldest→newest; show newest first — full game log
+  let plays = [];
+  const raw = get(summary, "plays", null);
+  if (Array.isArray(raw) && raw.length) plays = raw;
+  else if (Array.isArray(get(summary, "gamepackageJSON.plays", null))) {
+    plays = get(summary, "gamepackageJSON.plays", []);
+  }
+  plays = plays.slice().reverse(); // newest at top; keep entire game
 
   const playHtml = plays.length
     ? `<ul class="pbp-list">${plays.map(p => {
@@ -304,12 +310,39 @@ async function findLivePhiEvent() {
   }
 }
 
+async function fetchSummaryForEvent(eventId) {
+  // Primary: site.api summary; fallback: cdn.espn playbyplay package
+  const urls = [
+    `${SUMMARY_URL}?event=${encodeURIComponent(eventId)}`,
+    `https://cdn.espn.com/core/nba/playbyplay?xhr=1&gameId=${encodeURIComponent(eventId)}`
+  ];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      // cdn wraps in gamepackageJSON
+      if (data && data.gamepackageJSON) {
+        const gp = data.gamepackageJSON;
+        return {
+          plays: gp.plays || [],
+          header: gp.header || data.header || {},
+          boxscore: gp.boxscore
+        };
+      }
+      if (data && (Array.isArray(data.plays) || data.header)) return data;
+    } catch (err) {
+      console.warn("summary fetch", url, err);
+    }
+  }
+  return null;
+}
+
 async function refreshPlayByPlay() {
   if (pbpInflight) return;
   pbpInflight = true;
   try {
     let event = featuredEvent;
-    // Only hit scoreboard every ~12s to discover/switch live game (keeps PBP fast)
     const now = Date.now();
     if (now - lastScoreboardCheck > 8000) {
       lastScoreboardCheck = now;
@@ -328,21 +361,37 @@ async function refreshPlayByPlay() {
     }
 
     if (!eventIsLive(event)) {
+      // Final games: still show full PBP once if we have it
+      if (lastGoodSummary && lastGoodEventId === String(event.id)) {
+        renderLiveBoard(lastGoodSummary, event);
+        const k = document.getElementById("live-kicker");
+        if (k) k.textContent = "Final";
+        return;
+      }
       renderUpcomingBoard(event);
       return;
     }
 
-    try {
-      const url = `${SUMMARY_URL}?event=${encodeURIComponent(event.id)}&_=${Date.now()}`;
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
-      });
-      if (!res.ok) throw new Error("summary HTTP " + res.status);
-      const summary = await res.json();
+    const summary = await fetchSummaryForEvent(event.id);
+    if (summary && Array.isArray(summary.plays) && summary.plays.length) {
+      lastGoodSummary = summary;
+      lastGoodEventId = String(event.id);
       renderLiveBoard(summary, event);
-    } catch (err) {
-      console.warn("PBP summary failed", err);
+    } else if (summary && summary.header) {
+      // Got scores but no plays this tick — keep prior PBP if same game
+      if (lastGoodSummary && lastGoodEventId === String(event.id) && (lastGoodSummary.plays || []).length) {
+        const merged = Object.assign({}, summary, { plays: lastGoodSummary.plays });
+        // Prefer newer header scores
+        renderLiveBoard(merged, event);
+      } else {
+        lastGoodSummary = summary;
+        lastGoodEventId = String(event.id);
+        renderLiveBoard(summary, event);
+      }
+    } else if (lastGoodSummary && lastGoodEventId === String(event.id)) {
+      // Network blip — do not wipe PBP
+      renderLiveBoard(lastGoodSummary, event);
+    } else {
       renderLiveBoard({ header: { competitions: event.competitions || [] } }, event);
     }
   } finally {
@@ -367,7 +416,7 @@ function setLivePolling(event) {
     await refreshPlayByPlay();
     const live = eventIsLive(featuredEvent);
     // 1s while live — as fast as useful; ESPN still caches responses briefly
-    pbpTimer = setTimeout(tick, live ? 500 : 60000);
+    pbpTimer = setTimeout(tick, live ? 1500 : 60000);
   };
   tick();
 }

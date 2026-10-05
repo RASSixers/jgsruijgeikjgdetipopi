@@ -4,6 +4,8 @@ const INJURIES_URL =
   "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
 const SUMMARY_URL =
   "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary";
+const SCOREBOARD_URL =
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard";
 const NATIONAL = /NBC|ESPN|ABC|TNT|MAX|PRIME|AMZN|AMAZON|PEACOCK|NBA TV|NBATV/i;
 
 let refreshTimer = null;
@@ -17,13 +19,27 @@ function get(obj, path, fallback) {
   const value = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
   return value == null ? fallback : value;
 }
-function badgeFor(statusName) {
-  if (statusName === "STATUS_FINAL") return "badge final";
-  if (statusName === "STATUS_IN_PROGRESS" || statusName === "STATUS_LIVE") return "badge live";
+function badgeFor(statusName, state) {
+  const name = String(statusName || "");
+  const st = String(state || "").toLowerCase();
+  if (name === "STATUS_FINAL" || st === "post") return "badge final";
+  if (isLive(name, st)) return "badge live";
   return "badge upcoming";
 }
-function isLive(statusName) {
-  return statusName === "STATUS_IN_PROGRESS" || statusName === "STATUS_LIVE";
+/** ESPN uses STATUS_IN_PROGRESS / state "in" — accept all common live signals */
+function isLive(statusName, state) {
+  const name = String(statusName || "").toUpperCase();
+  const st = String(state || "").toLowerCase();
+  if (st === "in") return true;
+  if (name === "STATUS_IN_PROGRESS" || name === "STATUS_LIVE" || name === "STATUS_HALFTIME") return true;
+  if (name.includes("PROGRESS") || name.includes("HALFTIME") || name.includes("LIVE")) return true;
+  return false;
+}
+function eventIsLive(event) {
+  if (!event) return false;
+  const name = get(event, "competitions.0.status.type.name", "");
+  const state = get(event, "competitions.0.status.type.state", "");
+  return isLive(name, state);
 }
 function getBroadcast(competition) {
   const broadcasts = get(competition, "broadcasts", []) || [];
@@ -117,9 +133,13 @@ function mergeEvents(groups) {
   return markBackToBacks([...map.values()].sort((a, b) => new Date(a.date) - new Date(b.date)));
 }
 function pickFeatured(events) {
-  const live = events.find(e => isLive(get(e, "competitions.0.status.type.name", "")));
+  const live = events.find(e => eventIsLive(e));
   if (live) return live;
-  return events.find(e => get(e, "competitions.0.status.type.state", "") === "pre") || null;
+  // Prefer soonest upcoming (pre)
+  const upcoming = events
+    .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  return upcoming[0] || null;
 }
 function passesFilter(event) {
   const statusName = get(event, "competitions.0.status.type.name", "");
@@ -168,6 +188,10 @@ function renderUpcomingBoard(event) {
     </div>
     <p class="live-empty">${isHome ? "vs" : "@"} ${get(opp, "team.shortDisplayName", oppName)} · ${stream}</p>`;
 }
+function teamLogo(team) {
+  if (!team) return "";
+  return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
+}
 function renderLiveBoard(summary, event) {
   const board = document.getElementById("live-board");
   const body = document.getElementById("live-body");
@@ -176,65 +200,127 @@ function renderLiveBoard(summary, event) {
   if (!board || !body) return;
   board.classList.add("live");
   kicker.textContent = "Live";
+
   const comps = get(summary, "header.competitions.0.competitors", []) ||
     get(event, "competitions.0.competitors", []) || [];
-  const home = comps.find(c => c.homeAway === "home") || comps[0];
-  const away = comps.find(c => c.homeAway === "away") || comps[1];
-  const period = get(summary, "header.competitions.0.status.period", get(event, "competitions.0.status.period", ""));
-  const displayClock = get(summary, "header.competitions.0.status.displayClock",
-    get(event, "competitions.0.status.displayClock", ""));
-  const shortDetail = get(summary, "header.competitions.0.status.type.shortDetail",
-    get(event, "competitions.0.status.type.shortDetail", "Live"));
-  clockEl.textContent = period ? `Q${period} ${displayClock || ""}`.trim() : shortDetail;
-  const plays = (get(summary, "plays", []) || []).slice().reverse().slice(0, 10);
+  const home = comps.find(c => c.homeAway === "home") || comps[0] || {};
+  const away = comps.find(c => c.homeAway === "away") || comps[1] || {};
+  const status = get(summary, "header.competitions.0.status", {}) ||
+    get(event, "competitions.0.status", {}) || {};
+  const period = get(status, "period", "");
+  const displayClock = get(status, "displayClock", "");
+  const shortDetail = get(status, "type.shortDetail", get(status, "type.detail", "Live"));
+  if (clockEl) {
+    clockEl.textContent = (period && displayClock)
+      ? `Q${period} · ${displayClock}`
+      : (shortDetail || "Live");
+  }
+
+  const awayScore = get(away, "score", "0");
+  const homeScore = get(home, "score", "0");
+  const awayAbbr = get(away, "team.abbreviation", get(away, "team.shortDisplayName", "AWAY"));
+  const homeAbbr = get(home, "team.abbreviation", get(home, "team.shortDisplayName", "HOME"));
+
+  // ESPN returns plays oldest→newest; show newest first
+  let plays = get(summary, "plays", []) || [];
+  if (!plays.length) plays = get(summary, "drives.previous", []) || []; // rare fallback
+  plays = plays.slice().reverse().slice(0, 14);
+
   const playHtml = plays.length
-    ? `<ul class="pbp-list">${plays.map(p => `
-        <li class="${p.scoringPlay ? "score" : ""}">
-          <span class="pbp-clock">${get(p, "period.displayValue", "")} ${get(p, "clock.displayValue", "")}</span>
-          <span>${get(p, "text", "")}</span>
-          <span class="pbp-score">${get(p, "awayScore", "")}–${get(p, "homeScore", "")}</span>
-        </li>`).join("")}</ul>`
-    : `<p class="live-empty">Waiting for play-by-play…</p>`;
+    ? `<ul class="pbp-list">${plays.map(p => {
+        const clock = (get(p, "period.displayValue", "") + " " + get(p, "clock.displayValue", "")).trim();
+        const text = get(p, "text", "") || get(p, "description", "") || "—";
+        const sc = (get(p, "awayScore", "") !== "" && get(p, "homeScore", "") !== "")
+          ? `${get(p, "awayScore", "")}–${get(p, "homeScore", "")}`
+          : "";
+        return `<li class="${p.scoringPlay ? "score" : ""}">
+          <span class="pbp-clock">${clock}</span>
+          <span class="pbp-text">${text}</span>
+          <span class="pbp-score">${sc}</span>
+        </li>`;
+      }).join("")}</ul>`
+    : `<p class="live-empty">Play-by-play will appear as the game progresses…</p>`;
+
   body.innerHTML = `
     <div class="live-scoreline">
       <div class="live-team">
-        <img class="live-logo" src="${get(away, "team.logos.0.href", get(away, "team.logo", ""))}" alt="">
-        <span>${get(away, "team.abbreviation", "AWAY")}</span>
+        <img class="live-logo" src="${teamLogo(away.team)}" alt="" onerror="this.style.display='none'">
+        <span>${awayAbbr}</span>
       </div>
-      <div class="live-score">${get(away, "score", "0")}–${get(home, "score", "0")}</div>
+      <div class="live-score">${awayScore}–${homeScore}</div>
       <div class="live-team away">
-        <span>${get(home, "team.abbreviation", "HOME")}</span>
-        <img class="live-logo" src="${get(home, "team.logos.0.href", get(home, "team.logo", ""))}" alt="">
+        <span>${homeAbbr}</span>
+        <img class="live-logo" src="${teamLogo(home.team)}" alt="" onerror="this.style.display='none'">
       </div>
     </div>
+    <div class="pbp-head">Play-by-play</div>
     ${playHtml}`;
 }
-async function refreshPlayByPlay() {
-  if (!featuredEvent) return;
-  const statusName = get(featuredEvent, "competitions.0.status.type.name", "");
-  if (!isLive(statusName)) {
-    renderUpcomingBoard(featuredEvent);
-    return;
-  }
+
+/** Prefer scoreboard for live PHI game (more reliable status than team schedule) */
+async function findLivePhiEvent() {
   try {
-    const res = await fetch(`${SUMMARY_URL}?event=${featuredEvent.id}`);
-    if (!res.ok) throw new Error("summary failed");
-    renderLiveBoard(await res.json(), featuredEvent);
+    const res = await fetch(SCOREBOARD_URL + "?limit=50");
+    if (!res.ok) return null;
+    const data = await res.json();
+    const events = data.events || [];
+    const phiLive = events.find(e => {
+      const comps = get(e, "competitions.0.competitors", []) || [];
+      const isPhi = comps.some(c => get(c, "team.abbreviation", "") === "PHI");
+      return isPhi && eventIsLive(e);
+    });
+    return phiLive || null;
   } catch (err) {
-    renderLiveBoard({}, featuredEvent);
+    console.warn("scoreboard live lookup", err);
+    return null;
   }
 }
+
+async function refreshPlayByPlay() {
+  // Re-detect live PHI game each tick
+  let event = featuredEvent;
+  try {
+    const liveFromBoard = await findLivePhiEvent();
+    if (liveFromBoard) {
+      event = liveFromBoard;
+      featuredEvent = liveFromBoard;
+    }
+  } catch (_) {}
+
+  if (!event) {
+    renderUpcomingBoard(null);
+    return;
+  }
+
+  if (!eventIsLive(event)) {
+    renderUpcomingBoard(event);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${SUMMARY_URL}?event=${encodeURIComponent(event.id)}`);
+    if (!res.ok) throw new Error("summary HTTP " + res.status);
+    const summary = await res.json();
+    renderLiveBoard(summary, event);
+  } catch (err) {
+    console.warn("PBP summary failed", err);
+    // Still show score from scoreboard/event if summary fails
+    renderLiveBoard({ header: { competitions: event.competitions || [] } }, event);
+  }
+}
+
 function setLivePolling(event) {
   if (pbpTimer) clearInterval(pbpTimer);
   featuredEvent = event;
   refreshPlayByPlay();
-  const live = event && isLive(get(event, "competitions.0.status.type.name", ""));
-  pbpTimer = setInterval(refreshPlayByPlay, live ? 5000 : 120000);
+  const live = eventIsLive(event);
+  pbpTimer = setInterval(refreshPlayByPlay, live ? 4000 : 60000);
 }
+
 function setRefreshCadence(events) {
-  const live = events.some(event => isLive(get(event, "competitions.0.status.type.name", "")));
+  const live = (events || []).some(event => eventIsLive(event));
   if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(getSixersSchedule, live ? 45000 : 300000);
+  refreshTimer = setInterval(getSixersSchedule, live ? 30000 : 300000);
 }
 function updateSnapshot(events) {
   let wins = 0, losses = 0, played = 0, next = null;
@@ -248,7 +334,7 @@ function updateSnapshot(events) {
       if (get(sixers, "winner", false)) wins += 1;
       else losses += 1;
     }
-    if (!next && isLive(statusName)) next = { sixers, opp, event, live: true };
+    if (!next && isLive(statusName, get(event, "competitions.0.status.type.state", ""))) next = { sixers, opp, event, live: true };
     else if (!next && state === "pre") next = { sixers, opp, event, live: false };
   });
   const setText = (id, value) => {
@@ -297,14 +383,16 @@ function renderGameRow(event, allEvents) {
   const statusText = get(event, "competitions.0.status.type.shortDetail", "") ||
     get(event, "competitions.0.status.type.description", "Scheduled");
   let resultHtml = timeStr || "TBD";
-  const sixersScore = get(sixers, "score.displayValue", null);
-  const oppScore = get(opponent, "score.displayValue", null);
-  if (statusType === "STATUS_FINAL" && sixersScore != null && oppScore != null) {
-    const won = !!get(sixers, "winner", false);
+  const state = get(event, "competitions.0.status.type.state", "");
+  const sixersScore = get(sixers, "score.displayValue", null) ?? get(sixers, "score", null);
+  const oppScore = get(opponent, "score.displayValue", null) ?? get(opponent, "score", null);
+  if ((statusType === "STATUS_FINAL" || state === "post") && sixersScore != null && oppScore != null) {
+    const won = !!get(sixers, "winner", false) || Number(sixersScore) > Number(oppScore);
     resultHtml = `<span class="${won ? "win-result" : "loss-result"}">${won ? "W" : "L"} ${sixersScore}–${oppScore}</span>`;
-  } else if (isLive(statusType) && sixersScore != null) {
-    resultHtml = `<strong>${sixersScore}–${oppScore ?? ""}</strong>`;
+  } else if (isLive(statusType, state) && sixersScore != null) {
+    resultHtml = `<strong>LIVE ${sixersScore}–${oppScore ?? ""}</strong>`;
   }
+
   return `
     <tr class="game-row" tabindex="0">
       <td class="date-cell">${dateStr}</td>
@@ -407,7 +495,12 @@ async function getSixersSchedule() {
       return;
     }
     updateSnapshot(allEventsCache);
-    setLivePolling(pickFeatured(allEventsCache));
+    let featured = pickFeatured(allEventsCache);
+    try {
+      const livePhi = await findLivePhiEvent();
+      if (livePhi) featured = livePhi;
+    } catch (_) {}
+    setLivePolling(featured);
     paintLog();
     setRefreshCadence(allEventsCache);
   } catch (err) {

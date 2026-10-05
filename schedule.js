@@ -37,6 +37,38 @@ function isLive(statusName, state) {
   if (name.includes("PROGRESS") || name.includes("HALFTIME") || name.includes("LIVE")) return true;
   return false;
 }
+function formatGameClock(status, periodFallback) {
+  const period = get(status, "period", periodFallback) || "";
+  const clock = get(status, "displayClock", "") || "";
+  const shortDetail = get(status, "type.shortDetail", "") || get(status, "type.detail", "");
+  const name = String(get(status, "type.name", "")).toUpperCase();
+  // Halftime
+  if (name.includes("HALFTIME") || /half/i.test(shortDetail)) return "Halftime";
+  // OT
+  if (period && Number(period) > 4) {
+    const ot = Number(period) - 4;
+    return clock ? `OT${ot} · ${clock}` : `OT${ot}`;
+  }
+  if (period && clock) return `Q${period} · ${clock}`;
+  if (period) return `Q${period}`;
+  if (clock) return clock;
+  // Clean ESPN shortDetail like "8:14 - 1st" → "Q1 · 8:14"
+  const m = String(shortDetail).match(/^(\d+:\d+)\s*[-–]\s*(\d+)(st|nd|rd|th)?/i);
+  if (m) return `Q${m[2]} · ${m[1]}`;
+  return shortDetail || "Live";
+}
+function formatPlayClock(p) {
+  const n = get(p, "period.number", "");
+  const clock = get(p, "clock.displayValue", "") || "";
+  if (n && Number(n) > 4) {
+    const ot = Number(n) - 4;
+    return clock ? `OT${ot} ${clock}` : `OT${ot}`;
+  }
+  if (n && clock) return `Q${n} ${clock}`;
+  if (n) return `Q${n}`;
+  const label = get(p, "period.displayValue", "");
+  return (label + " " + clock).trim() || "—";
+}
 function eventIsLive(event) {
   if (!event) return false;
   const name = get(event, "competitions.0.status.type.name", "");
@@ -209,16 +241,8 @@ function renderLiveBoard(summary, event) {
   const away = comps.find(c => c.homeAway === "away") || comps[1] || {};
   const status = get(summary, "header.competitions.0.status", {}) ||
     get(event, "competitions.0.status", {}) || {};
-  const period = get(status, "period", "");
-  const displayClock = get(status, "displayClock", "");
-  const shortDetail = get(status, "type.shortDetail", get(status, "type.detail", "Live"));
-  if (clockEl) {
-    if (period && displayClock) {
-      clockEl.textContent = `Q${period} · ${displayClock}`;
-    } else {
-      clockEl.textContent = shortDetail || "Live";
-    }
-  }
+  if (clockEl) clockEl.textContent = formatGameClock(status);
+
 
   const awayScore = get(away, "score", "0");
   const homeScore = get(home, "score", "0");
@@ -232,9 +256,7 @@ function renderLiveBoard(summary, event) {
 
   const playHtml = plays.length
     ? `<ul class="pbp-list">${plays.map(p => {
-        const pNum = get(p, "period.number", "");
-        const pLabel = pNum ? (`Q${pNum}`) : get(p, "period.displayValue", "");
-        const clock = (pLabel + " " + get(p, "clock.displayValue", "")).trim();
+        const clock = formatPlayClock(p);
         const text = get(p, "text", "") || get(p, "description", "") || "—";
         const sc = (get(p, "awayScore", "") !== "" && get(p, "homeScore", "") !== "")
           ? `${get(p, "awayScore", "")}–${get(p, "homeScore", "")}`
@@ -289,7 +311,7 @@ async function refreshPlayByPlay() {
     let event = featuredEvent;
     // Only hit scoreboard every ~12s to discover/switch live game (keeps PBP fast)
     const now = Date.now();
-    if (now - lastScoreboardCheck > 12000) {
+    if (now - lastScoreboardCheck > 8000) {
       lastScoreboardCheck = now;
       try {
         const liveFromBoard = await findLivePhiEvent();
@@ -311,8 +333,10 @@ async function refreshPlayByPlay() {
     }
 
     try {
-      const res = await fetch(`${SUMMARY_URL}?event=${encodeURIComponent(event.id)}`, {
-        cache: "no-store"
+      const url = `${SUMMARY_URL}?event=${encodeURIComponent(event.id)}&_=${Date.now()}`;
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
       });
       if (!res.ok) throw new Error("summary HTTP " + res.status);
       const summary = await res.json();
@@ -326,14 +350,26 @@ async function refreshPlayByPlay() {
   }
 }
 
+function clearPbpTimer() {
+  if (pbpTimer) {
+    clearTimeout(pbpTimer);
+    clearInterval(pbpTimer);
+    pbpTimer = null;
+  }
+}
+
 function setLivePolling(event) {
-  if (pbpTimer) clearInterval(pbpTimer);
+  clearPbpTimer();
   featuredEvent = event;
   lastScoreboardCheck = 0;
-  refreshPlayByPlay();
-  const live = eventIsLive(event);
-  // ~2s is as fast as practical; ESPN summary cache is ~10s server-side
-  pbpTimer = setInterval(refreshPlayByPlay, live ? 2000 : 60000);
+
+  const tick = async () => {
+    await refreshPlayByPlay();
+    const live = eventIsLive(featuredEvent);
+    // 1s while live — as fast as useful; ESPN still caches responses briefly
+    pbpTimer = setTimeout(tick, live ? 500 : 60000);
+  };
+  tick();
 }
 
 function setRefreshCadence(events) {

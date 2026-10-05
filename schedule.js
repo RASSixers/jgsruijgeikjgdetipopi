@@ -10,6 +10,8 @@ const NATIONAL = /NBC|ESPN|ABC|TNT|MAX|PRIME|AMZN|AMAZON|PEACOCK|NBA TV|NBATV/i;
 
 let refreshTimer = null;
 let pbpTimer = null;
+let pbpInflight = false;
+let lastScoreboardCheck = 0;
 let injuryByAbbr = {};
 let featuredEvent = null;
 let allEventsCache = [];
@@ -211,9 +213,11 @@ function renderLiveBoard(summary, event) {
   const displayClock = get(status, "displayClock", "");
   const shortDetail = get(status, "type.shortDetail", get(status, "type.detail", "Live"));
   if (clockEl) {
-    clockEl.textContent = (period && displayClock)
-      ? `Q${period} · ${displayClock}`
-      : (shortDetail || "Live");
+    if (period && displayClock) {
+      clockEl.textContent = `Q${period} · ${displayClock}`;
+    } else {
+      clockEl.textContent = shortDetail || "Live";
+    }
   }
 
   const awayScore = get(away, "score", "0");
@@ -228,7 +232,9 @@ function renderLiveBoard(summary, event) {
 
   const playHtml = plays.length
     ? `<ul class="pbp-list">${plays.map(p => {
-        const clock = (get(p, "period.displayValue", "") + " " + get(p, "clock.displayValue", "")).trim();
+        const pNum = get(p, "period.number", "");
+        const pLabel = pNum ? (`Q${pNum}`) : get(p, "period.displayValue", "");
+        const clock = (pLabel + " " + get(p, "clock.displayValue", "")).trim();
         const text = get(p, "text", "") || get(p, "description", "") || "—";
         const sc = (get(p, "awayScore", "") !== "" && get(p, "homeScore", "") !== "")
           ? `${get(p, "awayScore", "")}–${get(p, "homeScore", "")}`
@@ -277,44 +283,57 @@ async function findLivePhiEvent() {
 }
 
 async function refreshPlayByPlay() {
-  // Re-detect live PHI game each tick
-  let event = featuredEvent;
+  if (pbpInflight) return;
+  pbpInflight = true;
   try {
-    const liveFromBoard = await findLivePhiEvent();
-    if (liveFromBoard) {
-      event = liveFromBoard;
-      featuredEvent = liveFromBoard;
+    let event = featuredEvent;
+    // Only hit scoreboard every ~12s to discover/switch live game (keeps PBP fast)
+    const now = Date.now();
+    if (now - lastScoreboardCheck > 12000) {
+      lastScoreboardCheck = now;
+      try {
+        const liveFromBoard = await findLivePhiEvent();
+        if (liveFromBoard) {
+          event = liveFromBoard;
+          featuredEvent = liveFromBoard;
+        }
+      } catch (_) {}
     }
-  } catch (_) {}
 
-  if (!event) {
-    renderUpcomingBoard(null);
-    return;
-  }
+    if (!event) {
+      renderUpcomingBoard(null);
+      return;
+    }
 
-  if (!eventIsLive(event)) {
-    renderUpcomingBoard(event);
-    return;
-  }
+    if (!eventIsLive(event)) {
+      renderUpcomingBoard(event);
+      return;
+    }
 
-  try {
-    const res = await fetch(`${SUMMARY_URL}?event=${encodeURIComponent(event.id)}`);
-    if (!res.ok) throw new Error("summary HTTP " + res.status);
-    const summary = await res.json();
-    renderLiveBoard(summary, event);
-  } catch (err) {
-    console.warn("PBP summary failed", err);
-    // Still show score from scoreboard/event if summary fails
-    renderLiveBoard({ header: { competitions: event.competitions || [] } }, event);
+    try {
+      const res = await fetch(`${SUMMARY_URL}?event=${encodeURIComponent(event.id)}`, {
+        cache: "no-store"
+      });
+      if (!res.ok) throw new Error("summary HTTP " + res.status);
+      const summary = await res.json();
+      renderLiveBoard(summary, event);
+    } catch (err) {
+      console.warn("PBP summary failed", err);
+      renderLiveBoard({ header: { competitions: event.competitions || [] } }, event);
+    }
+  } finally {
+    pbpInflight = false;
   }
 }
 
 function setLivePolling(event) {
   if (pbpTimer) clearInterval(pbpTimer);
   featuredEvent = event;
+  lastScoreboardCheck = 0;
   refreshPlayByPlay();
   const live = eventIsLive(event);
-  pbpTimer = setInterval(refreshPlayByPlay, live ? 4000 : 60000);
+  // ~2s is as fast as practical; ESPN summary cache is ~10s server-side
+  pbpTimer = setInterval(refreshPlayByPlay, live ? 2000 : 60000);
 }
 
 function setRefreshCadence(events) {

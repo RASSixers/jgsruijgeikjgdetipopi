@@ -197,6 +197,100 @@
     .news-list-thumb { width: 84px; }
     .updates-feed { grid-template-columns: 1fr; }
   }
+
+  .home-game {
+    max-width: 1080px; margin: 0 auto; padding: 0 2rem 2rem;
+  }
+  .home-game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .home-game-card.is-live { border-color: rgba(237,23,76,.35); }
+  .home-game-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding: 0.85rem 1.15rem; background: var(--surface-soft, rgba(0,0,0,.02));
+    border-bottom: 1px solid var(--border-light);
+  }
+  .home-game-kicker {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mid);
+  }
+  .home-game-card.is-live .home-game-kicker { color: var(--sixers-red, #ED174C); }
+  .home-game-clock {
+    font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums;
+    padding: 0.25rem 0.65rem; border-radius: 999px;
+    border: 1px solid var(--border-light); color: var(--ink);
+  }
+  .home-game-card.is-live .home-game-clock {
+    color: var(--sixers-red, #ED174C);
+    border-color: rgba(237,23,76,.35);
+    background: rgba(237,23,76,.06);
+  }
+  .home-game-scoreline {
+    display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+    gap: 0.75rem; align-items: center; padding: 1rem 1.15rem;
+  }
+  .home-game-team {
+    display: flex; align-items: center; gap: 0.5rem; font-weight: 700; min-width: 0;
+  }
+  .home-game-team.away { justify-content: flex-end; text-align: right; }
+  .home-game-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home-game-logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+  .home-game-score {
+    font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .home-game-tabs {
+    display: flex; gap: 0; padding: 0 1.15rem;
+    border-top: 1px solid var(--border-light);
+  }
+  .home-game-tab {
+    border: none; background: transparent; color: var(--mid);
+    font: inherit; font-size: 0.78rem; font-weight: 700;
+    padding: 0.55rem 0.75rem; cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .home-game-tab.on { color: var(--sixers-blue); border-bottom-color: var(--sixers-blue); }
+  .home-game-pbp {
+    list-style: none; margin: 0; padding: 0; max-height: 280px; overflow: auto;
+  }
+  .home-game-pbp li {
+    display: grid; grid-template-columns: 5rem minmax(0,1fr) auto;
+    gap: 0.5rem; padding: 0.5rem 1.15rem; border-top: 1px solid var(--border-light);
+    font-size: 0.8rem; line-height: 1.35;
+  }
+  .home-game-pbp .clk { color: var(--mid); font-weight: 700; font-size: 0.72rem; white-space: nowrap; }
+  .home-game-pbp .sc { color: var(--mid); font-variant-numeric: tabular-nums; font-size: 0.75rem; }
+  .home-game-box { padding: 0.5rem 0 0.75rem; max-height: 320px; overflow: auto; }
+  .home-game-box-team { font-weight: 800; font-size: 0.85rem; padding: 0.4rem 1.15rem; }
+  .home-game-box table {
+    width: 100%; border-collapse: collapse; font-size: 0.72rem; min-width: 480px;
+  }
+  .home-game-box th, .home-game-box td {
+    padding: 0.3rem 0.35rem; text-align: right; border-bottom: 1px solid var(--border-light);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .home-game-box th { font-size: 0.62rem; color: var(--mid); text-transform: uppercase; }
+  .home-game-box .pl { text-align: left; font-weight: 600; position: sticky; left: 0; background: var(--card-bg); min-width: 7rem; }
+  .home-game-foot {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1.15rem; border-top: 1px solid var(--border-light);
+    font-size: 0.8rem;
+  }
+  .home-game-foot a {
+    color: var(--sixers-blue); font-weight: 700; text-decoration: none;
+  }
+  .home-game-empty { padding: 1.25rem; color: var(--mid); font-size: 0.9rem; margin: 0; }
+  .home-game-meta { padding: 0 1.15rem 0.85rem; color: var(--mid); font-size: 0.82rem; }
+  @media (max-width: 720px) {
+    .home-game { padding: 0 0.85rem 1.5rem; }
+    .home-game-score { font-size: 1.4rem; }
+    .home-game-pbp li { grid-template-columns: 4.5rem minmax(0,1fr); }
+    .home-game-pbp .sc { grid-column: 2; justify-self: start; font-size: 0.7rem; }
+  }
+
 </style>
 </head>
 <body>
@@ -208,36 +302,52 @@
         <p class="hero-title-bottom">Hoops</p>
         <p class="hero-sub">The ultimate destination for Sixers fans. News, analysis, community, and everything 76ers.</p>
         <div class="hero-cta-row">
-          <a href="#news" class="hero-cta-primary">Latest News</a>
-          <a href="#features" class="hero-cta-secondary">Explore the site →</a>
+          <a href="#game-center" class="hero-cta-primary">Game Center</a>
+          <a href="/pickem" class="hero-cta-secondary">Play Pick'em →</a>
         </div>
       </div>
     </div>
     <div class="feature-cards-section" id="features">
       <div class="feature-cards-inner">
-        <a href="https://www.nba.com/trade-machine" target="_blank" rel="noopener noreferrer" class="feature-card">
-          <div class="feature-card-title">NBA Trade Machine</div>
-          <div class="feature-card-desc">Build and simulate trades to see how they affect the Sixers roster.</div>
+        <a href="/nba-trade-machine" class="feature-card">
+          <div class="feature-card-title">Trade Machine</div>
+          <div class="feature-card-desc">Build and simulate trades with full salary matching.</div>
           <div class="feature-card-arrow">→</div>
         </a>
-        <a href="/roster.html" class="feature-card">
-          <div class="feature-card-title">Roster &amp; Depth Chart</div>
-          <div class="feature-card-desc">Full squad, lineups, and player stats at a glance.</div>
+        <a href="/roster" class="feature-card">
+          <div class="feature-card-title">Roster</div>
+          <div class="feature-card-desc">Full squad, contracts, and player info.</div>
           <div class="feature-card-arrow">→</div>
         </a>
-        <a href="/schedule.html" class="feature-card">
-          <div class="feature-card-title">2025–26 Schedule</div>
-          <div class="feature-card-desc">Full game schedule, results and upcoming matchups.</div>
+        <a href="/sixers-depth-chart" class="feature-card">
+          <div class="feature-card-title">Depth Chart</div>
+          <div class="feature-card-desc">Starters, rotation, and positional depth.</div>
           <div class="feature-card-arrow">→</div>
         </a>
-        <a href="/pickem.html" class="feature-card">
+        <a href="/pickem" class="feature-card">
           <div class="feature-card-title">Community Pick'em</div>
-          <div class="feature-card-desc">Make your predictions and compete with the Sixers fanbase.</div>
+          <div class="feature-card-desc">Daily predictions and season leaderboards.</div>
           <div class="feature-card-arrow" style="color: var(--sixers-red);">→</div>
         </a>
       </div>
     </div>
   </header>
+
+  <section id="game-center" class="home-game" aria-live="polite">
+    <div class="home-game-card" id="home-game-card">
+      <div class="home-game-head">
+        <span class="home-game-kicker" id="home-game-kicker">Loading</span>
+        <span class="home-game-clock" id="home-game-clock">—</span>
+      </div>
+      <div id="home-game-body">
+        <p class="home-game-empty">Loading game center…</p>
+      </div>
+      <div class="home-game-foot">
+        <span id="home-game-note" style="color:var(--mid);font-size:0.78rem;"></span>
+        <a href="/schedule">Full schedule →</a>
+      </div>
+    </div>
+  </section>
 
   <section id="news" class="news-section">
     <div class="news-inner">
@@ -246,7 +356,6 @@
           <span class="news-eyebrow">Latest</span>
           <h2 class="news-title">News &amp; Analysis</h2>
         </div>
-        <a href="/news.html" class="news-view-all">View all news →</a>
       </div>
       <div class="news-grid" id="news-grid">
         <div class="news-loading">Loading the latest…</div>
@@ -540,5 +649,239 @@ listenToNews();
 listenToPoll();
 listenToUpdates();
 </script>
+
+<script>
+(function () {
+  const SCHEDULE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/schedule";
+  const SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard";
+  const SUMMARY = "https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary";
+
+  let panel = "pbp";
+  let lastSummary = null;
+  let featured = null;
+  let timer = null;
+
+  function get(obj, path, fb) {
+    const v = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
+    return v == null ? fb : v;
+  }
+  function isLive(ev) {
+    const n = String(get(ev, "competitions.0.status.type.name", "")).toUpperCase();
+    const s = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
+    return s === "in" || n.includes("PROGRESS") || n.includes("HALFTIME") || n.includes("LIVE");
+  }
+  function isFinal(ev) {
+    const n = String(get(ev, "competitions.0.status.type.name", "")).toUpperCase();
+    const s = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
+    return s === "post" || n.includes("FINAL");
+  }
+  function logo(team) {
+    return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
+  }
+  function fmtClock(status) {
+    const period = get(status, "period", "");
+    const clock = get(status, "displayClock", "");
+    const short = get(status, "type.shortDetail", "") || get(status, "type.detail", "");
+    const name = String(get(status, "type.name", "")).toUpperCase();
+    if (name.includes("HALFTIME") || /half/i.test(short)) return "Halftime";
+    if (period && Number(period) > 4) {
+      const ot = Number(period) - 4;
+      return clock ? "OT" + ot + " · " + clock : "OT" + ot;
+    }
+    if (period && clock) return "Q" + period + " · " + clock;
+    return short || "—";
+  }
+
+  async function fetchEvents() {
+    const res = await fetch(SCHEDULE);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.events || [];
+  }
+  async function findLive() {
+    try {
+      const res = await fetch(SCOREBOARD + "?limit=50");
+      if (!res.ok) return null;
+      const data = await res.json();
+      return (data.events || []).find(e => {
+        const comps = get(e, "competitions.0.competitors", []) || [];
+        return comps.some(c => get(c, "team.abbreviation", "") === "PHI") && isLive(e);
+      }) || null;
+    } catch (_) { return null; }
+  }
+  async function fetchSummary(id) {
+    try {
+      const res = await fetch(SUMMARY + "?event=" + encodeURIComponent(id), { cache: "no-store" });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (_) { return null; }
+  }
+
+  function pickFeatured(events) {
+    const live = events.find(isLive);
+    if (live) return { event: live, mode: "live" };
+    const upcoming = events
+      .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    const next = upcoming[0];
+    if (next) {
+      const until = new Date(next.date).getTime() - Date.now();
+      if (until <= 12 * 60 * 60 * 1000 && until > -3 * 60 * 60 * 1000) {
+        return { event: next, mode: "upcoming" };
+      }
+    }
+    const finals = events.filter(isFinal).sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (finals[0]) {
+      const age = Date.now() - new Date(finals[0].date).getTime();
+      if (age < 18 * 60 * 60 * 1000) return { event: finals[0], mode: "final" };
+    }
+    if (next) return { event: next, mode: "upcoming" };
+    return finals[0] ? { event: finals[0], mode: "final" } : null;
+  }
+
+  function renderBox(summary) {
+    const groups = get(summary, "boxscore.players", []) || [];
+    if (!groups.length) return '<p class="home-game-empty">Box score unavailable yet.</p>';
+    return groups.map(g => {
+      const abbr = get(g, "team.abbreviation", "Team");
+      const name = get(g, "team.displayName", abbr);
+      const st = (g.statistics || [])[0] || {};
+      const labels = st.labels || st.names || [];
+      const keys = st.keys || [];
+      const want = ["minutes","points","rebounds","assists","steals","blocks","turnovers","plusMinus"];
+      let idx = want.map(k => keys.indexOf(k)).filter(i => i >= 0);
+      if (!idx.length) idx = labels.map((_, i) => i).slice(0, 7);
+      const head = idx.map(i => "<th>" + (labels[i] || "") + "</th>").join("");
+      const rows = (st.athletes || []).map(a => {
+        const player = get(a, "athlete.displayName", "Player");
+        const stats = a.stats || [];
+        if ((a.didNotPlay || a.reason) && !stats.length) {
+          return '<tr><td class="pl">' + player + '</td><td colspan="' + idx.length + '" style="text-align:left;color:var(--mid)">' + (a.reason || "DNP") + "</td></tr>";
+        }
+        return "<tr><td class=\"pl\">" + player + "</td>" + idx.map(i => "<td>" + (stats[i] != null ? stats[i] : "—") + "</td>").join("") + "</tr>";
+      }).join("");
+      return '<div class="home-game-box-team">' + name + '</div><div style="overflow-x:auto;padding:0 .65rem 0.5rem"><table><thead><tr><th class="pl">Player</th>' + head + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+    }).join("");
+  }
+
+  function renderBoard(event, summary, mode) {
+    const card = document.getElementById("home-game-card");
+    const body = document.getElementById("home-game-body");
+    const kicker = document.getElementById("home-game-kicker");
+    const clockEl = document.getElementById("home-game-clock");
+    const note = document.getElementById("home-game-note");
+    if (!card || !body) return;
+
+    card.classList.toggle("is-live", mode === "live");
+    kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : "Up next");
+
+    const comps = get(summary, "header.competitions.0.competitors", []) ||
+      get(event, "competitions.0.competitors", []) || [];
+    const home = comps.find(c => c.homeAway === "home") || comps[0] || {};
+    const away = comps.find(c => c.homeAway === "away") || comps[1] || {};
+    const status = get(summary, "header.competitions.0.status", {}) || get(event, "competitions.0.status", {}) || {};
+
+    if (mode === "upcoming") {
+      const tip = new Date(event.date);
+      const tipStr = isNaN(tip) ? "TBD" : tip.toLocaleString("en-US", {
+        weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+      });
+      clockEl.textContent = tipStr;
+      const awayN = get(away, "team.abbreviation", get(away, "team.shortDisplayName", "AWAY"));
+      const homeN = get(home, "team.abbreviation", get(home, "team.shortDisplayName", "HOME"));
+      body.innerHTML =
+        '<div class="home-game-scoreline">' +
+          '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
+          '<div class="home-game-score">vs</div>' +
+          '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+        '</div>' +
+        '<p class="home-game-meta">Tip-off in under 12 hours · Watch live scores & play-by-play here when the game starts.</p>';
+      note.textContent = "";
+      return;
+    }
+
+    clockEl.textContent = mode === "final"
+      ? (get(status, "type.shortDetail", "Final") || "Final")
+      : fmtClock(status);
+
+    const awayScore = get(away, "score", "0");
+    const homeScore = get(home, "score", "0");
+    const awayN = get(away, "team.abbreviation", "AWAY");
+    const homeN = get(home, "team.abbreviation", "HOME");
+
+    let plays = Array.isArray(get(summary, "plays", null)) ? summary.plays.slice() : [];
+    plays = plays.reverse().slice(0, 40);
+    const pbp = plays.length
+      ? '<ul class="home-game-pbp">' + plays.map(p => {
+          const n = get(p, "period.number", "");
+          const clk = (n ? ("Q" + n + " ") : "") + (get(p, "clock.displayValue", "") || "");
+          const text = get(p, "text", "") || "—";
+          const sc = (get(p, "awayScore", "") !== "" ? get(p, "awayScore", "") + "–" + get(p, "homeScore", "") : "");
+          return '<li><span class="clk">' + clk + '</span><span>' + text + '</span><span class="sc">' + sc + "</span></li>";
+        }).join("") + "</ul>"
+      : '<p class="home-game-empty">Play-by-play will appear as the game progresses…</p>';
+
+    body.innerHTML =
+      '<div class="home-game-scoreline">' +
+        '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
+        '<div class="home-game-score">' + awayScore + "–" + homeScore + "</div>" +
+        '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+      "</div>" +
+      '<div class="home-game-tabs">' +
+        '<button type="button" class="home-game-tab' + (panel === "pbp" ? " on" : "") + '" data-hg-panel="pbp">Play-by-play</button>' +
+        '<button type="button" class="home-game-tab' + (panel === "box" ? " on" : "") + '" data-hg-panel="box">Box score</button>' +
+      "</div>" +
+      '<div class="hg-panel-pbp" style="' + (panel === "pbp" ? "" : "display:none") + '">' + pbp + "</div>" +
+      '<div class="hg-panel-box home-game-box" style="' + (panel === "box" ? "" : "display:none") + '">' + renderBox(summary || {}) + "</div>";
+
+    note.textContent = mode === "live" ? "Updates automatically" : "Full box score & PBP";
+  }
+
+  async function refresh() {
+    try {
+      const live = await findLive();
+      let chosen;
+      if (live) chosen = { event: live, mode: "live" };
+      else {
+        const events = await fetchEvents();
+        chosen = pickFeatured(events);
+      }
+      if (!chosen) {
+        document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">No Sixers games to show right now.</p>';
+        return;
+      }
+      featured = chosen.event;
+      let summary = null;
+      if (chosen.mode !== "upcoming") {
+        summary = await fetchSummary(featured.id);
+        if (summary) lastSummary = summary;
+        else summary = lastSummary;
+      }
+      renderBoard(featured, summary || {}, chosen.mode);
+
+      clearTimeout(timer);
+      timer = setTimeout(refresh, chosen.mode === "live" ? 2000 : 60000);
+    } catch (err) {
+      console.warn("home game", err);
+      document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">Could not load game center.</p>';
+    }
+  }
+
+  document.addEventListener("click", e => {
+    const btn = e.target.closest("[data-hg-panel]");
+    if (!btn) return;
+    panel = btn.getAttribute("data-hg-panel") || "pbp";
+    document.querySelectorAll(".home-game-tab").forEach(b => b.classList.toggle("on", b === btn));
+    const pbp = document.querySelector(".hg-panel-pbp");
+    const box = document.querySelector(".hg-panel-box");
+    if (pbp) pbp.style.display = panel === "pbp" ? "" : "none";
+    if (box) box.style.display = panel === "box" ? "" : "none";
+  });
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh);
+  else refresh();
+})();
+</script>
+
 </body>
 </html>

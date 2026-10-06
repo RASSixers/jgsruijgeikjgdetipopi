@@ -3429,23 +3429,17 @@
         return lines.concat(notes.map(function (n) { return 'Note: ' + n; }));
     }
     function shortContractLabel(p) {
+        // Prefer Spotrac-style schedule label when available (defined later)
+        if (typeof parseContractSchedule === 'function') {
+            try {
+                var sch = parseContractSchedule(p);
+                if (sch && sch.label) return sch.label;
+            } catch (e) {}
+        }
         if (!p) return '';
-        if (isTwoWay(p)) return 'Two-Way · $0';
-        if (isDeadMoney(p)) return 'Dead money';
-        const ct = String(p.contractType || '');
-        const fo = String(p.futureOption || '');
-        const yrs = Number(p.contractYears) || ((p.contractDetails && p.contractDetails.length) || 0);
-        let bits = [];
-        if (/non-?guaranteed/i.test(ct)) bits.push('NG');
-        else if (/partial/i.test(ct) || p.partialGuarantee) {
-            bits.push('Partial GTD');
-            if (p.partialAmount) bits.push('$' + Math.round(p.partialAmount/1e5)/10 + 'M gtd');
-        } else bits.push('GTD');
-        if (/player option/i.test(fo)) bits.push('PO');
-        else if (/team option/i.test(fo)) bits.push('TO');
-        else if (/option/i.test(fo)) bits.push('Option/NG yr');
-        if (yrs) bits.push(yrs + 'yr');
-        return bits.join(' · ');
+        if (typeof isTwoWay === 'function' && isTwoWay(p)) return 'Two-Way · $0';
+        if (typeof isDeadMoney === 'function' && isDeadMoney(p)) return 'Dead money';
+        return formatContractLabel ? formatContractLabel(p) : (p.contractType || '');
     }
 
 
@@ -3621,87 +3615,158 @@
         });
     }
 
+
+    /** Parse year-by-year schedule from contractDetails + flags → Spotrac-style structure. */
+    function parseContractSchedule(p) {
+        if (!p) return { years: [], guaranteedYears: 0, optionYears: 0, optionType: null, label: '', totalYears: 0 };
+        if (typeof isTwoWay === 'function' && isTwoWay(p)) {
+            return { years: [{ label: '2026-27', amount: 0, status: 'TW', display: 'Two-Way · $0' }], guaranteedYears: 0, optionYears: 0, optionType: null, label: 'Two-Way · $0', totalYears: 1 };
+        }
+        if (typeof isDeadMoney === 'function' && isDeadMoney(p)) {
+            return { years: [{ label: '2026-27', amount: Number(p.salary) || 0, status: 'DEAD', display: 'Dead money' }], guaranteedYears: 0, optionYears: 0, optionType: null, label: 'Dead money', totalYears: 1 };
+        }
+        var details = Array.isArray(p.contractDetails) ? p.contractDetails : [];
+        var years = [];
+        details.forEach(function (line) {
+            line = String(line || '');
+            var m = line.match(/^(20\d{2}-\d{2}):\s*(.+)$/);
+            if (!m) return;
+            var label = m[1];
+            var rest = m[2];
+            var amtMatch = rest.replace(/,/g, '').match(/\$?\s*([\d.]+)\s*([KkMm])?/);
+            var amount = 0;
+            if (amtMatch) {
+                amount = parseFloat(amtMatch[1]);
+                if (/m/i.test(amtMatch[2] || '')) amount *= 1e6;
+                else if (/k/i.test(amtMatch[2] || '')) amount *= 1e3;
+                // if already full dollars (no k/m and large), keep
+                if (!amtMatch[2] && amount < 1000 && /\$[\d,]+/.test(rest)) {
+                    var full = rest.replace(/,/g, '').match(/\$?\s*([\d]+)/);
+                    if (full) amount = parseInt(full[1], 10);
+                }
+                if (!amtMatch[2] && /\$[\d,]+/.test(rest)) {
+                    var full2 = rest.replace(/,/g, '').match(/\$\s*([\d]+)/);
+                    if (full2) amount = parseInt(full2[1], 10);
+                }
+            }
+            var status = 'GTD';
+            if (/player\s*option|\(PO\)/i.test(rest)) status = 'PO';
+            else if (/team\s*option|\(TO\)/i.test(rest)) status = 'TO';
+            else if (/non-?guaranteed/i.test(rest)) status = 'NG';
+            else if (/partial/i.test(rest)) status = 'PARTIAL';
+            years.push({ label: label, amount: amount, status: status, display: rest });
+        });
+        // Prefer explicit fields
+        var gY = (p.guaranteedYears != null && !isNaN(Number(p.guaranteedYears))) ? Number(p.guaranteedYears) : null;
+        var oY = (p.optionYears != null && !isNaN(Number(p.optionYears))) ? Number(p.optionYears) : null;
+        var fo = String(p.futureOption || '');
+        var ct = String(p.contractType || '');
+        // Infer from year statuses if not explicit
+        if (gY == null) {
+            gY = 0;
+            years.forEach(function (y) {
+                if (y.status === 'GTD') gY++;
+            });
+        }
+        if (oY == null) {
+            oY = 0;
+            years.forEach(function (y) {
+                if (y.status === 'PO' || y.status === 'TO' || y.status === 'NG' || y.status === 'PARTIAL') oY++;
+            });
+        }
+        var optionType = null;
+        if (/player option/i.test(fo) || /player option/i.test(ct)) optionType = 'PO';
+        else if (/team option/i.test(fo) || /team option/i.test(ct)) optionType = 'TO';
+        else {
+            // from year statuses (last option-like year wins)
+            for (var i = years.length - 1; i >= 0; i--) {
+                if (years[i].status === 'PO') { optionType = 'PO'; break; }
+                if (years[i].status === 'TO') { optionType = 'TO'; break; }
+                if (years[i].status === 'NG' || years[i].status === 'PARTIAL') { optionType = 'NG'; break; }
+            }
+            if (!optionType && /option/i.test(fo)) optionType = 'OPT';
+        }
+        // If partial guarantee by $ amount but all years marked GTD, estimate guaranteed seasons
+        if ((p.partialGuarantee || /partial/i.test(ct)) && p.partialAmount && years.length) {
+            var gtdLeft = Number(p.partialAmount) || 0;
+            var run = 0;
+            gY = 0; oY = 0;
+            years.forEach(function (y, idx) {
+                if (run >= gtdLeft) {
+                    if (y.status === 'GTD') y.status = optionType === 'PO' ? 'PO' : (optionType === 'TO' ? 'TO' : 'NG');
+                    oY++;
+                } else if (run + y.amount > gtdLeft) {
+                    y.status = 'PARTIAL';
+                    gY++; // counts as partial year toward structure; treat as guaranteed portion year
+                    oY++; // also optional remainder
+                    // Prefer cleaner: count as guaranteed year for label, mark display
+                } else {
+                    y.status = 'GTD';
+                    gY++;
+                }
+                run += y.amount;
+            });
+            // recount cleanly: full GTD years only
+            gY = 0; oY = 0;
+            run = 0;
+            years.forEach(function (y) {
+                if (run + y.amount <= gtdLeft + 1) {
+                    y.status = 'GTD';
+                    gY++;
+                } else if (run < gtdLeft) {
+                    y.status = 'PARTIAL';
+                    gY++; // include partial year in guaranteed count for "3+1" style sometimes; user wants 2+1 PO
+                    // For label: guaranteed full years only
+                } else {
+                    if (y.status === 'GTD') y.status = optionType === 'PO' ? 'PO' : (optionType === 'TO' ? 'TO' : 'NG');
+                    oY++;
+                }
+                run += y.amount;
+            });
+            // recount again for accurate gY = seasons fully covered by guarantee
+            gY = 0; oY = 0; run = 0;
+            years.forEach(function (y) {
+                if (run + y.amount <= gtdLeft + 50) {
+                    y.status = 'GTD';
+                    gY++;
+                } else {
+                    if (y.status !== 'PO' && y.status !== 'TO') {
+                        y.status = optionType === 'PO' ? 'PO' : (optionType === 'TO' ? 'TO' : 'NG');
+                    }
+                    oY++;
+                }
+                run += y.amount;
+            });
+        }
+        var totalYears = years.length || Number(p.contractYears) || 0;
+        if (!totalYears) totalYears = gY + oY;
+        // Build Spotrac-style label: 2+1 (PO), 3yr GTD, 1yr NG, etc.
+        var label = '';
+        if (optionType && oY > 0) {
+            label = gY + '+' + oY + ' (' + optionType + ')';
+        } else if (oY > 0 && !optionType) {
+            label = gY + '+' + oY + ' (NG)';
+        } else if (gY > 0) {
+            label = gY + 'yr GTD';
+        } else if (totalYears > 0) {
+            label = totalYears + 'yr';
+        } else {
+            label = ct || '—';
+        }
+        return {
+            years: years,
+            guaranteedYears: gY,
+            optionYears: oY,
+            optionType: optionType,
+            label: label,
+            totalYears: totalYears
+        };
+    }
+
     function formatContractLabel(p) {
         if (!p) return '';
-        if (typeof isTwoWay === 'function' && isTwoWay(p)) return 'Two-Way · $0';
-        if (typeof isDeadMoney === 'function' && isDeadMoney(p)) return 'Dead money';
-        const ct = String(p.contractType || '').trim();
-        const fo = String(p.futureOption || '').trim();
-        const years = Number(p.contractYears) || 0;
-        const optYearsExplicit = p.optionYears != null ? Number(p.optionYears) : null;
-        const gExplicit = p.guaranteedYears != null ? Number(p.guaranteedYears) : null;
-        const isPartial = /partial/i.test(ct) || !!p.partialGuarantee;
-        const isNonGtd = /non-?guaranteed/i.test(ct) && !isPartial;
-        // Detect NG/option year from contractDetails text
-        const detJoin = (Array.isArray(p.contractDetails) ? p.contractDetails : []).join(' ');
-        const hasNgYear = /Non-Guaranteed/i.test(detJoin);
-        const hasPartialYear = /Partial ·/i.test(detJoin);
-
-        function optTag(kind) {
-            if (/player/i.test(kind)) return 'PO';
-            if (/team/i.test(kind)) return 'TO';
-            if (/early.?termin/i.test(kind)) return 'ETO';
-            if (/option\s*\/\s*non/i.test(kind) || /non-?guaranteed/i.test(kind)) return 'OPT/NG';
-            return 'OPT';
-        }
-
-        // Partial guarantee (e.g. Dean Wade: 3yr GTD + final year partial)
-        if (isPartial) {
-            let gY = (gExplicit != null && !isNaN(gExplicit)) ? gExplicit : null;
-            if (gY == null && years > 1) gY = years - 1;
-            if (gY == null) gY = 0;
-            const partialYrs = Math.max(0, years - gY);
-            if (gY > 0 && partialYrs > 0) {
-                const yrWord = partialYrs === 1 ? 'yr 1' : (partialYrs + ' yrs');
-                return gY + ' guaranteed · ' + yrWord + ' partially guaranteed';
-            }
-            if (gY > 0) return gY + ' guaranteed · partial';
-            if (p.partialAmount) {
-                var base = 'Partial GTD $' + Math.round(Number(p.partialAmount)/1e6*10)/10 + 'M';
-                if (hasNgYear || fo) base += (fo ? ' · ' + optTag(fo) : ' · NG yr');
-                return base;
-            }
-            return years > 0 ? ('Partial GTD · ' + years + 'yr' + (hasNgYear ? ' · NG/OPT' : '')) : 'Partial GTD';
-        }
-
-        // Fully non-guaranteed
-        if (isNonGtd) {
-            if (years > 0) return years + 'yr Non-Guaranteed';
-            return 'Non-Guaranteed';
-        }
-
-        // Current year is already an option year
-        if (/^player option$/i.test(ct) && !fo) {
-            if (years > 1) return (years - 1) + '+1 (PO)';
-            return '1 (PO)';
-        }
-        if (/^team option$/i.test(ct) && !fo) {
-            if (years > 1) return (years - 1) + '+1 (TO)';
-            return '1 (TO)';
-        }
-
-        // Guaranteed years + future option (Spotrac-style 1+1 (PO))
-        if (fo) {
-            const tag = optTag(fo);
-            const oY = (optYearsExplicit != null && !isNaN(optYearsExplicit)) ? optYearsExplicit : 1;
-            let gY = gExplicit;
-            if (gY == null || isNaN(gY)) {
-                gY = years > 0 ? Math.max(0, years - oY) : 0;
-            }
-            return gY + '+' + oY + ' (' + tag + ')';
-        }
-
-        if (gExplicit != null && !isNaN(gExplicit) && gExplicit > 0) {
-            return gExplicit + 'yr Guaranteed';
-        }
-        if (/guaranteed|supermax/i.test(ct)) {
-            return years > 0 ? (years + 'yr Guaranteed') : 'Guaranteed';
-        }
-        if (/rookie/i.test(ct)) {
-            return (ct || 'Rookie') + (years ? ' · ' + years + 'yr' : '');
-        }
-        // Fallback
-        return (ct || ' - ') + (years ? ' · ' + years + 'yr' : '');
+        var sch = parseContractSchedule(p);
+        return sch.label || (p.contractType || '—');
     }
 
     function contractBadgeColor(p) {
@@ -8200,29 +8265,33 @@
             sheetContent = `<div class="empty-state"><div class="empty-state-text">Select a team to view the salary sheet</div></div>`;
         } else {
             const departing = new Set(t.selectedPlayers);
-            const years = ['26-27', '27-28', '28-29', '29-30'];
-            const totals = [0, 0, 0, 0];
+            const years = ['26-27', '27-28', '28-29', '29-30', '30-31'];
+            const yearFull = ['2026-27', '2027-28', '2028-29', '2029-30', '2030-31'];
+            const totals = [0, 0, 0, 0, 0];
             const typeShort = (p) => {
-                const ct = p.contractType || ' - ';
-                const base = ct.replace('Guaranteed','Gtd').replace('Non-Guaranteed','NG')
-                    .replace('Team Option','TO').replace('Player Option','PO')
-                    .replace('Rookie Scale Est.','RS').replace('Rookie Scale','RS');
-                if (p.futureOption === 'Player Option') return base + '→PO';
-                if (p.futureOption === 'Team Option') return base + '→TO';
-                return base;
+                const sch = parseContractSchedule(p);
+                return sch.label || '—';
+            };
+            const statusSuffix = (st) => {
+                if (st === 'PO') return ' <span style="font-size:.45rem;font-weight:800;color:#1d4ed8;">PO</span>';
+                if (st === 'TO') return ' <span style="font-size:.45rem;font-weight:800;color:#7e22ce;">TO</span>';
+                if (st === 'NG') return ' <span style="font-size:.45rem;font-weight:800;color:#c2410c;">NG</span>';
+                if (st === 'PARTIAL') return ' <span style="font-size:.45rem;font-weight:800;color:#ea580c;">PART</span>';
+                if (st === 'TW') return ' <span style="font-size:.45rem;font-weight:800;color:#7c3aed;">TW</span>';
+                return '';
             };
             const yearCellsHtml = (p, leaving, accent) => {
-                const yrs = p.contractYears || 1;
-                const ct = p.contractType || '';
-                const fut = p.futureOption || '';
-                return years.map((_, i) => {
-                    if (leaving || i >= yrs) return `<td style="padding:5px 3px;text-align:right;color:#cbd5e1;"> - </td>`;
-                    const val = Math.round(p.salary * (i === 0 ? 1 : (1 + 0.05 * i)));
-                    let opt = '';
-                    const isLast = i === yrs - 1;
-                    if (isLast && (ct === 'Player Option' || fut === 'Player Option')) opt = ' <span style="font-size:.45rem;font-weight:800;color:#7c3aed;">PO</span>';
-                    if (isLast && (ct === 'Team Option' || fut === 'Team Option')) opt = ' <span style="font-size:.45rem;font-weight:800;color:#2563eb;">TO</span>';
-                    return `<td style="padding:5px 3px;text-align:right;font-weight:700;font-size:.65rem;${accent || ''}">${fmtM(val)}${opt}</td>`;
+                const sch = parseContractSchedule(p);
+                const byLabel = {};
+                (sch.years || []).forEach(function (y) { byLabel[y.label] = y; });
+                return yearFull.map(function (full, i) {
+                    if (leaving) return `<td style="padding:5px 3px;text-align:right;color:#cbd5e1;">—</td>`;
+                    const y = byLabel[full];
+                    if (!y) return `<td style="padding:5px 3px;text-align:right;color:#cbd5e1;">—</td>`;
+                    const val = y.amount || 0;
+                    if (!leaving && i < totals.length) totals[i] += (typeof isTwoWay === 'function' && isTwoWay(p)) ? 0 : val;
+                    const tone = (y.status === 'NG' || y.status === 'PARTIAL') ? 'color:#c2410c;' : (accent || '');
+                    return `<td style="padding:5px 3px;text-align:right;font-weight:700;font-size:.65rem;${tone}">${fmtM(val)}${statusSuffix(y.status)}</td>`;
                 }).join('');
             };
             let rowsHtml = '';
@@ -8244,7 +8313,7 @@
                     });
                     rowsHtml += `<tr style="border-bottom:1px solid #f1f5f9;background:rgba(5,150,105,.06);">
                         <td style="padding:5px 4px;font-weight:600;font-size:.68rem;color:#047857;">${p.name} <span style="color:#059669;font-size:.5rem;font-weight:800;">IN · ${other.abbr}</span></td>
-                        <td style="padding:5px 4px;font-size:.58rem;color:#64748b;white-space:nowrap;">${typeShort(p)}${p.contractYears ? ' ·' + p.contractYears + 'y' : ''}</td>
+                        <td style="padding:5px 4px;font-size:.58rem;color:#64748b;white-space:nowrap;">${typeShort(p)}</td>
                         ${yearCellsHtml(p, false, 'color:#059669;')}
                     </tr>`;
                 });
@@ -8262,8 +8331,8 @@
                 const tone = (!leaving && typeof sheetContractTone === 'function') ? sheetContractTone(p) : null;
                 const rowBg = leaving ? 'background:rgba(220,38,38,.03);' : (tone ? ('background:' + tone.bg + ';') : '');
                 const typeHtml = tone
-                    ? `<span style="display:inline-block;font-size:.5rem;font-weight:800;padding:1px 5px;border-radius:999px;border:1px solid ${tone.border};color:${tone.color};background:#fff;margin-right:3px;">${tone.tag}</span><span style="color:${tone.color};">${typeShort(p)}${p.contractYears ? ' ·' + p.contractYears + 'y' : ''}</span>`
-                    : `${typeShort(p)}${p.contractYears ? ' ·' + p.contractYears + 'y' : ''}`;
+                    ? `<span style="display:inline-block;font-size:.5rem;font-weight:800;padding:1px 5px;border-radius:999px;border:1px solid ${tone.border};color:${tone.color};background:#fff;margin-right:3px;">${tone.tag}</span><span style="color:${tone.color};">${typeShort(p)}</span>`
+                    : `${typeShort(p)}`;
                 rowsHtml += `<tr style="border-bottom:1px solid #f1f5f9;${rowBg}">
                     <td style="padding:5px 4px;font-weight:600;font-size:.68rem;${nameStyle}">${p.name}${leaving ? ' <span style="color:#dc2626;font-size:.5rem;font-weight:800;">OUT</span>' : ''}</td>
                     <td style="padding:5px 4px;font-size:.58rem;white-space:nowrap;">${typeHtml}</td>
@@ -9954,131 +10023,128 @@
         const data = TEAM_DATA[t.abbr];
         if (!data || !data.players) return;
         const teamInfo = NBA_TEAMS[t.abbr];
-        const departing = new Set(t.selectedPlayers);
+        const departing = new Set(t.selectedPlayers || []);
+        const yearLabels = ['2026-27', '2027-28', '2028-29', '2029-30', '2030-31'];
+        const shortLabels = ['26-27', '27-28', '28-29', '29-30', '30-31'];
 
-        // Build player rows with projected years
-        // Y1 = current salary; subsequent years: if contractYears covers it, approx +5% per year for Guaranteed, else  - 
-        const years = ['2026-27', '2027-28', '2028-29', '2029-30'];
-        const rows = data.players.map(p => {
-            const yrs = p.contractYears || 1;
-            const leaving = departing.has(p.id);
-            const cells = years.map((_, i) => {
-                if (leaving) return null; // leaving in trade  -  not on future sheet for this team
-                if (i >= yrs) return null;
-                // Approximate raises: 5% for year 2, 10% for year 3, 15% for year 4 relative to Y1
-                const mult = i === 0 ? 1 : (1 + 0.05 * i);
-                return Math.round(p.salary * mult);
-            });
-            return { p, leaving, cells };
-        });
-
-        // Incoming from trade
-        const { flows } = computeTradeFlows();
-        const incomingSal = flows[teamId] ? flows[teamId].receivingSalary : 0;
-
-        // Totals for staying roster
-        const totals = [0, 0, 0, 0];
-        rows.forEach(r => {
-            if (r.leaving) return;
-            r.cells.forEach((v, i) => { if (v) totals[i] += v; });
-        });
-        // Add incoming approx to Y1 (and roll if unknown)
-        totals[0] += incomingSal;
-        totals[1] += Math.round(incomingSal * 1.05);
-        totals[2] += Math.round(incomingSal * 1.10);
-
-        const fmtCell = (v) => v == null ? '<span style="color:#cbd5e1;"> - </span>' : fmtM(v);
-
-        let table = `<div style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;font-family:Lexend,sans-serif;font-size:.75rem;">
-            <thead>
-                <tr style="border-bottom:2px solid #e2e8f0;">
-                    <th style="text-align:left;padding:.5rem .4rem;font-weight:800;color:#64748b;letter-spacing:.06em;font-size:.62rem;">PLAYER</th>
-                    <th style="text-align:left;padding:.5rem .4rem;font-weight:800;color:#64748b;letter-spacing:.06em;font-size:.62rem;">TYPE</th>
-                    ${years.map(y => `<th style="text-align:right;padding:.5rem .4rem;font-weight:800;color:#64748b;letter-spacing:.06em;font-size:.62rem;">${y}</th>`).join('')}
-                </tr>
-            </thead>
-            <tbody>`;
-
-        rows.forEach(({ p, leaving, cells }) => {
-            const tone = (typeof sheetContractTone === 'function') ? sheetContractTone(p) : { bg: '#fff', border: '#e2e8f0', tag: '', color: '#64748b' };
-            const bg = leaving ? 'background:rgba(220,38,38,.04);' : ('background:' + tone.bg + ';');
-            const nameStyle = leaving ? 'text-decoration:line-through;color:#94a3b8;' : 'color:#0f172a;font-weight:600;';
-            const typeBadge = `<span style="display:inline-block;font-size:.58rem;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:999px;background:#fff;border:1px solid ${tone.border};color:${tone.color};">${tone.tag || 'GTD'}</span> <span style="color:${tone.color};font-size:.62rem;font-weight:700;">${formatContractLabel(p)}</span>`;
-            table += `<tr style="border-bottom:1px solid #f1f5f9;${bg}">
-                <td style="padding:.45rem .4rem;${nameStyle}">${p.name}${leaving ? ' <span style="font-size:.55rem;font-weight:800;color:#dc2626;letter-spacing:.04em;">OUT</span>' : ''}</td>
-                <td style="padding:.45rem .4rem;">${typeBadge}</td>
-                ${cells.map(c => `<td style="padding:.45rem .4rem;text-align:right;font-weight:700;color:#0f172a;">${fmtCell(c)}</td>`).join('')}
-            </tr>`;
-        });
-
-        if (incomingSal > 0) {
-            table += `<tr style="border-bottom:1px solid #f1f5f9;background:rgba(5,150,105,.05);">
-                <td style="padding:.45rem .4rem;font-weight:600;color:#047857;">Incoming (trade)</td>
-                <td style="padding:.45rem .4rem;color:#64748b;font-size:.65rem;"> - </td>
-                <td style="padding:.45rem .4rem;text-align:right;font-weight:700;color:#059669;">${fmtM(incomingSal)}</td>
-                <td style="padding:.45rem .4rem;text-align:right;font-weight:700;color:#059669;">${fmtM(Math.round(incomingSal * 1.05))}</td>
-                <td style="padding:.45rem .4rem;text-align:right;font-weight:700;color:#059669;">${fmtM(Math.round(incomingSal * 1.10))}</td>
-                <td style="padding:.45rem .4rem;text-align:right;color:#cbd5e1;"> - </td>
-            </tr>`;
+        function statusBadge(st) {
+            if (st === 'PO') return '<span style="font-size:.55rem;font-weight:800;color:#1d4ed8;margin-left:3px;">PO</span>';
+            if (st === 'TO') return '<span style="font-size:.55rem;font-weight:800;color:#7e22ce;margin-left:3px;">TO</span>';
+            if (st === 'NG') return '<span style="font-size:.55rem;font-weight:800;color:#c2410c;margin-left:3px;">NG</span>';
+            if (st === 'PARTIAL') return '<span style="font-size:.55rem;font-weight:800;color:#ea580c;margin-left:3px;">PART</span>';
+            if (st === 'TW') return '<span style="font-size:.55rem;font-weight:800;color:#7c3aed;margin-left:3px;">TW</span>';
+            if (st === 'GTD') return '<span style="font-size:.55rem;font-weight:800;color:#15803d;margin-left:3px;">GTD</span>';
+            return '';
         }
 
-        table += `<tr style="border-top:2px solid #e2e8f0;background:#f8fafc;">
-                <td style="padding:.55rem .4rem;font-weight:800;color:#0f172a;" colspan="2">TEAM TOTAL</td>
-                ${totals.map(v => `<td style="padding:.55rem .4rem;text-align:right;font-weight:800;color:#0f172a;">${fmtM(v)}</td>`).join('')}
-            </tr>`;
-        table += `</tbody></table></div>`;
+        const totals = yearLabels.map(function () { return 0; });
+        let body = '';
 
-        // Cap lines under table
-        const caps = [
-            { label: 'Salary Cap', v: CBA.salaryCap },
-            { label: 'Luxury Tax', v: CBA.luxuryTax },
-            { label: '1st Apron', v: CBA.firstApron },
-            { label: '2nd Apron', v: CBA.secondApron },
-        ];
-        const capRow = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:1rem;">
-            ${caps.map(c => {
-                const over = totals[0] > c.v;
-                return `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.55rem .65rem;">
-                    <div style="font-family:Lexend,sans-serif;font-size:.58rem;font-weight:800;letter-spacing:.08em;color:#94a3b8;">${c.label}</div>
-                    <div style="font-family:Lexend,sans-serif;font-size:.85rem;font-weight:800;color:${over ? '#dc2626' : '#0f172a'};margin-top:2px;">${fmtM(c.v)}</div>
-                    <div style="font-family:Lexend,sans-serif;font-size:.58rem;font-weight:600;color:${over ? '#dc2626' : '#059669'};">${over ? '+' + fmtM(totals[0] - c.v) + ' over' : fmtM(c.v - totals[0]) + ' under'}</div>
-                </div>`;
-            }).join('')}
-        </div>`;
+        // Incoming first
+        teams.forEach(function (other) {
+            if (other.id === t.id || !other.abbr || !TEAM_DATA[other.abbr]) return;
+            const isTwoTeam = teams.filter(function (x) { return x.abbr; }).length === 2;
+            (other.selectedPlayers || []).forEach(function (pid) {
+                const dest = (other.playerDestinations || {})[pid];
+                if (!isTwoTeam && dest != null && Number(dest) !== t.id) return;
+                if (!isTwoTeam && dest == null) return;
+                const p = TEAM_DATA[other.abbr].players.find(function (x) { return x.id === pid; });
+                if (!p) return;
+                const sch = parseContractSchedule(p);
+                const by = {};
+                (sch.years || []).forEach(function (y) { by[y.label] = y; });
+                let cells = yearLabels.map(function (lab, i) {
+                    const y = by[lab];
+                    if (!y) return '<td style="text-align:right;color:#cbd5e1;padding:6px 5px;">—</td>';
+                    const val = y.amount || 0;
+                    if (!(typeof isTwoWay === 'function' && isTwoWay(p))) totals[i] += val;
+                    return '<td style="text-align:right;padding:6px 5px;font-weight:700;font-size:.72rem;color:#059669;">' + fmtM(val) + statusBadge(y.status) + '</td>';
+                }).join('');
+                body += '<tr style="background:rgba(5,150,105,.05);border-bottom:1px solid #e2e8f0;">' +
+                    '<td style="padding:6px 8px;font-weight:700;font-size:.78rem;color:#059669;">' + p.name + ' <span style="font-size:.55rem;font-weight:800;">IN</span></td>' +
+                    '<td style="padding:6px 6px;font-size:.68rem;font-weight:700;color:#059669;white-space:nowrap;">' + (sch.label || '') + '</td>' +
+                    cells + '</tr>';
+            });
+        });
 
-        const key = `<div class="sheet-key">
-            <span class="k-gtd">GTD Guaranteed</span>
-            <span class="k-po">PO Player Option</span>
-            <span class="k-to">TO Team Option</span>
-            <span class="k-ng">NG Non / Partial</span>
-            <span class="k-rk">RK Rookie Scale</span>
-        </div>`;
-        // Color rows by contract type
-        let colored = table;
-        try {
-            // rebuild simple colored name column if table is string - inject legend + expand
-        } catch (_) {}
-        const html = `<div id="salarySheetRoot">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.35rem;flex-wrap:wrap;">
-                <div style="display:flex;align-items:center;gap:.5rem;">
-                    <span style="width:10px;height:10px;border-radius:50%;background:${teamInfo?.color||'#4a4a5a'};"></span>
-                    <span style="font-family:Lexend,sans-serif;font-weight:800;font-size:.95rem;color:#0f172a;">${teamInfo?.name || t.abbr} Salary Sheet</span>
-                </div>
-                <button type="button" class="sheet-expand-btn" onclick="toggleSalarySheetExpand()">Expand view</button>
-            </div>
-            ${key}
-            ${table}
-            ${capRow}
-            <div style="margin-top:.85rem;font-family:Lexend,sans-serif;font-size:.65rem;color:#64748b;line-height:1.45;">
-                Colors mark PO, TO, non-guaranteed / partial, rookie scale, and fully guaranteed deals. Future years are estimates when year-by-year dollars are not imported.
-            </div>
-        </div>`;
+        data.players.forEach(function (p) {
+            if (typeof isDeadMoney === 'function' && isDeadMoney(p)) return;
+            const leaving = departing.has(p.id);
+            const sch = parseContractSchedule(p);
+            const by = {};
+            (sch.years || []).forEach(function (y) { by[y.label] = y; });
+            let cells = yearLabels.map(function (lab, i) {
+                if (leaving) return '<td style="text-align:right;color:#cbd5e1;padding:6px 5px;">—</td>';
+                const y = by[lab];
+                if (!y) return '<td style="text-align:right;color:#cbd5e1;padding:6px 5px;">—</td>';
+                const val = y.amount || 0;
+                if (!(typeof isTwoWay === 'function' && isTwoWay(p))) totals[i] += val;
+                const color = (y.status === 'NG' || y.status === 'PARTIAL') ? 'color:#c2410c;' : '';
+                return '<td style="text-align:right;padding:6px 5px;font-weight:700;font-size:.72rem;' + color + '">' + fmtM(val) + statusBadge(y.status) + '</td>';
+            }).join('');
+            const tone = (typeof sheetContractTone === 'function') ? sheetContractTone(p) : null;
+            const typeCell = tone
+                ? '<span style="display:inline-block;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:999px;border:1px solid ' + tone.border + ';color:' + tone.color + ';background:#fff;margin-right:4px;">' + tone.tag + '</span><span style="color:' + tone.color + ';font-weight:700;">' + (sch.label || '') + '</span>'
+                : (sch.label || '');
+            body += '<tr style="border-bottom:1px solid #f1f5f9;' + (leaving ? 'background:rgba(220,38,38,.04);' : '') + '">' +
+                '<td style="padding:6px 8px;font-weight:600;font-size:.78rem;' + (leaving ? 'color:#94a3b8;text-decoration:line-through;' : '') + '">' + p.name +
+                (leaving ? ' <span style="color:#dc2626;font-size:.55rem;font-weight:800;">OUT</span>' : '') + '</td>' +
+                '<td style="padding:6px 6px;font-size:.68rem;white-space:nowrap;">' + typeCell + '</td>' +
+                cells + '</tr>';
+        });
 
-        openFiller('Salary Sheet',
-            `${teamInfo?.name || t.abbr}  -  current & projected payroll`, 0, 0, html);
+        // Dead money rows
+        data.players.filter(function (p) { return typeof isDeadMoney === 'function' && isDeadMoney(p); }).forEach(function (p) {
+            const sch = parseContractSchedule(p);
+            const by = {};
+            (sch.years || []).forEach(function (y) { by[y.label] = y; });
+            let cells = yearLabels.map(function (lab, i) {
+                const y = by[lab];
+                if (!y) return '<td style="text-align:right;color:#cbd5e1;padding:6px 5px;">—</td>';
+                totals[i] += y.amount || 0;
+                return '<td style="text-align:right;padding:6px 5px;font-weight:700;font-size:.72rem;color:#b91c1c;">' + fmtM(y.amount || 0) + '</td>';
+            }).join('');
+            body += '<tr style="background:rgba(220,38,38,.03);border-bottom:1px solid #fee2e2;">' +
+                '<td style="padding:6px 8px;font-weight:600;font-size:.78rem;color:#b91c1c;">' + p.name + ' <span style="font-size:.55rem;">DEAD</span></td>' +
+                '<td style="padding:6px 6px;font-size:.68rem;color:#b91c1c;">Dead money</td>' + cells + '</tr>';
+        });
 
+        const totalRow = yearLabels.map(function (_, i) {
+            return '<td style="text-align:right;padding:8px 5px;font-weight:900;font-size:.78rem;">' + fmtM(totals[i]) + '</td>';
+        }).join('');
+
+        const html = '<div style="font-family:Lexend,sans-serif;">' +
+            '<div class="sheet-key" style="margin-bottom:.65rem;display:flex;flex-wrap:wrap;gap:6px;">' +
+            '<span class="k-gtd">GTD = Guaranteed</span>' +
+            '<span class="k-po">PO = Player Option</span>' +
+            '<span class="k-to">TO = Team Option</span>' +
+            '<span class="k-ng">NG = Non-Guaranteed</span>' +
+            '<span class="k-rk">PART = Partial guarantee year</span>' +
+            '</div>' +
+            '<div style="overflow:auto;max-height:70vh;">' +
+            '<table style="width:100%;border-collapse:collapse;min-width:720px;">' +
+            '<thead><tr style="border-bottom:2px solid #e2e8f0;background:#f8fafc;position:sticky;top:0;">' +
+            '<th style="text-align:left;padding:8px;font-size:.62rem;font-weight:800;letter-spacing:.06em;color:#64748b;">PLAYER</th>' +
+            '<th style="text-align:left;padding:8px;font-size:.62rem;font-weight:800;letter-spacing:.06em;color:#64748b;">CONTRACT</th>' +
+            shortLabels.map(function (y) {
+                return '<th style="text-align:right;padding:8px 5px;font-size:.62rem;font-weight:800;color:#64748b;">' + y + '</th>';
+            }).join('') +
+            '</tr></thead><tbody>' + body +
+            '<tr style="border-top:2px solid #0f172a;background:#f8fafc;">' +
+            '<td style="padding:8px;font-weight:900;font-size:.8rem;" colspan="2">TOTAL</td>' + totalRow +
+            '</tr></tbody></table></div>' +
+            '<p style="margin:.75rem 0 0;font-size:.65rem;color:#64748b;line-height:1.45;">Year amounts come from each player\'s contract schedule. Tags: <strong>2+1 (PO)</strong> = 2 guaranteed years + 1 player-option year. Two-ways show $0 (do not count toward the salary cap). NG/PART years are not fully guaranteed.</p>' +
+            '</div>';
+
+        if (typeof openFillerModal === 'function') {
+            openFillerModal('Salary Sheet', (teamInfo && teamInfo.name ? teamInfo.name : t.abbr) + ' — year-by-year guarantees', 0, 0, html);
+        } else if (typeof showModal === 'function') {
+            showModal('Salary Sheet', html);
+        } else {
+            alert('Salary sheet: open team Salary Sheet tab');
+        }
     }
+
 
     function buildOutlookSvg(projection) {
         // Determine y-scale: max of (highest threshold, highest payroll) * 1.08

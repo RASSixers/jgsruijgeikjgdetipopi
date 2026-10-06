@@ -14,6 +14,9 @@ let pbpInflight = false;
 let lastScoreboardCheck = 0;
 let lastGoodSummary = null;
 let lastGoodEventId = null;
+let pbpQuarterFilter = "all"; // "all" | 1 | 2 | 3 | 4 | 5+ for OT
+let lastDisplayedScoreKey = "";
+let lastPlaysFingerprint = "";
 let injuryByAbbr = {};
 let featuredEvent = null;
 let allEventsCache = [];
@@ -228,6 +231,30 @@ function teamLogo(team) {
   if (!team) return "";
   return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
 }
+function playPeriodNumber(p) {
+  const n = Number(get(p, "period.number", 0));
+  return n || 0;
+}
+
+function buildPbpFilters(plays, status, isFinal) {
+  const period = Number(get(status, "period", 0)) || 0;
+  const maxQ = isFinal ? Math.max(4, ...plays.map(playPeriodNumber), period) : Math.max(period, 1);
+  const available = [];
+  available.push({ id: "all", label: "All" });
+  for (let q = 1; q <= Math.min(4, maxQ); q++) {
+    available.push({ id: String(q), label: "Q" + q });
+  }
+  // OT filters only after OT starts or postgame with OT plays
+  const hasOt = plays.some(p => playPeriodNumber(p) > 4) || period > 4;
+  if (hasOt) {
+    const otMax = Math.max(period, ...plays.map(playPeriodNumber));
+    for (let ot = 5; ot <= otMax; ot++) {
+      available.push({ id: String(ot), label: "OT" + (ot - 4) });
+    }
+  }
+  return available;
+}
+
 function renderLiveBoard(summary, event) {
   const board = document.getElementById("live-board");
   const body = document.getElementById("live-body");
@@ -235,33 +262,73 @@ function renderLiveBoard(summary, event) {
   const clockEl = document.getElementById("live-clock");
   if (!board || !body) return;
   board.classList.add("live");
-  kicker.textContent = "Live";
+
+  const status = get(summary, "header.competitions.0.status", {}) ||
+    get(event, "competitions.0.status", {}) || {};
+  const state = String(get(status, "type.state", "")).toLowerCase();
+  const isFinal = state === "post" || String(get(status, "type.name", "")).includes("FINAL");
+  if (kicker) kicker.textContent = isFinal ? "Final" : "Live";
+  if (clockEl) clockEl.textContent = isFinal
+    ? (get(status, "type.shortDetail", "Final") || "Final")
+    : formatGameClock(status);
 
   const comps = get(summary, "header.competitions.0.competitors", []) ||
     get(event, "competitions.0.competitors", []) || [];
   const home = comps.find(c => c.homeAway === "home") || comps[0] || {};
   const away = comps.find(c => c.homeAway === "away") || comps[1] || {};
-  const status = get(summary, "header.competitions.0.status", {}) ||
-    get(event, "competitions.0.status", {}) || {};
-  if (clockEl) clockEl.textContent = formatGameClock(status);
-
-
-  const awayScore = get(away, "score", "0");
-  const homeScore = get(home, "score", "0");
+  const awayScore = String(get(away, "score", "0"));
+  const homeScore = String(get(home, "score", "0"));
   const awayAbbr = get(away, "team.abbreviation", get(away, "team.shortDisplayName", "AWAY"));
   const homeAbbr = get(home, "team.abbreviation", get(home, "team.shortDisplayName", "HOME"));
+  const scoreKey = awayAbbr + awayScore + "-" + homeAbbr + homeScore;
 
-  // ESPN returns plays oldest→newest; show newest first — full game log
+  // Detect score bumps for animation
+  let awayBump = 0;
+  let homeBump = 0;
+  if (lastDisplayedScoreKey && lastDisplayedScoreKey !== scoreKey) {
+    try {
+      const prev = lastDisplayedScoreKey.match(/(\D+)(\d+)-(\D+)(\d+)/);
+      if (prev) {
+        const prevAway = Number(prev[2]);
+        const prevHome = Number(prev[4]);
+        const dAway = Number(awayScore) - prevAway;
+        const dHome = Number(homeScore) - prevHome;
+        if (dAway > 0 && dAway <= 4) awayBump = dAway;
+        if (dHome > 0 && dHome <= 4) homeBump = dHome;
+      }
+    } catch (_) {}
+  }
+  lastDisplayedScoreKey = scoreKey;
+
   let plays = [];
   const raw = get(summary, "plays", null);
-  if (Array.isArray(raw) && raw.length) plays = raw;
-  else if (Array.isArray(get(summary, "gamepackageJSON.plays", null))) {
-    plays = get(summary, "gamepackageJSON.plays", []);
-  }
-  plays = plays.slice().reverse(); // newest at top; keep entire game
+  if (Array.isArray(raw) && raw.length) plays = raw.slice();
+  plays = plays.slice().reverse(); // newest first
 
-  const playHtml = plays.length
-    ? `<ul class="pbp-list">${plays.map(p => {
+  const filters = buildPbpFilters(plays, status, isFinal);
+  // Clamp filter if not available yet
+  if (pbpQuarterFilter !== "all" && !filters.some(f => f.id === String(pbpQuarterFilter))) {
+    pbpQuarterFilter = "all";
+  }
+
+  const filtered = pbpQuarterFilter === "all"
+    ? plays
+    : plays.filter(p => playPeriodNumber(p) === Number(pbpQuarterFilter));
+
+  const fingerprint = scoreKey + "|" + pbpQuarterFilter + "|" + filtered.length + "|" +
+    (filtered[0] && (filtered[0].id || filtered[0].text) || "");
+
+  // Preserve scroll if only scores changed slightly and list structure same length+top
+  const listEl = body.querySelector(".pbp-list");
+  const prevScroll = listEl ? listEl.scrollTop : 0;
+  const sameList = fingerprint === lastPlaysFingerprint && listEl;
+
+  const filterHtml = `<div class="pbp-filters" role="tablist" aria-label="Play-by-play period">
+    ${filters.map(f => `<button type="button" class="pbp-filter-btn${String(pbpQuarterFilter) === String(f.id) ? " on" : ""}" data-pbp-q="${f.id}">${f.label}</button>`).join("")}
+  </div>`;
+
+  const playHtml = filtered.length
+    ? `<ul class="pbp-list">${filtered.map(p => {
         const clock = formatPlayClock(p);
         const text = get(p, "text", "") || get(p, "description", "") || "—";
         const sc = (get(p, "awayScore", "") !== "" && get(p, "homeScore", "") !== "")
@@ -273,22 +340,41 @@ function renderLiveBoard(summary, event) {
           <span class="pbp-score">${sc}</span>
         </li>`;
       }).join("")}</ul>`
-    : `<p class="live-empty">Play-by-play will appear as the game progresses…</p>`;
+    : `<p class="live-empty">${plays.length ? "No plays in this period yet." : "Play-by-play will appear as the game progresses…"}</p>`;
 
   body.innerHTML = `
     <div class="live-scoreline">
       <div class="live-team">
         <img class="live-logo" src="${teamLogo(away.team)}" alt="" onerror="this.style.display='none'">
         <span>${awayAbbr}</span>
+        ${awayBump ? `<span class="score-bump" data-pts="+${awayBump}">+${awayBump}</span>` : ""}
       </div>
       <div class="live-score">${awayScore}–${homeScore}</div>
       <div class="live-team away">
+        ${homeBump ? `<span class="score-bump" data-pts="+${homeBump}">+${homeBump}</span>` : ""}
         <span>${homeAbbr}</span>
         <img class="live-logo" src="${teamLogo(home.team)}" alt="" onerror="this.style.display='none'">
       </div>
     </div>
-    <div class="pbp-head">Play-by-play</div>
+    <div class="pbp-head-row">
+      <div class="pbp-head">Play-by-play</div>
+      ${filterHtml}
+    </div>
     ${playHtml}`;
+
+  lastPlaysFingerprint = fingerprint;
+
+  // Restore scroll so list doesn't jump to top on every poll
+  const newList = body.querySelector(".pbp-list");
+  if (newList && prevScroll > 0) {
+    newList.scrollTop = prevScroll;
+  }
+
+  // Remove bump nodes after animation
+  body.querySelectorAll(".score-bump").forEach(el => {
+    el.addEventListener("animationend", () => el.remove(), { once: true });
+    setTimeout(() => el.remove(), 1200);
+  });
 }
 
 /** Prefer scoreboard for live PHI game (more reliable status than team schedule) */
@@ -411,12 +497,17 @@ function setLivePolling(event) {
   clearPbpTimer();
   featuredEvent = event;
   lastScoreboardCheck = 0;
+  if (!event || String(event.id) !== lastGoodEventId) {
+    pbpQuarterFilter = "all";
+    lastDisplayedScoreKey = "";
+    lastPlaysFingerprint = "";
+  }
 
   const tick = async () => {
     await refreshPlayByPlay();
     const live = eventIsLive(featuredEvent);
     // 1s while live — as fast as useful; ESPN still caches responses briefly
-    pbpTimer = setTimeout(tick, live ? 1500 : 60000);
+    pbpTimer = setTimeout(tick, live ? 1000 : 60000);
   };
   tick();
 }
@@ -613,5 +704,14 @@ async function getSixersSchedule() {
 }
 document.addEventListener("DOMContentLoaded", () => {
   bindFilters();
+  // Quarter filters for play-by-play (event delegation)
+  document.addEventListener("click", e => {
+    const btn = e.target.closest("[data-pbp-q]");
+    if (!btn) return;
+    pbpQuarterFilter = btn.getAttribute("data-pbp-q") || "all";
+    if (lastGoodSummary && featuredEvent) {
+      renderLiveBoard(lastGoodSummary, featuredEvent);
+    }
+  });
   getSixersSchedule();
 });

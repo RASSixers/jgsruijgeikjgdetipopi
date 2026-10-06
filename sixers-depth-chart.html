@@ -21,7 +21,7 @@ body{background:var(--cream);color:var(--ink);font-family:"Lexend",system-ui,-ap
 button{font-family:inherit}
 
 .hero{background:var(--cream);position:relative;overflow:hidden}
-.hero-inner{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:5rem 2rem 3.5rem;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero-inner{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:1.75rem 2rem 1.75rem;display:flex;flex-direction:column;align-items:center;text-align:center}
 .hero-glow-blue{position:absolute;right:-120px;top:-80px;width:600px;height:500px;background:radial-gradient(ellipse at center,rgba(0,107,182,.08) 0%,transparent 70%);pointer-events:none}
 .hero-glow-red{position:absolute;left:-60px;bottom:-40px;width:400px;height:300px;background:radial-gradient(ellipse at center,rgba(237,23,76,.05) 0%,transparent 70%);pointer-events:none}
 .hero-title-top,.hero-title-bottom{font-size:clamp(2.4rem,6vw,4.5rem);font-weight:700;line-height:.95;letter-spacing:-.03em}
@@ -147,41 +147,124 @@ button{font-family:inherit}
 </div>
 
 <script>
-const COLUMNS = [
-  { pos:"PG", players:[{name:"Tyrese Maxey",type:"starter"},{name:"Labaron Philon Jr.",type:"bench"}]},
-  { pos:"SG", players:[{name:"VJ Edgecombe",type:"starter"},{name:"Anfernee Simons",type:"bench"},{name:"Dalen Terry",type:"bench"}]},
-  { pos:"SF", players:[{name:"Jaylen Brown",type:"starter"},{name:"Kentavious Caldwell-Pope",type:"bench"},{name:"Justin Edwards",type:"bench"}]},
-  { pos:"PF", players:[{name:"LeBron James",type:"starter"},{name:"Dean Wade",type:"bench"},{name:"Dominick Barlow",type:"bench"},{name:"Jabari Walker",type:"bench"}]},
-  { pos:"C",  players:[{name:"Joel Embiid",type:"starter"},{name:"Adem Bona",type:"bench"},{name:"Ariel Hukporti",type:"bench"},{name:"Johni Broome",type:"bench"}]},
+let COLUMNS = [
+  { pos:"PG", players:[] },
+  { pos:"SG", players:[] },
+  { pos:"SF", players:[] },
+  { pos:"PF", players:[] },
+  { pos:"C",  players:[] }
 ];
-const FILTERS = [{k:"all",l:"Full Roster"},{k:"starter",l:"Starters"},{k:"bench",l:"Second Unit"}];
+
+// Projected depth order (first listed = starter) for known Sixers
+const DEPTH_ORDER = {
+  PG: ["Tyrese Maxey", "Labaron Philon Jr.", "Caleb Love", "Duke Miles", "Jameer Nelson Jr."],
+  SG: ["VJ Edgecombe", "Anfernee Simons", "Kentavious Caldwell-Pope", "Rayan Rupert"],
+  SF: ["Jaylen Brown", "Justin Edwards", "Saint Thomas", "Dillon Jones"],
+  PF: ["LeBron James", "Dean Wade", "Jabari Walker", "Dominick Barlow"],
+  C:  ["Joel Embiid", "Adem Bona", "Ariel Hukporti", "Tacko Fall"]
+};
+
+function rankIn(list, name) {
+  const i = list.indexOf(name);
+  return i === -1 ? 900 : i;
+}
+
+function assignSlots(athletes) {
+  const buckets = { PG: [], SG: [], SF: [], PF: [], C: [] };
+  athletes.forEach(a => {
+    const name = a.displayName || a.fullName;
+    const pos = ((a.position && a.position.abbreviation) || "").toUpperCase();
+    // ESPN often uses G / F / C only
+    if (pos === "C") buckets.C.push(name);
+    else if (pos === "G") {
+      // split guards by depth lists
+      if (DEPTH_ORDER.PG.includes(name) || (!DEPTH_ORDER.SG.includes(name) && rankIn(DEPTH_ORDER.PG, name) < rankIn(DEPTH_ORDER.SG, name))) {
+        buckets.PG.push(name);
+      } else if (DEPTH_ORDER.SG.includes(name)) {
+        buckets.SG.push(name);
+      } else {
+        // default remaining guards to SG unless clearly PG list
+        buckets.SG.push(name);
+      }
+    } else if (pos === "F") {
+      if (DEPTH_ORDER.SF.includes(name) && !DEPTH_ORDER.PF.includes(name)) buckets.SF.push(name);
+      else if (DEPTH_ORDER.PF.includes(name) && !DEPTH_ORDER.SF.includes(name)) buckets.PF.push(name);
+      else if (DEPTH_ORDER.SF.includes(name)) buckets.SF.push(name);
+      else if (DEPTH_ORDER.PF.includes(name)) buckets.PF.push(name);
+      else buckets.PF.push(name);
+    } else {
+      buckets.PF.push(name);
+    }
+  });
+
+  // Reconcile: anyone in DEPTH_ORDER for a slot moves there
+  const allNames = athletes.map(a => a.displayName || a.fullName);
+  ["PG","SG","SF","PF","C"].forEach(slot => {
+    DEPTH_ORDER[slot].forEach(n => {
+      if (!allNames.includes(n)) return;
+      // remove from other buckets
+      Object.keys(buckets).forEach(k => {
+        buckets[k] = buckets[k].filter(x => x !== n);
+      });
+      buckets[slot].push(n);
+    });
+  });
+
+  // Sort each bucket by DEPTH_ORDER then name
+  return ["PG","SG","SF","PF","C"].map(pos => {
+    const order = DEPTH_ORDER[pos] || [];
+    const names = [...new Set(buckets[pos])].sort((a, b) => rankIn(order, a) - rankIn(order, b) || a.localeCompare(b));
+    const players = names.map((name, i) => ({ name, type: i === 0 ? "starter" : "bench" }));
+    return { pos, players };
+  });
+}
+
+async function loadDepth() {
+  try {
+    const res = await fetch("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/roster", { cache: "no-store" });
+    if (!res.ok) throw new Error("roster " + res.status);
+    const data = await res.json();
+    COLUMNS = assignSlots(data.athletes || []);
+  } catch (err) {
+    console.warn("depth roster", err);
+    // Fallback projected chart
+    COLUMNS = ["PG","SG","SF","PF","C"].map(pos => ({
+      pos,
+      players: (DEPTH_ORDER[pos] || []).map((name, i) => ({ name, type: i === 0 ? "starter" : "bench" }))
+    }));
+  }
+}
+
 let view = "all";
+const FILTERS = [{k:"all",l:"Full Roster"},{k:"starter",l:"Starters"},{k:"bench",l:"Second Unit"}];
 
 function renderFilters(){
   const wrap = document.getElementById("filters");
+  if (!wrap) return;
   wrap.innerHTML = "";
-  FILTERS.forEach(f=>{
+  FILTERS.forEach(f => {
     const b = document.createElement("button");
-    b.className = "filter-btn" + (view===f.k?" active":"");
+    b.className = "filter-btn" + (view === f.k ? " active" : "");
     b.textContent = f.l;
-    b.onclick = ()=>{ view=f.k; renderFilters(); renderGrid(); };
+    b.onclick = () => { view = f.k; renderFilters(); renderGrid(); };
     wrap.appendChild(b);
   });
 }
 function renderGrid(){
   const grid = document.getElementById("depthGrid");
+  if (!grid) return;
   grid.innerHTML = "";
-  COLUMNS.forEach(col=>{
+  COLUMNS.forEach(col => {
     const c = document.createElement("div");
     c.className = "position-column";
     c.innerHTML = `<div class="position-label">${col.pos}</div>`;
-    col.players.forEach(p=>{
-      if(view!=="all" && view!==p.type) return;
+    col.players.forEach(p => {
+      if (view !== "all" && view !== p.type) return;
       const slot = document.createElement("div");
-      slot.className = `player-slot ${p.type}`;
+      slot.className = "player-slot " + p.type;
       let badge = "";
-      if(p.type==="starter") badge = `<span class="slot-badge starter">Starter</span>`;
-      slot.innerHTML = `${badge}<div class="player-name">${p.name}</div>`;
+      if (p.type === "starter") badge = `<span class="slot-badge starter">Starter</span>`;
+      slot.innerHTML = badge + `<div class="player-name">${p.name}</div>`;
       c.appendChild(slot);
     });
     grid.appendChild(c);
@@ -189,6 +272,7 @@ function renderGrid(){
 }
 function renderSocial(){
   const g = document.getElementById("socialGrid");
+  if (!g) return;
   g.innerHTML = "";
   COLUMNS.forEach(col=>{
     const c = document.createElement("div");
@@ -199,13 +283,19 @@ function renderSocial(){
   });
 }
 
-renderFilters(); renderGrid(); renderSocial();
+(async function init(){
+  await loadDepth();
+  renderFilters();
+  renderGrid();
+  renderSocial();
+})();
 
 const btn = document.getElementById("exportBtn");
-btn.onclick = async ()=>{
+if (btn) btn.onclick = async ()=>{
   btn.disabled = true; btn.textContent = "Generating…";
   try{
     if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    if (typeof htmlToImage === "undefined") throw new Error("export lib missing");
     const url = await htmlToImage.toPng(document.getElementById("exportRoot"),{pixelRatio:2,backgroundColor:"#ffffff",cacheBust:true});
     showModal(url);
   }catch(e){ console.error(e); alert("Couldn't generate image."); }
@@ -241,5 +331,6 @@ function showModal(dataUrl){
   document.addEventListener("keydown", function esc(e){ if(e.key==="Escape"){overlay.remove();document.removeEventListener("keydown",esc);} });
 }
 </script>
+
 </body>
 </html>

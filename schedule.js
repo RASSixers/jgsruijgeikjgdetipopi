@@ -232,8 +232,15 @@ function teamLogo(team) {
   return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
 }
 function playPeriodNumber(p) {
-  const n = Number(get(p, "period.number", 0));
-  return n || 0;
+  let n = Number(get(p, "period.number", 0));
+  if (n) return n;
+  // Fallback: parse "1st Quarter" / "2nd" / "OT1"
+  const label = String(get(p, "period.displayValue", "") || "");
+  const ot = label.match(/OT\s*(\d+)/i);
+  if (ot) return 4 + Number(ot[1]);
+  const q = label.match(/(\d+)(st|nd|rd|th)?/i);
+  if (q) return Number(q[1]);
+  return 0;
 }
 
 function buildPbpFilters(plays, status, isFinal) {
@@ -313,7 +320,11 @@ function renderLiveBoard(summary, event) {
 
   const filtered = pbpQuarterFilter === "all"
     ? plays
-    : plays.filter(p => playPeriodNumber(p) === Number(pbpQuarterFilter));
+    : plays.filter(p => {
+        const pn = playPeriodNumber(p);
+        const want = Number(pbpQuarterFilter);
+        return pn === want;
+      });
 
   const fingerprint = scoreKey + "|" + pbpQuarterFilter + "|" + filtered.length + "|" +
     (filtered[0] && (filtered[0].id || filtered[0].text) || "");
@@ -323,8 +334,11 @@ function renderLiveBoard(summary, event) {
   const prevScroll = listEl ? listEl.scrollTop : 0;
   const sameList = fingerprint === lastPlaysFingerprint && listEl;
 
-  const filterHtml = `<div class="pbp-filters" role="tablist" aria-label="Play-by-play period">
-    ${filters.map(f => `<button type="button" class="pbp-filter-btn${String(pbpQuarterFilter) === String(f.id) ? " on" : ""}" data-pbp-q="${f.id}">${f.label}</button>`).join("")}
+  const filterHtml = `<div class="pbp-filters" role="tablist" aria-label="Filter by period">
+    ${filters.map(f => {
+      const on = String(pbpQuarterFilter) === String(f.id);
+      return `<button type="button" role="tab" class="pbp-filter-btn${on ? " on" : ""}" data-pbp-q="${f.id}" aria-selected="${on ? "true" : "false"}">${f.label}</button>`;
+    }).join("")}
   </div>`;
 
   const playHtml = filtered.length
@@ -347,11 +361,11 @@ function renderLiveBoard(summary, event) {
       <div class="live-team">
         <img class="live-logo" src="${teamLogo(away.team)}" alt="" onerror="this.style.display='none'">
         <span>${awayAbbr}</span>
-        ${awayBump ? `<span class="score-bump" data-pts="+${awayBump}">+${awayBump}</span>` : ""}
+        ${awayBump ? `<span class="score-bump ${awayAbbr === "PHI" ? "phi" : "opp"}" aria-hidden="true">+${awayBump}</span>` : ""}
       </div>
       <div class="live-score">${awayScore}–${homeScore}</div>
       <div class="live-team away">
-        ${homeBump ? `<span class="score-bump" data-pts="+${homeBump}">+${homeBump}</span>` : ""}
+        ${homeBump ? `<span class="score-bump ${homeAbbr === "PHI" ? "phi" : "opp"}" aria-hidden="true">+${homeBump}</span>` : ""}
         <span>${homeAbbr}</span>
         <img class="live-logo" src="${teamLogo(home.team)}" alt="" onerror="this.style.display='none'">
       </div>
@@ -430,15 +444,12 @@ async function refreshPlayByPlay() {
   try {
     let event = featuredEvent;
     const now = Date.now();
-    if (now - lastScoreboardCheck > 8000) {
+    // Scoreboard only occasionally; don't block PBP on it
+    if (now - lastScoreboardCheck > 10000) {
       lastScoreboardCheck = now;
-      try {
-        const liveFromBoard = await findLivePhiEvent();
-        if (liveFromBoard) {
-          event = liveFromBoard;
-          featuredEvent = liveFromBoard;
-        }
-      } catch (_) {}
+      findLivePhiEvent().then(liveFromBoard => {
+        if (liveFromBoard) featuredEvent = liveFromBoard;
+      }).catch(() => {});
     }
 
     if (!event) {
@@ -507,7 +518,7 @@ function setLivePolling(event) {
     await refreshPlayByPlay();
     const live = eventIsLive(featuredEvent);
     // 1s while live — as fast as useful; ESPN still caches responses briefly
-    pbpTimer = setTimeout(tick, live ? 1000 : 60000);
+    pbpTimer = setTimeout(tick, live ? 500 : 60000);
   };
   tick();
 }

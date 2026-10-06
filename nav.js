@@ -9,6 +9,14 @@
             document.documentElement.style.colorScheme = 'dark';
         }
     } catch(e) {}
+    try {
+        if (!document.getElementById('nav-anti-flash-style')) {
+            var s = document.createElement('style');
+            s.id = 'nav-anti-flash-style';
+            s.textContent = 'body{padding-top:64px!important;}@media(max-width:480px){body{padding-top:60px!important;}}.navbar{min-height:64px;}';
+            (document.head || document.documentElement).appendChild(s);
+        }
+    } catch (e2) {}
 })();
 
 // Early stub so the Google button never silently does nothing

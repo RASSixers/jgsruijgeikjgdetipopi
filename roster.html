@@ -76,7 +76,7 @@
     z-index: 1;
     max-width: 860px;
     margin: 0 auto;
-    padding: 1.75rem 2rem 2rem;
+    padding: 0.85rem 2rem 1.35rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -648,7 +648,7 @@
     .modal-photo { min-height: 240px; }
   }
   @media (max-width: 560px) {
-    .hero-inner { padding: 1.25rem 1.15rem 1.5rem; }
+    .hero-inner { padding: 0.65rem 1.15rem 1.1rem; }
     .grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
     .ch-grid { grid-template-columns: 1fr; }
     .modal-headline { padding: 1.4rem 1.4rem; }
@@ -748,6 +748,19 @@ const ROSTER_EXTRAS = {
   "Adem Bona": { salary: 2296271, awards: [], careerHighs:{points:17,rebounds:11,assists:2} }
 };
 
+
+const ROSTER_RANK = [
+  "Tyrese Maxey", "Jaylen Brown", "Joel Embiid", "LeBron James", "VJ Edgecombe",
+  "Anfernee Simons", "Kentavious Caldwell-Pope", "Dean Wade", "Justin Edwards",
+  "Adem Bona", "Labaron Philon Jr.", "Jabari Walker", "Dominick Barlow",
+  "Ariel Hukporti", "Rayan Rupert", "Caleb Love", "Dillon Jones", "Saint Thomas",
+  "Tacko Fall", "Duke Miles", "Jameer Nelson Jr."
+];
+function rosterRank(name) {
+  const i = ROSTER_RANK.indexOf(name);
+  return i === -1 ? 500 : i;
+}
+
 let ROSTER = [];
 let filter='all', query='';
 const $=(s)=>document.querySelector(s);
@@ -805,10 +818,8 @@ async function loadRosterFromEspn() {
     const athletes = data.athletes || [];
     ROSTER = athletes.map(mapEspnPlayer).filter(p => p.status !== "injured" || true);
     // Prefer active; still show all
-    ROSTER.sort((a, b) => {
-      const order = { guards: 0, forwards: 1, centers: 2 };
-      return (order[a.cat] - order[b.cat]) || a.name.localeCompare(b.name);
-    });
+    // Starters / best players first (then everyone else alphabetically)
+    ROSTER.sort((a, b) => rosterRank(a.name) - rosterRank(b.name) || a.name.localeCompare(b.name));
   } catch (err) {
     console.warn("ESPN roster failed", err);
     ROSTER = Object.keys(ROSTER_EXTRAS).map(name => {

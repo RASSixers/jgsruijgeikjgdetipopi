@@ -411,31 +411,60 @@ async function findLivePhiEvent() {
 }
 
 async function fetchSummaryForEvent(eventId) {
-  // Primary: site.api summary; fallback: cdn.espn playbyplay package
-  const urls = [
-    `${SUMMARY_URL}?event=${encodeURIComponent(eventId)}`,
-    `https://cdn.espn.com/core/nba/playbyplay?xhr=1&gameId=${encodeURIComponent(eventId)}`
+  // Race ESPN sources — site.web.api is often cached ~3s; core plays is also fresh.
+  // Closest we can get to ESPN.com speed without their private live stream.
+  const id = encodeURIComponent(eventId);
+  const sources = [
+    // Lowest cache among public summary endpoints
+    fetch(`https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${id}`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status)),
+    // Full play list from core API
+    fetch(`https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/${id}/competitions/${id}/plays?limit=400`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(d => ({ plays: d.items || [], header: null, _core: true })),
+    // CDN package + classic site.api as backups
+    fetch(`https://cdn.espn.com/core/nba/playbyplay?xhr=1&gameId=${id}`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(d => {
+        const gp = d.gamepackageJSON || {};
+        return { plays: gp.plays || [], header: gp.header || d.header || {}, boxscore: gp.boxscore };
+      }),
+    fetch(`${SUMMARY_URL}?event=${id}`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
   ];
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) continue;
-      const data = await res.json();
-      // cdn wraps in gamepackageJSON
-      if (data && data.gamepackageJSON) {
-        const gp = data.gamepackageJSON;
-        return {
-          plays: gp.plays || [],
-          header: gp.header || data.header || {},
-          boxscore: gp.boxscore
-        };
-      }
-      if (data && (Array.isArray(data.plays) || data.header)) return data;
-    } catch (err) {
-      console.warn("summary fetch", url, err);
+
+  const settled = await Promise.allSettled(sources);
+  let best = null;
+  let bestCount = -1;
+  for (const s of settled) {
+    if (s.status !== "fulfilled" || !s.value) continue;
+    const data = s.value;
+    let plays = Array.isArray(data.plays) ? data.plays : [];
+    if (data.gamepackageJSON && Array.isArray(data.gamepackageJSON.plays)) {
+      plays = data.gamepackageJSON.plays;
+    }
+    if (plays.length >= bestCount) {
+      bestCount = plays.length;
+      best = data.gamepackageJSON
+        ? { plays, header: data.gamepackageJSON.header || data.header, boxscore: data.gamepackageJSON.boxscore }
+        : Object.assign({}, data, { plays });
     }
   }
-  return null;
+  // Merge: if best has plays but no header scores, try another result for header
+  if (best && !(best.header && best.header.competitions) && !best._core) {
+    /* ok */
+  } else if (best && best._core) {
+    for (const s of settled) {
+      if (s.status !== "fulfilled" || !s.value) continue;
+      const d = s.value;
+      const header = d.header || (d.gamepackageJSON && d.gamepackageJSON.header);
+      if (header) {
+        best = { plays: best.plays, header, boxscore: d.boxscore || (d.gamepackageJSON && d.gamepackageJSON.boxscore) };
+        break;
+      }
+    }
+  }
+  return best;
 }
 
 async function refreshPlayByPlay() {
@@ -518,7 +547,7 @@ function setLivePolling(event) {
     await refreshPlayByPlay();
     const live = eventIsLive(featuredEvent);
     // 1s while live — as fast as useful; ESPN still caches responses briefly
-    pbpTimer = setTimeout(tick, live ? 500 : 60000);
+    pbpTimer = setTimeout(tick, live ? 400 : 60000);
   };
   tick();
 }

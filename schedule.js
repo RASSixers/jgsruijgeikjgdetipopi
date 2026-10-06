@@ -17,6 +17,7 @@ let lastGoodEventId = null;
 let pbpQuarterFilter = "all"; // "all" | 1 | 2 | 3 | 4 | 5+ for OT
 let lastDisplayedScoreKey = "";
 let lastPlaysFingerprint = "";
+let boardPanelTab = "pbp"; // "pbp" | "box"
 let injuryByAbbr = {};
 let featuredEvent = null;
 let allEventsCache = [];
@@ -182,22 +183,28 @@ function pickFeatured(events) {
   const live = events.find(e => eventIsLive(e));
   if (live) return live;
 
-  // Most recent finished Sixers game (for post-game PBP)
+  const upcoming = events
+    .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const nextUp = upcoming[0] || null;
+
+  // Switch to next game when tip is within 90 minutes
+  if (nextUp) {
+    const untilTip = new Date(nextUp.date).getTime() - Date.now();
+    if (untilTip <= 90 * 60 * 1000) return nextUp;
+  }
+
+  // Otherwise keep most recent final for post-game PBP (up to 18 hours after tip)
   const finals = events
     .filter(e => eventIsFinal(e))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
   if (finals.length) {
     const latest = finals[0];
     const ageMs = Date.now() - new Date(latest.date).getTime();
-    // Keep final on the board for 18 hours after tip so post-game PBP stays available
     if (ageMs < 18 * 60 * 60 * 1000) return latest;
   }
 
-  // Soonest upcoming
-  const upcoming = events
-    .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-  return upcoming[0] || finals[0] || null;
+  return nextUp || (finals[0] || null);
 }
 function passesFilter(event) {
   const statusName = get(event, "competitions.0.status.type.name", "");
@@ -279,6 +286,61 @@ function buildPbpFilters(plays, status, isFinal) {
     }
   }
   return available;
+}
+
+
+function renderBoxScoreHtml(summary) {
+  const groups = get(summary, "boxscore.players", []) || [];
+  if (!groups.length) {
+    return `<p class="live-empty">Box score will appear once the game starts.</p>`;
+  }
+  return groups.map(group => {
+    const abbr = get(group, "team.abbreviation", "") || get(group, "team.shortDisplayName", "Team");
+    const name = get(group, "team.displayName", abbr);
+    const stats = (group.statistics || [])[0] || {};
+    const labels = stats.labels || stats.names || ["MIN", "PTS", "REB", "AST"];
+    // Prefer a clean subset for mobile-friendly table
+    const keys = stats.keys || [];
+    const want = ["minutes", "points", "fieldGoalsMade-fieldGoalsAttempted", "threePointFieldGoalsMade-threePointFieldGoalsAttempted",
+      "freeThrowsMade-freeThrowsAttempted", "rebounds", "assists", "steals", "blocks", "turnovers", "plusMinus"];
+    let colIdx = [];
+    if (keys.length) {
+      want.forEach(k => {
+        const i = keys.indexOf(k);
+        if (i >= 0) colIdx.push(i);
+      });
+    }
+    if (!colIdx.length) colIdx = labels.map((_, i) => i).slice(0, 8);
+    const head = colIdx.map(i => labels[i] || "").join("");
+    const athletes = stats.athletes || [];
+    const totals = stats.totals || [];
+
+    const rows = athletes.map(a => {
+      const player = get(a, "athlete.displayName", "Player");
+      const st = a.stats || [];
+      const cells = colIdx.map(i => `<td>${st[i] != null ? st[i] : "—"}</td>`).join("");
+      const dnp = a.didNotPlay || a.reason;
+      if (dnp && !st.length) {
+        return `<tr class="box-dnp"><td class="box-player">${player}</td><td colspan="${colIdx.length}" class="box-dnp-note">${a.reason || "DNP"}</td></tr>`;
+      }
+      return `<tr><td class="box-player">${player}</td>${cells}</tr>`;
+    }).join("");
+
+    const totalCells = colIdx.map(i => `<td>${totals[i] != null ? totals[i] : ""}</td>`).join("");
+    const headerCells = colIdx.map(i => `<th>${labels[i] || ""}</th>`).join("");
+
+    return `<div class="box-team">
+      <div class="box-team-name">${name} <span>${abbr}</span></div>
+      <div class="box-table-wrap">
+        <table class="box-table">
+          <thead><tr><th class="box-player">Player</th>${headerCells}</tr></thead>
+          <tbody>${rows}
+            ${totals.length ? `<tr class="box-total"><td class="box-player">Team</td>${totalCells}</tr>` : ""}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join("");
 }
 
 function renderLiveBoard(summary, event) {
@@ -420,6 +482,11 @@ function renderLiveBoard(summary, event) {
       }
     }
 
+    // Keep box score fresh without full re-render
+    const boxWrap = body.querySelector(".box-score");
+    if (boxWrap && boardPanelTab === "box") {
+      boxWrap.innerHTML = renderBoxScoreHtml(summary);
+    }
     lastPlaysFingerprint = fingerprint;
     body.dataset.pbpFilter = String(pbpQuarterFilter);
     return;
@@ -437,6 +504,22 @@ function renderLiveBoard(summary, event) {
     ? `<ul class="pbp-list">${filtered.map(playRowHtml).join("")}</ul>`
     : `<p class="live-empty">${plays.length ? "No plays in this period yet." : "Play-by-play will appear as the game progresses…"}</p>`;
 
+  const panelTabs = `<div class="board-panel-tabs" role="tablist">
+      <button type="button" class="board-panel-tab${boardPanelTab === "pbp" ? " on" : ""}" data-board-panel="pbp">Play-by-play</button>
+      <button type="button" class="board-panel-tab${boardPanelTab === "box" ? " on" : ""}" data-board-panel="box">Box score</button>
+    </div>`;
+  const boxHtml = renderBoxScoreHtml(summary);
+  const pbpBlock = `<div class="board-panel panel-pbp" style="${boardPanelTab === "pbp" ? "" : "display:none"}">
+      <div class="pbp-head-row">
+        <div class="pbp-head">Play-by-play</div>
+        ${filterHtml}
+      </div>
+      ${playHtml}
+    </div>
+    <div class="board-panel panel-box" style="${boardPanelTab === "box" ? "" : "display:none"}">
+      <div class="box-score">${boxHtml}</div>
+    </div>`;
+
   body.innerHTML = `
     <div class="live-scoreline">
       <div class="live-team">
@@ -451,11 +534,8 @@ function renderLiveBoard(summary, event) {
         <img class="live-logo" src="${teamLogo(home.team)}" alt="" onerror="this.style.display='none'">
       </div>
     </div>
-    <div class="pbp-head-row">
-      <div class="pbp-head">Play-by-play</div>
-      ${filterHtml}
-    </div>
-    ${playHtml}`;
+    ${panelTabs}
+    ${pbpBlock}`;
 
   body.dataset.pbpFilter = String(pbpQuarterFilter);
   lastPlaysFingerprint = fingerprint;
@@ -832,6 +912,14 @@ document.addEventListener("DOMContentLoaded", () => {
   bindFilters();
   // Quarter filters for play-by-play (event delegation)
   document.addEventListener("click", e => {
+    const panelBtn = e.target.closest("[data-board-panel]");
+    if (panelBtn) {
+      boardPanelTab = panelBtn.getAttribute("data-board-panel") || "pbp";
+      if (lastGoodSummary && featuredEvent) {
+        renderLiveBoard(lastGoodSummary, featuredEvent);
+      }
+      return;
+    }
     const btn = e.target.closest("[data-pbp-q]");
     if (!btn) return;
     pbpQuarterFilter = btn.getAttribute("data-pbp-q") || "all";

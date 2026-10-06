@@ -326,15 +326,88 @@ function renderLiveBoard(summary, event) {
         return pn === want;
       });
 
-  const fingerprint = scoreKey + "|" + pbpQuarterFilter + "|" + filtered.length + "|" +
-    (filtered[0] && (filtered[0].id || filtered[0].text) || "");
+  const topId = filtered[0] && (filtered[0].id || filtered[0].sequenceNumber || filtered[0].text) || "";
+  const fingerprint = scoreKey + "|" + pbpQuarterFilter + "|" + filtered.length + "|" + topId;
 
-  // Preserve scroll if only scores changed slightly and list structure same length+top
   const listEl = body.querySelector(".pbp-list");
   const prevScroll = listEl ? listEl.scrollTop : 0;
-  const sameList = fingerprint === lastPlaysFingerprint && listEl;
+  const scoreEl = body.querySelector(".live-score");
+  const filtersEl = body.querySelector(".pbp-filters");
+  const hasShell = !!(scoreEl && body.querySelector(".pbp-head-row"));
 
-  const filterHtml = `<div class="pbp-filters" role="tablist" aria-label="Filter by period">
+  function playRowHtml(p) {
+    const clock = formatPlayClock(p);
+    const text = get(p, "text", "") || get(p, "description", "") || "—";
+    const sc = (get(p, "awayScore", "") !== "" && get(p, "homeScore", "") !== "")
+      ? `${get(p, "awayScore", "")}–${get(p, "homeScore", "")}`
+      : "";
+    const pid = p.id || p.sequenceNumber || "";
+    return `<li class="${p.scoringPlay ? "score" : ""}" data-play-id="${pid}">
+      <span class="pbp-clock">${clock}</span>
+      <span class="pbp-text">${text}</span>
+      <span class="pbp-score">${sc}</span>
+    </li>`;
+  }
+
+  // Fast path: shell exists, same filter — update score + prepend only new plays
+  if (hasShell && listEl && pbpQuarterFilter === (body.dataset.pbpFilter || "all")) {
+    if (scoreEl) scoreEl.textContent = `${awayScore}–${homeScore}`;
+    if (clockEl) { /* already set above */ }
+
+    // Prepend plays that aren't in the DOM yet (newest first in filtered)
+    const existing = new Set(
+      Array.from(listEl.querySelectorAll("[data-play-id]")).map(el => el.getAttribute("data-play-id"))
+    );
+    const toPrepend = [];
+    for (const p of filtered) {
+      const pid = String(p.id || p.sequenceNumber || "");
+      if (!pid || existing.has(pid)) break; // rest should already exist once we hit a known play
+      toPrepend.push(p);
+    }
+    if (toPrepend.length) {
+      const html = toPrepend.map(playRowHtml).join("");
+      listEl.insertAdjacentHTML("afterbegin", html);
+      // Keep scroll stable when user is reading down
+      if (prevScroll > 8) {
+        listEl.scrollTop = prevScroll + (toPrepend.length * 36);
+      }
+    }
+
+    // Score bumps
+    const awayTeam = body.querySelector(".live-team:not(.away)");
+    const homeTeam = body.querySelector(".live-team.away");
+    if (awayBump && awayTeam) {
+      awayTeam.insertAdjacentHTML("beforeend",
+        `<span class="score-bump ${awayAbbr === "PHI" ? "phi" : "opp"}" aria-hidden="true">+${awayBump}</span>`);
+    }
+    if (homeBump && homeTeam) {
+      homeTeam.insertAdjacentHTML("afterbegin",
+        `<span class="score-bump ${homeAbbr === "PHI" ? "phi" : "opp"}" aria-hidden="true">+${homeBump}</span>`);
+    }
+    body.querySelectorAll(".score-bump").forEach(el => {
+      el.addEventListener("animationend", () => el.remove(), { once: true });
+      setTimeout(() => el.remove(), 1200);
+    });
+
+    // Refresh filter buttons if new period unlocked
+    if (filtersEl) {
+      const want = filters.map(f => f.id).join(",");
+      if (filtersEl.dataset.ids !== want) {
+        filtersEl.dataset.ids = want;
+        filtersEl.innerHTML = filters.map(f => {
+          const on = String(pbpQuarterFilter) === String(f.id);
+          return `<button type="button" role="tab" class="pbp-filter-btn${on ? " on" : ""}" data-pbp-q="${f.id}" aria-selected="${on ? "true" : "false"}">${f.label}</button>`;
+        }).join("");
+      }
+    }
+
+    lastPlaysFingerprint = fingerprint;
+    body.dataset.pbpFilter = String(pbpQuarterFilter);
+    return;
+  }
+
+  // Full render (first load or filter change)
+  const filterHtml = `<div class="pbp-filters" role="tablist" aria-label="Filter by period" data-ids="${filters.map(f => f.id).join(",")}">
     ${filters.map(f => {
       const on = String(pbpQuarterFilter) === String(f.id);
       return `<button type="button" role="tab" class="pbp-filter-btn${on ? " on" : ""}" data-pbp-q="${f.id}" aria-selected="${on ? "true" : "false"}">${f.label}</button>`;
@@ -342,18 +415,7 @@ function renderLiveBoard(summary, event) {
   </div>`;
 
   const playHtml = filtered.length
-    ? `<ul class="pbp-list">${filtered.map(p => {
-        const clock = formatPlayClock(p);
-        const text = get(p, "text", "") || get(p, "description", "") || "—";
-        const sc = (get(p, "awayScore", "") !== "" && get(p, "homeScore", "") !== "")
-          ? `${get(p, "awayScore", "")}–${get(p, "homeScore", "")}`
-          : "";
-        return `<li class="${p.scoringPlay ? "score" : ""}">
-          <span class="pbp-clock">${clock}</span>
-          <span class="pbp-text">${text}</span>
-          <span class="pbp-score">${sc}</span>
-        </li>`;
-      }).join("")}</ul>`
+    ? `<ul class="pbp-list">${filtered.map(playRowHtml).join("")}</ul>`
     : `<p class="live-empty">${plays.length ? "No plays in this period yet." : "Play-by-play will appear as the game progresses…"}</p>`;
 
   body.innerHTML = `
@@ -376,15 +438,12 @@ function renderLiveBoard(summary, event) {
     </div>
     ${playHtml}`;
 
+  body.dataset.pbpFilter = String(pbpQuarterFilter);
   lastPlaysFingerprint = fingerprint;
 
-  // Restore scroll so list doesn't jump to top on every poll
   const newList = body.querySelector(".pbp-list");
-  if (newList && prevScroll > 0) {
-    newList.scrollTop = prevScroll;
-  }
+  if (newList && prevScroll > 0) newList.scrollTop = prevScroll;
 
-  // Remove bump nodes after animation
   body.querySelectorAll(".score-bump").forEach(el => {
     el.addEventListener("animationend", () => el.remove(), { once: true });
     setTimeout(() => el.remove(), 1200);
@@ -411,60 +470,35 @@ async function findLivePhiEvent() {
 }
 
 async function fetchSummaryForEvent(eventId) {
-  // Race ESPN sources — site.web.api is often cached ~3s; core plays is also fresh.
-  // Closest we can get to ESPN.com speed without their private live stream.
+  // One primary low-cache endpoint (max-age ~3s). Racing multiple full packages
+  // was slower on real networks (hundreds of KB × concurrent downloads).
   const id = encodeURIComponent(eventId);
-  const sources = [
-    // Lowest cache among public summary endpoints
-    fetch(`https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${id}`, { cache: "no-store" })
-      .then(r => r.ok ? r.json() : Promise.reject(r.status)),
-    // Full play list from core API
-    fetch(`https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/${id}/competitions/${id}/plays?limit=400`, { cache: "no-store" })
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(d => ({ plays: d.items || [], header: null, _core: true })),
-    // CDN package + classic site.api as backups
-    fetch(`https://cdn.espn.com/core/nba/playbyplay?xhr=1&gameId=${id}`, { cache: "no-store" })
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(d => {
-        const gp = d.gamepackageJSON || {};
-        return { plays: gp.plays || [], header: gp.header || d.header || {}, boxscore: gp.boxscore };
-      }),
-    fetch(`${SUMMARY_URL}?event=${id}`, { cache: "no-store" })
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  const primary = `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${id}`;
+  const fallbacks = [
+    primary,
+    `${SUMMARY_URL}?event=${id}`,
+    `https://cdn.espn.com/core/nba/playbyplay?xhr=1&gameId=${id}`
   ];
 
-  const settled = await Promise.allSettled(sources);
-  let best = null;
-  let bestCount = -1;
-  for (const s of settled) {
-    if (s.status !== "fulfilled" || !s.value) continue;
-    const data = s.value;
-    let plays = Array.isArray(data.plays) ? data.plays : [];
-    if (data.gamepackageJSON && Array.isArray(data.gamepackageJSON.plays)) {
-      plays = data.gamepackageJSON.plays;
-    }
-    if (plays.length >= bestCount) {
-      bestCount = plays.length;
-      best = data.gamepackageJSON
-        ? { plays, header: data.gamepackageJSON.header || data.header, boxscore: data.gamepackageJSON.boxscore }
-        : Object.assign({}, data, { plays });
-    }
-  }
-  // Merge: if best has plays but no header scores, try another result for header
-  if (best && !(best.header && best.header.competitions) && !best._core) {
-    /* ok */
-  } else if (best && best._core) {
-    for (const s of settled) {
-      if (s.status !== "fulfilled" || !s.value) continue;
-      const d = s.value;
-      const header = d.header || (d.gamepackageJSON && d.gamepackageJSON.header);
-      if (header) {
-        best = { plays: best.plays, header, boxscore: d.boxscore || (d.gamepackageJSON && d.gamepackageJSON.boxscore) };
-        break;
+  for (const url of fallbacks) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data.gamepackageJSON) {
+        const gp = data.gamepackageJSON;
+        return {
+          plays: gp.plays || [],
+          header: gp.header || data.header || {},
+          boxscore: gp.boxscore
+        };
       }
+      if (data && (Array.isArray(data.plays) || data.header)) return data;
+    } catch (err) {
+      console.warn("summary fetch", err);
     }
   }
-  return best;
+  return null;
 }
 
 async function refreshPlayByPlay() {
@@ -547,7 +581,7 @@ function setLivePolling(event) {
     await refreshPlayByPlay();
     const live = eventIsLive(featuredEvent);
     // 1s while live — as fast as useful; ESPN still caches responses briefly
-    pbpTimer = setTimeout(tick, live ? 400 : 60000);
+    pbpTimer = setTimeout(tick, live ? 300 : 60000);
   };
   tick();
 }

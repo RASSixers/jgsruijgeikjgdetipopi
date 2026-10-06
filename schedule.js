@@ -171,14 +171,33 @@ function mergeEvents(groups) {
   });
   return markBackToBacks([...map.values()].sort((a, b) => new Date(a.date) - new Date(b.date)));
 }
+function eventIsFinal(event) {
+  if (!event) return false;
+  const name = String(get(event, "competitions.0.status.type.name", "")).toUpperCase();
+  const state = String(get(event, "competitions.0.status.type.state", "")).toLowerCase();
+  return state === "post" || name.includes("FINAL");
+}
+
 function pickFeatured(events) {
   const live = events.find(e => eventIsLive(e));
   if (live) return live;
-  // Prefer soonest upcoming (pre)
+
+  // Most recent finished Sixers game (for post-game PBP)
+  const finals = events
+    .filter(e => eventIsFinal(e))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (finals.length) {
+    const latest = finals[0];
+    const ageMs = Date.now() - new Date(latest.date).getTime();
+    // Keep final on the board for 18 hours after tip so post-game PBP stays available
+    if (ageMs < 18 * 60 * 60 * 1000) return latest;
+  }
+
+  // Soonest upcoming
   const upcoming = events
     .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
     .sort((a, b) => new Date(a.date) - new Date(b.date));
-  return upcoming[0] || null;
+  return upcoming[0] || finals[0] || null;
 }
 function passesFilter(event) {
   const statusName = get(event, "competitions.0.status.type.name", "");
@@ -520,12 +539,24 @@ async function refreshPlayByPlay() {
       return;
     }
 
+    // Final / not live: still show full play-by-play for completed games
     if (!eventIsLive(event)) {
-      // Final games: still show full PBP once if we have it
-      if (lastGoodSummary && lastGoodEventId === String(event.id)) {
+      if (eventIsFinal(event)) {
+        const summary = await fetchSummaryForEvent(event.id);
+        if (summary && (Array.isArray(summary.plays) ? summary.plays.length : 0)) {
+          lastGoodSummary = summary;
+          lastGoodEventId = String(event.id);
+          renderLiveBoard(summary, event);
+          return;
+        }
+        if (lastGoodSummary && lastGoodEventId === String(event.id)) {
+          renderLiveBoard(lastGoodSummary, event);
+          return;
+        }
+      }
+      // Upcoming (or final with no PBP data)
+      if (lastGoodSummary && lastGoodEventId === String(event.id) && eventIsFinal(event)) {
         renderLiveBoard(lastGoodSummary, event);
-        const k = document.getElementById("live-kicker");
-        if (k) k.textContent = "Final";
         return;
       }
       renderUpcomingBoard(event);
@@ -580,8 +611,10 @@ function setLivePolling(event) {
   const tick = async () => {
     await refreshPlayByPlay();
     const live = eventIsLive(featuredEvent);
-    // 1s while live — as fast as useful; ESPN still caches responses briefly
-    pbpTimer = setTimeout(tick, live ? 300 : 60000);
+    const fin = eventIsFinal(featuredEvent);
+    // Live: fast. Final: occasional refresh so PBP loads after the buzzer. Upcoming: slow.
+    const delay = live ? 300 : (fin ? 15000 : 60000);
+    pbpTimer = setTimeout(tick, delay);
   };
   tick();
 }
@@ -663,7 +696,7 @@ function renderGameRow(event, allEvents) {
   }
 
   return `
-    <tr class="game-row" tabindex="0">
+    <tr class="game-row" tabindex="0" data-event-id="${event.id || ""}" data-event-final="${eventIsFinal(event) ? "1" : "0"}">
       <td class="date-cell">${dateStr}</td>
       <td>
         <div class="game-info">
@@ -695,10 +728,29 @@ function bindRowToggles(root) {
         if (open !== row) open.classList.remove("open");
       });
       row.classList.toggle("open");
+      // Finished games: load that game's full play-by-play in the top board
+      if (row.classList.contains("open") && row.getAttribute("data-event-final") === "1") {
+        const id = row.getAttribute("data-event-id");
+        if (id) {
+          const match = (allEventsCache || []).find(e => String(e.id) === String(id));
+          if (match) setLivePolling(match);
+          else {
+            featuredEvent = { id, competitions: [{ status: { type: { name: "STATUS_FINAL", state: "post" } } }] };
+            lastGoodEventId = null;
+            lastGoodSummary = null;
+            setLivePolling(featuredEvent);
+          }
+          const board = document.getElementById("live-board");
+          if (board) board.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      }
     };
     row.addEventListener("click", toggle);
     row.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggle();
+      }
     });
   });
 }

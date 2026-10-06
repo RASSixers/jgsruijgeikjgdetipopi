@@ -211,6 +211,88 @@
     }
     .live-empty { padding: 1rem 1.2rem; color: var(--mid); font-size: .9rem; margin: 0; }
 
+    .board-panel-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0.55rem 1.15rem 0;
+      border-top: 1px solid var(--border-light);
+    }
+    .board-panel-tab {
+      border: none;
+      background: transparent;
+      color: var(--mid);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.5rem 0.85rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .board-panel-tab.on {
+      color: var(--sixers-blue);
+      border-bottom-color: var(--sixers-blue);
+    }
+    .box-score { padding: 0.5rem 0 0.75rem; }
+    .box-team { margin: 0.5rem 0 1rem; }
+    .box-team-name {
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 0.35rem 1.15rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+    .box-team-name span {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--mid);
+      letter-spacing: 0.06em;
+    }
+    .box-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 0.65rem;
+    }
+    .box-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      min-width: 520px;
+    }
+    .box-table th, .box-table td {
+      padding: 0.35rem 0.4rem;
+      text-align: right;
+      border-bottom: 1px solid var(--border-light);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .box-table th {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--mid);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .box-table .box-player {
+      text-align: left;
+      font-weight: 600;
+      position: sticky;
+      left: 0;
+      background: var(--card-bg, #fff);
+      min-width: 7.5rem;
+      max-width: 9rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .box-table tr.box-total td {
+      font-weight: 800;
+      border-top: 2px solid var(--border-light);
+      background: rgba(0,107,182,0.04);
+    }
+    .box-dnp-note { text-align: left !important; color: var(--mid); font-size: 0.72rem; }
+
+
     .pbp-head-row {
       display: flex;
       flex-wrap: wrap;

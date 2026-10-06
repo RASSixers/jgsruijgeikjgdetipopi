@@ -76,7 +76,7 @@
     z-index: 1;
     max-width: 860px;
     margin: 0 auto;
-    padding: 5rem 2rem 4rem;
+    padding: 1.75rem 2rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -90,7 +90,7 @@
     border: 1px solid rgba(0,107,182,0.18);
     border-radius: 999px;
     padding: 5px 14px 5px 8px;
-    margin-bottom: 2rem;
+    margin-bottom: 0.85rem;
   }
   .hero-eyebrow-dot {
     width: 6px; height: 6px;
@@ -648,7 +648,7 @@
     .modal-photo { min-height: 240px; }
   }
   @media (max-width: 560px) {
-    .hero-inner { padding: 2.8rem 1.25rem 2.4rem; }
+    .hero-inner { padding: 1.25rem 1.15rem 1.5rem; }
     .grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
     .ch-grid { grid-template-columns: 1fr; }
     .modal-headline { padding: 1.4rem 1.4rem; }
@@ -733,25 +733,22 @@
 
 <script>
 /* ── 2025–26 Philadelphia 76ers roster ── */
-const ROSTER = [
-  {name:"Joel Embiid",              id:"203954",  pos:"C",  cat:"centers",  jersey:"21", age:32, ht:"7'0\"",  wt:"280 lbs", college:"Kansas",         drafted:"3rd overall (2014)",   exp:"12 yrs", salary:57985752, awards:["NBA MVP (2023)","7× NBA All-Star","NBA Scoring Champion (2022, 2023)"], careerHighs:{points:70,rebounds:22,assists:11}},
-  {name:"Jaylen Brown",             id:"1627759", pos:"F",  cat:"forwards", jersey:"7",  age:29, ht:"6'6\"",  wt:"223 lbs", college:"California",     drafted:"3rd overall (2016)",   exp:"11 yrs", salary:57736350, awards:["NBA Champion (2024)","Finals MVP (2024)","5× NBA All-Star","2× All-NBA"], careerHighs:{points:50,rebounds:15,assists:9}},
-  {name:"Tyrese Maxey",             id:"1630178", pos:"G",  cat:"guards",   jersey:"0",  age:26, ht:"6'2\"",  wt:"200 lbs", college:"Kentucky",       drafted:"21st overall (2020)",  exp:"7 yrs",  salary:40770520, awards:["NBA All-Star (2024)","Most Improved Player (2024)"],   careerHighs:{points:52,rebounds:11,assists:11}},
-  {name:"VJ Edgecombe",             id:"1642845", pos:"G",  cat:"guards",   jersey:"77", age:21, ht:"6'4\"",  wt:"180 lbs", college:"Baylor",         drafted:"3rd overall (2025)",   exp:"2 yrs",  salary:11663880, awards:[],                                                          careerHighs:{points:0,rebounds:0,assists:0}},
-  {name:"Dean Wade",                id:"1629731", pos:"F",  cat:"forwards", jersey:"45", age:29, ht:"6'9\"",  wt:"228 lbs", college:"Kansas State",   drafted:"Undrafted (2019)",     exp:"8 yrs",  salary:9000000,  awards:[],                                                          careerHighs:{points:25,rebounds:13,assists:7}},
-  {name:"Anfernee Simons",          id:"1629014", pos:"G",  cat:"guards",   jersey:"5",  age:27, ht:"6'3\"",  wt:"200 lbs", college:"N/A",            drafted:"24th overall (2018)",  exp:"8 yrs",  salary:6000000,  awards:["NBA Slam Dunk Contest Champion (2021)"],                  careerHighs:{points:44,rebounds:8,assists:10}},
-  {name:"LeBron James",             id:"2544",    pos:"F",  cat:"forwards", jersey:"23", age:41, ht:"6'9\"",  wt:"250 lbs", college:"N/A",            drafted:"1st overall (2003)",   exp:"24 yrs", salary:3876529,  awards:["4× NBA Champion","4× Finals MVP","4× NBA MVP","21× NBA All-Star","NBA All-Time Leading Scorer"], careerHighs:{points:61,rebounds:19,assists:19}},
-  {name:"Labaron Philon Jr.",       id:"PHILON",  pos:"G",  cat:"guards",   jersey:"3",  age:21, ht:"6'4\"",  wt:"177 lbs", college:"Alabama",        drafted:"2025 NBA Draft",       exp:"2 yrs",  salary:3597120,  awards:[],                                                          careerHighs:{points:0,rebounds:0,assists:0}, photo:"https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/5106324.png", photoFallback:""},
-  {name:"Dominick Barlow",          id:"1631230", pos:"F",  cat:"forwards", jersey:"25", age:23, ht:"6'9\"",  wt:"215 lbs", college:"Overtime Elite", drafted:"Undrafted (2022)",     exp:"4 yrs",  salary:3415000,  awards:[],                                                          careerHighs:{points:18,rebounds:12,assists:4}},
-  {name:"Ariel Hukporti",           id:"1630574", pos:"C",  cat:"centers",  jersey:"17", age:24, ht:"7'0\"",  wt:"246 lbs", college:"N/A",            drafted:"58th overall (2024)",  exp:"3 yrs",  salary:3400000,  awards:["NBA Cup Champion (2025)"],                                careerHighs:{points:12,rebounds:9,assists:2}},
-  {name:"Dalen Terry",              id:"1631207", pos:"F",  cat:"forwards", jersey:"14", age:24, ht:"6'6\"",  wt:"195 lbs", college:"Arizona",        drafted:"18th overall (2022)",  exp:"5 yrs",  salary:2584539,  awards:[],                                                          careerHighs:{points:20,rebounds:8,assists:8}},
-  {name:"Jabari Walker",            id:"1631133", pos:"F",  cat:"forwards", jersey:"33", age:24, ht:"6'7\"",  wt:"237 lbs", college:"Colorado",       drafted:"57th overall (2022)",  exp:"5 yrs",  salary:2584539,  awards:[],                                                          careerHighs:{points:22,rebounds:11,assists:5}},
-  {name:"Kentavious Caldwell-Pope", id:"203484",  pos:"G",  cat:"guards",   jersey:"2",  age:33, ht:"6'5\"",  wt:"204 lbs", college:"Georgia",        drafted:"8th overall (2013)",   exp:"14 yrs", salary:2449421,  awards:["2× NBA Champion (2020, 2023)"],                           careerHighs:{points:43,rebounds:11,assists:8}},
-  {name:"Justin Edwards",           id:"1642348", pos:"F",  cat:"forwards", jersey:"11", age:23, ht:"6'7\"",  wt:"203 lbs", college:"Kentucky",       drafted:"Undrafted (2024)",     exp:"3 yrs",  salary:2411090,  awards:[],                                                          careerHighs:{points:25,rebounds:7,assists:4}},
-  {name:"Adem Bona",                id:"1641737", pos:"C",  cat:"centers",  jersey:"30", age:24, ht:"6'10\"", wt:"235 lbs", college:"UCLA",           drafted:"41st overall (2024)",  exp:"3 yrs",  salary:2296271,  awards:[],                                                          careerHighs:{points:17,rebounds:11,assists:2}},
-  {name:"Johni Broome",             id:"1641780", pos:"F",  cat:"forwards", jersey:"22", age:24, ht:"6'10\"", wt:"235 lbs", college:"Auburn",         drafted:"35th overall (2025)",  exp:"3 yrs",  salary:2150917,  awards:[],                                                          careerHighs:{points:0,rebounds:0,assists:0}}
-];
 
+// Optional extras keyed by display name (salary/awards when ESPN omits them)
+const ROSTER_EXTRAS = {
+  "Joel Embiid": { salary: 57985752, awards: ["NBA MVP (2023)","7× NBA All-Star","NBA Scoring Champion (2022, 2023)"], careerHighs:{points:70,rebounds:22,assists:11} },
+  "Jaylen Brown": { salary: 57736350, awards: ["NBA Champion (2024)","Finals MVP (2024)","5× NBA All-Star","2× All-NBA"], careerHighs:{points:50,rebounds:15,assists:9} },
+  "Tyrese Maxey": { salary: 40770520, awards: ["NBA All-Star (2024)","Most Improved Player (2024)"], careerHighs:{points:52,rebounds:11,assists:11} },
+  "LeBron James": { salary: 3876529, awards: ["4× NBA Champion","4× Finals MVP","4× NBA MVP","21× NBA All-Star","NBA All-Time Leading Scorer"], careerHighs:{points:61,rebounds:19,assists:19} },
+  "VJ Edgecombe": { salary: 11663880, awards: [], careerHighs:{points:0,rebounds:0,assists:0} },
+  "Anfernee Simons": { salary: 6000000, awards: ["NBA Slam Dunk Contest Champion (2021)"], careerHighs:{points:44,rebounds:8,assists:10} },
+  "Dean Wade": { salary: 9000000, awards: [], careerHighs:{points:25,rebounds:13,assists:7} },
+  "Kentavious Caldwell-Pope": { salary: 2449421, awards: ["2× NBA Champion (2020, 2023)"], careerHighs:{points:43,rebounds:11,assists:8} },
+  "Justin Edwards": { salary: 2411090, awards: [], careerHighs:{points:25,rebounds:7,assists:4} },
+  "Adem Bona": { salary: 2296271, awards: [], careerHighs:{points:17,rebounds:11,assists:2} }
+};
+
+let ROSTER = [];
 let filter='all', query='';
 const $=(s)=>document.querySelector(s);
 const $$=(s)=>document.querySelectorAll(s);
@@ -759,8 +756,68 @@ const initials=(n)=>n.split(' ').filter(Boolean).map(x=>x[0]).join('').slice(0,2
 const fmt$=(n)=> n==null ? null : '$'+n.toLocaleString('en-US');
 const heightToInches=(h)=>{const m=h.match(/(\d+)'(\d+)/); return m?+m[1]*12+ +m[2]:0;};
 const inchesToHt=(i)=>{const f=Math.floor(i/12), r=Math.round(i%12); return `${f}'${r}"`;};
-const photoURL=(id)=> `https://cdn.nba.com/headshots/nba/latest/1040x760/${id}.png`;
-const photoFallback=(id)=> `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${id}.png`;
+const photoURL=(p)=> p.headshot || (p.id && !isNaN(p.id) ? `https://cdn.nba.com/headshots/nba/latest/1040x760/${p.id}.png` : "");
+const photoFallback=(p)=> p.headshot || (p.id && !isNaN(p.id) ? `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${p.id}.png` : "");
+
+
+function mapEspnPlayer(a) {
+  const pos = (a.position && a.position.abbreviation) || (a.position && a.position.displayName) || "—";
+  const posAbbr = String(pos).charAt(0).toUpperCase() + String(pos).slice(1);
+  let cat = "forwards";
+  const p0 = String(pos).toUpperCase();
+  if (p0 === "G" || p0.includes("GUARD")) cat = "guards";
+  else if (p0 === "C" || p0.includes("CENTER")) cat = "centers";
+  else cat = "forwards";
+
+  const name = a.displayName || a.fullName || "Player";
+  const extra = ROSTER_EXTRAS[name] || {};
+  const nbaId = (a.alternateIds && a.alternateIds.sdr) || a.id || "";
+  const headshot = (a.headshot && a.headshot.href) || "";
+  const contract = a.contract || {};
+  const salary = extra.salary != null ? extra.salary : (contract.salary != null ? Number(contract.salary) : null);
+  const expYears = a.experience && (a.experience.years != null) ? a.experience.years : null;
+  return {
+    name,
+    id: String(nbaId || a.id || name),
+    espnId: a.id,
+    pos: p0.charAt(0) === "G" ? "G" : (p0.charAt(0) === "C" ? "C" : "F"),
+    cat,
+    jersey: String(a.jersey != null ? a.jersey : "—"),
+    age: a.age || "—",
+    ht: a.displayHeight || "—",
+    wt: a.displayWeight || "—",
+    college: (a.college && (a.college.name || a.college)) || "—",
+    drafted: "—",
+    exp: expYears != null ? (expYears + " yrs") : "—",
+    salary,
+    awards: extra.awards || [],
+    careerHighs: extra.careerHighs || { points: 0, rebounds: 0, assists: 0 },
+    headshot,
+    status: (a.status && a.status.type) || "active"
+  };
+}
+
+async function loadRosterFromEspn() {
+  try {
+    const res = await fetch("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/roster");
+    if (!res.ok) throw new Error("roster " + res.status);
+    const data = await res.json();
+    const athletes = data.athletes || [];
+    ROSTER = athletes.map(mapEspnPlayer).filter(p => p.status !== "injured" || true);
+    // Prefer active; still show all
+    ROSTER.sort((a, b) => {
+      const order = { guards: 0, forwards: 1, centers: 2 };
+      return (order[a.cat] - order[b.cat]) || a.name.localeCompare(b.name);
+    });
+  } catch (err) {
+    console.warn("ESPN roster failed", err);
+    ROSTER = Object.keys(ROSTER_EXTRAS).map(name => {
+      const e = ROSTER_EXTRAS[name];
+      return { name, id: name, pos: "—", cat: "forwards", jersey: "—", age: "—", ht: "—", wt: "—", college: "—", drafted: "—", exp: "—", salary: e.salary, awards: e.awards || [], careerHighs: e.careerHighs || {}, headshot: "", status: "active" };
+    });
+  }
+}
+
 
 function renderHero(){
   const total=ROSTER.length;
@@ -785,9 +842,9 @@ function cardHTML(p,i){
         ${p.isTwoWay?'<span class="twoway">2-Way</span>':''}
       </div>
       <div class="photo">
-        <img src="${p.photo ?? photoURL(p.id)}" alt="${p.name} headshot, Philadelphia 76ers"
+        <img src="${p.photo ?? photoURL(p)}" alt="${p.name} headshot, Philadelphia 76ers"
              onload="this.classList.add('loaded')"
-             onerror="this.onerror=null;this.src='${p.photoFallback ?? photoFallback(p.id)}';this.addEventListener('error',()=>this.style.display='none',{once:true})" />
+             onerror="this.onerror=null;this.src='${p.photoFallback ?? photoFallback(p)}';this.addEventListener('error',()=>this.style.display='none',{once:true})" />
       </div>
       <div class="meta">
         <div class="name">${p.name}</div>
@@ -820,7 +877,7 @@ function render(){
 function openModal(p){
   $('#mFileId').textContent=p.name;
   $('#mPhoto').innerHTML=`
-    <img src="${p.photo ?? photoURL(p.id)}" alt="${p.name}" onerror="this.onerror=null;this.src='${p.photoFallback ?? photoFallback(p.id)}';this.addEventListener('error',()=>this.style.display='none',{once:true})" />`;
+    <img src="${p.photo ?? photoURL(p)}" alt="${p.name}" onerror="this.onerror=null;this.src='${p.photoFallback ?? photoFallback(p)}';this.addEventListener('error',()=>this.style.display='none',{once:true})" />`;
   const tags=[`<span class="tag pos">${p.pos}</span>`,
               `<span class="tag num">#${p.jersey}</span>`,
               p.isTwoWay?`<span class="tag gold">Two-Way</span>`:'',
@@ -863,7 +920,8 @@ function closeModal(){$('#modal').classList.remove('active');document.body.style
 $('#modal').addEventListener('click',e=>{if(e.target===$('#modal')) closeModal()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape') closeModal()});
 
-window.addEventListener('load',()=>{
+window.addEventListener('load', async ()=>{
+  await loadRosterFromEspn();
   renderHero();
   render();
   $('#q').addEventListener('input',e=>{query=e.target.value;render()});

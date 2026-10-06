@@ -414,7 +414,7 @@ function renderLiveBoard(summary, event) {
   const prevScroll = listEl ? listEl.scrollTop : 0;
   const scoreEl = body.querySelector(".live-score");
   const filtersEl = body.querySelector(".pbp-filters");
-  const hasShell = !!(scoreEl && body.querySelector(".pbp-head-row"));
+  const hasShell = !!(scoreEl && (body.querySelector(".pbp-head-row") || body.querySelector(".board-panel-tabs")));
 
   function playRowHtml(p) {
     const clock = formatPlayClock(p);
@@ -430,7 +430,16 @@ function renderLiveBoard(summary, event) {
     </li>`;
   }
 
-  // Fast path: shell exists, same filter — update score + prepend only new plays
+  // Fast path: shell exists — update score + prepend plays (don't block panel switching)
+  const pbpPanel = body.querySelector(".panel-pbp");
+  const boxPanel = body.querySelector(".panel-box");
+  if (pbpPanel) pbpPanel.style.display = boardPanelTab === "pbp" ? "" : "none";
+  if (boxPanel) boxPanel.style.display = boardPanelTab === "box" ? "" : "none";
+  body.querySelectorAll("[data-board-panel]").forEach(b => {
+    const on = b.getAttribute("data-board-panel") === boardPanelTab;
+    b.classList.toggle("on", on);
+  });
+
   if (hasShell && listEl && pbpQuarterFilter === (body.dataset.pbpFilter || "all")) {
     if (scoreEl) scoreEl.textContent = `${awayScore}–${homeScore}`;
     if (clockEl) { /* already set above */ }
@@ -914,9 +923,35 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("click", e => {
     const panelBtn = e.target.closest("[data-board-panel]");
     if (panelBtn) {
+      e.preventDefault();
+      e.stopPropagation();
       boardPanelTab = panelBtn.getAttribute("data-board-panel") || "pbp";
-      if (lastGoodSummary && featuredEvent) {
-        renderLiveBoard(lastGoodSummary, featuredEvent);
+      // Toggle visible panels + tab state immediately
+      document.querySelectorAll("[data-board-panel]").forEach(b => {
+        const on = b.getAttribute("data-board-panel") === boardPanelTab;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      const pbpPanel = document.querySelector("#live-body .panel-pbp");
+      const boxPanel = document.querySelector("#live-body .panel-box");
+      if (pbpPanel) pbpPanel.style.display = boardPanelTab === "pbp" ? "" : "none";
+      if (boxPanel) boxPanel.style.display = boardPanelTab === "box" ? "" : "none";
+      // Ensure box score content is filled
+      if (boardPanelTab === "box") {
+        const boxWrap = document.querySelector("#live-body .box-score");
+        const src = lastGoodSummary || null;
+        if (boxWrap && src) {
+          boxWrap.innerHTML = renderBoxScoreHtml(src);
+        } else if (boxWrap && featuredEvent) {
+          boxWrap.innerHTML = `<p class="live-empty">Loading box score…</p>`;
+          fetchSummaryForEvent(featuredEvent.id).then(summary => {
+            if (!summary) return;
+            lastGoodSummary = summary;
+            lastGoodEventId = String(featuredEvent.id);
+            const el = document.querySelector("#live-body .box-score");
+            if (el) el.innerHTML = renderBoxScoreHtml(summary);
+          }).catch(() => {});
+        }
       }
       return;
     }

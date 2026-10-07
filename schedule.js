@@ -339,69 +339,80 @@ function lookupPlayerStat(map, name) {
 
 /** Append live totals into PBP text */
 function enrichPlayText(raw, statMap) {
-  if (!raw || !statMap) return raw || "—";
+  if (!raw) return "—";
+  if (!statMap) return String(raw);
   let text = String(raw);
 
+  // Assists: (Name assists) → (Name assists · N AST)
   text = text.replace(/\(([A-Za-z.''\-\s]+?)\s+assists?\)/gi, function (_, name) {
     const s = lookupPlayerStat(statMap, name);
-    if (!s || s.ast == null) return "(" + name.trim() + " assists)";
-    return "(" + name.trim() + " assists · " + s.ast + " AST)";
+    const n = name.trim();
+    if (!s || s.ast == null) return "(" + n + " assists)";
+    return "(" + n + " assists · " + s.ast + " AST)";
   });
 
-  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+(offensive|defensive)\s+rebound\b/gi, function (m, name, kind) {
+  // Offensive / defensive rebound lines → append (Off:# Def:#)
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+(offensive|defensive)\s+rebound\b/gi, function (m, name, kind) {
     const s = lookupPlayerStat(statMap, name);
     if (!s) return m;
-    const side = /^off/i.test(kind) ? "OREB" : "DREB";
-    const sideVal = /^off/i.test(kind) ? s.oreb : s.dreb;
-    const bits = [];
-    if (sideVal != null) bits.push(sideVal + " " + side);
-    if (s.reb != null) bits.push(s.reb + " REB");
-    return bits.length ? (m + " (" + bits.join(", ") + ")") : m;
+    const o = s.oreb != null ? s.oreb : "–";
+    const d = s.dreb != null ? s.dreb : "–";
+    return m + " (Off:" + o + " Def:" + d + ")";
   });
 
-  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+rebound\b/gi, function (m, name) {
+  // Generic "Name rebound" (not already offensive/defensive)
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+rebound\b/gi, function (m, name) {
     if (/offensive|defensive/i.test(m)) return m;
+    if (/\(Off:/i.test(m)) return m;
     const s = lookupPlayerStat(statMap, name);
-    if (!s || s.reb == null) return m;
-    let extra = s.reb + " REB";
-    if (s.oreb != null || s.dreb != null) {
-      extra += " · " + (s.oreb != null ? s.oreb : "–") + " O / " + (s.dreb != null ? s.dreb : "–") + " D";
-    }
-    return m + " (" + extra + ")";
+    if (!s) return m;
+    const o = s.oreb != null ? s.oreb : "–";
+    const d = s.dreb != null ? s.dreb : "–";
+    return m + " (Off:" + o + " Def:" + d + ")";
   });
 
-  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+steal\b/gi, function (m, name) {
+  // Steals / blocks / turnovers
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+steal\b/gi, function (m, name) {
     const s = lookupPlayerStat(statMap, name);
     if (!s || s.stl == null) return m;
     return m + " (" + s.stl + " STL)";
   });
-
-  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+blocks?\b/gi, function (m, name) {
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+blocks?\b/gi, function (m, name) {
     const s = lookupPlayerStat(statMap, name);
     if (!s || s.blk == null) return m;
     return m + " (" + s.blk + " BLK)";
   });
-
-  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+turnover\b/gi, function (m, name) {
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+turnover\b/gi, function (m, name) {
     const s = lookupPlayerStat(statMap, name);
     if (!s || s.to == null) return m;
     return m + " (" + s.to + " TO)";
   });
 
-  text = text.replace(/^([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+(makes)\b/i, function (m, name, verb) {
-    const s = lookupPlayerStat(statMap, name);
-    if (!s || s.pts == null) return m;
-    return name + " " + verb + " [" + s.pts + " PTS]";
-  });
+  // Scoring makes: "Name makes ... jumper" → append (N PTS) right after the make phrase
+  // Avoid double-tagging if already has (N PTS)
+  if (!/\(\d+\s*PTS\)/i.test(text)) {
+    text = text.replace(/^([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+makes\b/i, function (m, name) {
+      const s = lookupPlayerStat(statMap, name);
+      if (!s || s.pts == null) return m;
+      return m; // tag after full action below
+    });
+    // Insert (PTS) before any assist parenthetical, or at end of make clause
+    text = text.replace(/^(.*?\bmakes\b.*?)(\s*\(|$)/i, function (full, head, tail) {
+      // Find scorer = first words before makes
+      const mm = head.match(/^([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+makes\b/i);
+      if (!mm) return full;
+      const s = lookupPlayerStat(statMap, mm[1]);
+      if (!s || s.pts == null) return full;
+      if (/\(\d+\s*PTS\)/i.test(head)) return full;
+      return head.replace(/\s+$/, "") + " (" + s.pts + " PTS)" + tail;
+    });
+  }
 
   return text;
 }
 
 function renderTeamStatsHtml(summary) {
   const teams = get(summary, "boxscore.teams", []) || [];
-  if (!teams.length) {
-    return `<p class="live-empty">Team stats will appear once the game starts.</p>`;
-  }
   const prefer = [
     ["fieldGoalsMade-fieldGoalsAttempted", "FG"],
     ["fieldGoalPct", "FG%"],
@@ -417,24 +428,57 @@ function renderTeamStatsHtml(summary) {
     ["steals", "STL"],
     ["blocks", "BLK"],
     ["turnovers", "TO"],
+    ["teamTurnovers", "TEAM TO"],
     ["points", "PTS"],
     ["pointsInPaint", "PITP"],
     ["fastBreakPoints", "FB PTS"],
     ["pointsOffTurnovers", "PTS OFF TO"],
-    ["benchPoints", "BENCH"]
+    ["benchPoints", "BENCH"],
+    ["largestLead", "LEAD"]
   ];
-  const parsed = teams.map(t => {
+
+  function parseTeamEntry(t) {
     const abbr = get(t, "team.abbreviation", "") || get(t, "team.shortDisplayName", "TM");
-    const statsArr = t.statistics || [];
     const byKey = Object.create(null);
-    statsArr.forEach(s => {
-      const key = s.name || s.abbreviation || s.label || "";
-      const val = s.displayValue != null ? s.displayValue : (s.value != null ? String(s.value) : "—");
-      if (key) byKey[key] = val;
-      if (s.abbreviation) byKey[s.abbreviation] = val;
+    const statsArr = t.statistics || t.stats || [];
+    (statsArr || []).forEach(s => {
+      if (!s || typeof s !== "object") return;
+      const val = s.displayValue != null ? s.displayValue
+        : (s.displayValue === 0 ? "0" : (s.value != null ? String(s.value) : null));
+      if (val == null) return;
+      [s.name, s.abbreviation, s.label, s.displayName].forEach(k => {
+        if (k) byKey[String(k)] = val;
+      });
     });
-    return { abbr, byKey, statsArr };
-  });
+    return { abbr, byKey, statsArr: statsArr || [] };
+  }
+
+  let parsed = teams.map(parseTeamEntry).filter(p => p.abbr);
+
+  // Fallback: derive from player box score team totals
+  if (!parsed.length || parsed.every(p => !Object.keys(p.byKey).length)) {
+    const groups = get(summary, "boxscore.players", []) || [];
+    parsed = groups.map(group => {
+      const abbr = get(group, "team.abbreviation", "") || get(group, "team.shortDisplayName", "TM");
+      const stats = (group.statistics || [])[0] || {};
+      const keys = stats.keys || [];
+      const labels = stats.labels || stats.names || [];
+      const totals = stats.totals || [];
+      const byKey = Object.create(null);
+      keys.forEach((k, i) => {
+        if (totals[i] != null && totals[i] !== "") byKey[k] = String(totals[i]);
+      });
+      labels.forEach((lab, i) => {
+        if (totals[i] != null && totals[i] !== "" && lab) byKey[lab] = String(totals[i]);
+      });
+      return { abbr, byKey, statsArr: keys.map((k, i) => ({ name: k, displayValue: totals[i] })) };
+    });
+  }
+
+  if (!parsed.length) {
+    return `<p class="live-empty">Team stats will appear once the game starts.</p>`;
+  }
+
   const seen = Object.create(null);
   const rows = [];
   prefer.forEach(([key, label]) => {
@@ -445,20 +489,24 @@ function renderTeamStatsHtml(summary) {
       rows.push({ label, vals: vals.map(v => (v != null ? v : "—")) });
     }
   });
-  if (!rows.length && parsed[0]) {
-    parsed[0].statsArr.slice(0, 14).forEach(s => {
-      const label = s.abbreviation || s.displayName || s.name || "Stat";
-      const key = s.name || s.abbreviation;
-      rows.push({ label, vals: parsed.map(p => p.byKey[key] || "—") });
+  if (!rows.length) {
+    // dump whatever keys we have from first team
+    const keys = Object.keys(parsed[0].byKey).slice(0, 16);
+    keys.forEach(k => {
+      rows.push({ label: k, vals: parsed.map(p => p.byKey[k] || "—") });
     });
   }
-  if (!rows.length) return `<p class="live-empty">Team stats unavailable for this game.</p>`;
+  if (!rows.length) {
+    return `<p class="live-empty">Team stats unavailable for this game.</p>`;
+  }
+
   const head = parsed.map(p => `<th>${p.abbr}</th>`).join("");
   const body = rows.map(r =>
     `<tr><td class="ts-label">${r.label}</td>${r.vals.map(v => `<td>${v}</td>`).join("")}</tr>`
   ).join("");
   return `<div class="team-stats-wrap"><table class="team-stats-table"><thead><tr><th>Stat</th>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
+
 
 function renderBoxScoreHtml(summary) {
   const groups = get(summary, "boxscore.players", []) || [];
@@ -1118,12 +1166,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const pbpPanel = document.querySelector("#live-body .panel-pbp");
       const boxPanel = document.querySelector("#live-body .panel-box");
+      const teamPanel = document.querySelector("#live-body .panel-team");
       if (pbpPanel) pbpPanel.style.display = boardPanelTab === "pbp" ? "" : "none";
       if (boxPanel) boxPanel.style.display = boardPanelTab === "box" ? "" : "none";
-      // Ensure box score content is filled
+      if (teamPanel) teamPanel.style.display = boardPanelTab === "team" ? "" : "none";
+      const src = lastGoodSummary || null;
       if (boardPanelTab === "box") {
         const boxWrap = document.querySelector("#live-body .box-score");
-        const src = lastGoodSummary || null;
         if (boxWrap && src) {
           boxWrap.innerHTML = renderBoxScoreHtml(src);
         } else if (boxWrap && featuredEvent) {
@@ -1134,6 +1183,21 @@ document.addEventListener("DOMContentLoaded", () => {
             lastGoodEventId = String(featuredEvent.id);
             const el = document.querySelector("#live-body .box-score");
             if (el) el.innerHTML = renderBoxScoreHtml(summary);
+          }).catch(() => {});
+        }
+      }
+      if (boardPanelTab === "team") {
+        const teamWrap = document.querySelector("#live-body .panel-team");
+        if (teamWrap && src) {
+          teamWrap.innerHTML = renderTeamStatsHtml(src);
+        } else if (teamWrap && featuredEvent) {
+          teamWrap.innerHTML = `<p class="live-empty">Loading team stats…</p>`;
+          fetchSummaryForEvent(featuredEvent.id).then(summary => {
+            if (!summary) return;
+            lastGoodSummary = summary;
+            lastGoodEventId = String(featuredEvent.id);
+            const el = document.querySelector("#live-body .panel-team");
+            if (el) el.innerHTML = renderTeamStatsHtml(summary);
           }).catch(() => {});
         }
       }

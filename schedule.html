@@ -234,6 +234,37 @@
       border-bottom-color: var(--sixers-blue);
     }
     .box-score { padding: 0.5rem 0 0.75rem; }
+    .team-stats-wrap { padding: 0.65rem 1rem 1rem; overflow-x: auto; }
+    .team-stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .team-stats-table th,
+    .team-stats-table td {
+      padding: 0.4rem 0.55rem;
+      text-align: right;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .team-stats-table th:first-child,
+    .team-stats-table td.ts-label {
+      text-align: left;
+      font-weight: 700;
+      color: var(--mid);
+      font-size: 0.72rem;
+      letter-spacing: 0.03em;
+    }
+    .team-stats-table th {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .team-stats-table tbody tr:hover { background: rgba(0,107,182,.04); }
+    .pbp-text { word-break: break-word; }
+
     .box-team { margin: 0.5rem 0 1rem; }
     .box-team-name {
       font-weight: 800;

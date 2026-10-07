@@ -180,6 +180,7 @@ function eventIsFinal(event) {
 }
 
 function pickFeatured(events) {
+  // Priority: live → previous final until 12h before next tip → upcoming
   const live = events.find(e => eventIsLive(e));
   if (live) return live;
 
@@ -187,24 +188,20 @@ function pickFeatured(events) {
     .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
     .sort((a, b) => new Date(a.date) - new Date(b.date));
   const nextUp = upcoming[0] || null;
+  const untilTip = nextUp ? (new Date(nextUp.date).getTime() - Date.now()) : null;
 
-  // Switch to next game when tip is within 90 minutes
-  if (nextUp) {
-    const untilTip = new Date(nextUp.date).getTime() - Date.now();
-    if (untilTip <= 90 * 60 * 1000) return nextUp;
-  }
-
-  // Otherwise keep most recent final for post-game PBP (up to 18 hours after tip)
   const finals = events
     .filter(e => eventIsFinal(e))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
-  if (finals.length) {
-    const latest = finals[0];
-    const ageMs = Date.now() - new Date(latest.date).getTime();
-    if (ageMs < 18 * 60 * 60 * 1000) return latest;
+  const latest = finals[0] || null;
+
+  // Keep post-game result / PBP until 12 hours before the next tip-off
+  const TWELVE_H = 12 * 60 * 60 * 1000;
+  if (latest) {
+    if (untilTip == null || untilTip > TWELVE_H) return latest;
   }
 
-  return nextUp || (finals[0] || null);
+  return nextUp || latest || null;
 }
 function passesFilter(event) {
   const statusName = get(event, "competitions.0.status.type.name", "");

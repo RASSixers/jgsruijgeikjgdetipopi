@@ -3784,16 +3784,20 @@
         var thisYearStatus = years.length ? years[0].status : 'GTD';
         var thisYearGtd = (thisYearStatus === 'GTD' || thisYearStatus === 'PARTIAL');
 
-        // Classic Spotrac-style labels: 2+1 (PO), 3yr Guaranteed, 1yr Non-Guaranteed
+        // Classic labels: 2+1 (PO), 3yr Guaranteed, 1yr NG — never "0+1" / "0+2"
         var label = '';
-        if (optionType === 'PO' && (oY > 0 || years.some(function(y){return y.status==='PO';}))) {
-            var optN = oY > 0 ? oY : 1;
+        var optN = (oY > 0) ? oY : 1;
+        if (gY <= 0) {
+            // No guaranteed years: just NG (or PO/TO if that's the only status)
+            if (optionType === 'PO') label = (totalYears || optN) + 'yr PO';
+            else if (optionType === 'TO') label = (totalYears || optN) + 'yr TO';
+            else label = (totalYears || optN || 1) + 'yr NG';
+        } else if (optionType === 'PO' && (oY > 0 || years.some(function(y){return y.status==='PO';}))) {
             label = gY + '+' + optN + ' (PO)';
         } else if (optionType === 'TO' && (oY > 0 || years.some(function(y){return y.status==='TO';}))) {
-            var optN2 = oY > 0 ? oY : 1;
-            label = gY + '+' + optN2 + ' (TO)';
-        } else if (optionType === 'NG' || (/non-?guaranteed/i.test(ct) && gY === 0)) {
-            label = (totalYears || 1) + 'yr Non-Guaranteed';
+            label = gY + '+' + optN + ' (TO)';
+        } else if (optionType === 'NG' || (/non-?guaranteed/i.test(ct))) {
+            label = (totalYears || 1) + 'yr NG';
         } else if (gY > 0) {
             label = gY + 'yr Guaranteed';
         } else if (totalYears > 0) {

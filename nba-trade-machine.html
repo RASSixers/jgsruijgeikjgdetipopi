@@ -3740,24 +3740,50 @@
         }
         var totalYears = years.length || Number(p.contractYears) || 0;
         if (!totalYears) totalYears = gY + oY;
-        // Build Spotrac-style label: 2+1 (PO), 3yr GTD, 1yr NG, etc.
-        var label = '';
+        // Current season status (2026-27)
+        var thisYearStatus = years.length ? years[0].status : 'GTD';
+        var thisYearGtd = (thisYearStatus === 'GTD' || thisYearStatus === 'PARTIAL');
+        var thisYearTag = '';
+        if (thisYearStatus === 'GTD') thisYearTag = 'This yr GTD';
+        else if (thisYearStatus === 'PARTIAL') thisYearTag = 'This yr PARTIAL';
+        else if (thisYearStatus === 'PO') thisYearTag = 'This yr PO';
+        else if (thisYearStatus === 'TO') thisYearTag = 'This yr TO';
+        else if (thisYearStatus === 'NG') thisYearTag = 'This yr NG';
+        else thisYearTag = 'This yr GTD';
+
+        // Structure: 2+1 (PO) = 2 guaranteed seasons + 1 player-option year
+        var structure = '';
         if (optionType && oY > 0) {
-            label = gY + '+' + oY + ' (' + optionType + ')';
+            structure = gY + '+' + oY + ' (+' + optionType + ')';
         } else if (oY > 0 && !optionType) {
-            label = gY + '+' + oY + ' (NG)';
+            structure = gY + '+' + oY + ' (+NG)';
         } else if (gY > 0) {
-            label = gY + 'yr GTD';
+            structure = gY + 'yr GTD';
         } else if (totalYears > 0) {
-            label = totalYears + 'yr';
+            structure = totalYears + 'yr';
         } else {
-            label = ct || '—';
+            structure = ct || '—';
+        }
+        // Final label: always state this-year guarantee + structure when multi-year
+        var label = structure;
+        if (totalYears <= 1) {
+            if (thisYearStatus === 'GTD') label = 'Guaranteed 2026-27';
+            else if (thisYearStatus === 'PO') label = '2026-27 Player Option';
+            else if (thisYearStatus === 'TO') label = '2026-27 Team Option';
+            else if (thisYearStatus === 'NG') label = 'Non-Guaranteed 2026-27';
+            else if (thisYearStatus === 'PARTIAL') label = 'Partial GTD 2026-27';
+            else label = structure;
+        } else {
+            // e.g. "This yr GTD · 2+1 (+PO)"
+            label = thisYearTag + ' · ' + structure;
         }
         return {
             years: years,
             guaranteedYears: gY,
             optionYears: oY,
             optionType: optionType,
+            thisYearStatus: thisYearStatus,
+            thisYearGtd: thisYearGtd,
             label: label,
             totalYears: totalYears
         };
@@ -6811,10 +6837,12 @@
 
     // ─── WAIVE + STRETCH (CBA-aligned) ─────────────────────────────────────
     // Stretch length = 2 × remaining seasons + 1.
-    // Jul 1-Aug 31: current season included in stretch.
-    // Sep 1-Jun 30: current season full dead cap; future years only stretch.
-    // Expiring deals after Sep 1: no stretch.
+    // 2026-27: last day to waive & stretch = August 29, 2026.
+    // Jul 1–Aug 29: current season included in stretch.
+    // After Aug 29: current season full dead cap; future years only stretch (if any).
+    // Expiring deals after the stretch deadline: no stretch.
     // Non-guaranteed $ is not stretched (falls off on waive).
+    var STRETCH_DEADLINE = '2026-08-29'; // last day of full stretch window for 2026-27
 
     function normalizeWaivedEntry(entry) {
         if (entry == null) return null;
@@ -6848,8 +6876,21 @@
     }
 
     function isInFullStretchWindow(asOf) {
-        var m = asOf.getMonth();
-        return m === 6 || m === 7; // July or August
+        asOf = asOf || new Date();
+        // Full stretch window: July 1 through STRETCH_DEADLINE (Aug 29, 2026 for 2026-27)
+        var y = asOf.getFullYear();
+        var m = asOf.getMonth(); // 0-based
+        var d = asOf.getDate();
+        // If before July 1 of the stretch year, not in window
+        // Window for 2026-27 offseason: 2026-07-01 .. 2026-08-29
+        var deadline = (typeof STRETCH_DEADLINE === 'string') ? STRETCH_DEADLINE : '2026-08-29';
+        var parts = deadline.split('-');
+        var dY = parseInt(parts[0], 10), dM = parseInt(parts[1], 10) - 1, dD = parseInt(parts[2], 10);
+        // Normalize asOf to date-only
+        var t = new Date(asOf.getFullYear(), asOf.getMonth(), asOf.getDate()).getTime();
+        var start = new Date(dY, 6, 1).getTime(); // Jul 1
+        var end = new Date(dY, dM, dD).getTime(); // deadline inclusive
+        return t >= start && t <= end;
     }
 
     function computeStretchOptions(p, asOfDate) {
@@ -6889,11 +6930,11 @@
             info.annualStretchHit = annual;
             info.deadThisYearIfStretch = annual;
             info.deadThisYearIfNoStretch = currentSal;
-            info.note = 'Jul 1-Aug 31 window: stretch spreads remaining guaranteed $ over ' + n + ' seasons (2×' + seasons + '+1).';
+            info.note = 'Jul 1–Aug 29 window: stretch spreads remaining guaranteed $ over ' + n + ' seasons (2×' + seasons + '+1).';
             return info;
         }
         if (seasons <= 1) {
-            info.reasonBlocked = 'After September 1, expiring deals cannot be stretched. Full current-year dead cap applies.';
+            info.reasonBlocked = 'After the Aug 29 stretch deadline, expiring deals cannot be stretched. Full current-year dead cap applies.';
             return info;
         }
         var futureSeasons = seasons - 1;
@@ -6909,7 +6950,7 @@
         info.annualStretchHit = annual2;
         info.deadThisYearIfStretch = currentSal;
         info.deadThisYearIfNoStretch = currentSal;
-        info.note = 'After Sep 1: this season stays full dead cap. Future $ stretches over ' + n2 + ' seasons (2×' + futureSeasons + '+1).';
+        info.note = 'After Aug 29 stretch deadline: this season stays full dead cap. Future $ stretches over ' + n2 + ' seasons (2×' + futureSeasons + '+1).';
         return info;
     }
 
@@ -7293,7 +7334,7 @@
         var info = computeStretchOptions(p);
         var asOf = typeof getAsOfDate === 'function' ? getAsOfDate() : new Date();
         var asOfLabel = asOf.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-        var windowLabel = info.fullWindow ? 'Jul 1 - Aug 31 (full stretch window)' : 'Sep 1 - Jun 30 (current year not stretchable)';
+        var windowLabel = info.fullWindow ? 'Jul 1 – Aug 29 (full stretch window · deadline Aug 29, 2026)' : 'After Aug 29 (current year not stretchable)';
 
         var ov = document.getElementById('waiveModalOverlay');
         if (!ov) {
@@ -10133,7 +10174,7 @@
             '<tr style="border-top:2px solid #0f172a;background:#f8fafc;">' +
             '<td style="padding:8px;font-weight:900;font-size:.8rem;" colspan="2">TOTAL</td>' + totalRow +
             '</tr></tbody></table></div>' +
-            '<p style="margin:.75rem 0 0;font-size:.65rem;color:#64748b;line-height:1.45;">Year amounts come from each player\'s contract schedule. Tags: <strong>2+1 (PO)</strong> = 2 guaranteed years + 1 player-option year. Two-ways show $0 (do not count toward the salary cap). NG/PART years are not fully guaranteed.</p>' +
+            '<p style="margin:.75rem 0 0;font-size:.65rem;color:#64748b;line-height:1.45;">Year amounts come from each player\'s contract schedule. Tags: <strong>This yr GTD · 2+1 (+PO)</strong> = 2026-27 guaranteed, then 2 guaranteed seasons + 1 player-option year. Stretch deadline 2026-27: <strong>Aug 29, 2026</strong>. Two-ways show $0 (do not count toward the salary cap). NG/PART years are not fully guaranteed.</p>' +
             '</div>';
 
         if (typeof openFillerModal === 'function') {

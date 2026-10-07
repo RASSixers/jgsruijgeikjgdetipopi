@@ -528,22 +528,12 @@ function renderNews(articles) {
     return a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
   }
 
-  function gradeChips(a) {
-    const grades = a.grades || a.playerGrades || [];
-    if (!grades.length) return '';
-    return '<div class="news-card-grades">' + grades.slice(0, 6).map(function (g) {
-      const label = escapeHtml((g.player || g.name || '') + (g.grade != null ? ' ' + g.grade : ''));
-      return '<span class="news-tag" style="font-size:0.58rem;letter-spacing:0.04em;">' + label + '</span>';
-    }).join('') + '</div>';
-  }
-
   const featuredColor = CATEGORY_COLORS[featured.category] || '#006bb6';
   const featuredHtml =
     '<a href="' + articleUrl(featured) + '" class="news-feature">' +
       '<span class="news-tag" style="color:' + featuredColor + ';border-color:' + featuredColor + '33;background:' + featuredColor + '14;">' + escapeHtml(featured.category || 'News') + '</span>' +
       '<h3 class="news-feature-title">' + escapeHtml(featured.title) + '</h3>' +
       (featured.excerpt ? '<p class="news-feature-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
-      gradeChips(featured) +
       '<div class="news-feature-meta">' +
         '<span>' + escapeHtml(byline(featured)) + '</span><span>·</span>' +
         '<span>' + escapeHtml(timeAgo(toDate(featured.createdAt))) + '</span>' +
@@ -793,25 +783,30 @@ listenToUpdates();
   }
 
   function pickFeatured(events) {
+    // Priority: live → previous final until 12h before next tip → upcoming
     const live = events.find(isLive);
     if (live) return { event: live, mode: "live" };
+
     const upcoming = events
       .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
       .sort((a, b) => new Date(a.date) - new Date(b.date));
-    const next = upcoming[0];
-    if (next) {
-      const until = new Date(next.date).getTime() - Date.now();
-      if (until <= 12 * 60 * 60 * 1000 && until > -3 * 60 * 60 * 1000) {
-        return { event: next, mode: "upcoming" };
+    const next = upcoming[0] || null;
+    const untilNext = next ? (new Date(next.date).getTime() - Date.now()) : null;
+
+    const finals = events.filter(isFinal).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const latestFinal = finals[0] || null;
+
+    // Keep post-game result until it is within 12 hours of the next tip-off
+    const TWELVE_H = 12 * 60 * 60 * 1000;
+    if (latestFinal) {
+      if (untilNext == null || untilNext > TWELVE_H) {
+        return { event: latestFinal, mode: "final" };
       }
     }
-    const finals = events.filter(isFinal).sort((a, b) => new Date(b.date) - new Date(a.date));
-    if (finals[0]) {
-      const age = Date.now() - new Date(finals[0].date).getTime();
-      if (age < 18 * 60 * 60 * 1000) return { event: finals[0], mode: "final" };
-    }
+
+    // Inside the 12h window before tip (or no final available) → preview next game
     if (next) return { event: next, mode: "upcoming" };
-    return finals[0] ? { event: finals[0], mode: "final" } : null;
+    return latestFinal ? { event: latestFinal, mode: "final" } : null;
   }
 
   function renderBox(summary) {

@@ -391,30 +391,43 @@
     padding: 2.25rem 0 3.5rem;
   }
   .updates-inner {
-    max-width: 720px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 1.25rem;
   }
   .updates-heading {
-    margin-bottom: 1.1rem;
+    margin-bottom: 1.15rem;
   }
+  /* 3 across × 2 rows per page on desktop */
   .updates-feed {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+    align-items: start;
   }
   .update-card {
     background: #fff;
     border: 1px solid var(--border-light);
     border-radius: 14px;
-    padding: 1.15rem 1.25rem;
+    padding: 0.85rem 0.9rem 1rem;
     overflow: hidden;
     word-wrap: break-word;
     overflow-wrap: anywhere;
+    min-width: 0;
   }
-  .update-card p {
+  .update-card .update-embed {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .update-card .update-embed blockquote,
+  .update-card .update-embed iframe {
+    max-width: 100% !important;
+    margin: 0 auto !important;
+  }
+  .update-card p,
+  .update-card .update-text {
     margin: 0 0 0.65rem;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     line-height: 1.55;
     color: var(--ink);
   }
@@ -432,18 +445,22 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    margin-top: 1.15rem;
+    margin-top: 1.35rem;
   }
   .updates-page-btn {
     font-family: inherit;
     font-size: 0.8rem;
     font-weight: 700;
-    padding: 0.45rem 0.9rem;
+    padding: 0.5rem 1rem;
     border-radius: 999px;
     border: 1px solid var(--border-light);
     background: #fff;
     color: var(--ink);
     cursor: pointer;
+  }
+  .updates-page-btn:hover:not(:disabled) {
+    border-color: var(--sixers-blue);
+    color: var(--sixers-blue);
   }
   .updates-page-btn:disabled {
     opacity: 0.4;
@@ -454,9 +471,15 @@
     color: var(--mid);
     font-weight: 600;
   }
+  @media (min-width: 640px) {
+    .updates-feed { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 900px) {
+    .updates-feed { grid-template-columns: 1fr 1fr 1fr; }
+    .updates-inner { padding: 0 2rem; }
+  }
   @media (min-width: 768px) {
     .poll-section { padding: 0 2rem 2.25rem; max-width: 720px; }
-    .updates-inner { padding: 0 2rem; }
   }
 
   .home-game {
@@ -655,7 +678,7 @@
 const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
 const POLLS_COLLECTION = 'fan_polls';
-const UPDATES_PER_PAGE = 6;
+const UPDATES_PER_PAGE = 6; // 3 columns × 2 rows
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
 const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
@@ -831,7 +854,7 @@ function renderUpdatesPage() {
   const next = document.getElementById('updates-next');
 
   if (!allUpdates.length) {
-    feed.innerHTML = '<div class="updates-empty">No updates posted yet. Check back soon.</div>';
+    feed.innerHTML = '<div class="updates-empty" style="grid-column:1/-1">No updates posted yet. Check back soon.</div>';
     pager.hidden = true;
     return;
   }
@@ -921,6 +944,145 @@ listenToUpdates();
     const s = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
     return s === "post" || n.includes("FINAL");
   }
+
+  function buildPlayerStatMap(summary) {
+    const map = Object.create(null);
+    const groups = (((summary || {}).boxscore || {}).players) || [];
+    groups.forEach(function (group) {
+      const stats = (group.statistics || [])[0] || {};
+      const keys = stats.keys || [];
+      const idx = {};
+      keys.forEach(function (k, i) { idx[k] = i; });
+      (stats.athletes || []).forEach(function (a) {
+        const name = get(a, "athlete.displayName", "") || get(a, "athlete.shortName", "");
+        if (!name) return;
+        const st = a.stats || [];
+        function val(k) {
+          const i = idx[k];
+          return i != null && st[i] != null && st[i] !== "" ? st[i] : null;
+        }
+        const entry = {
+          pts: val("points"), reb: val("rebounds"), oreb: val("offensiveRebounds"),
+          dreb: val("defensiveRebounds"), ast: val("assists"), stl: val("steals"),
+          blk: val("blocks"), to: val("turnovers")
+        };
+        map[name.toLowerCase()] = entry;
+        const parts = name.split(/\s+/);
+        if (parts.length >= 2) {
+          map[parts[parts.length - 1].toLowerCase()] = entry;
+          map[(parts[0][0] + ". " + parts[parts.length - 1]).toLowerCase()] = entry;
+        }
+      });
+    });
+    return map;
+  }
+  function lookupPlayerStat(map, name) {
+    if (!name || !map) return null;
+    const n = String(name).replace(/\s+/g, " ").trim().toLowerCase();
+    if (map[n]) return map[n];
+    const last = n.split(" ").pop();
+    if (last && map[last]) return map[last];
+    return null;
+  }
+  function enrichPlayText(raw, statMap) {
+    if (!raw) return "—";
+    if (!statMap) return String(raw);
+    let text = String(raw);
+    text = text.replace(/\(([A-Za-z.''\-\s]+?)\s+assists?\)/gi, function (_, name) {
+      const s = lookupPlayerStat(statMap, name);
+      const n = name.trim();
+      if (!s || s.ast == null) return "(" + n + " assists)";
+      return "(" + n + " assists · " + s.ast + " AST)";
+    });
+    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+(offensive|defensive)\s+rebound\b/gi, function (m, name) {
+      const s = lookupPlayerStat(statMap, name);
+      if (!s) return m;
+      return m + " (Off:" + (s.oreb != null ? s.oreb : "–") + " Def:" + (s.dreb != null ? s.dreb : "–") + ")";
+    });
+    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+rebound\b/gi, function (m, name) {
+      if (/offensive|defensive/i.test(m) || /\(Off:/i.test(m)) return m;
+      const s = lookupPlayerStat(statMap, name);
+      if (!s) return m;
+      return m + " (Off:" + (s.oreb != null ? s.oreb : "–") + " Def:" + (s.dreb != null ? s.dreb : "–") + ")";
+    });
+    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+steal\b/gi, function (m, name) {
+      const s = lookupPlayerStat(statMap, name);
+      return (!s || s.stl == null) ? m : (m + " (" + s.stl + " STL)");
+    });
+    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+blocks?\b/gi, function (m, name) {
+      const s = lookupPlayerStat(statMap, name);
+      return (!s || s.blk == null) ? m : (m + " (" + s.blk + " BLK)");
+    });
+    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+turnover\b/gi, function (m, name) {
+      const s = lookupPlayerStat(statMap, name);
+      return (!s || s.to == null) ? m : (m + " (" + s.to + " TO)");
+    });
+    if (!/\(\d+\s*PTS\)/i.test(text)) {
+      text = text.replace(/^(.*?\bmakes\b.*?)(\s*\(|$)/i, function (full, head, tail) {
+        const mm = head.match(/^([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+makes\b/i);
+        if (!mm) return full;
+        const s = lookupPlayerStat(statMap, mm[1]);
+        if (!s || s.pts == null) return full;
+        return head.replace(/\s+$/, "") + " (" + s.pts + " PTS)" + tail;
+      });
+    }
+    return text;
+  }
+  function renderTeamStats(summary) {
+    const teams = (((summary || {}).boxscore || {}).teams) || [];
+    const prefer = [
+      ["fieldGoalsMade-fieldGoalsAttempted", "FG"], ["fieldGoalPct", "FG%"],
+      ["threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3PT"], ["threePointFieldGoalPct", "3P%"],
+      ["freeThrowsMade-freeThrowsAttempted", "FT"], ["freeThrowPct", "FT%"],
+      ["totalRebounds", "REB"], ["rebounds", "REB"], ["offensiveRebounds", "OREB"], ["defensiveRebounds", "DREB"],
+      ["assists", "AST"], ["steals", "STL"], ["blocks", "BLK"], ["turnovers", "TO"], ["points", "PTS"],
+      ["pointsInPaint", "PITP"], ["fastBreakPoints", "FB PTS"], ["pointsOffTurnovers", "PTS OFF TO"], ["benchPoints", "BENCH"]
+    ];
+    function parseTeam(t) {
+      const abbr = get(t, "team.abbreviation", "") || get(t, "team.shortDisplayName", "TM");
+      const byKey = {};
+      (t.statistics || t.stats || []).forEach(function (s) {
+        if (!s) return;
+        const val = s.displayValue != null ? s.displayValue : (s.value != null ? String(s.value) : null);
+        if (val == null) return;
+        [s.name, s.abbreviation, s.label, s.displayName].forEach(function (k) { if (k) byKey[k] = val; });
+      });
+      return { abbr: abbr, byKey: byKey };
+    }
+    let parsed = teams.map(parseTeam);
+    if (!parsed.length || parsed.every(function (p) { return !Object.keys(p.byKey).length; })) {
+      const groups = (((summary || {}).boxscore || {}).players) || [];
+      parsed = groups.map(function (group) {
+        const abbr = get(group, "team.abbreviation", "TM");
+        const stats = (group.statistics || [])[0] || {};
+        const keys = stats.keys || [];
+        const totals = stats.totals || [];
+        const byKey = {};
+        keys.forEach(function (k, i) { if (totals[i] != null && totals[i] !== "") byKey[k] = String(totals[i]); });
+        return { abbr: abbr, byKey: byKey };
+      });
+    }
+    if (!parsed.length) return '<p class="home-game-empty">Team stats will appear once the game starts.</p>';
+    const seen = {};
+    const rows = [];
+    prefer.forEach(function (pair) {
+      const key = pair[0], label = pair[1];
+      if (seen[label]) return;
+      const vals = parsed.map(function (p) { return p.byKey[key]; });
+      if (vals.some(function (v) { return v != null; })) {
+        seen[label] = true;
+        rows.push({ label: label, vals: vals.map(function (v) { return v != null ? v : "—"; }) });
+      }
+    });
+    if (!rows.length) return '<p class="home-game-empty">Team stats unavailable.</p>';
+    const head = parsed.map(function (p) { return "<th>" + p.abbr + "</th>"; }).join("");
+    const body = rows.map(function (r) {
+      return "<tr><td style='text-align:left;font-weight:700;color:var(--mid);font-size:.72rem'>" + r.label + "</td>" +
+        r.vals.map(function (v) { return "<td>" + v + "</td>"; }).join("") + "</tr>";
+    }).join("");
+    return '<div style="padding:.65rem 1rem 1rem;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums"><thead><tr><th style="text-align:left">Stat</th>' + head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
+  }
+
   function logo(team) {
     return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
   }
@@ -1062,11 +1224,12 @@ listenToUpdates();
 
     let plays = Array.isArray(get(summary, "plays", null)) ? summary.plays.slice() : [];
     plays = plays.reverse().slice(0, 40);
+    const playerStatMap = buildPlayerStatMap(summary || {});
     const pbp = plays.length
       ? '<ul class="home-game-pbp">' + plays.map(p => {
           const n = get(p, "period.number", "");
           const clk = (n ? ("Q" + n + " ") : "") + (get(p, "clock.displayValue", "") || "");
-          const text = get(p, "text", "") || "—";
+          const text = enrichPlayText(get(p, "text", "") || "—", playerStatMap);
           const sc = (get(p, "awayScore", "") !== "" ? get(p, "awayScore", "") + "–" + get(p, "homeScore", "") : "");
           return '<li><span class="clk">' + clk + '</span><span>' + text + '</span><span class="sc">' + sc + "</span></li>";
         }).join("") + "</ul>"
@@ -1081,9 +1244,11 @@ listenToUpdates();
       '<div class="home-game-tabs">' +
         '<button type="button" class="home-game-tab' + (panel === "pbp" ? " on" : "") + '" data-hg-panel="pbp">Play-by-play</button>' +
         '<button type="button" class="home-game-tab' + (panel === "box" ? " on" : "") + '" data-hg-panel="box">Box score</button>' +
+        '<button type="button" class="home-game-tab' + (panel === "team" ? " on" : "") + '" data-hg-panel="team">Team stats</button>' +
       "</div>" +
       '<div class="hg-panel-pbp" style="' + (panel === "pbp" ? "" : "display:none") + '">' + pbp + "</div>" +
-      '<div class="hg-panel-box home-game-box" style="' + (panel === "box" ? "" : "display:none") + '">' + renderBox(summary || {}) + "</div>";
+      '<div class="hg-panel-box home-game-box" style="' + (panel === "box" ? "" : "display:none") + '">' + renderBox(summary || {}) + "</div>" +
+      '<div class="hg-panel-team" style="' + (panel === "team" ? "" : "display:none") + '">' + renderTeamStats(summary || {}) + "</div>";
 
     note.textContent = mode === "live" ? "Updates automatically" : "Full box score & PBP";
   }
@@ -1122,11 +1287,13 @@ listenToUpdates();
     const btn = e.target.closest("[data-hg-panel]");
     if (!btn) return;
     panel = btn.getAttribute("data-hg-panel") || "pbp";
-    document.querySelectorAll(".home-game-tab").forEach(b => b.classList.toggle("on", b === btn));
+    document.querySelectorAll(".home-game-tab").forEach(b => b.classList.toggle("on", b.getAttribute("data-hg-panel") === panel));
     const pbp = document.querySelector(".hg-panel-pbp");
     const box = document.querySelector(".hg-panel-box");
+    const team = document.querySelector(".hg-panel-team");
     if (pbp) pbp.style.display = panel === "pbp" ? "" : "none";
     if (box) box.style.display = panel === "box" ? "" : "none";
+    if (team) team.style.display = panel === "team" ? "" : "none";
   });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh);

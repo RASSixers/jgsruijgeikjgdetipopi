@@ -17,7 +17,7 @@ let lastGoodEventId = null;
 let pbpQuarterFilter = "all"; // "all" | 1 | 2 | 3 | 4 | 5+ for OT
 let lastDisplayedScoreKey = "";
 let lastPlaysFingerprint = "";
-let boardPanelTab = "pbp"; // "pbp" | "box"
+let boardPanelTab = "pbp"; // "pbp" | "box" | "team"
 let injuryByAbbr = {};
 let featuredEvent = null;
 let allEventsCache = [];
@@ -286,6 +286,180 @@ function buildPbpFilters(plays, status, isFinal) {
 }
 
 
+
+/** Map player display name → current box score totals */
+function buildPlayerStatMap(summary) {
+  const map = Object.create(null);
+  const groups = get(summary, "boxscore.players", []) || [];
+  groups.forEach(group => {
+    const stats = (group.statistics || [])[0] || {};
+    const keys = stats.keys || [];
+    const idx = {};
+    keys.forEach((k, i) => { idx[k] = i; });
+    (stats.athletes || []).forEach(a => {
+      const name = get(a, "athlete.displayName", "") || get(a, "athlete.shortName", "");
+      if (!name) return;
+      const st = a.stats || [];
+      const val = (k) => {
+        const i = idx[k];
+        return i != null && st[i] != null && st[i] !== "" ? st[i] : null;
+      };
+      const entry = {
+        pts: val("points"),
+        reb: val("rebounds"),
+        oreb: val("offensiveRebounds"),
+        dreb: val("defensiveRebounds"),
+        ast: val("assists"),
+        stl: val("steals"),
+        blk: val("blocks"),
+        to: val("turnovers")
+      };
+      map[name.toLowerCase()] = entry;
+      const parts = name.split(/\s+/);
+      if (parts.length >= 2) {
+        map[parts[parts.length - 1].toLowerCase()] = entry;
+        map[(parts[0][0] + ". " + parts[parts.length - 1]).toLowerCase()] = entry;
+      }
+    });
+  });
+  return map;
+}
+
+function lookupPlayerStat(map, name) {
+  if (!name || !map) return null;
+  const n = String(name).replace(/\s+/g, " ").trim().toLowerCase();
+  if (map[n]) return map[n];
+  const last = n.split(" ").pop();
+  if (last && map[last]) return map[last];
+  for (const k of Object.keys(map)) {
+    if (k === last || k.endsWith(" " + last) || last.endsWith(k)) return map[k];
+  }
+  return null;
+}
+
+/** Append live totals into PBP text */
+function enrichPlayText(raw, statMap) {
+  if (!raw || !statMap) return raw || "—";
+  let text = String(raw);
+
+  text = text.replace(/\(([A-Za-z.''\-\s]+?)\s+assists?\)/gi, function (_, name) {
+    const s = lookupPlayerStat(statMap, name);
+    if (!s || s.ast == null) return "(" + name.trim() + " assists)";
+    return "(" + name.trim() + " assists · " + s.ast + " AST)";
+  });
+
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+(offensive|defensive)\s+rebound\b/gi, function (m, name, kind) {
+    const s = lookupPlayerStat(statMap, name);
+    if (!s) return m;
+    const side = /^off/i.test(kind) ? "OREB" : "DREB";
+    const sideVal = /^off/i.test(kind) ? s.oreb : s.dreb;
+    const bits = [];
+    if (sideVal != null) bits.push(sideVal + " " + side);
+    if (s.reb != null) bits.push(s.reb + " REB");
+    return bits.length ? (m + " (" + bits.join(", ") + ")") : m;
+  });
+
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+rebound\b/gi, function (m, name) {
+    if (/offensive|defensive/i.test(m)) return m;
+    const s = lookupPlayerStat(statMap, name);
+    if (!s || s.reb == null) return m;
+    let extra = s.reb + " REB";
+    if (s.oreb != null || s.dreb != null) {
+      extra += " · " + (s.oreb != null ? s.oreb : "–") + " O / " + (s.dreb != null ? s.dreb : "–") + " D";
+    }
+    return m + " (" + extra + ")";
+  });
+
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+steal\b/gi, function (m, name) {
+    const s = lookupPlayerStat(statMap, name);
+    if (!s || s.stl == null) return m;
+    return m + " (" + s.stl + " STL)";
+  });
+
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+blocks?\b/gi, function (m, name) {
+    const s = lookupPlayerStat(statMap, name);
+    if (!s || s.blk == null) return m;
+    return m + " (" + s.blk + " BLK)";
+  });
+
+  text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+turnover\b/gi, function (m, name) {
+    const s = lookupPlayerStat(statMap, name);
+    if (!s || s.to == null) return m;
+    return m + " (" + s.to + " TO)";
+  });
+
+  text = text.replace(/^([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+)?)\s+(makes)\b/i, function (m, name, verb) {
+    const s = lookupPlayerStat(statMap, name);
+    if (!s || s.pts == null) return m;
+    return name + " " + verb + " [" + s.pts + " PTS]";
+  });
+
+  return text;
+}
+
+function renderTeamStatsHtml(summary) {
+  const teams = get(summary, "boxscore.teams", []) || [];
+  if (!teams.length) {
+    return `<p class="live-empty">Team stats will appear once the game starts.</p>`;
+  }
+  const prefer = [
+    ["fieldGoalsMade-fieldGoalsAttempted", "FG"],
+    ["fieldGoalPct", "FG%"],
+    ["threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3PT"],
+    ["threePointFieldGoalPct", "3P%"],
+    ["freeThrowsMade-freeThrowsAttempted", "FT"],
+    ["freeThrowPct", "FT%"],
+    ["totalRebounds", "REB"],
+    ["rebounds", "REB"],
+    ["offensiveRebounds", "OREB"],
+    ["defensiveRebounds", "DREB"],
+    ["assists", "AST"],
+    ["steals", "STL"],
+    ["blocks", "BLK"],
+    ["turnovers", "TO"],
+    ["points", "PTS"],
+    ["pointsInPaint", "PITP"],
+    ["fastBreakPoints", "FB PTS"],
+    ["pointsOffTurnovers", "PTS OFF TO"],
+    ["benchPoints", "BENCH"]
+  ];
+  const parsed = teams.map(t => {
+    const abbr = get(t, "team.abbreviation", "") || get(t, "team.shortDisplayName", "TM");
+    const statsArr = t.statistics || [];
+    const byKey = Object.create(null);
+    statsArr.forEach(s => {
+      const key = s.name || s.abbreviation || s.label || "";
+      const val = s.displayValue != null ? s.displayValue : (s.value != null ? String(s.value) : "—");
+      if (key) byKey[key] = val;
+      if (s.abbreviation) byKey[s.abbreviation] = val;
+    });
+    return { abbr, byKey, statsArr };
+  });
+  const seen = Object.create(null);
+  const rows = [];
+  prefer.forEach(([key, label]) => {
+    if (seen[label]) return;
+    const vals = parsed.map(p => p.byKey[key]);
+    if (vals.some(v => v != null && v !== "—")) {
+      seen[label] = true;
+      rows.push({ label, vals: vals.map(v => (v != null ? v : "—")) });
+    }
+  });
+  if (!rows.length && parsed[0]) {
+    parsed[0].statsArr.slice(0, 14).forEach(s => {
+      const label = s.abbreviation || s.displayName || s.name || "Stat";
+      const key = s.name || s.abbreviation;
+      rows.push({ label, vals: parsed.map(p => p.byKey[key] || "—") });
+    });
+  }
+  if (!rows.length) return `<p class="live-empty">Team stats unavailable for this game.</p>`;
+  const head = parsed.map(p => `<th>${p.abbr}</th>`).join("");
+  const body = rows.map(r =>
+    `<tr><td class="ts-label">${r.label}</td>${r.vals.map(v => `<td>${v}</td>`).join("")}</tr>`
+  ).join("");
+  return `<div class="team-stats-wrap"><table class="team-stats-table"><thead><tr><th>Stat</th>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
 function renderBoxScoreHtml(summary) {
   const groups = get(summary, "boxscore.players", []) || [];
   if (!groups.length) {
@@ -413,9 +587,11 @@ function renderLiveBoard(summary, event) {
   const filtersEl = body.querySelector(".pbp-filters");
   const hasShell = !!(scoreEl && (body.querySelector(".pbp-head-row") || body.querySelector(".board-panel-tabs")));
 
+  const playerStatMap = buildPlayerStatMap(summary);
   function playRowHtml(p) {
     const clock = formatPlayClock(p);
-    const text = get(p, "text", "") || get(p, "description", "") || "—";
+    const rawText = get(p, "text", "") || get(p, "description", "") || "—";
+    const text = enrichPlayText(rawText, playerStatMap);
     const sc = (get(p, "awayScore", "") !== "" && get(p, "homeScore", "") !== "")
       ? `${get(p, "awayScore", "")}–${get(p, "homeScore", "")}`
       : "";
@@ -430,8 +606,10 @@ function renderLiveBoard(summary, event) {
   // Fast path: shell exists — update score + prepend plays (don't block panel switching)
   const pbpPanel = body.querySelector(".panel-pbp");
   const boxPanel = body.querySelector(".panel-box");
+  const teamPanel = body.querySelector(".panel-team");
   if (pbpPanel) pbpPanel.style.display = boardPanelTab === "pbp" ? "" : "none";
   if (boxPanel) boxPanel.style.display = boardPanelTab === "box" ? "" : "none";
+  if (teamPanel) teamPanel.style.display = boardPanelTab === "team" ? "" : "none";
   body.querySelectorAll("[data-board-panel]").forEach(b => {
     const on = b.getAttribute("data-board-panel") === boardPanelTab;
     b.classList.toggle("on", on);
@@ -488,10 +666,14 @@ function renderLiveBoard(summary, event) {
       }
     }
 
-    // Keep box score fresh without full re-render
+    // Keep box / team stats fresh without full re-render
     const boxWrap = body.querySelector(".box-score");
     if (boxWrap && boardPanelTab === "box") {
       boxWrap.innerHTML = renderBoxScoreHtml(summary);
+    }
+    const teamWrap = body.querySelector(".panel-team");
+    if (teamWrap && boardPanelTab === "team") {
+      teamWrap.innerHTML = renderTeamStatsHtml(summary);
     }
     lastPlaysFingerprint = fingerprint;
     body.dataset.pbpFilter = String(pbpQuarterFilter);
@@ -513,8 +695,10 @@ function renderLiveBoard(summary, event) {
   const panelTabs = `<div class="board-panel-tabs" role="tablist">
       <button type="button" class="board-panel-tab${boardPanelTab === "pbp" ? " on" : ""}" data-board-panel="pbp">Play-by-play</button>
       <button type="button" class="board-panel-tab${boardPanelTab === "box" ? " on" : ""}" data-board-panel="box">Box score</button>
+      <button type="button" class="board-panel-tab${boardPanelTab === "team" ? " on" : ""}" data-board-panel="team">Team stats</button>
     </div>`;
   const boxHtml = renderBoxScoreHtml(summary);
+  const teamHtml = renderTeamStatsHtml(summary);
   const pbpBlock = `<div class="board-panel panel-pbp" style="${boardPanelTab === "pbp" ? "" : "display:none"}">
       <div class="pbp-head-row">
         <div class="pbp-head">Play-by-play</div>
@@ -524,6 +708,9 @@ function renderLiveBoard(summary, event) {
     </div>
     <div class="board-panel panel-box" style="${boardPanelTab === "box" ? "" : "display:none"}">
       <div class="box-score">${boxHtml}</div>
+    </div>
+    <div class="board-panel panel-team" style="${boardPanelTab === "team" ? "" : "display:none"}">
+      ${teamHtml}
     </div>`;
 
   body.innerHTML = `

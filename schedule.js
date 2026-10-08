@@ -434,7 +434,7 @@ function renderTeamStatsHtml(summary) {
     ["fastBreakPoints", "FB PTS"],
     ["pointsOffTurnovers", "PTS OFF TO"],
     ["benchPoints", "BENCH"],
-    ["largestLead", "LEAD"]
+    ["largestLead", "Largest Lead"]
   ];
 
   function parseTeamEntry(t) {

@@ -151,12 +151,12 @@
 
   /* —— Articles (text-first editorial) —— */
   .news-section {
-    background: #f8fafc;
-    padding: 2.25rem 0 3.25rem;
+    background: #f7f8fb;
+    padding: 2.5rem 0 3.5rem;
     border-top: 1px solid var(--border-light);
   }
   .news-inner {
-    max-width: 960px;
+    max-width: 720px;
     margin: 0 auto;
     padding: 0 1.25rem;
   }
@@ -165,121 +165,122 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.15rem;
+    margin-bottom: 1.35rem;
   }
   .news-eyebrow {
     display: block;
     font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--sixers-blue);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.3rem;
   }
   .news-title {
-    font-size: clamp(1.35rem, 3vw, 1.7rem);
+    font-size: clamp(1.4rem, 3vw, 1.75rem);
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     color: var(--ink);
     margin: 0;
   }
   .news-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0;
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   }
+  /* Featured = first row, stronger type */
   .news-feature {
     display: block;
     text-decoration: none;
     color: inherit;
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 1.35rem 1.35rem 1.25rem;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    padding: 1.5rem 1.5rem 1.4rem;
+    border-bottom: 1px solid #eef1f6;
+    transition: background 0.15s;
   }
-  .news-feature:hover {
-    border-color: rgba(0, 107, 182, 0.3);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  }
+  .news-feature:hover { background: #fafbfd; }
   .news-feature .news-tag {
     display: inline-block;
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.85rem;
   }
   .news-feature-title {
-    font-size: clamp(1.2rem, 2.8vw, 1.55rem);
+    font-size: clamp(1.25rem, 3vw, 1.65rem);
     font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.25;
-    margin: 0 0 0.65rem;
+    letter-spacing: -0.03em;
+    line-height: 1.22;
+    margin: 0 0 0.7rem;
     color: var(--ink);
   }
   .news-feature-excerpt {
-    font-size: 0.92rem;
-    line-height: 1.6;
-    color: var(--mid);
-    margin: 0 0 1rem;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #5b6577;
+    margin: 0 0 1.1rem;
+    max-width: 38rem;
   }
   .news-feature-meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.4rem 0.5rem;
+    gap: 0.35rem 0.55rem;
     font-size: 0.75rem;
-    color: var(--mid);
+    color: #8b95a8;
     font-weight: 500;
-    padding-top: 0.85rem;
-    border-top: 1px solid #f1f5f9;
   }
   .news-feature-meta .news-read {
     margin-left: auto;
     font-weight: 700;
     color: var(--sixers-blue);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
   }
   .news-stack {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.65rem;
-  }
-  @media (min-width: 640px) {
-    .news-stack {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-  .news-row {
     display: flex;
     flex-direction: column;
-    gap: 0;
-    padding: 1.05rem 1.15rem;
+  }
+  .news-row {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 0.85rem 1rem;
+    align-items: start;
+    padding: 1.15rem 1.4rem;
     text-decoration: none;
     color: inherit;
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    min-height: 100%;
+    border-bottom: 1px solid #eef1f6;
+    transition: background 0.12s;
   }
-  .news-row:hover {
-    border-color: rgba(0, 107, 182, 0.28);
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  .news-row:last-child { border-bottom: none; }
+  .news-row:hover { background: #fafbfd; }
+  .news-row-date {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    padding-top: 0.15rem;
   }
+  .news-row-body { min-width: 0; }
   .news-row .news-tag {
     display: inline-block;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.45rem;
   }
   .news-row-title {
-    font-size: 0.98rem;
+    font-size: 1.02rem;
     font-weight: 700;
     line-height: 1.35;
     margin: 0 0 0.35rem;
     color: var(--ink);
+    letter-spacing: -0.015em;
   }
+  .news-row:hover .news-row-title { color: var(--sixers-blue); }
   .news-row-excerpt {
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     line-height: 1.5;
-    color: var(--mid);
-    margin: 0 0 0.45rem;
+    color: #6b7280;
+    margin: 0 0 0.4rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -294,24 +295,78 @@
     font-weight: 500;
   }
   .news-tag {
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
     color: var(--sixers-blue);
     background: rgba(0, 107, 182, 0.07);
     border: 1px solid rgba(0, 107, 182, 0.12);
-    padding: 4px 9px;
+    padding: 3px 8px;
     border-radius: 999px;
   }
   .news-empty, .news-loading {
-    padding: 2rem 1.25rem;
+    padding: 2.25rem 1.25rem;
     text-align: center;
     color: var(--mid);
     font-size: 0.9rem;
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
+  }
+  /* Homepage team stats — match schedule page */
+  .hg-panel-team { padding: 0; }
+  .hg-panel-team .team-stats-wrap {
+    padding: 0.65rem 1rem 1rem;
+    overflow-x: auto;
+  }
+  .hg-panel-team .team-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .hg-panel-team .team-stats-table th,
+  .hg-panel-team .team-stats-table td {
+    padding: 0.4rem 0.55rem;
+    text-align: right;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .hg-panel-team .team-stats-table th:first-child,
+  .hg-panel-team .team-stats-table td.ts-label {
+    text-align: left;
+    font-weight: 700;
+    color: var(--mid);
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+  }
+  .hg-panel-team .team-stats-table th {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .hg-panel-team .team-stats-table tbody tr:hover {
+    background: rgba(0, 107, 182, 0.04);
+  }
+
+  @media (min-width: 768px) {
+    .news-inner { padding: 0 2rem; max-width: 760px; }
+    .news-section { padding: 3rem 0 4rem; }
+    .news-feature { padding: 1.75rem 1.75rem 1.55rem; }
+    .news-row { padding: 1.25rem 1.6rem; grid-template-columns: 5rem minmax(0, 1fr); }
+  }
+  @media (max-width: 767px) {
+    .news-feature { padding: 1.2rem 1.1rem 1.15rem; }
+    .news-feature-meta .news-read {
+      margin-left: 0;
+      width: 100%;
+      margin-top: 0.2rem;
+    }
+    .news-row {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+      padding: 1rem 1.05rem;
+    }
+    .news-row-date { order: 2; font-size: 0.68rem; }
   }
 
   @media (min-width: 768px) {
@@ -349,17 +404,7 @@
     .feature-card { padding: 0.75rem 0.7rem; }
     .feature-card-desc { display: none; }
     .news-section { padding: 1.5rem 0 2.5rem; }
-    .news-feature { padding: 1.15rem 1.05rem 1.05rem; }
-    .news-feature .news-tag { margin-bottom: 0.65rem; }
-    .news-feature-title { margin-bottom: 0.55rem; }
-    .news-feature-meta .news-read {
-      margin-left: 0;
-      width: 100%;
-      margin-top: 0.15rem;
-    }
-    .news-row { padding: 0.95rem 1rem; }
-    .news-row .news-tag { margin-bottom: 0.45rem; }
-  }
+}
   @media (max-width: 480px) {
     .hero-title-top,
     .hero-title-bottom { font-size: clamp(1.9rem, 11vw, 2.4rem); }
@@ -752,14 +797,22 @@ function renderNews(articles) {
       '</div>' +
     '</a>';
 
+  function shortDate(d) {
+    if (!d || isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
   const listHtml = rest.map(function (a) {
     const color = CATEGORY_COLORS[a.category] || '#006bb6';
+    const when = toDate(a.createdAt);
     return (
       '<a href="' + articleUrl(a) + '" class="news-row">' +
-        '<span class="news-tag" style="color:' + color + ';border-color:' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
-        '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
-        (a.excerpt ? '<p class="news-row-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
-        '<div class="news-row-meta"><span>' + escapeHtml(byline(a)) + '</span><span>·</span><span>' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</span></div>' +
+        '<span class="news-row-date">' + escapeHtml(shortDate(when) || timeAgo(when)) + '</span>' +
+        '<div class="news-row-body">' +
+          '<span class="news-tag" style="color:' + color + ';border-color:' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
+          '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
+          (a.excerpt ? '<p class="news-row-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
+          '<div class="news-row-meta"><span>' + escapeHtml(byline(a)) + '</span></div>' +
+        '</div>' +
       '</a>'
     );
   }).join('');
@@ -1031,12 +1084,26 @@ listenToUpdates();
   function renderTeamStats(summary) {
     const teams = (((summary || {}).boxscore || {}).teams) || [];
     const prefer = [
-      ["fieldGoalsMade-fieldGoalsAttempted", "FG"], ["fieldGoalPct", "FG%"],
-      ["threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3PT"], ["threePointFieldGoalPct", "3P%"],
-      ["freeThrowsMade-freeThrowsAttempted", "FT"], ["freeThrowPct", "FT%"],
-      ["totalRebounds", "REB"], ["rebounds", "REB"], ["offensiveRebounds", "OREB"], ["defensiveRebounds", "DREB"],
-      ["assists", "AST"], ["steals", "STL"], ["blocks", "BLK"], ["turnovers", "TO"], ["points", "PTS"],
-      ["pointsInPaint", "PITP"], ["fastBreakPoints", "FB PTS"], ["pointsOffTurnovers", "PTS OFF TO"], ["benchPoints", "BENCH"]
+      ["fieldGoalsMade-fieldGoalsAttempted", "FG"],
+      ["fieldGoalPct", "FG%"],
+      ["threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3PT"],
+      ["threePointFieldGoalPct", "3P%"],
+      ["freeThrowsMade-freeThrowsAttempted", "FT"],
+      ["freeThrowPct", "FT%"],
+      ["totalRebounds", "REB"],
+      ["rebounds", "REB"],
+      ["offensiveRebounds", "OREB"],
+      ["defensiveRebounds", "DREB"],
+      ["assists", "AST"],
+      ["steals", "STL"],
+      ["blocks", "BLK"],
+      ["turnovers", "TO"],
+      ["points", "PTS"],
+      ["pointsInPaint", "PITP"],
+      ["fastBreakPoints", "FB PTS"],
+      ["pointsOffTurnovers", "PTS OFF TO"],
+      ["benchPoints", "BENCH"],
+      ["largestLead", "Largest Lead"]
     ];
     function parseTeam(t) {
       const abbr = get(t, "team.abbreviation", "") || get(t, "team.shortDisplayName", "TM");
@@ -1045,7 +1112,9 @@ listenToUpdates();
         if (!s) return;
         const val = s.displayValue != null ? s.displayValue : (s.value != null ? String(s.value) : null);
         if (val == null) return;
-        [s.name, s.abbreviation, s.label, s.displayName].forEach(function (k) { if (k) byKey[k] = val; });
+        [s.name, s.abbreviation, s.label, s.displayName].forEach(function (k) {
+          if (k) byKey[k] = val;
+        });
       });
       return { abbr: abbr, byKey: byKey };
     }
@@ -1058,11 +1127,15 @@ listenToUpdates();
         const keys = stats.keys || [];
         const totals = stats.totals || [];
         const byKey = {};
-        keys.forEach(function (k, i) { if (totals[i] != null && totals[i] !== "") byKey[k] = String(totals[i]); });
+        keys.forEach(function (k, i) {
+          if (totals[i] != null && totals[i] !== "") byKey[k] = String(totals[i]);
+        });
         return { abbr: abbr, byKey: byKey };
       });
     }
-    if (!parsed.length) return '<p class="home-game-empty">Team stats will appear once the game starts.</p>';
+    if (!parsed.length) {
+      return '<p class="home-game-empty">Team stats will appear once the game starts.</p>';
+    }
     const seen = {};
     const rows = [];
     prefer.forEach(function (pair) {
@@ -1074,14 +1147,18 @@ listenToUpdates();
         rows.push({ label: label, vals: vals.map(function (v) { return v != null ? v : "—"; }) });
       }
     });
-    if (!rows.length) return '<p class="home-game-empty">Team stats unavailable.</p>';
+    if (!rows.length) {
+      return '<p class="home-game-empty">Team stats unavailable.</p>';
+    }
     const head = parsed.map(function (p) { return "<th>" + p.abbr + "</th>"; }).join("");
     const body = rows.map(function (r) {
-      return "<tr><td style='text-align:left;font-weight:700;color:var(--mid);font-size:.72rem'>" + r.label + "</td>" +
+      return '<tr><td class="ts-label">' + r.label + "</td>" +
         r.vals.map(function (v) { return "<td>" + v + "</td>"; }).join("") + "</tr>";
     }).join("");
-    return '<div style="padding:.65rem 1rem 1rem;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums"><thead><tr><th style="text-align:left">Stat</th>' + head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
+    return '<div class="team-stats-wrap"><table class="team-stats-table"><thead><tr><th>Stat</th>' +
+      head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
   }
+
 
   function logo(team) {
     return get(team, "logos.0.href", "") || get(team, "logo", "") || "";

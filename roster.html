@@ -755,8 +755,24 @@ const $=(s)=>document.querySelector(s);
 const $$=(s)=>document.querySelectorAll(s);
 const initials=(n)=>n.split(' ').filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase();
 const fmt$=(n)=> n==null ? null : '$'+n.toLocaleString('en-US');
-const heightToInches=(h)=>{const m=h.match(/(\d+)'(\d+)/); return m?+m[1]*12+ +m[2]:0;};
-const inchesToHt=(i)=>{const f=Math.floor(i/12), r=Math.round(i%12); return `${f}'${r}"`;};
+const heightToInches=(h)=>{
+  if (h == null || h === '' || h === '—') return 0;
+  if (typeof h === 'number' && isFinite(h)) return h; // already inches
+  const s = String(h).replace(/[′’]/g, "'").replace(/[″”]/g, '"');
+  // "6' 9\"" or "6'9\"" or "6-9"
+  let m = s.match(/(\d+)\s*'\s*(\d+)/);
+  if (m) return (+m[1]) * 12 + (+m[2]);
+  m = s.match(/(\d+)\s*-\s*(\d+)/);
+  if (m) return (+m[1]) * 12 + (+m[2]);
+  m = s.match(/^(\d+(?:\.\d+)?)\s*(?:in|inches)?$/i);
+  if (m) return +m[1];
+  return 0;
+};
+const inchesToHt=(i)=>{
+  if (!i || !isFinite(i)) return '—';
+  const f = Math.floor(i / 12), r = Math.round(i % 12);
+  return f + "'" + r + '"';
+};
 // Official NBA.com person IDs (scraped from nba.com/team/1610612755/sixers)
 const NBA_PERSON_IDS = {
   "Joel Embiid": 203954,
@@ -830,6 +846,7 @@ function mapEspnPlayer(a) {
     jersey: String(a.jersey != null ? a.jersey : "—"),
     age: a.age || "—",
     ht: a.displayHeight || "—",
+    heightInches: (typeof a.height === "number" && isFinite(a.height)) ? a.height : heightToInches(a.displayHeight || ""),
     wt: a.displayWeight || "—",
     college: (a.college && (a.college.name || a.college)) || "—",
     drafted: "—",
@@ -863,14 +880,15 @@ async function loadRosterFromEspn() {
 
 
 function renderHero(){
-  const total=ROSTER.length;
-  const ages=ROSTER.map(p=>p.age);
-  const avgAge=(ages.reduce((a,b)=>a+b,0)/total).toFixed(1);
-  const avgHt=inchesToHt(ROSTER.map(p=>heightToInches(p.ht)).reduce((a,b)=>a+b,0)/total);
-  $('#mPlayers').textContent=total;
-  $('#mAge').textContent=avgAge;
-  $('#mHt').textContent=avgHt;
-  $('#rcount').textContent=String(total).padStart(2,'0')+' Players';
+  const total = ROSTER.length;
+  const ages = ROSTER.map(p => Number(p.age)).filter(n => isFinite(n) && n > 0);
+  const avgAge = ages.length ? (ages.reduce((a, b) => a + b, 0) / ages.length).toFixed(1) : "—";
+  const heights = ROSTER.map(p => (p.heightInches != null ? Number(p.heightInches) : heightToInches(p.ht))).filter(n => isFinite(n) && n > 0);
+  const avgHt = heights.length ? inchesToHt(heights.reduce((a, b) => a + b, 0) / heights.length) : "—";
+  $('#mPlayers').textContent = total;
+  $('#mAge').textContent = avgAge;
+  $('#mHt').textContent = avgHt;
+  $('#rcount').textContent = String(total).padStart(2, '0') + ' Players';
 }
 
 function cardHTML(p,i){

@@ -314,13 +314,7 @@
   }
   .photo img.loaded { opacity: 1; }
   .card:hover .photo img { transform: scale(1.05); }
-  .photo .initials {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 3.5rem;
-    color: rgba(13,15,26,0.15);
-    letter-spacing: -0.02em;
-  }
+
 
   .meta {
     padding: 0.95rem 1.1rem 1.05rem;
@@ -460,13 +454,7 @@
     background: radial-gradient(ellipse at 50% 35%, rgba(0,107,182,0.14), transparent 60%);
   }
   .modal-photo img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-  .modal-photo .initials {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 5rem;
-    color: rgba(13,15,26,0.15);
-    letter-spacing: -0.02em;
-  }
+
 
   .modal-headline {
     padding: 1.9rem 2rem;
@@ -769,49 +757,49 @@ const initials=(n)=>n.split(' ').filter(Boolean).map(x=>x[0]).join('').slice(0,2
 const fmt$=(n)=> n==null ? null : '$'+n.toLocaleString('en-US');
 const heightToInches=(h)=>{const m=h.match(/(\d+)'(\d+)/); return m?+m[1]*12+ +m[2]:0;};
 const inchesToHt=(i)=>{const f=Math.floor(i/12), r=Math.round(i%12); return `${f}'${r}"`;};
-// NBA.com person IDs (for current Sixers headshots on CDN)
+// Official NBA.com person IDs (scraped from nba.com/team/1610612755/sixers)
 const NBA_PERSON_IDS = {
   "Joel Embiid": 203954,
   "Tyrese Maxey": 1630178,
   "Jaylen Brown": 1627759,
   "LeBron James": 2544,
+  "VJ Edgecombe": 1642845,
   "Anfernee Simons": 1629014,
-  "Kentavious Caldwell-Pope": 203484,
   "Dean Wade": 1629731,
+  "Kentavious Caldwell-Pope": 203484,
   "Justin Edwards": 1642348,
   "Adem Bona": 1641737,
-  "VJ Edgecombe": 1642862,
+  "Labaron Philon Jr.": 1642889,
+  "Labaron Philon": 1642889,
   "Jabari Walker": 1631133,
-  "Dominick Barlow": 1630547,
-  "Ariel Hukporti": 1641754,
+  "Dominick Barlow": 1631230,
+  "Ariel Hukporti": 1630574,
   "Rayan Rupert": 1641712,
-  "Dillon Jones": 1642272,
-  "Caleb Love": 1631120,
-  "Labaron Philon Jr.": 1642875,
+  "Caleb Love": 1631126,
+  "Dillon Jones": 1641794,
+  "Saint Thomas": 1643148,
   "Tacko Fall": 1629605,
-  "Jameer Nelson Jr.": 1630576,
-  "Duke Miles": 1642910,
-  "Saint Thomas": 1642911
+  "Duke Miles": 1643575,
+  "Jameer Nelson Jr.": 1642392,
+  "Jameer Nelson": 1642392
 };
 
 function photoURL(p) {
-  // Prefer NBA CDN (latest season headshots) when we have a person ID
   const nbaId = p.nbaId || NBA_PERSON_IDS[p.name];
+  // Prefer high-res NBA CDN (latest season headshots)
   if (nbaId) return "https://cdn.nba.com/headshots/nba/latest/1040x760/" + nbaId + ".png";
-  // ESPN full headshot (works for rookies / two-ways)
+  // ESPN fallback for anyone not in the map yet
   if (p.espnId) return "https://a.espncdn.com/i/headshots/nba/players/full/" + p.espnId + ".png";
   if (p.headshot) return p.headshot;
   return "";
 }
 function photoFallback(p) {
-  if (p.headshot) return p.headshot;
-  if (p.espnId) return "https://a.espncdn.com/i/headshots/nba/players/full/" + p.espnId + ".png";
   const nbaId = p.nbaId || NBA_PERSON_IDS[p.name];
   if (nbaId) return "https://cdn.nba.com/headshots/nba/latest/260x190/" + nbaId + ".png";
-  // Generic silhouette
-  return "https://cdn.nba.com/headshots/nba/latest/260x190/fallback.png";
+  if (p.espnId) return "https://a.espncdn.com/i/headshots/nba/players/full/" + p.espnId + ".png";
+  if (p.headshot) return p.headshot;
+  return "";
 }
-
 
 function mapEspnPlayer(a) {
   const pos = (a.position && a.position.abbreviation) || (a.position && a.position.displayName) || "—";
@@ -824,9 +812,11 @@ function mapEspnPlayer(a) {
 
   const name = a.displayName || a.fullName || "Player";
   const extra = ROSTER_EXTRAS[name] || {};
-  const espnId = a.id || "";
+  const espnId = a.id ? String(a.id) : "";
   const nbaId = NBA_PERSON_IDS[name] || null;
-  const headshot = (a.headshot && a.headshot.href) || (espnId ? ("https://a.espncdn.com/i/headshots/nba/players/full/" + espnId + ".png") : "");
+  const headshot = nbaId
+    ? ("https://cdn.nba.com/headshots/nba/latest/1040x760/" + nbaId + ".png")
+    : ((a.headshot && a.headshot.href) || (espnId ? ("https://a.espncdn.com/i/headshots/nba/players/full/" + espnId + ".png") : ""));
   const contract = a.contract || {};
   const salary = extra.salary != null ? extra.salary : (contract.salary != null ? Number(contract.salary) : null);
   const expYears = a.experience && (a.experience.years != null) ? a.experience.years : null;
@@ -930,7 +920,9 @@ function render(){
 function openModal(p){
   $('#mFileId').textContent=p.name;
   $('#mPhoto').innerHTML=`
-    <img src="${p.photo ?? photoURL(p)}" alt="${p.name}" onerror="this.onerror=null;this.src='${p.photoFallback ?? photoFallback(p)}';this.addEventListener('error',()=>this.style.display='none',{once:true})" />`;
+    <img src="${p.photo ?? photoURL(p)}" alt="${p.name}"
+         onload="this.classList.add('loaded')"
+         onerror="this.onerror=null;this.src='${p.photoFallback ?? photoFallback(p)}';this.addEventListener('error',()=>this.style.display='none',{once:true})" />`;
   const tags=[`<span class="tag pos">${p.pos}</span>`,
               `<span class="tag num">#${p.jersey}</span>`,
               p.isTwoWay?`<span class="tag gold">Two-Way</span>`:'',

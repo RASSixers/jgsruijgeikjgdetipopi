@@ -769,8 +769,48 @@ const initials=(n)=>n.split(' ').filter(Boolean).map(x=>x[0]).join('').slice(0,2
 const fmt$=(n)=> n==null ? null : '$'+n.toLocaleString('en-US');
 const heightToInches=(h)=>{const m=h.match(/(\d+)'(\d+)/); return m?+m[1]*12+ +m[2]:0;};
 const inchesToHt=(i)=>{const f=Math.floor(i/12), r=Math.round(i%12); return `${f}'${r}"`;};
-const photoURL=(p)=> p.headshot || (p.id && !isNaN(p.id) ? `https://cdn.nba.com/headshots/nba/latest/1040x760/${p.id}.png` : "");
-const photoFallback=(p)=> p.headshot || (p.id && !isNaN(p.id) ? `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${p.id}.png` : "");
+// NBA.com person IDs (for current Sixers headshots on CDN)
+const NBA_PERSON_IDS = {
+  "Joel Embiid": 203954,
+  "Tyrese Maxey": 1630178,
+  "Jaylen Brown": 1627759,
+  "LeBron James": 2544,
+  "Anfernee Simons": 1629014,
+  "Kentavious Caldwell-Pope": 203484,
+  "Dean Wade": 1629731,
+  "Justin Edwards": 1642348,
+  "Adem Bona": 1641737,
+  "VJ Edgecombe": 1642862,
+  "Jabari Walker": 1631133,
+  "Dominick Barlow": 1630547,
+  "Ariel Hukporti": 1641754,
+  "Rayan Rupert": 1641712,
+  "Dillon Jones": 1642272,
+  "Caleb Love": 1631120,
+  "Labaron Philon Jr.": 1642875,
+  "Tacko Fall": 1629605,
+  "Jameer Nelson Jr.": 1630576,
+  "Duke Miles": 1642910,
+  "Saint Thomas": 1642911
+};
+
+function photoURL(p) {
+  // Prefer NBA CDN (latest season headshots) when we have a person ID
+  const nbaId = p.nbaId || NBA_PERSON_IDS[p.name];
+  if (nbaId) return "https://cdn.nba.com/headshots/nba/latest/1040x760/" + nbaId + ".png";
+  // ESPN full headshot (works for rookies / two-ways)
+  if (p.espnId) return "https://a.espncdn.com/i/headshots/nba/players/full/" + p.espnId + ".png";
+  if (p.headshot) return p.headshot;
+  return "";
+}
+function photoFallback(p) {
+  if (p.headshot) return p.headshot;
+  if (p.espnId) return "https://a.espncdn.com/i/headshots/nba/players/full/" + p.espnId + ".png";
+  const nbaId = p.nbaId || NBA_PERSON_IDS[p.name];
+  if (nbaId) return "https://cdn.nba.com/headshots/nba/latest/260x190/" + nbaId + ".png";
+  // Generic silhouette
+  return "https://cdn.nba.com/headshots/nba/latest/260x190/fallback.png";
+}
 
 
 function mapEspnPlayer(a) {
@@ -784,15 +824,17 @@ function mapEspnPlayer(a) {
 
   const name = a.displayName || a.fullName || "Player";
   const extra = ROSTER_EXTRAS[name] || {};
-  const nbaId = (a.alternateIds && a.alternateIds.sdr) || a.id || "";
-  const headshot = (a.headshot && a.headshot.href) || "";
+  const espnId = a.id || "";
+  const nbaId = NBA_PERSON_IDS[name] || null;
+  const headshot = (a.headshot && a.headshot.href) || (espnId ? ("https://a.espncdn.com/i/headshots/nba/players/full/" + espnId + ".png") : "");
   const contract = a.contract || {};
   const salary = extra.salary != null ? extra.salary : (contract.salary != null ? Number(contract.salary) : null);
   const expYears = a.experience && (a.experience.years != null) ? a.experience.years : null;
   return {
     name,
-    id: String(nbaId || a.id || name),
-    espnId: a.id,
+    id: String(nbaId || espnId || name),
+    nbaId,
+    espnId,
     pos: p0.charAt(0) === "G" ? "G" : (p0.charAt(0) === "C" ? "C" : "F"),
     cat,
     jersey: String(a.jersey != null ? a.jersey : "—"),

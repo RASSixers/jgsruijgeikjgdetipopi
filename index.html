@@ -149,159 +149,198 @@
   .feature-card-desc { font-size: 0.68rem; color: var(--mid); line-height: 1.4; flex: 1; }
   .feature-card-arrow { margin-top: 0.25rem; color: var(--sixers-blue); font-weight: 700; font-size: 0.85rem; }
 
-  /* —— Articles (text-first editorial) —— */
+  /* —— Articles: open magazine layout (text-only) —— */
   .news-section {
-    background: #f7f8fb;
-    padding: 2.5rem 0 3.5rem;
+    background: var(--cream);
+    padding: 2.75rem 0 3.75rem;
     border-top: 1px solid var(--border-light);
   }
   .news-inner {
-    max-width: 720px;
+    max-width: 960px;
     margin: 0 auto;
     padding: 0 1.25rem;
   }
   .news-heading {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.35rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 2px solid var(--ink);
   }
   .news-eyebrow {
     display: block;
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--sixers-blue);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
   }
   .news-title {
-    font-size: clamp(1.4rem, 3vw, 1.75rem);
+    font-size: clamp(1.35rem, 2.8vw, 1.65rem);
     font-weight: 800;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
     color: var(--ink);
     margin: 0;
   }
   .news-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
   }
-  /* Featured = first row, stronger type */
+  /* Lead story */
   .news-feature {
     display: block;
     text-decoration: none;
     color: inherit;
-    padding: 1.5rem 1.5rem 1.4rem;
-    border-bottom: 1px solid #eef1f6;
-    transition: background 0.15s;
+    padding: 0 0 0 1.15rem;
+    border: none;
+    border-left: 4px solid var(--sixers-blue);
+    background: transparent;
+    transition: border-color 0.15s;
   }
-  .news-feature:hover { background: #fafbfd; }
+  .news-feature:hover { border-left-color: var(--sixers-red); }
+  .news-feature .news-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.65rem;
+    margin-bottom: 0.7rem;
+  }
   .news-feature .news-tag {
     display: inline-block;
-    margin: 0 0 0.85rem;
+    margin: 0;
   }
   .news-feature-title {
-    font-size: clamp(1.25rem, 3vw, 1.65rem);
+    font-size: clamp(1.55rem, 4vw, 2.15rem);
     font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.22;
-    margin: 0 0 0.7rem;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
+    margin: 0 0 0.75rem;
     color: var(--ink);
   }
+  .news-feature:hover .news-feature-title { color: var(--sixers-blue); }
   .news-feature-excerpt {
-    font-size: 0.95rem;
+    font-size: 1.02rem;
     line-height: 1.65;
-    color: #5b6577;
+    color: #4b5563;
     margin: 0 0 1.1rem;
-    max-width: 38rem;
+    max-width: 40rem;
   }
   .news-feature-meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem 0.55rem;
-    font-size: 0.75rem;
-    color: #8b95a8;
+    gap: 0.4rem 0.55rem;
+    font-size: 0.78rem;
+    color: #6b7280;
     font-weight: 500;
+    padding: 0;
+    border: none;
   }
   .news-feature-meta .news-read {
     margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     font-weight: 700;
-    color: var(--sixers-blue);
-    font-size: 0.8rem;
+    color: #fff;
+    background: var(--sixers-blue);
+    font-size: 0.75rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    transition: background 0.15s;
   }
+  .news-feature:hover .news-read { background: #0057a0; }
+
+  /* More stories — open grid, no outer box */
   .news-stack {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--border-light);
+  }
+  .news-stack-label {
+    grid-column: 1 / -1;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin: 0.35rem 0 0.15rem;
   }
   .news-row {
-    display: grid;
-    grid-template-columns: 4.5rem minmax(0, 1fr);
-    gap: 0.85rem 1rem;
-    align-items: start;
-    padding: 1.15rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1.1rem;
     text-decoration: none;
     color: inherit;
-    border-bottom: 1px solid #eef1f6;
-    transition: background 0.12s;
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    min-height: 0;
   }
-  .news-row:last-child { border-bottom: none; }
-  .news-row:hover { background: #fafbfd; }
-  .news-row-date {
+  .news-row:hover {
+    border-color: rgba(0, 107, 182, 0.35);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+  }
+  .news-row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .news-row .news-tag { margin: 0; }
+  .news-row-time {
     font-size: 0.7rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #94a3b8;
-    letter-spacing: 0.02em;
-    line-height: 1.35;
-    padding-top: 0.15rem;
-  }
-  .news-row-body { min-width: 0; }
-  .news-row .news-tag {
-    display: inline-block;
-    margin: 0 0 0.45rem;
+    white-space: nowrap;
   }
   .news-row-title {
     font-size: 1.02rem;
     font-weight: 700;
-    line-height: 1.35;
-    margin: 0 0 0.35rem;
+    line-height: 1.3;
+    margin: 0;
     color: var(--ink);
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
   }
   .news-row:hover .news-row-title { color: var(--sixers-blue); }
   .news-row-excerpt {
     font-size: 0.84rem;
     line-height: 1.5;
     color: #6b7280;
-    margin: 0 0 0.4rem;
+    margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
   .news-row-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
     font-size: 0.72rem;
     color: #94a3b8;
     font-weight: 500;
+    margin-top: 0.15rem;
   }
   .news-tag {
     font-size: 0.58rem;
     font-weight: 700;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--sixers-blue);
-    background: rgba(0, 107, 182, 0.07);
-    border: 1px solid rgba(0, 107, 182, 0.12);
+    background: rgba(0, 107, 182, 0.08);
+    border: 1px solid rgba(0, 107, 182, 0.14);
     padding: 3px 8px;
     border-radius: 999px;
   }
@@ -310,7 +349,31 @@
     text-align: center;
     color: var(--mid);
     font-size: 0.9rem;
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
   }
+  @media (min-width: 700px) {
+    .news-stack {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+    }
+    .news-feature-title { max-width: 42rem; }
+  }
+  @media (min-width: 768px) {
+    .news-inner { padding: 0 2rem; }
+    .news-section { padding: 3.25rem 0 4.25rem; }
+  }
+  @media (max-width: 699px) {
+    .news-feature { padding-left: 0.9rem; }
+    .news-feature-meta .news-read {
+      margin-left: 0;
+      width: 100%;
+      justify-content: center;
+      margin-top: 0.35rem;
+    }
+  }
+
   /* Homepage team stats — match schedule page */
   .hg-panel-team { padding: 0; }
   .hg-panel-team .team-stats-wrap {
@@ -349,34 +412,16 @@
   }
 
   @media (min-width: 768px) {
-    .news-inner { padding: 0 2rem; max-width: 760px; }
-    .news-section { padding: 3rem 0 4rem; }
-    .news-feature { padding: 1.75rem 1.75rem 1.55rem; }
-    .news-row { padding: 1.25rem 1.6rem; grid-template-columns: 5rem minmax(0, 1fr); }
-  }
+}
   @media (max-width: 767px) {
-    .news-feature { padding: 1.2rem 1.1rem 1.15rem; }
-    .news-feature-meta .news-read {
-      margin-left: 0;
-      width: 100%;
-      margin-top: 0.2rem;
-    }
-    .news-row {
-      grid-template-columns: 1fr;
-      gap: 0.35rem;
-      padding: 1rem 1.05rem;
-    }
-    .news-row-date { order: 2; font-size: 0.68rem; }
-  }
+}
 
   @media (min-width: 768px) {
     .hero-inner { padding: 2.5rem 2rem 2.25rem; }
     .hero-sub { margin-top: 1rem; }
     .hero-cta-row { margin-top: 1.6rem; gap: 0.75rem; }
     .feature-cards-inner { padding: 1.35rem 2rem 0; gap: 0.65rem; }
-    .news-inner { padding: 0 2rem; }
-    .news-section { padding: 2.75rem 0 4rem; }
-  }
+}
   @media (max-width: 767px) {
     body { margin-top: 56px; }
     .hero-inner { padding: 1.1rem 1rem 1.25rem; }
@@ -403,7 +448,6 @@
     }
     .feature-card { padding: 0.75rem 0.7rem; }
     .feature-card-desc { display: none; }
-    .news-section { padding: 1.5rem 0 2.5rem; }
 }
   @media (max-width: 480px) {
     .hero-title-top,
@@ -775,10 +819,9 @@ function renderNews(articles) {
     return;
   }
 
-  // Homepage is text-only (no article images) to avoid copyright exposure.
-  // Admin can still attach imageUrl; we simply do not render it here.
+  // Text-only homepage (no images — copyright-safe). Admin imageUrl is kept but not rendered.
   const featured = articles[0];
-  const rest = articles.slice(1, 6);
+  const rest = articles.slice(1, 7);
 
   function articleUrl(a) {
     return a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
@@ -787,37 +830,37 @@ function renderNews(articles) {
   const featuredColor = CATEGORY_COLORS[featured.category] || '#006bb6';
   const featuredHtml =
     '<a href="' + articleUrl(featured) + '" class="news-feature">' +
-      '<span class="news-tag" style="color:' + featuredColor + ';border-color:' + featuredColor + '33;background:' + featuredColor + '14;">' + escapeHtml(featured.category || 'News') + '</span>' +
+      '<div class="news-kicker">' +
+        '<span class="news-tag" style="color:' + featuredColor + ';border-color:' + featuredColor + '33;background:' + featuredColor + '14;">' + escapeHtml(featured.category || 'News') + '</span>' +
+        '<span style="font-size:0.72rem;font-weight:600;color:#94a3b8;">' + escapeHtml(timeAgo(toDate(featured.createdAt))) + '</span>' +
+      '</div>' +
       '<h3 class="news-feature-title">' + escapeHtml(featured.title) + '</h3>' +
       (featured.excerpt ? '<p class="news-feature-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
       '<div class="news-feature-meta">' +
-        '<span>' + escapeHtml(byline(featured)) + '</span><span>·</span>' +
-        '<span>' + escapeHtml(timeAgo(toDate(featured.createdAt))) + '</span>' +
+        '<span>' + escapeHtml(byline(featured)) + '</span>' +
         '<span class="news-read">Read article →</span>' +
       '</div>' +
     '</a>';
 
-  function shortDate(d) {
-    if (!d || isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
   const listHtml = rest.map(function (a) {
     const color = CATEGORY_COLORS[a.category] || '#006bb6';
-    const when = toDate(a.createdAt);
     return (
       '<a href="' + articleUrl(a) + '" class="news-row">' +
-        '<span class="news-row-date">' + escapeHtml(shortDate(when) || timeAgo(when)) + '</span>' +
-        '<div class="news-row-body">' +
+        '<div class="news-row-top">' +
           '<span class="news-tag" style="color:' + color + ';border-color:' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
-          '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
-          (a.excerpt ? '<p class="news-row-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
-          '<div class="news-row-meta"><span>' + escapeHtml(byline(a)) + '</span></div>' +
+          '<span class="news-row-time">' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</span>' +
         '</div>' +
+        '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
+        (a.excerpt ? '<p class="news-row-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
+        '<div class="news-row-meta">' + escapeHtml(byline(a)) + '</div>' +
       '</a>'
     );
   }).join('');
 
-  grid.innerHTML = featuredHtml + '<div class="news-stack">' + (listHtml || '') + '</div>';
+  grid.innerHTML = featuredHtml +
+    (listHtml
+      ? '<div class="news-stack"><div class="news-stack-label">More stories</div>' + listHtml + '</div>'
+      : '');
 }
 
 function listenToNews() {

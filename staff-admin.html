@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Users | Sixers Hoops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/navbar-styles.css">
+<style>
+:root {
+  --cream: #f4f6f9; --ink: #0f172a; --mid: #64748b; --border: #e2e8f0;
+  --sixers-blue: #006BB6; --sixers-red: #ED174C; --card: #fff;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; margin-top: 64px;
+  font-family: Lexend, system-ui, sans-serif;
+  background: var(--cream); color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 1.75rem 1.25rem 4rem; }
+.page-head { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--ink); }
+.page-eyebrow {
+  display: block; font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--sixers-blue); margin-bottom: 0.25rem;
+}
+.page-head h1 { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
+.page-head p { color: var(--mid); font-size: 0.88rem; margin: 0.35rem 0 0; }
+.staff-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 1.5rem; }
+.staff-links a {
+  display: inline-flex; align-items: center;
+  padding: 0.45rem 0.9rem; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--card);
+  font-size: 0.82rem; font-weight: 650; text-decoration: none; color: var(--ink);
+}
+.staff-links a:hover { border-color: rgba(0,107,182,0.35); color: var(--sixers-blue); }
+.staff-links a.active { background: var(--sixers-blue); border-color: var(--sixers-blue); color: #fff; }
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem;
+  padding: 0.85rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+}
+.toolbar input {
+  flex: 1; min-width: 180px; padding: 0.65rem 0.85rem; border-radius: 10px;
+  border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem;
+}
+.user-list { display: flex; flex-direction: column; gap: 0.55rem; }
+.user-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 0.75rem;
+  align-items: center; padding: 0.95rem 1.1rem;
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+}
+.user-name { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.015em; }
+.user-meta { font-size: 0.78rem; color: var(--mid); margin-top: 0.2rem; word-break: break-all; }
+.user-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.toggle {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; font-weight: 650; color: var(--mid);
+}
+.toggle input { width: 16px; height: 16px; accent-color: var(--sixers-blue); }
+.badge {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.2rem 0.5rem; border-radius: 999px;
+}
+.badge.on { background: #dcfce7; color: #166534; }
+.badge.off { background: #f1f5f9; color: #64748b; }
+.gate {
+  display: none; min-height: 50vh; align-items: center; justify-content: center; padding: 2rem;
+}
+.gate.show { display: flex; }
+.gate-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 2rem; text-align: center; max-width: 400px; width: 100%;
+}
+.gate-card h2 { margin: 0 0 0.5rem; font-size: 1.25rem; font-weight: 800; }
+.gate-card p { color: var(--mid); font-size: 0.88rem; margin: 0 0 1.25rem; }
+.btn {
+  border: none; border-radius: 10px; padding: 0.7rem 1.25rem; font-family: inherit;
+  font-weight: 700; font-size: 0.88rem; cursor: pointer; background: var(--sixers-blue); color: #fff;
+}
+.empty { text-align: center; padding: 2.5rem; color: var(--mid); background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+#toast {
+  position: fixed; bottom: 1.25rem; right: 1.25rem; background: #0f172a; color: #fff;
+  padding: 0.75rem 1.1rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;
+  opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 99;
+}
+#toast.show { opacity: 1; transform: none; }
+@media (max-width: 640px) {
+  .user-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="gate" class="gate"><div class="gate-card">
+  <h2>Admin only</h2>
+  <p>Sign in with the site owner account to manage users and writer access.</p>
+  <button class="btn" id="sign-in">Sign in with Google</button>
+</div></div>
+
+<div id="app" style="display:none;">
+  <div class="wrap">
+    <div class="page-head">
+      <span class="page-eyebrow">Staff</span>
+      <h1>Manage Users</h1>
+      <p>Grant article-writing access and review accounts. Changes save to Firestore immediately.</p>
+    </div>
+    <div class="staff-links">
+      <a href="/articles-admin.html">Articles Admin</a>
+      <a href="/moderation.html">Moderation</a>
+      <a href="/staff-admin.html" class="active">Manage Users</a>
+    </div>
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Search name, email, or username">
+    </div>
+    <div class="user-list" id="user-list"><div class="empty">Loading users…</div></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script src="/nav.js"></script>
+<script>
+const OWNER = 'rhatus13@gmail.com';
+let users = [];
+let currentUser = null;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show';
+  setTimeout(function(){ el.className = ''; }, 2800);
+}
+function isOwner(user) {
+  return user && user.email && user.email.toLowerCase() === OWNER;
+}
+function waitDb(cb, n) {
+  n = n || 0;
+  if (window.db && window.auth) return cb();
+  if (n > 50) return;
+  setTimeout(function(){ waitDb(cb, n + 1); }, 200);
+}
+function displayName(u) {
+  return u.displayName || u.username || u.email || u.id || 'User';
+}
+function render() {
+  const q = (document.getElementById('search').value || '').trim().toLowerCase();
+  const list = document.getElementById('user-list');
+  let rows = users.slice();
+  if (q) {
+    rows = rows.filter(function(u) {
+      const hay = [u.email, u.displayName, u.username, u.usernameLower, u.id].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+  }
+  if (!rows.length) {
+    list.innerHTML = '<div class="empty">No users match.</div>';
+    return;
+  }
+  list.innerHTML = rows.map(function(u) {
+    const writer = !!(u.canWriteArticles || u.role === 'writer' || u.role === 'admin' || u.isAdmin);
+    const name = displayName(u);
+    const meta = [u.email || '', u.username ? '@' + u.username : '', u.id].filter(Boolean).join(' · ');
+    return (
+      '<div class="user-row" data-id="' + u.id + '">' +
+        '<div>' +
+          '<div class="user-name">' + escapeHtml(name) + '</div>' +
+          '<div class="user-meta">' + escapeHtml(meta) + '</div>' +
+        '</div>' +
+        '<div class="user-actions">' +
+          '<span class="badge ' + (writer ? 'on' : 'off') + '">' + (writer ? 'Writer' : 'Member') + '</span>' +
+          '<label class="toggle"><input type="checkbox" class="write-toggle" ' + (writer ? 'checked' : '') + ' data-id="' + u.id + '"> Can write articles</label>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+  list.querySelectorAll('.write-toggle').forEach(function(inp) {
+    inp.addEventListener('change', function() {
+      setWriter(inp.getAttribute('data-id'), inp.checked);
+    });
+  });
+}
+function escapeHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+async function setWriter(uid, on) {
+  try {
+    await window.db.collection('users').doc(uid).set({
+      canWriteArticles: !!on,
+      role: on ? 'writer' : 'member',
+      updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    const u = users.find(function(x){ return x.id === uid; });
+    if (u) {
+      u.canWriteArticles = !!on;
+      u.role = on ? 'writer' : 'member';
+    }
+    render();
+    toast(on ? 'Writer access granted' : 'Writer access removed');
+  } catch (e) {
+    toast('Error: ' + (e.message || e));
+  }
+}
+function loadUsers() {
+  window.db.collection('users').limit(500).onSnapshot(function(snap) {
+    users = snap.docs.map(function(d) {
+      var data = d.data() || {};
+      data.id = d.id;
+      return data;
+    }).sort(function(a, b) {
+      return displayName(a).localeCompare(displayName(b));
+    });
+    render();
+  }, function(err) {
+    document.getElementById('user-list').innerHTML = '<div class="empty">Could not load users: ' + escapeHtml(err.message) + '</div>';
+  });
+}
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('sign-in').addEventListener('click', function() {
+  waitDb(function() {
+    window.auth.signInWithPopup(new window.firebase.auth.GoogleAuthProvider()).catch(function(e) {
+      toast(e.message || String(e));
+    });
+  });
+});
+waitDb(function() {
+  window.auth.onAuthStateChanged(function(user) {
+    currentUser = user;
+    if (isOwner(user)) {
+      document.getElementById('gate').classList.remove('show');
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadUsers();
+    } else {
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('gate').style.display = 'flex';
+      document.getElementById('gate').classList.add('show');
+      if (user) {
+        document.querySelector('.gate-card p').textContent = 'This area is limited to the site owner account.';
+        document.getElementById('sign-in').style.display = 'none';
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>

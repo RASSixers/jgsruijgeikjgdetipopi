@@ -3177,6 +3177,54 @@
 </style>
 </head>
 <body>
+<div id="tm-admin-gate" style="display:none;position:fixed;inset:0;z-index:9999;background:#f4f6f9;align-items:center;justify-content:center;padding:1.5rem;font-family:Lexend,system-ui,sans-serif;">
+  <div style="max-width:440px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:2rem 1.5rem;">
+    <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#006BB6;margin-bottom:0.5rem;">NBA Trade Machine</div>
+    <h1 style="margin:0 0 0.6rem;font-size:1.35rem;font-weight:800;letter-spacing:-0.02em;color:#0f172a;">Coming soon</h1>
+    <p style="margin:0 0 1.25rem;font-size:0.95rem;line-height:1.55;color:#64748b;">The Trade Machine will be released soon. Check back later.</p>
+    <a href="/" style="display:inline-flex;padding:0.65rem 1.2rem;border-radius:10px;background:#006BB6;color:#fff;font-weight:700;font-size:0.88rem;text-decoration:none;">Back to Home</a>
+  </div>
+</div>
+<script>
+(function(){
+  var OWNER = 'rhatus13@gmail.com';
+  function showGate() {
+    var g = document.getElementById('tm-admin-gate');
+    if (g) { g.style.display = 'flex'; }
+    document.documentElement.style.overflow = 'hidden';
+  }
+  function hideGate() {
+    var g = document.getElementById('tm-admin-gate');
+    if (g) g.style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+  function check(user) {
+    if (user && user.email && user.email.toLowerCase() === OWNER) {
+      hideGate();
+      return;
+    }
+    showGate();
+  }
+  function waitAuth(n) {
+    n = n || 0;
+    if (window.auth) {
+      window.auth.onAuthStateChanged(check);
+      if (!window.auth.currentUser) showGate();
+      return;
+    }
+    if (n > 50) { showGate(); return; }
+    setTimeout(function(){ waitAuth(n+1); }, 200);
+  }
+  // Show gate immediately until auth confirms owner
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ showGate(); waitAuth(); });
+  } else {
+    showGate();
+    waitAuth();
+  }
+})();
+</script>
+
     <!-- HERO -->
     <header class="page-hero">
         <div class="hero-inner">

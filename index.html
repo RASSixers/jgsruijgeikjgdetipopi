@@ -188,9 +188,9 @@
 
   .news-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.9fr);
-    gap: 2rem 2.75rem;
-    align-items: start;
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
+    gap: 2rem 2.5rem;
+    align-items: stretch;
     width: 100%;
     min-width: 0;
   }
@@ -289,22 +289,24 @@
   .news-stack {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    padding: 1.15rem;
+    gap: 0.25rem;
+    padding: 1.5rem 1.4rem 1.35rem;
     background: #fff;
     border: 1px solid #e6eaf0;
     border-radius: 18px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     min-width: 0;
+    min-height: 100%;
+    align-self: stretch;
   }
   .news-stack-label {
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.13em;
     text-transform: uppercase;
     color: #64748b;
-    margin: 0 0 0.55rem;
-    padding: 0 0.35rem 0.85rem;
+    margin: 0 0 0.75rem;
+    padding: 0 0.25rem 1rem;
     border-bottom: 1px solid #eef2f6;
     background: transparent;
     position: relative;
@@ -328,7 +330,7 @@
   }
   .news-row {
     display: block;
-    padding: 0.85rem 0.9rem;
+    padding: 1.15rem 0.95rem;
     text-decoration: none;
     color: inherit;
     background: transparent;
@@ -350,10 +352,10 @@
   .news-row-time,
   .news-row-excerpt { display: none; }
   .news-row-title {
-    font-size: 0.94rem;
+    font-size: 0.98rem;
     font-weight: 650;
-    line-height: 1.38;
-    margin: 0 0 0.4rem;
+    line-height: 1.4;
+    margin: 0 0 0.55rem;
     color: #0f172a;
     letter-spacing: -0.018em;
     display: -webkit-box;
@@ -370,7 +372,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     color: #94a3b8;
     font-weight: 500;
     margin: 0;
@@ -457,16 +459,16 @@
       padding-bottom: 0.7rem;
     }
     .news-stack {
-      padding: 0.95rem;
+      padding: 1.15rem 1rem 1.05rem;
       border-radius: 14px;
     }
     .news-stack-label {
       font-size: 0.65rem;
-      margin-bottom: 0.4rem;
-      padding: 0 0.25rem 0.7rem;
+      margin-bottom: 0.5rem;
+      padding: 0 0.2rem 0.85rem;
     }
-    .news-row { padding: 0.75rem 0.7rem; }
-    .news-row-title { font-size: 0.9rem; }
+    .news-row { padding: 1rem 0.75rem; }
+    .news-row-title { font-size: 0.94rem; }
   }
 
   /* Homepage team stats — match schedule page */
@@ -950,13 +952,12 @@ function renderNews(articles) {
   const listHtml = rest.map(function (a) {
     const when = toDate(a.createdAt);
     const dateStr = shortDate(when);
-    const author = (a.author || a.byline || 'SixersHoops').trim();
     return (
       '<a href="' + articleUrl(a) + '" class="news-row">' +
         '<div class="news-row-body">' +
           '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
           '<div class="news-row-meta">' +
-            '<span class="news-row-author">' + escapeHtml(author) + '</span>' +
+            '<span class="news-row-author">' + escapeHtml(byline(a)) + '</span>' +
             (dateStr ? '<span class="news-row-date">' + escapeHtml(dateStr) + '</span>' : '') +
           '</div>' +
         '</div>' +

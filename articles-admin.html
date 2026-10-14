@@ -807,6 +807,55 @@ body, html {
 }
 .btn-delete:hover { background: #fff1f2; }
 
+
+/* Writer workspace */
+.writer-guide {
+  background: #f0f7ff;
+  border: 1px solid #cfe3f7;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.84rem;
+  color: #334155;
+  line-height: 1.55;
+}
+.writer-guide strong { color: var(--ink); }
+.writer-guide code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  background: #fff;
+  border: 1px solid #dbe7f3;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+.writer-guide ol {
+  margin: 0.45rem 0 0;
+  padding-left: 1.15rem;
+}
+.writer-guide li { margin: 0.25rem 0; }
+.form-textarea.body-editor {
+  min-height: 420px;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+}
+.meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+@media (max-width: 640px) {
+  .meta-row { grid-template-columns: 1fr; }
+  .form-textarea.body-editor { min-height: 320px; }
+}
+.section-note {
+  font-size: 0.78rem;
+  color: var(--mid);
+  margin: -0.35rem 0 0.9rem;
+  line-height: 1.45;
+}
+
 @media (max-width: 900px) {
   .editor-grid { grid-template-columns: 1fr; }
   .preview-panel { position: static; }
@@ -898,7 +947,7 @@ body, html {
       <div class="editor-grid">
         <div>
           <div class="editor-card">
-            <h3>Article Info</h3>
+            <h3>Details</h3>
             <input type="hidden" id="editing-doc-id">
             <div class="form-group">
               <label class="form-label">Headline *</label>
@@ -910,15 +959,17 @@ body, html {
               <div class="form-hint" id="f-slug-preview">sixershoops.com/article/<span id="f-slug-preview-text" style="color:var(--sixers-blue);font-weight:600;">your-slug-here</span></div>
               <div class="form-hint" style="display:none;color:#b06b00;" id="f-slug-hint">Use only lowercase letters, numbers, and hyphens.</div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Byline</label>
-              <input type="text" class="form-input" id="f-author" placeholder="Writer name">
+            <div class="meta-row">
+              <div class="form-group">
+                <label class="form-label">Byline</label>
+                <input type="text" class="form-input" id="f-author" placeholder="Writer name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Publish date</label>
+                <input type="date" class="form-input" id="f-publish-date">
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Publish date</label>
-              <input type="date" class="form-input" id="f-publish-date">
-              <div class="form-hint">Override the article date shown on the site. Leave blank to use today’s date.</div>
-            </div>
+            <div class="form-hint" style="margin-top:-0.45rem;margin-bottom:0.9rem;">Publish date is what readers see. Leave blank on new articles to use today.</div>
             <div class="form-group">
               <label class="form-label">Category *</label>
               <select class="form-select" id="f-category">
@@ -938,9 +989,10 @@ body, html {
           </div>
 
           <div class="editor-card" style="margin-top:1rem;">
-            <h3>Article Image</h3>
+            <h3>Image (optional)</h3>
+            <p class="section-note">Homepage is text-first right now. You can still attach a photo for the article page / future use.</p>
             <div class="form-group drop-target" id="img-drop" style="margin-bottom:0;">
-              <label class="form-label">Header Photo</label>
+              <label class="form-label">Photo</label>
               <div class="pic-upload-row">
                 <div class="pic-upload-preview" id="img-preview-box"><span class="pic-upload-placeholder">SH</span></div>
                 <div>
@@ -956,22 +1008,39 @@ body, html {
           </div>
 
           <div class="editor-card" style="margin-top:1rem;">
-            <h3>Article Body</h3>
-            <div class="form-group">
-              <label class="form-label">Opening Paragraph</label>
-              <textarea class="form-textarea tall" id="f-intro"></textarea>
+            <h3>Write the article</h3>
+            <p class="section-note">Type normally in the box below. Blank lines create new paragraphs on the site.</p>
+            <div class="writer-guide">
+              <strong>How to format</strong>
+              <ol>
+                <li>Write your story in the large box — one idea per paragraph.</li>
+                <li>To embed a tweet, paste the full X URL on its own line, for example: <code>https://x.com/user/status/123</code></li>
+                <li>For Player Grades, set the category above, then load the roster and fill grades under the body.</li>
+                <li>Optional closing note goes in the short field at the bottom.</li>
+              </ol>
+            </div>
+            <div class="form-group" style="margin-bottom:0.75rem;">
+              <label class="form-label">Article body *</label>
+              <textarea class="form-textarea body-editor" id="f-intro" placeholder="Start writing here…
+
+First paragraph of the article.
+
+https://x.com/sixers/status/1234567890
+
+Continue with more analysis after the embedded tweet…"></textarea>
               <div class="char-count" id="intro-count">0 words</div>
             </div>
             <div class="tweet-embed-section">
-              <div class="tweet-embed-header"><span class="tweet-embed-label">Embed a Tweet / X Post</span></div>
+              <div class="tweet-embed-header"><span class="tweet-embed-label">Primary tweet (optional)</span></div>
               <input type="text" class="form-input" id="f-tweet-url" placeholder="https://x.com/user/status/1234567890" oninput="handleTweetInput(this.value)">
-              <div class="tweet-embed-hint">Paste the full URL of a tweet. Leave blank if not needed.</div>
-              <div class="tweet-preview-box" id="tweet-preview-box">Tweet will be embedded here in the article.</div>
+              <div class="tweet-embed-hint">If you only want one main embed, paste it here. Tweet links inside the body also work when the article page supports them.</div>
+              <div class="tweet-preview-box" id="tweet-preview-box">Tweet preview appears here when a valid URL is entered.</div>
             </div>
           </div>
 
           <div class="editor-card" id="grades-section" style="margin-top:1rem;">
-            <h3>Player Grade Cards</h3>
+            <h3>Player grades</h3>
+            <p class="section-note">Only used when category is Player Grades. Load roster, set each grade, add stats and a short note.</p>
             <div class="grade-toolbar">
               <button type="button" class="btn-ghost" id="load-roster-btn">Load roster</button>
               <button type="button" class="btn-ghost" id="clear-grades-btn">Clear grades</button>
@@ -981,8 +1050,9 @@ body, html {
           </div>
 
           <div class="editor-card" style="margin-top:1rem;">
-            <h3>Bottom Line</h3>
-            <textarea class="form-textarea" id="f-closing"></textarea>
+            <h3>Closing note (optional)</h3>
+            <p class="section-note">Short wrap-up that appears after the grades / main body.</p>
+            <textarea class="form-textarea" id="f-closing" placeholder="Optional bottom line…"></textarea>
             <div class="char-count" id="closing-count">0 words</div>
           </div>
 
@@ -1539,7 +1609,13 @@ function collectArticleData(status) {
     excerpt: document.getElementById('f-excerpt').value.trim(),
     intro: document.getElementById('f-intro').value.trim(),
     closing: document.getElementById('f-closing').value.trim(),
-    tweetUrl: document.getElementById('f-tweet-url').value.trim() || '',
+    tweetUrl: (function () {
+      var explicit = document.getElementById('f-tweet-url').value.trim();
+      if (explicit) return explicit;
+      var body = document.getElementById('f-intro').value || '';
+      var m = body.match(/https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/[^\s]+\/status\/\d+/i);
+      return m ? m[0] : '';
+    })(),
     grades: collectGrades(),
     gradient: CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'],
     updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),

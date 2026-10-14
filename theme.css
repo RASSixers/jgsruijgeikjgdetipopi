@@ -384,3 +384,15 @@ html.dark-mode .standings,
 html.dark-mode .leaderboard {
   color: #e8eaf0;
 }
+
+
+/* Navbar matches page background */
+html.dark-mode .navbar,
+html.navy-mode .navbar {
+  background: var(--sh-bg) !important;
+  border-bottom-color: var(--sh-border) !important;
+  box-shadow: none !important;
+}
+.navbar {
+  background: var(--sh-bg, var(--cream, #f4f6f9));
+}

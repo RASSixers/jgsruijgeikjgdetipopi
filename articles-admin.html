@@ -1341,7 +1341,23 @@ let slugManual = false;
 function isAllowedWriter(email) {
   if (!email) return false;
   const lower = email.toLowerCase();
-  return lower === MOD_EMAIL.toLowerCase() || ALLOWED_WRITERS.some(e => String(e).toLowerCase() === lower);
+  if (lower === MOD_EMAIL.toLowerCase()) return true;
+  if (ALLOWED_WRITERS.some(e => String(e).toLowerCase() === lower)) return true;
+  try { if (localStorage.getItem('canWriteArticles') === '1') return true; } catch (e) {}
+  return false;
+}
+async function refreshWriterAccess(user) {
+  if (!user || !window.db) return isAllowedWriter(user && user.email);
+  try {
+    const doc = await window.db.collection('users').doc(user.uid).get();
+    const d = doc.exists ? (doc.data() || {}) : {};
+    const can = !!(d.canWriteArticles || d.isAdmin || d.role === 'writer' || d.role === 'admin')
+      || (user.email && user.email.toLowerCase() === MOD_EMAIL.toLowerCase());
+    try { localStorage.setItem('canWriteArticles', can ? '1' : '0'); } catch (e) {}
+    return can;
+  } catch (e) {
+    return isAllowedWriter(user.email);
+  }
 }
 function escapeHtml(str) {
   return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -2077,20 +2093,32 @@ function initAdmin() {
     }
     window.auth.onAuthStateChanged(user => {
       currentUser = user || null;
-      if (user && isAllowedWriter(user.email)) {
+      function showAdminUI() {
         document.getElementById('auth-gate').style.display = 'none';
         document.getElementById('admin-ui').style.display = 'block';
         listenToArticles();
         listenToUpdates();
         listenToPolls();
-      } else {
+      }
+      function showDeniedUI(signedIn) {
         document.getElementById('auth-gate').style.display = 'flex';
         document.getElementById('admin-ui').style.display = 'none';
-        if (user) {
-          document.querySelector('.auth-card p').textContent = 'This page is restricted to approved writers.';
+        if (signedIn) {
+          document.querySelector('.auth-card p').textContent = 'This page is restricted to approved writers. Ask an admin for access.';
           document.getElementById('sign-in-btn').style.display = 'none';
+        } else {
+          document.querySelector('.auth-card p').textContent = 'Sign in with your admin or writer account to access the article editor.';
+          document.getElementById('sign-in-btn').style.display = '';
         }
       }
+      if (!user) {
+        showDeniedUI(false);
+        return;
+      }
+      refreshWriterAccess(user).then(function(ok) {
+        if (ok) showAdminUI();
+        else showDeniedUI(true);
+      });
     });
   }
   tryAuth();

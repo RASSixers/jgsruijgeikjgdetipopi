@@ -285,50 +285,61 @@
   }
   .news-feature-meta .news-read { display: none; }
 
-  /* Sidebar list — clean professional */
+  /* Sidebar list — modern editorial */
   .news-stack {
     display: flex;
     flex-direction: column;
-    gap: 0;
-    padding: 1.35rem 0 0.25rem;
-    background: transparent;
-    border: none;
-    border-radius: 0;
+    gap: 0.35rem;
+    padding: 1.15rem;
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 18px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     min-width: 0;
   }
   .news-stack-label {
-    font-size: 1.05rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
-    text-transform: none;
-    color: var(--ink);
-    margin: 0 0 0.15rem;
-    padding: 0 0 0.75rem;
-    border-bottom: 2px solid var(--ink);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin: 0 0 0.55rem;
+    padding: 0 0.35rem 0.85rem;
+    border-bottom: 1px solid #eef2f6;
     background: transparent;
+    position: relative;
+  }
+  .news-stack-label::after {
+    content: '';
+    position: absolute;
+    left: 0.35rem;
+    bottom: -1px;
+    width: 2rem;
+    height: 2px;
+    background: var(--sixers-blue);
+    border-radius: 1px;
   }
   .news-stack-empty {
     font-size: 0.88rem;
     color: #94a3b8;
-    margin: 1rem 0 0;
+    margin: 0.35rem 0.35rem 0.5rem;
     line-height: 1.5;
     padding: 0;
   }
   .news-row {
     display: block;
-    padding: 1.15rem 0;
+    padding: 0.85rem 0.9rem;
     text-decoration: none;
     color: inherit;
     background: transparent;
     border: none;
-    border-bottom: 1px solid #e8ebf0;
-    border-radius: 0;
+    border-radius: 12px;
     min-width: 0;
-    transition: none;
+    transition: background 0.15s ease, transform 0.15s ease;
   }
-  .news-row:last-child { border-bottom: 1px solid #e8ebf0; }
+  .news-row:last-child { border-bottom: none; }
   .news-row:hover {
-    background: transparent;
+    background: #f4f7fb;
     box-shadow: none;
     transform: none;
   }
@@ -339,14 +350,17 @@
   .news-row-time,
   .news-row-excerpt { display: none; }
   .news-row-title {
-    font-size: 0.98rem;
-    font-weight: 600;
-    line-height: 1.4;
-    margin: 0 0 0.5rem;
-    color: var(--ink);
-    letter-spacing: -0.015em;
-    display: block;
-    transition: color 0.12s;
+    font-size: 0.94rem;
+    font-weight: 650;
+    line-height: 1.38;
+    margin: 0 0 0.4rem;
+    color: #0f172a;
+    letter-spacing: -0.018em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.12s ease;
   }
   .news-row:hover .news-row-title {
     color: var(--sixers-blue);
@@ -355,17 +369,29 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.78rem;
-    color: #9ca3af;
+    gap: 0.75rem;
+    font-size: 0.72rem;
+    color: #94a3b8;
     font-weight: 500;
     margin: 0;
+    letter-spacing: 0.01em;
+  }
+  .news-row-meta .news-row-author {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .news-row-meta .news-row-date {
     white-space: nowrap;
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
-    color: #9ca3af;
+    color: #a8b0bc;
+    font-weight: 600;
+    background: #f1f4f8;
+    padding: 0.15rem 0.45rem;
+    border-radius: 6px;
+    font-size: 0.68rem;
   }
   .news-row-meta .news-row-sep { display: none; }
 
@@ -430,13 +456,17 @@
       font-size: 0.68rem;
       padding-bottom: 0.7rem;
     }
-    .news-row { padding: 1rem 0; }
-    .news-row-title { font-size: 0.94rem; }
-    .news-stack-label {
-      font-size: 1rem;
-      padding-bottom: 0.65rem;
+    .news-stack {
+      padding: 0.95rem;
+      border-radius: 14px;
     }
-    .news-stack { padding-top: 0.5rem; }
+    .news-stack-label {
+      font-size: 0.65rem;
+      margin-bottom: 0.4rem;
+      padding: 0 0.25rem 0.7rem;
+    }
+    .news-row { padding: 0.75rem 0.7rem; }
+    .news-row-title { font-size: 0.9rem; }
   }
 
   /* Homepage team stats — match schedule page */
@@ -920,14 +950,13 @@ function renderNews(articles) {
   const listHtml = rest.map(function (a) {
     const when = toDate(a.createdAt);
     const dateStr = shortDate(when);
-    // Sidebar matches editorial style: author name only (no "By:"), date on the right
     const author = (a.author || a.byline || 'SixersHoops').trim();
     return (
       '<a href="' + articleUrl(a) + '" class="news-row">' +
         '<div class="news-row-body">' +
           '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
           '<div class="news-row-meta">' +
-            '<span>' + escapeHtml(author) + '</span>' +
+            '<span class="news-row-author">' + escapeHtml(author) + '</span>' +
             (dateStr ? '<span class="news-row-date">' + escapeHtml(dateStr) + '</span>' : '') +
           '</div>' +
         '</div>' +

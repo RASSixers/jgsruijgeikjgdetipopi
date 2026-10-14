@@ -133,10 +133,12 @@ body, html {
 /* —— Tabs —— */
 .admin-tabs {
   display: flex;
-  gap: 0.15rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
   background: var(--cream);
   border-bottom: 1px solid var(--border);
-  padding: 0 1rem;
+  padding: 0.85rem 1rem;
   overflow-x: auto;
   position: sticky;
   top: 64px;
@@ -144,24 +146,30 @@ body, html {
 }
 .admin-tab {
   font-family: 'Barlow', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
-  padding: 0.95rem 1.15rem;
-  background: none;
-  border: none;
+  padding: 0.55rem 1.15rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   color: var(--mid);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
   white-space: nowrap;
 }
-.admin-tab:hover { color: var(--ink); }
+.admin-tab:hover {
+  color: var(--ink);
+  border-color: #cbd5e1;
+  background: #fff;
+}
 .admin-tab.active {
-  color: var(--sixers-blue);
-  border-bottom-color: var(--sixers-blue);
+  color: #fff;
+  background: var(--sixers-blue);
+  border-color: var(--sixers-blue);
+  box-shadow: 0 4px 12px rgba(0, 107, 182, 0.25);
 }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
@@ -547,12 +555,17 @@ body, html {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: 0.85rem;
+  margin-bottom: 1rem;
+}
+#grade-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 .add-player-btn {
   width: 100%;
-  margin-top: 0.75rem;
-  padding: 0.7rem;
+  margin-top: 0.85rem;
+  padding: 0.75rem;
   background: var(--soft);
   border: 1px dashed var(--border);
   border-radius: 10px;
@@ -566,11 +579,79 @@ body, html {
   border-color: rgba(0, 107, 182, 0.3);
 }
 .grade-entry, .ge-row, .player-grade-row {
-  background: var(--soft);
+  background: #fff;
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 0.85rem;
-  margin-bottom: 0.65rem;
+  padding: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+.grade-entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--soft);
+  border-bottom: 1px solid #eef2f6;
+}
+.grade-entry-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.grade-entry-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--mid);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.grade-entry-remove:hover {
+  color: var(--sixers-red);
+  border-color: #fecdd3;
+  background: #fff1f2;
+}
+.grade-entry-row {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem 0.35rem;
+  align-items: end;
+}
+.grade-entry-row .form-group { margin: 0 !important; }
+.ge-fields {
+  padding: 0.35rem 1rem 1rem;
+}
+.ge-tweet-section {
+  margin-top: 0.35rem;
+  padding: 0.75rem;
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.ge-tweet-header { margin-bottom: 0.4rem; }
+.ge-tweet-hint {
+  font-size: 0.72rem;
+  color: var(--mid);
+  margin-top: 0.3rem;
+}
+@media (max-width: 640px) {
+  .grade-entry-row {
+    grid-template-columns: 1fr;
+  }
+  .admin-tabs {
+    justify-content: flex-start;
+    padding: 0.75rem 0.85rem;
+  }
 }
 
 /* Preview card */
@@ -1008,26 +1089,31 @@ const ALLOWED_WRITERS = [
 const COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
 const POLLS_COLLECTION = 'fan_polls';
+// 2026-27 Sixers roster (aligned with roster / salary pages)
 const PINNED_ROSTER = [
   { name: 'Tyrese Maxey', number: 0 },
+  { name: 'Jaylen Brown', number: 7 },
+  { name: 'Joel Embiid', number: 21 },
+  { name: 'LeBron James', number: 23 },
   { name: 'VJ Edgecombe', number: 77 },
-  { name: 'Paul George', number: 8 },
-  { name: 'Kelly Oubre Jr.', number: 9 },
-  { name: 'Adem Bona', number: 30 },
-  { name: 'Andre Drummond', number: 1 },
-  { name: 'Quentin Grimes', number: 5 },
-  { name: 'Dominick Barlow', number: 25 },
+  { name: 'Anfernee Simons', number: 5 },
+  { name: 'Kentavious Caldwell-Pope', number: 1 },
+  { name: 'Dean Wade', number: 45 },
   { name: 'Justin Edwards', number: 11 },
+  { name: 'Adem Bona', number: 30 },
 ];
 const REST_ROSTER = [
-  { name: 'Dalen Terry', number: 14 },
-  { name: 'Joel Embiid', number: 21 },
-  { name: 'Johni Broome', number: 22 },
-  { name: 'Tyrese Martin', number: 23 },
+  { name: 'Labaron Philon Jr.', number: '00' },
   { name: 'Jabari Walker', number: 33 },
-  { name: 'Trendon Watford', number: 12 },
-  { name: 'Kyle Lowry', number: 7 },
-  { name: 'MarJon Beauchamp', number: 16 },
+  { name: 'Dominick Barlow', number: 25 },
+  { name: 'Ariel Hukporti', number: 55 },
+  { name: 'Rayan Rupert', number: 12 },
+  { name: 'Caleb Love', number: 8 },
+  { name: 'Dillon Jones', number: 35 },
+  { name: 'Saint Thomas', number: 19 },
+  { name: 'Tacko Fall', number: 99 },
+  { name: 'Duke Miles', number: 31 },
+  { name: 'Jameer Nelson Jr.', number: 14 },
 ];
 const ROSTER = [...PINNED_ROSTER, ...REST_ROSTER];
 const GRADES = ['DNP','INC','A+','A','A-','B+','B','B-','C+','C','D+','D','F'];

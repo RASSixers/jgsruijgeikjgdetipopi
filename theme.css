@@ -229,3 +229,158 @@ html.dark-mode [style*="background: #ffffff"],
 html.dark-mode [style*="background:white"] {
   background: var(--sh-card) !important;
 }
+
+/* —— Readable text in dark mode (hardcoded light-theme colors) —— */
+html.dark-mode,
+html.dark-mode body {
+  color: #e8eaf0 !important;
+}
+
+html.dark-mode h1,
+html.dark-mode h2,
+html.dark-mode h3,
+html.dark-mode h4,
+html.dark-mode h5,
+html.dark-mode h6,
+html.dark-mode p,
+html.dark-mode li,
+html.dark-mode label,
+html.dark-mode span,
+html.dark-mode td,
+html.dark-mode th,
+html.dark-mode a {
+  color: inherit;
+}
+
+/* Force near-black text → light */
+html.dark-mode [style*="color:#0"],
+html.dark-mode [style*="color: #0"],
+html.dark-mode [style*="color:#1"],
+html.dark-mode [style*="color: #1"],
+html.dark-mode [style*="color:#2"],
+html.dark-mode [style*="color: #2"],
+html.dark-mode [style*="color:black"],
+html.dark-mode [style*="color: black"] {
+  color: #e8eaf0 !important;
+}
+
+/* Common slate / gray text used in page CSS */
+html.dark-mode .article-title,
+html.dark-mode .article-body p,
+html.dark-mode .grade-card-name,
+html.dark-mode .grade-card-analysis,
+html.dark-mode .bottom-line p,
+html.dark-mode .more-item-title,
+html.dark-mode .news-feature-title,
+html.dark-mode .news-row-title,
+html.dark-mode .list-toolbar-title,
+html.dark-mode .hero-title-top,
+html.dark-mode .hero-title-bottom,
+html.dark-mode .feature-card-title,
+html.dark-mode .article-item-title,
+html.dark-mode .admin-header h1,
+html.dark-mode .auth-card h2,
+html.dark-mode .empty-state h3,
+html.dark-mode .grade-entry-name,
+html.dark-mode .form-label {
+  color: #f1f5f9 !important;
+}
+
+html.dark-mode .article-meta,
+html.dark-mode .article-excerpt,
+html.dark-mode .grade-card-stats,
+html.dark-mode .more-item-excerpt,
+html.dark-mode .more-item-meta,
+html.dark-mode .news-feature-excerpt,
+html.dark-mode .news-feature-meta,
+html.dark-mode .news-row-meta,
+html.dark-mode .list-toolbar-sub,
+html.dark-mode .section-note,
+html.dark-mode .form-hint,
+html.dark-mode .pic-upload-hint,
+html.dark-mode .char-count,
+html.dark-mode .admin-header p,
+html.dark-mode .auth-card p,
+html.dark-mode .empty-state p,
+html.dark-mode .tweet-embed-hint,
+html.dark-mode .writer-guide,
+html.dark-mode .article-photo-credit {
+  color: #94a3b8 !important;
+}
+
+html.dark-mode .writer-guide strong,
+html.dark-mode .writer-guide code {
+  color: #e2e8f0 !important;
+}
+
+html.dark-mode a:not(.btn-primary):not(.admin-tab.active):not(.nav-link) {
+  color: #7dd3fc;
+}
+html.dark-mode a:not(.btn-primary):not(.admin-tab.active):hover {
+  color: #bae6fd;
+}
+
+/* Placeholders */
+html.dark-mode input::placeholder,
+html.dark-mode textarea::placeholder {
+  color: #64748b !important;
+  opacity: 1;
+}
+
+/* Keep brand blue text readable */
+html.dark-mode .news-eyebrow,
+html.dark-mode .bottom-line-label,
+html.dark-mode .article-back,
+html.dark-mode .preview-read-more {
+  color: #5eb0f0 !important;
+}
+
+/* Buttons that stay high-contrast */
+html.dark-mode .btn-primary,
+html.dark-mode .admin-tab.active {
+  color: #ffffff !important;
+}
+
+html.dark-mode .btn-draft {
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.35) !important;
+  background: rgba(251, 191, 36, 0.1) !important;
+}
+
+html.dark-mode .btn-danger,
+html.dark-mode .btn-delete {
+  color: #fca5a5 !important;
+}
+
+/* Draft / visibility badges stay distinct */
+html.dark-mode .vis-badge.public {
+  background: #14532d !important;
+  color: #bbf7d0 !important;
+}
+html.dark-mode .vis-badge.private {
+  background: #7f1d1d !important;
+  color: #fecaca !important;
+}
+html.dark-mode .draft-badge {
+  background: #78350f !important;
+  color: #fde68a !important;
+}
+
+/* Soft backgrounds that still need light text */
+html.dark-mode .news-stack-label,
+html.dark-mode .editor-card h3,
+html.dark-mode .grades-heading,
+html.dark-mode .more-title {
+  color: #e2e8f0 !important;
+}
+
+/* Pickem / trade machine text safety nets */
+html.dark-mode .tab-content,
+html.dark-mode .admin-panel,
+html.dark-mode .player-name,
+html.dark-mode .team-name,
+html.dark-mode .salary,
+html.dark-mode .standings,
+html.dark-mode .leaderboard {
+  color: #e8eaf0;
+}

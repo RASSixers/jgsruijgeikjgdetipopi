@@ -5,9 +5,9 @@
   left: 0;
   right: 0;
   height: 64px;
-  background: #ffffff;
+  background: var(--sh-bg, var(--cream, #f4f6f9));
   box-shadow: none;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--sh-border, #e5e7eb);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -19,8 +19,8 @@
 }
 
 .navbar.scrolled {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border-bottom-color: transparent;
+  box-shadow: none;
+  border-bottom-color: var(--sh-border, #e5e7eb);
 }
 
 body {
@@ -1131,15 +1131,17 @@ body {
   --hover-bg: #3a3a3a;
 }
 
-:root.dark-mode .navbar {
-  background: #1a1a1a;
-  border-bottom-color: #404040;
-  color: #ffffff;
+:root.dark-mode .navbar,
+html.dark-mode .navbar {
+  background: var(--sh-bg, #0b0f1a);
+  border-bottom-color: var(--sh-border, rgba(255, 255, 255, 0.1));
+  color: var(--sh-ink, #e8eaf0);
 }
 
-:root.dark-mode .navbar.scrolled {
+:root.dark-mode .navbar.scrolled,
+html.dark-mode .navbar.scrolled {
   border-bottom-color: transparent;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
 }
 
 :root.dark-mode .brand-name {

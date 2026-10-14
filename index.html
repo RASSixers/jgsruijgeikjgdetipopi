@@ -151,7 +151,7 @@
 
   /* —— Articles: open magazine layout (text-only) —— */
   .news-section {
-    background: var(--cream);
+    background: #f7f8fb;
     padding: 2.75rem 0 3.75rem;
     border-top: 1px solid var(--border-light);
   }
@@ -204,13 +204,19 @@
     display: block;
     text-decoration: none;
     color: inherit;
-    padding: 0 0 0 1.15rem;
-    border: none;
-    border-left: 4px solid var(--sixers-blue);
-    background: transparent;
-    transition: border-color 0.15s;
+    padding: 1.35rem 1.4rem 1.3rem;
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
-  .news-feature:hover { border-left-color: var(--sixers-red); }
+  .news-feature:hover {
+    border-color: rgba(0, 107, 182, 0.35);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  }
   .news-feature .news-kicker {
     display: flex;
     flex-wrap: wrap;
@@ -399,12 +405,9 @@
       box-sizing: border-box;
     }
     .news-feature {
-      padding: 0.85rem 0.9rem;
+      padding: 0.95rem 1rem;
       margin: 0;
-      border-left: none;
       border-radius: 12px;
-      border: 1px solid var(--border-light);
-      background: #fff;
       max-width: 100%;
       width: 100%;
       min-width: 0;

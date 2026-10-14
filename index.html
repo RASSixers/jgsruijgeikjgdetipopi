@@ -25,7 +25,7 @@
     --card-bg: #ffffff;
   }
   *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
   body {
     background: var(--cream);
     color: var(--ink);
@@ -189,13 +189,15 @@
   }
   .news-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
     background: transparent;
     border: none;
     border-radius: 0;
     box-shadow: none;
     overflow: visible;
+    width: 100%;
+    min-width: 0;
   }
   /* Lead story */
   .news-feature {
@@ -369,43 +371,62 @@
     .news-section { padding: 3.25rem 0 4.25rem; }
   }
   @media (max-width: 699px) {
-    .news-section { padding: 1.75rem 0 2.5rem; }
+    .news-section {
+      padding: 1.75rem 0 2.5rem;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
     .news-inner {
-      padding: 0 1rem;
+      padding: 0 0.85rem;
       max-width: 100%;
-      overflow: hidden;
+      width: 100%;
+      overflow-x: hidden;
+      box-sizing: border-box;
     }
     .news-heading {
       margin-bottom: 1.1rem;
       padding-bottom: 0.65rem;
+      max-width: 100%;
     }
-    .news-title {
-      font-size: 1.25rem;
-    }
+    .news-title { font-size: 1.25rem; }
     .news-grid {
       gap: 1.15rem;
       width: 100%;
       max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
     }
     .news-feature {
-      padding: 0 0 0 0.75rem;
+      padding: 0.85rem 0.9rem;
+      margin: 0;
+      border-left: none;
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      background: #fff;
       max-width: 100%;
+      width: 100%;
+      min-width: 0;
       box-sizing: border-box;
     }
     .news-feature-title {
-      font-size: 1.35rem;
-      line-height: 1.2;
-      word-wrap: break-word;
+      font-size: 1.28rem;
+      line-height: 1.22;
+      word-break: break-word;
       overflow-wrap: anywhere;
+      max-width: 100%;
     }
     .news-feature-excerpt {
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       margin-bottom: 0.85rem;
+      max-width: 100%;
     }
     .news-feature-meta {
       flex-direction: column;
       align-items: stretch;
       gap: 0.55rem;
+      max-width: 100%;
     }
     .news-feature-meta .news-read {
       margin-left: 0;
@@ -416,20 +437,23 @@
     .news-stack {
       gap: 0.7rem;
       width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
     }
     .news-row {
-      padding: 0.9rem 0.95rem;
+      padding: 0.85rem 0.9rem;
       max-width: 100%;
+      width: 100%;
+      min-width: 0;
       box-sizing: border-box;
     }
     .news-row-title {
-      font-size: 0.98rem;
-      word-wrap: break-word;
+      font-size: 0.96rem;
+      word-break: break-word;
       overflow-wrap: anywhere;
     }
-    .news-row-excerpt {
-      font-size: 0.82rem;
-    }
+    .news-row-excerpt { font-size: 0.82rem; max-width: 100%; }
     .news-row-top {
       flex-wrap: wrap;
       gap: 0.35rem 0.5rem;
@@ -829,7 +853,13 @@
 const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
 const POLLS_COLLECTION = 'fan_polls';
-const UPDATES_PER_PAGE = 6; // 3 columns × 2 rows
+function updatesPerPage() {
+  // Mobile: 3 tweets; desktop: 6 (3×2)
+  try {
+    if (window.matchMedia && window.matchMedia('(max-width: 699px)').matches) return 3;
+  } catch (e) {}
+  return 6;
+}
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
 const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
@@ -1018,12 +1048,13 @@ function renderUpdatesPage() {
     return;
   }
 
-  const totalPages = Math.ceil(allUpdates.length / UPDATES_PER_PAGE);
+  const perPage = updatesPerPage();
+  const totalPages = Math.max(1, Math.ceil(allUpdates.length / perPage));
   if (updatesPage >= totalPages) updatesPage = totalPages - 1;
   if (updatesPage < 0) updatesPage = 0;
 
-  const start = updatesPage * UPDATES_PER_PAGE;
-  const pagePosts = allUpdates.slice(start, start + UPDATES_PER_PAGE);
+  const start = updatesPage * perPage;
+  const pagePosts = allUpdates.slice(start, start + perPage);
 
   feed.innerHTML = pagePosts.map(function (p) {
     const body = isTweetUrl(p.tweetUrl)
@@ -1072,6 +1103,19 @@ document.getElementById('updates-next').addEventListener('click', function () {
   updatesPage += 1;
   renderUpdatesPage();
 });
+(function () {
+  let lastMobile = null;
+  function checkUpdatesLayout() {
+    const mobile = !!(window.matchMedia && window.matchMedia('(max-width: 699px)').matches);
+    if (lastMobile === null) { lastMobile = mobile; return; }
+    if (mobile !== lastMobile) {
+      lastMobile = mobile;
+      updatesPage = 0;
+      renderUpdatesPage();
+    }
+  }
+  window.addEventListener('resize', checkUpdatesLayout);
+})();
 
 listenToNews();
 listenToPoll();

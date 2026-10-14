@@ -181,6 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <li class="nav-item">
                 <a href="/pickem" class="nav-link">Pick'em</a>
             </li>
+            <li class="nav-item">
+                <a href="/nba-trade-machine" class="nav-link">Trade Machine</a>
+            </li>
             <li class="nav-item dropdown">
                 <button class="dropdown-toggle">Team Hub</button>
                 <div class="dropdown-menu">
@@ -193,9 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
             <li class="nav-item">
                 <a href="https://sixershoops.com/schedule" class="nav-link">Schedule</a>
-            </li>
-            <li class="nav-item">
-                <a href="https://sixershoops.com/contact" class="nav-link">Contact</a>
             </li>
         </ul>
 
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="https://sixershoops.com/future-draft-picks" class="mobile-nav-link">Draft Picks</a>
 
             <p class="mobile-menu-label">Site</p>
-            <a href="https://sixershoops.com/contact" class="mobile-nav-link">Contact</a>
+            <a href="/nba-trade-machine" class="mobile-nav-link">Trade Machine</a>
         </div>
     </div>
 
@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <li><a href="/pickem">Pick'em</a></li>
                     <li><a href="https://sixershoops.com/standings">NBA Standings</a></li>
                     <li><a href="https://sixershoops.com/schedule">Schedule</a></li>
-                    <li><a href="https://sixershoops.com/contact">Contact</a></li>
+                    
                 </ul>
             </div>
 
@@ -767,8 +767,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     
+    
+    function showAccountBlocked(status, reason) {
+        if (document.getElementById('sh-account-block')) return;
+        var title = status === 'banned' ? 'Account banned' : 'Account suspended';
+        var msg = status === 'banned'
+            ? 'Your account has been banned from posting and limited site features.'
+            : 'Your account has been temporarily suspended from posting and limited site features.';
+        if (reason) msg += ' Reason: ' + reason;
+        msg += ' To appeal, email info@sixershoops.com.';
+        var el = document.createElement('div');
+        el.id = 'sh-account-block';
+        el.setAttribute('role', 'alert');
+        el.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:1.25rem;';
+        el.innerHTML = '<div style="max-width:420px;width:100%;background:#fff;border-radius:16px;padding:1.5rem 1.35rem;font-family:Lexend,system-ui,sans-serif;box-shadow:0 20px 50px rgba(0,0,0,0.25);">' +
+            '<h2 style="margin:0 0 0.5rem;font-size:1.2rem;font-weight:800;color:#0f172a;">' + title + '</h2>' +
+            '<p style="margin:0 0 1.15rem;font-size:0.9rem;line-height:1.55;color:#475569;">' + msg.replace(/</g,'&lt;') + '</p>' +
+            '<a href="mailto:info@sixershoops.com" style="display:inline-flex;font-weight:700;font-size:0.88rem;color:#006BB6;text-decoration:none;">Email info@sixershoops.com</a>' +
+            '<button type="button" id="sh-block-close" style="display:block;width:100%;margin-top:1rem;padding:0.65rem;border:none;border-radius:10px;background:#0f172a;color:#fff;font-family:inherit;font-weight:700;cursor:pointer;">Dismiss</button>' +
+            '</div>';
+        document.body.appendChild(el);
+        document.getElementById('sh-block-close').onclick = function () { el.remove(); };
+    }
+    function checkAccountStatus(user) {
+        if (!user || !window.db) return Promise.resolve(null);
+        return window.db.collection('users').doc(user.uid).get().then(function (doc) {
+            if (!doc.exists) return null;
+            var d = doc.data() || {};
+            var st = (d.accountStatus || 'active').toLowerCase();
+            if (st === 'suspended' && d.suspendedUntil) {
+                var until = d.suspendedUntil.toDate ? d.suspendedUntil.toDate() : new Date(d.suspendedUntil);
+                if (until && until.getTime() < Date.now()) st = 'active';
+            }
+            try {
+                localStorage.setItem('accountStatus', st);
+                localStorage.setItem('accountBanReason', d.banReason || d.adminNote || '');
+            } catch (e) {}
+            if (st === 'banned' || st === 'suspended') {
+                showAccountBlocked(st, d.banReason || d.adminNote || '');
+            }
+            return st;
+        }).catch(function () { return null; });
+    }
+
     function syncStaffFlags(user) {
         if (!user || !window.db) return Promise.resolve();
+        checkAccountStatus(user);
         return window.db.collection('users').doc(user.uid).get().then(function(doc) {
             var d = doc.exists ? (doc.data() || {}) : {};
             var can = !!(d.canWriteArticles || d.isAdmin || d.role === 'writer' || d.role === 'admin');

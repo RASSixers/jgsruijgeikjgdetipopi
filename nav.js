@@ -4,9 +4,19 @@
 // Run immediately (outside DOMContentLoaded) so theme applies before first paint.
 (function() {
     try {
-        if (localStorage.getItem('theme') === 'dark') {
+        var __shTheme = localStorage.getItem('theme');
+        // Migrate removed navy/blue mode → dark
+        if (__shTheme === 'navy' || __shTheme === 'blue' || __shTheme === 'blue-mode') {
+            __shTheme = 'dark';
+            try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+        }
+        if (__shTheme === 'dark') {
             document.documentElement.classList.add('dark-mode');
+            document.documentElement.classList.remove('navy-mode');
             document.documentElement.style.colorScheme = 'dark';
+        } else {
+            document.documentElement.classList.remove('dark-mode', 'navy-mode');
+            document.documentElement.style.colorScheme = 'light';
         }
     } catch(e) {}
     try {
@@ -193,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div id="authNavContainer">
                 <button class="auth-nav-btn" id="navSignInBtn">Sign In</button>
             </div>
-            <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Cycle theme: light, dark, navy" title="Theme">
+            <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle light and dark mode" title="Theme">
                 <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"></circle>
                     <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -207,9 +217,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </svg>
                 <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-                <svg class="navy-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display: none;">
-                    <path d="M12 2L3 7v4c0 5.25 3.4 10.15 9 11.35C17.6 21.15 21 16.25 21 11V7l-9-5z"/>
                 </svg>
             </button>
         </div>
@@ -1810,51 +1817,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const htmlElement = document.documentElement;
 
     function getTheme() {
-        if (htmlElement.classList.contains('navy-mode')) return 'navy';
         if (htmlElement.classList.contains('dark-mode')) return 'dark';
         return 'light';
     }
 
     function applyTheme(theme) {
+        if (theme === 'navy' || theme === 'blue' || theme === 'blue-mode') theme = 'dark';
         htmlElement.classList.remove('dark-mode', 'navy-mode');
         if (theme === 'dark') {
             htmlElement.classList.add('dark-mode');
             htmlElement.style.colorScheme = 'dark';
-        } else if (theme === 'navy') {
-            htmlElement.classList.add('navy-mode');
-            htmlElement.style.colorScheme = 'dark';
         } else {
-            htmlElement.style.colorScheme = 'light';
             theme = 'light';
+            htmlElement.style.colorScheme = 'light';
         }
-        try { localStorage.setItem('theme', theme); } catch (_) {}
-        syncThemeIcons();
-    }
-
-    function syncThemeIcons() {
-        const sunIcon = document.querySelector('.sun-icon');
-        const moonIcon = document.querySelector('.moon-icon');
-        const navyIcon = document.querySelector('.navy-icon');
-        const theme = getTheme();
-        if (sunIcon) sunIcon.style.display = theme === 'light' ? 'block' : 'none';
+        try { localStorage.setItem('theme', theme); } catch (e) {}
+        var sunIcon = document.querySelector('.sun-icon');
+        var moonIcon = document.querySelector('.moon-icon');
+        if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
         if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
-        if (navyIcon) navyIcon.style.display = theme === 'navy' ? 'block' : 'none';
         if (themeToggle) {
-            themeToggle.setAttribute('title',
-                theme === 'light' ? 'Theme: Light (click for Dark)' :
-                theme === 'dark' ? 'Theme: Dark (click for Navy)' :
-                'Theme: Navy (click for Light)');
+            themeToggle.setAttribute('title', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+            themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
         }
+        // Notify pages that may re-paint charts/canvases
+        try { window.dispatchEvent(new CustomEvent('sh-theme-change', { detail: { theme: theme } })); } catch (e) {}
     }
 
-    var savedTheme = 'light';
-    try { savedTheme = localStorage.getItem('theme') || 'light'; } catch (_) {}
+    var savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'navy' || savedTheme === 'blue' || savedTheme === 'blue-mode') savedTheme = 'dark';
     applyTheme(savedTheme);
 
     if (themeToggle) themeToggle.addEventListener('click', function() {
         var cur = getTheme();
-        var next = cur === 'light' ? 'dark' : (cur === 'dark' ? 'navy' : 'light');
-        applyTheme(next);
+        applyTheme(cur === 'light' ? 'dark' : 'light');
     });
 });
 

@@ -33,41 +33,52 @@ body, html {
   -webkit-font-smoothing: antialiased;
 }
 
-/* —— Header —— */
+/* —— Header (matches site style) —— */
 .admin-wrap {
   max-width: 1120px;
   margin: 0 auto;
   padding: 1.75rem 1.35rem 4rem;
 }
 .admin-header {
-  background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
-  padding: 1.6rem 1.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: var(--cream);
+  padding: 1.5rem 1.5rem 0.35rem;
+  border-bottom: none;
 }
 .admin-header::before { display: none; }
 .admin-header-inner {
   max-width: 1120px;
   margin: 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--ink);
 }
 .admin-header h1 {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.55rem;
+  font-family: 'Barlow', sans-serif;
+  font-size: clamp(1.4rem, 2.6vw, 1.7rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   text-transform: none;
-  color: #fff;
+  color: var(--ink);
   margin: 0;
 }
 .admin-header p {
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--mid);
   font-size: 0.84rem;
   margin: 0.3rem 0 0;
   line-height: 1.4;
+}
+.admin-header .news-eyebrow {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sixers-blue);
+  margin-bottom: 0.2rem;
 }
 
 /* —— Auth —— */
@@ -123,7 +134,7 @@ body, html {
 .admin-tabs {
   display: flex;
   gap: 0.15rem;
-  background: #fff;
+  background: var(--cream);
   border-bottom: 1px solid var(--border);
   padding: 0 1rem;
   overflow-x: auto;
@@ -729,8 +740,9 @@ body, html {
 }
 @media (max-width: 640px) {
   .admin-wrap { padding: 1.15rem 1rem 3rem; }
-  .admin-header { padding: 1.25rem 1rem; }
+  .admin-header { padding: 1.1rem 1rem 0.25rem; }
   .admin-header h1 { font-size: 1.3rem; }
+  .admin-header-inner { padding-bottom: 0.85rem; }
   .admin-tabs { padding: 0 0.5rem; top: 56px; }
   .admin-tab { padding: 0.85rem 0.85rem; font-size: 0.84rem; }
   .list-filters { flex-direction: column; }
@@ -747,8 +759,9 @@ body, html {
 <div class="admin-header">
   <div class="admin-header-inner">
     <div>
-      <h1>Articles Admin</h1>
-      <p>Create and manage editorial content — separate from the community feed</p>
+      <span class="news-eyebrow">Staff</span>
+      <h1>Content Admin</h1>
+      <p>Write articles, post updates, and manage fan polls</p>
     </div>
   </div>
 </div>
@@ -819,6 +832,11 @@ body, html {
             <div class="form-group">
               <label class="form-label">Byline</label>
               <input type="text" class="form-input" id="f-author" placeholder="Writer name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Publish date</label>
+              <input type="date" class="form-input" id="f-publish-date">
+              <div class="form-hint">Override the article date shown on the site. Leave blank to use today’s date.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Category *</label>
@@ -1343,6 +1361,28 @@ function renderArticleList() {
 document.getElementById('new-article-btn').addEventListener('click', () => { clearEditor(); switchTab('editor'); });
 document.getElementById('cancel-editor-btn').addEventListener('click', () => switchTab('list'));
 
+function todayInputValue() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+function dateToInputValue(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  if (isNaN(d.getTime())) return '';
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+function inputValueToDate(val) {
+  if (!val || !String(val).trim()) return null;
+  // Interpret as local calendar date at noon to avoid TZ day-shift
+  const parts = String(val).trim().split('-').map(Number);
+  if (parts.length !== 3 || parts.some(n => !n && n !== 0)) return null;
+  const d = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
+  return isNaN(d.getTime()) ? null : d;
+}
 function defaultAuthor() {
   if (!currentUser) return 'Sixers Hoops Staff';
   return currentUser.displayName || currentUser.email || 'Sixers Hoops Staff';
@@ -1352,6 +1392,8 @@ function clearEditor(opts) {
   document.getElementById('editing-doc-id').value = '';
   ['f-title','f-slug','f-excerpt','f-intro','f-closing','f-tweet-url'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-author').value = defaultAuthor();
+  const pd = document.getElementById('f-publish-date');
+  if (pd) pd.value = todayInputValue();
   document.getElementById('f-category').value = opts.category || 'News';
   document.getElementById('grade-entries').innerHTML = '';
   document.getElementById('tweet-preview-box').classList.remove('visible');
@@ -1371,6 +1413,8 @@ function editArticle(id) {
   document.getElementById('editing-doc-id').value = id;
   document.getElementById('f-title').value = a.title || '';
   document.getElementById('f-author').value = a.author || defaultAuthor();
+  const pdEdit = document.getElementById('f-publish-date');
+  if (pdEdit) pdEdit.value = dateToInputValue(a.createdAt) || todayInputValue();
   slugManual = !!(a.slug);
   document.getElementById('f-slug').value = a.slug || '';
   handleSlugInput(a.slug || '', false);
@@ -1435,11 +1479,18 @@ async function saveArticle(status) {
   btn.disabled = true;
   try {
     const existingDocId = document.getElementById('editing-doc-id').value;
+    const overrideDate = inputValueToDate((document.getElementById('f-publish-date') || {}).value);
     if (existingDocId) {
+      if (overrideDate) {
+        data.createdAt = window.firebase.firestore.Timestamp.fromDate(overrideDate);
+      }
       await window.db.collection(COLLECTION).doc(existingDocId).update(data);
       toast(status === 'draft' ? 'Draft saved' : 'Article updated');
     } else {
-      data.createdAt = window.firebase.firestore.FieldValue.serverTimestamp();
+      data.createdAt = overrideDate
+        ? window.firebase.firestore.Timestamp.fromDate(overrideDate)
+        : window.firebase.firestore.FieldValue.serverTimestamp();
+
       data.createdBy = currentUser ? (currentUser.email || '') : '';
       const ref = await window.db.collection(COLLECTION).add(data);
       document.getElementById('editing-doc-id').value = ref.id;

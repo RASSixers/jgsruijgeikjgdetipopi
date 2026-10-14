@@ -163,10 +163,30 @@
     box-sizing: border-box;
   }
   .news-heading {
-    display: none; /* layout has its own "Featured Posts" label */
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 2px solid var(--ink);
   }
-  .news-eyebrow { display: none; }
-  .news-title { display: none; }
+  .news-eyebrow {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sixers-blue);
+    margin-bottom: 0.2rem;
+  }
+  .news-title {
+    font-size: clamp(1.35rem, 2.8vw, 1.65rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin: 0;
+  }
 
   .news-grid {
     display: grid;
@@ -259,6 +279,12 @@
     border: none;
     min-width: 0;
   }
+  .news-stack-empty {
+    font-size: 0.88rem;
+    color: #9ca3af;
+    margin: 0.75rem 0 0;
+    line-height: 1.5;
+  }
   .news-stack-label {
     font-size: 1.15rem;
     font-weight: 700;
@@ -292,12 +318,13 @@
   .news-row .news-tag { display: none; }
   .news-row-time { display: none; }
   .news-row-title {
-    font-size: 0.98rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 650;
     line-height: 1.4;
-    margin: 0 0 0.45rem;
+    margin: 0 0 0.5rem;
     color: var(--ink);
     letter-spacing: -0.015em;
+    display: block;
   }
   .news-row:hover .news-row-title { color: var(--sixers-blue); }
   .news-row-excerpt { display: none; }
@@ -837,7 +864,7 @@ function renderNews(articles) {
 
   // Text-only (no article photos — copyright-safe). Layout mirrors a featured + sidebar list.
   const featured = articles[0];
-  const rest = articles.slice(1, 6);
+  const rest = articles.slice(1, 8);
 
   function articleUrl(a) {
     return a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
@@ -873,10 +900,11 @@ function renderNews(articles) {
     );
   }).join('');
 
+  const stackBody = listHtml
+    ? listHtml
+    : '<p class="news-stack-empty">More stories will appear here as they are published.</p>';
   grid.innerHTML = featuredHtml +
-    (listHtml
-      ? '<div class="news-stack"><div class="news-stack-label">Featured Posts</div>' + listHtml + '</div>'
-      : '');
+    '<div class="news-stack"><div class="news-stack-label">Featured Posts</div>' + stackBody + '</div>';
 }
 
 function listenToNews() {

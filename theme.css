@@ -1,4 +1,4 @@
-/* SixersHoops site themes: light (default), dark-mode, navy-mode */
+/* SixersHoops themes: light (default) + dark-mode only */
 :root {
   --sh-navy: #001a57;
   --sh-blue: #006BB6;
@@ -28,216 +28,204 @@ html.dark-mode {
   --sh-input-bg: #1a2030;
   --sh-hover: rgba(255, 255, 255, 0.06);
   color-scheme: dark;
+
+  /* Remap common page variables so dark works site-wide */
+  --cream: #0b0f1a;
+  --ink: #e8eaf0;
+  --mid: #94a3b8;
+  --border-light: rgba(255, 255, 255, 0.1);
+  --card-bg: #161b27;
+  --navy: #0b0f1a;
+  --navy-deep: #070b14;
+  --sixers-blue: #3b9be8;
+  --bg: #0b0f1a;
+  --bg2: #121826;
+  --text: #e8eaf0;
+  --muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+  --surface: #161b27;
+  --surface-2: #1a2030;
 }
 
-/* Navy theme: deep Sixers navy surfaces */
+/* Legacy navy-mode → treat as dark (for cached HTML) */
 html.navy-mode {
-  --sh-bg: #000d2e;
-  --sh-bg2: #00123f;
-  --sh-card: #001a57;
-  --sh-ink: #f0f4ff;
-  --sh-mid: #9eb0d4;
-  --sh-border: rgba(255, 255, 255, 0.12);
-  --sh-muted: #7a8fb8;
-  --sh-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
-  --sh-input-bg: #001845;
-  --sh-hover: rgba(255, 255, 255, 0.08);
-  --sh-blue: #3b9be8;
+  --sh-bg: #0b0f1a;
+  --sh-bg2: #121826;
+  --sh-card: #161b27;
+  --sh-ink: #e8eaf0;
+  --sh-mid: #94a3b8;
+  --sh-border: rgba(255, 255, 255, 0.1);
+  --sh-muted: #64748b;
+  --sh-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --sh-input-bg: #1a2030;
+  --sh-hover: rgba(255, 255, 255, 0.06);
+  --cream: #0b0f1a;
+  --ink: #e8eaf0;
+  --mid: #94a3b8;
+  --border-light: rgba(255, 255, 255, 0.1);
+  --card-bg: #161b27;
   color-scheme: dark;
 }
 
-/* Global body mapping when pages use var(--cream) etc via overrides below */
 html.dark-mode body,
 html.navy-mode body {
   background: var(--sh-bg) !important;
   color: var(--sh-ink) !important;
 }
 
-/* Common card / surface helpers */
+/* Surfaces & cards used across pages */
 html.dark-mode .card,
-html.navy-mode .card,
 html.dark-mode .mbox,
-html.navy-mode .mbox,
 html.dark-mode .compose-bar,
-html.navy-mode .compose-bar,
 html.dark-mode .tabs,
-html.navy-mode .tabs,
 html.dark-mode .btn-ghost,
-html.navy-mode .btn-ghost {
+html.dark-mode .editor-card,
+html.dark-mode .news-feature,
+html.dark-mode .news-stack,
+html.dark-mode .news-row,
+html.dark-mode .article-item,
+html.dark-mode .auth-card,
+html.dark-mode .list-filters,
+html.dark-mode .empty-state,
+html.dark-mode .grade-card,
+html.dark-mode .bottom-line,
+html.dark-mode .more-item,
+html.dark-mode .preview-article-card,
+html.dark-mode .admin-wrap .editor-card,
+html.dark-mode .home-game-card,
+html.dark-mode .feature-card,
+html.dark-mode .tweet-card,
+html.dark-mode .update-card {
   background: var(--sh-card) !important;
   border-color: var(--sh-border) !important;
   color: var(--sh-ink) !important;
 }
 
 html.dark-mode .ctitle,
-html.navy-mode .ctitle,
 html.dark-mode .hero-title,
-html.navy-mode .hero-title {
+html.dark-mode .news-title,
+html.dark-mode .list-toolbar-title,
+html.dark-mode .article-title,
+html.dark-mode .article-item-title,
+html.dark-mode .news-feature-title,
+html.dark-mode .news-row-title,
+html.dark-mode .grade-card-name,
+html.dark-mode .more-item-title {
   color: var(--sh-ink) !important;
 }
 
 html.dark-mode .cmeta,
-html.navy-mode .cmeta,
 html.dark-mode .cexcerpt,
-html.navy-mode .cexcerpt,
 html.dark-mode .hero-kicker,
-html.navy-mode .mid {
+html.dark-mode .news-feature-excerpt,
+html.dark-mode .article-excerpt,
+html.dark-mode .article-meta,
+html.dark-mode .list-toolbar-sub,
+html.dark-mode .section-note,
+html.dark-mode .form-hint,
+html.dark-mode .news-row-meta,
+html.dark-mode .grade-card-stats {
   color: var(--sh-mid) !important;
 }
 
-html.dark-mode .tv-wrap,
-html.navy-mode .tv-wrap {
-  background: var(--sh-bg2) !important;
-  border-color: var(--sh-border) !important;
-}
-html.dark-mode .tv-side + .tv-side,
-html.navy-mode .tv-side + .tv-side {
-  border-color: var(--sh-border) !important;
-}
-html.dark-mode .tv-foot,
-html.navy-mode .tv-foot {
-  background: var(--sh-card) !important;
-  border-color: var(--sh-border) !important;
-  color: var(--sh-mid) !important;
-}
-html.dark-mode .tv-pname,
-html.navy-mode .tv-pname,
-html.dark-mode .tv-abbr,
-html.navy-mode .tv-abbr {
-  color: var(--sh-ink) !important;
-}
-
-html.dark-mode .tab,
-html.navy-mode .tab { color: var(--sh-mid) !important; }
-html.dark-mode .tab.active,
-html.navy-mode .tab.active {
-  background: var(--sh-blue) !important;
-  color: #fff !important;
-}
-
-html.dark-mode .empty,
-html.navy-mode .empty,
-html.dark-mode .state,
-html.navy-mode .state {
-  background: var(--sh-card) !important;
-  border-color: var(--sh-border) !important;
-  color: var(--sh-mid) !important;
-}
-
-html.dark-mode .inp,
-html.navy-mode .inp,
-html.dark-mode .ta,
-html.navy-mode .ta,
 html.dark-mode input,
-html.navy-mode input,
+html.dark-mode select,
 html.dark-mode textarea,
-html.navy-mode textarea {
+html.dark-mode .form-input,
+html.dark-mode .form-select,
+html.dark-mode .form-textarea {
   background: var(--sh-input-bg) !important;
   border-color: var(--sh-border) !important;
   color: var(--sh-ink) !important;
 }
 
-html.dark-mode .page-top,
-html.navy-mode .page-top {
-  border-color: var(--sh-border) !important;
-}
-
-html.dark-mode .pager button,
-html.navy-mode .pager button {
+html.dark-mode .btn-secondary,
+html.dark-mode .btn-ghost,
+html.dark-mode .tb-btn {
   background: var(--sh-card) !important;
   border-color: var(--sh-border) !important;
   color: var(--sh-ink) !important;
 }
-html.dark-mode .pager button.active,
-html.navy-mode .pager button.active {
-  background: var(--sh-navy) !important;
-  color: #fff !important;
-  border-color: var(--sh-navy) !important;
+
+html.dark-mode .admin-header,
+html.dark-mode .admin-tabs,
+html.dark-mode .news-section,
+html.dark-mode .article-wrap {
+  background: transparent !important;
 }
 
-/* Navbar theming */
-html.dark-mode .navbar,
-html.navy-mode .navbar {
-  background: rgba(11, 15, 26, 0.92) !important;
+html.dark-mode .admin-header-inner {
   border-bottom-color: var(--sh-border) !important;
-  backdrop-filter: blur(12px);
 }
-html.navy-mode .navbar {
-  background: rgba(0, 13, 46, 0.94) !important;
-}
-html.dark-mode .nav-link,
-html.navy-mode .nav-link,
-html.dark-mode .icon-btn,
-html.navy-mode .icon-btn {
+html.dark-mode .admin-header h1,
+html.dark-mode .admin-header p {
   color: var(--sh-ink) !important;
 }
-html.dark-mode .user-dropdown,
-html.navy-mode .user-dropdown {
+html.dark-mode .admin-header p { color: var(--sh-mid) !important; }
+
+html.dark-mode .admin-tab {
   background: var(--sh-card) !important;
   border-color: var(--sh-border) !important;
-  color: var(--sh-ink) !important;
+  color: var(--sh-mid) !important;
 }
-html.dark-mode .user-dropdown-item,
-html.navy-mode .user-dropdown-item {
-  color: var(--sh-ink) !important;
-}
-html.dark-mode .user-dropdown-item:hover,
-html.navy-mode .user-dropdown-item:hover {
-  background: var(--sh-hover) !important;
+html.dark-mode .admin-tab.active {
+  background: var(--sh-blue) !important;
+  border-color: var(--sh-blue) !important;
+  color: #fff !important;
 }
 
-/* Auth modal */
-html.dark-mode .auth-modal,
-html.navy-mode .auth-modal,
-html.dark-mode .auth-modal-content,
-html.navy-mode .auth-modal-content {
-  background: var(--sh-card) !important;
+html.dark-mode .article-body p,
+html.dark-mode .grade-card-analysis,
+html.dark-mode .bottom-line p {
   color: var(--sh-ink) !important;
 }
 
-/* Trade machine surfaces */
-html.dark-mode .team-card,
-html.navy-mode .team-card,
-html.dark-mode .board-toolbar,
-html.navy-mode .board-toolbar,
-html.dark-mode .result-panel,
-html.navy-mode .result-panel {
-  background: var(--sh-card) !important;
-  border-color: var(--sh-border) !important;
-  color: var(--sh-ink) !important;
-}
-html.dark-mode .player-item,
-html.navy-mode .player-item {
-  border-color: var(--sh-border) !important;
-  color: var(--sh-ink) !important;
-}
-html.dark-mode .player-name,
-html.navy-mode .player-name {
-  color: var(--sh-ink) !important;
-}
-html.dark-mode .board-btn-ghost,
-html.navy-mode .board-btn-ghost {
+html.dark-mode .tweet-embed-wrap,
+html.dark-mode .writer-guide,
+html.dark-mode .insert-panel,
+html.dark-mode .article-locked {
   background: var(--sh-bg2) !important;
   border-color: var(--sh-border) !important;
   color: var(--sh-ink) !important;
 }
 
-/* Trade detail */
-html.dark-mode .sh-hero,
-html.navy-mode .sh-hero {
-  background: var(--sh-card) !important;
+html.dark-mode .tv-wrap {
+  background: var(--sh-bg2) !important;
   border-color: var(--sh-border) !important;
 }
-html.dark-mode .excerpt,
-html.navy-mode .excerpt {
-  color: var(--sh-mid) !important;
+html.dark-mode .tv-side + .tv-side,
+html.dark-mode .tv-foot {
+  border-color: var(--sh-border) !important;
+}
+html.dark-mode .tv-foot {
+  background: var(--sh-card) !important;
 }
 
+/* Tables / trade machine / pickem common */
+html.dark-mode table,
+html.dark-mode th,
+html.dark-mode td {
+  border-color: var(--sh-border) !important;
+  color: var(--sh-ink) !important;
+}
+html.dark-mode th {
+  background: var(--sh-bg2) !important;
+}
 
-/* Theme toggle icons */
-.theme-toggle .sun-icon,
-.theme-toggle .moon-icon,
-.theme-toggle .navy-icon { display: none; }
-html:not(.dark-mode):not(.navy-mode) .theme-toggle .sun-icon { display: block; }
-html.dark-mode .theme-toggle .moon-icon { display: block; }
-html.navy-mode .theme-toggle .navy-icon { display: block; color: #7dd3fc; }
+html.dark-mode .modal,
+html.dark-mode .modal-content,
+html.dark-mode .auth-modal,
+html.dark-mode .policy-popup {
+  background: var(--sh-card) !important;
+  color: var(--sh-ink) !important;
+  border-color: var(--sh-border) !important;
+}
+
+/* Soften pure white hardcodes on major shells */
+html.dark-mode [style*="background:#fff"],
+html.dark-mode [style*="background: #fff"],
+html.dark-mode [style*="background:#ffffff"],
+html.dark-mode [style*="background: #ffffff"],
+html.dark-mode [style*="background:white"] {
+  background: var(--sh-card) !important;
+}

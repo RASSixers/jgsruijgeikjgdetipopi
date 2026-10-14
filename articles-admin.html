@@ -834,12 +834,91 @@ body, html {
 }
 .writer-guide li { margin: 0.25rem 0; }
 .form-textarea.body-editor {
-  min-height: 420px;
-  font-size: 1.02rem;
+  min-height: min(70vh, 720px);
+  height: min(70vh, 720px);
+  font-size: 1.05rem;
   line-height: 1.7;
-  padding: 1rem 1.1rem;
+  padding: 1.1rem 1.15rem;
+  border-radius: 12px;
+  resize: vertical;
+  transition: height 0.2s ease, min-height 0.2s ease;
+}
+.form-textarea.body-editor.is-expanded {
+  min-height: 90vh;
+  height: 90vh;
+}
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+.editor-toolbar .tb-btn {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 650;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+.editor-toolbar .tb-btn:hover {
+  border-color: rgba(0,107,182,0.35);
+  color: var(--sixers-blue);
+  background: #f0f7ff;
+}
+.editor-toolbar .tb-btn.primary {
+  background: rgba(0,107,182,0.08);
+  border-color: rgba(0,107,182,0.25);
+  color: var(--sixers-blue);
+}
+.editor-toolbar .tb-hint {
+  font-size: 0.75rem;
+  color: var(--mid);
+  margin-left: 0.15rem;
+}
+.insert-panel {
+  display: none;
+  margin-bottom: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: var(--soft);
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
+.insert-panel.open { display: block; }
+.insert-panel-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0 0 0.55rem;
+}
+.insert-panel-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.insert-panel-row .form-input { flex: 1; min-width: 180px; }
+.insert-panel-actions {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+  flex-wrap: wrap;
+}
+.convert-result {
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--mid);
+  word-break: break-all;
+}
+.convert-result strong { color: var(--ink); }
+.convert-result.ok { color: #15803d; }
+.convert-result.err { color: #b91c1c; }
 .meta-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -847,7 +926,14 @@ body, html {
 }
 @media (max-width: 640px) {
   .meta-row { grid-template-columns: 1fr; }
-  .form-textarea.body-editor { min-height: 320px; }
+  .form-textarea.body-editor {
+    min-height: 55vh;
+    height: 55vh;
+  }
+  .form-textarea.body-editor.is-expanded {
+    min-height: 85vh;
+    height: 85vh;
+  }
 }
 .section-note {
   font-size: 0.78rem;
@@ -1009,32 +1095,79 @@ body, html {
 
           <div class="editor-card" style="margin-top:1rem;">
             <h3>Write the article</h3>
-            <p class="section-note">Type normally in the box below. Blank lines create new paragraphs on the site.</p>
+            <p class="section-note">Click in the box where you want something to appear, then use the buttons to insert a tweet or image at the cursor.</p>
             <div class="writer-guide">
-              <strong>How to format</strong>
+              <strong>Quick guide</strong>
               <ol>
-                <li>Write normally. Leave a blank line between paragraphs.</li>
-                <li><strong>Tweet embed:</strong> put the full X URL alone on its own line (or its own paragraph), e.g. <code>https://x.com/user/status/123</code> — you can do this as many times as you want throughout the article.</li>
-                <li><strong>Image embed:</strong> put a direct image URL alone on its own line, e.g. <code>https://…/photo.jpg</code>, or use <code>![caption](https://…/photo.jpg)</code>. Only use images you have rights to use.</li>
-                <li>For Player Grades, set the category, then load roster and fill grades below.</li>
-                <li>Optional closing note goes in the short field at the bottom.</li>
+                <li>Type your story. Blank lines = new paragraphs on the site.</li>
+                <li>Place the cursor where the embed should go → <strong>Insert tweet</strong> or <strong>Insert image</strong>.</li>
+                <li>Messy X links? Use <strong>Convert tweet link</strong> to clean them, then insert.</li>
+                <li>Use <strong>Expand editor</strong> to review the full draft without cramped scrolling.</li>
               </ol>
             </div>
+
+            <div class="editor-toolbar">
+              <button type="button" class="tb-btn primary" id="btn-insert-tweet">Insert tweet</button>
+              <button type="button" class="tb-btn primary" id="btn-insert-image">Insert image</button>
+              <button type="button" class="tb-btn" id="btn-convert-tweet">Convert tweet link</button>
+              <button type="button" class="tb-btn" id="btn-expand-editor">Expand editor</button>
+              <span class="tb-hint">Inserts at your cursor position</span>
+            </div>
+
+            <div class="insert-panel" id="panel-tweet">
+              <div class="insert-panel-title">Insert tweet at cursor</div>
+              <div class="insert-panel-row">
+                <input type="text" class="form-input" id="insert-tweet-url" placeholder="Paste any x.com / twitter.com link">
+              </div>
+              <div class="insert-panel-actions">
+                <button type="button" class="btn-primary btn-sm" id="insert-tweet-confirm">Insert here</button>
+                <button type="button" class="btn-secondary btn-sm" id="insert-tweet-cancel">Cancel</button>
+              </div>
+              <div class="convert-result" id="insert-tweet-status"></div>
+            </div>
+
+            <div class="insert-panel" id="panel-image">
+              <div class="insert-panel-title">Insert image at cursor</div>
+              <div class="insert-panel-row">
+                <input type="text" class="form-input" id="insert-image-url" placeholder="https://…/photo.jpg (you must have rights to use it)">
+              </div>
+              <div class="insert-panel-row" style="margin-top:0.45rem;">
+                <input type="text" class="form-input" id="insert-image-caption" placeholder="Optional caption">
+              </div>
+              <div class="insert-panel-actions">
+                <button type="button" class="btn-primary btn-sm" id="insert-image-confirm">Insert here</button>
+                <button type="button" class="btn-secondary btn-sm" id="insert-image-cancel">Cancel</button>
+              </div>
+            </div>
+
+            <div class="insert-panel" id="panel-convert">
+              <div class="insert-panel-title">Tweet link converter</div>
+              <div class="insert-panel-row">
+                <input type="text" class="form-input" id="convert-tweet-input" placeholder="Paste share link, mobile link, or messy x.com URL">
+              </div>
+              <div class="insert-panel-actions">
+                <button type="button" class="btn-primary btn-sm" id="convert-tweet-run">Convert</button>
+                <button type="button" class="btn-primary btn-sm" id="convert-tweet-insert" style="display:none;">Insert converted link</button>
+                <button type="button" class="btn-secondary btn-sm" id="convert-tweet-cancel">Close</button>
+              </div>
+              <div class="convert-result" id="convert-tweet-status"></div>
+            </div>
+
             <div class="form-group" style="margin-bottom:0.75rem;">
               <label class="form-label">Article body *</label>
               <textarea class="form-textarea body-editor" id="f-intro" placeholder="Start writing here…
 
-First paragraph of the article.
+First paragraph.
 
-https://x.com/sixers/status/1234567890
+[place cursor and click Insert tweet / Insert image where you want embeds]
 
-Continue with more analysis after the embedded tweet…"></textarea>
+Next paragraph…"></textarea>
               <div class="char-count" id="intro-count">0 words</div>
             </div>
             <div class="tweet-embed-section">
               <div class="tweet-embed-header"><span class="tweet-embed-label">Primary tweet (optional)</span></div>
               <input type="text" class="form-input" id="f-tweet-url" placeholder="https://x.com/user/status/1234567890" oninput="handleTweetInput(this.value)">
-              <div class="tweet-embed-hint">Optional. Body tweet links are preferred for multiple embeds. This field is a single primary embed if you don’t put URLs in the body.</div>
+              <div class="tweet-embed-hint">Optional single embed if you prefer not to place links in the body.</div>
               <div class="tweet-preview-box" id="tweet-preview-box">Tweet preview appears here when a valid URL is entered.</div>
             </div>
           </div>
@@ -1348,6 +1481,158 @@ function updatePreview() {
   const existing = document.getElementById('editing-doc-id').value;
   document.getElementById('publish-btn').textContent = existing ? 'Update & Publish' : 'Publish Article';
 }
+
+
+/* —— Body editor: insert at cursor, convert tweet URLs, expand —— */
+function getBodyEl() { return document.getElementById('f-intro'); }
+
+function normalizeTweetUrl(raw) {
+  if (!raw) return null;
+  var s = String(raw).trim();
+  // Strip tracking wrappers / spaces
+  s = s.replace(/\s+/g, '');
+  // twitter.com → x.com
+  s = s.replace(/^http:\/\//i, 'https://');
+  s = s.replace(/https?:\/\/(www\.)?twitter\.com/i, 'https://x.com');
+  s = s.replace(/https?:\/\/(mobile\.)?twitter\.com/i, 'https://x.com');
+  s = s.replace(/https?:\/\/(mobile\.)?x\.com/i, 'https://x.com');
+  // Extract status id from many shapes
+  var m = s.match(/(?:x\.com|twitter\.com)\/(?:#!\/)?([A-Za-z0-9_]+)\/status(?:es)?\/(\d+)/i);
+  if (m) return 'https://x.com/' + m[1] + '/status/' + m[2];
+  // Sometimes only status id in path after i/web
+  m = s.match(/(?:x\.com|twitter\.com)\/i\/web\/status\/(\d+)/i);
+  if (m) return 'https://x.com/i/web/status/' + m[1];
+  m = s.match(/status(?:es)?\/(\d+)/i);
+  if (m) return 'https://x.com/i/web/status/' + m[1];
+  return null;
+}
+
+function insertAtCursor(textarea, chunk) {
+  if (!textarea) return;
+  textarea.focus();
+  var start = textarea.selectionStart || 0;
+  var end = textarea.selectionEnd || 0;
+  var val = textarea.value || '';
+  var before = val.slice(0, start);
+  var after = val.slice(end);
+  // Ensure blank lines around embed so it parses as its own block
+  var prefix = '';
+  var suffix = '';
+  if (before && !/\n\n$/.test(before) && !/\n$/.test(before)) prefix = '\n\n';
+  else if (before && !/\n\n$/.test(before)) prefix = '\n';
+  if (after && !/^\n\n/.test(after) && !/^\n/.test(after)) suffix = '\n\n';
+  else if (after && !/^\n\n/.test(after)) suffix = '\n';
+  var block = prefix + chunk + suffix;
+  textarea.value = before + block + after;
+  var pos = (before + block).length;
+  textarea.selectionStart = textarea.selectionEnd = pos;
+  textarea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function closeInsertPanels() {
+  ['panel-tweet', 'panel-image', 'panel-convert'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+  });
+}
+
+function openPanel(id) {
+  closeInsertPanels();
+  var el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+
+(function setupEditorTools() {
+  var body = getBodyEl();
+  if (!body) return;
+
+  document.getElementById('btn-insert-tweet').addEventListener('click', function () {
+    openPanel('panel-tweet');
+    var inp = document.getElementById('insert-tweet-url');
+    inp.value = '';
+    document.getElementById('insert-tweet-status').textContent = '';
+    document.getElementById('insert-tweet-status').className = 'convert-result';
+    setTimeout(function () { inp.focus(); }, 50);
+  });
+  document.getElementById('btn-insert-image').addEventListener('click', function () {
+    openPanel('panel-image');
+    document.getElementById('insert-image-url').value = '';
+    document.getElementById('insert-image-caption').value = '';
+    setTimeout(function () { document.getElementById('insert-image-url').focus(); }, 50);
+  });
+  document.getElementById('btn-convert-tweet').addEventListener('click', function () {
+    openPanel('panel-convert');
+    document.getElementById('convert-tweet-input').value = '';
+    document.getElementById('convert-tweet-status').textContent = '';
+    document.getElementById('convert-tweet-status').className = 'convert-result';
+    document.getElementById('convert-tweet-insert').style.display = 'none';
+    document.getElementById('convert-tweet-insert').dataset.url = '';
+    setTimeout(function () { document.getElementById('convert-tweet-input').focus(); }, 50);
+  });
+
+  document.getElementById('insert-tweet-cancel').addEventListener('click', closeInsertPanels);
+  document.getElementById('insert-image-cancel').addEventListener('click', closeInsertPanels);
+  document.getElementById('convert-tweet-cancel').addEventListener('click', closeInsertPanels);
+
+  document.getElementById('insert-tweet-confirm').addEventListener('click', function () {
+    var raw = document.getElementById('insert-tweet-url').value;
+    var url = normalizeTweetUrl(raw);
+    var status = document.getElementById('insert-tweet-status');
+    if (!url) {
+      status.textContent = 'Could not read that link. Paste a full x.com or twitter.com status URL.';
+      status.className = 'convert-result err';
+      return;
+    }
+    insertAtCursor(getBodyEl(), url);
+    status.textContent = 'Inserted: ' + url;
+    status.className = 'convert-result ok';
+    closeInsertPanels();
+  });
+
+  document.getElementById('insert-image-confirm').addEventListener('click', function () {
+    var src = (document.getElementById('insert-image-url').value || '').trim();
+    var cap = (document.getElementById('insert-image-caption').value || '').trim();
+    if (!/^https?:\/\//i.test(src)) {
+      alert('Enter a full image URL starting with https://');
+      return;
+    }
+    var chunk = cap ? ('![' + cap + '](' + src + ')') : src;
+    insertAtCursor(getBodyEl(), chunk);
+    closeInsertPanels();
+  });
+
+  var lastConverted = '';
+  document.getElementById('convert-tweet-run').addEventListener('click', function () {
+    var raw = document.getElementById('convert-tweet-input').value;
+    var url = normalizeTweetUrl(raw);
+    var status = document.getElementById('convert-tweet-status');
+    var insertBtn = document.getElementById('convert-tweet-insert');
+    if (!url) {
+      status.textContent = 'Could not convert that link.';
+      status.className = 'convert-result err';
+      insertBtn.style.display = 'none';
+      return;
+    }
+    lastConverted = url;
+    status.innerHTML = 'Converted to: <strong>' + url.replace(/</g, '&lt;') + '</strong>';
+    status.className = 'convert-result ok';
+    insertBtn.style.display = '';
+    insertBtn.dataset.url = url;
+  });
+  document.getElementById('convert-tweet-insert').addEventListener('click', function () {
+    var url = this.dataset.url || lastConverted;
+    if (!url) return;
+    insertAtCursor(getBodyEl(), url);
+    closeInsertPanels();
+  });
+
+  document.getElementById('btn-expand-editor').addEventListener('click', function () {
+    var ta = getBodyEl();
+    var on = ta.classList.toggle('is-expanded');
+    this.textContent = on ? 'Collapse editor' : 'Expand editor';
+    if (on) ta.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
 
 ['f-title','f-excerpt','f-intro','f-closing','f-author','f-slug'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {

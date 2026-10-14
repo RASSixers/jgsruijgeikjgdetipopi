@@ -159,6 +159,8 @@
     max-width: 960px;
     margin: 0 auto;
     padding: 0 1.25rem;
+    width: 100%;
+    box-sizing: border-box;
   }
   .news-heading {
     display: flex;
@@ -225,6 +227,8 @@
     line-height: 1.15;
     margin: 0 0 0.75rem;
     color: var(--ink);
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
   }
   .news-feature:hover .news-feature-title { color: var(--sixers-blue); }
   .news-feature-excerpt {
@@ -365,12 +369,70 @@
     .news-section { padding: 3.25rem 0 4.25rem; }
   }
   @media (max-width: 699px) {
-    .news-feature { padding-left: 0.9rem; }
+    .news-section { padding: 1.75rem 0 2.5rem; }
+    .news-inner {
+      padding: 0 1rem;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .news-heading {
+      margin-bottom: 1.1rem;
+      padding-bottom: 0.65rem;
+    }
+    .news-title {
+      font-size: 1.25rem;
+    }
+    .news-grid {
+      gap: 1.15rem;
+      width: 100%;
+      max-width: 100%;
+    }
+    .news-feature {
+      padding: 0 0 0 0.75rem;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .news-feature-title {
+      font-size: 1.35rem;
+      line-height: 1.2;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+    .news-feature-excerpt {
+      font-size: 0.92rem;
+      margin-bottom: 0.85rem;
+    }
+    .news-feature-meta {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.55rem;
+    }
     .news-feature-meta .news-read {
       margin-left: 0;
       width: 100%;
       justify-content: center;
-      margin-top: 0.35rem;
+      box-sizing: border-box;
+    }
+    .news-stack {
+      gap: 0.7rem;
+      width: 100%;
+    }
+    .news-row {
+      padding: 0.9rem 0.95rem;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .news-row-title {
+      font-size: 0.98rem;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+    .news-row-excerpt {
+      font-size: 0.82rem;
+    }
+    .news-row-top {
+      flex-wrap: wrap;
+      gap: 0.35rem 0.5rem;
     }
   }
 
@@ -807,7 +869,8 @@ function isPublished(a) {
   return !a.status || a.status === 'published';
 }
 function byline(a) {
-  return a.author || 'Sixers Hoops Staff';
+  const name = (a.author || a.byline || 'SixersHoops').trim();
+  return 'By: ' + name;
 }
 
 function renderNews(articles) {

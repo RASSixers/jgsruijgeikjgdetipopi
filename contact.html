@@ -170,7 +170,7 @@
     <div class="contact-grid">
       <section class="panel">
         <h2 class="panel-title">Send a message</h2>
-        <form class="contact-form" action="https://formspree.io/f/xyzpjnze" method="POST">
+        <form class="contact-form" id="contactForm" method="POST" action="#">
           <div class="field">
             <label for="name">Name</label>
             <input id="name" name="name" type="text" placeholder="Your name" required>
@@ -250,14 +250,38 @@
 
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
-        statusEl.textContent = "Submitting…";
-        statusEl.classList.remove("error");
-        try {
-          const res = await fetch(form.action, {
-            method: "POST",
-            headers: { Accept: "application/json" },
-            body: new FormData(form)
+        statusEl.textContent = "Sending…";
+        statusEl.className = "form-status";
+        var name = (document.getElementById("name") || {}).value || "";
+        var email = (document.getElementById("email") || {}).value || "";
+        var message = (document.getElementById("message") || {}).value || "";
+        function fail(msg) {
+          statusEl.textContent = msg || "Something went wrong. Email info@sixershoops.com.";
+          statusEl.className = "form-status error";
+        }
+        function trySend(tries) {
+          tries = tries || 0;
+          if (!window.db || !window.firebase) {
+            if (tries < 40) return setTimeout(function(){ trySend(tries + 1); }, 250);
+            return fail("Connection not ready. Please try again.");
+          }
+          window.db.collection("contactMessages").add({
+            name: String(name).trim(),
+            email: String(email).trim(),
+            message: String(message).trim(),
+            status: "new",
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+            userAgent: navigator.userAgent || ""
+          }).then(function () {
+            statusEl.textContent = "Message sent. We will get back to you soon.";
+            statusEl.className = "form-status";
+            form.reset();
+          }).catch(function (err) {
+            fail(err.message || "Could not send message.");
           });
+        }
+        trySend();
+      });
           if (res.ok) {
             statusEl.textContent = "Message sent. Thank you.";
             form.reset();

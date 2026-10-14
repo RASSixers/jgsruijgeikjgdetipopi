@@ -3,244 +3,728 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manage Users | Sixers Hoops</title>
+<title>Staff · Manage Users | Sixers Hoops</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/navbar-styles.css">
 <style>
 :root {
-  --cream: #f4f6f9; --ink: #0f172a; --mid: #64748b; --border: #e2e8f0;
-  --sixers-blue: #006BB6; --sixers-red: #ED174C; --card: #fff;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --mid: #64748b;
+  --border: #e2e8f0;
+  --blue: #006BB6;
+  --red: #ED174C;
+  --green: #15803d;
+  --amber: #b45309;
+  --soft: #f8fafc;
 }
 *, *::before, *::after { box-sizing: border-box; }
 body {
-  margin: 0; margin-top: 64px;
+  margin: 0;
+  margin-top: 64px;
   font-family: Lexend, system-ui, sans-serif;
-  background: var(--cream); color: var(--ink);
+  background: var(--bg);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
-.wrap { max-width: 960px; margin: 0 auto; padding: 1.75rem 1.25rem 4rem; }
-.page-head { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--ink); }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 1.75rem 1.25rem 4rem; }
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--ink);
+}
 .page-eyebrow {
-  display: block; font-size: 0.65rem; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--sixers-blue); margin-bottom: 0.25rem;
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 0.25rem;
 }
-.page-head h1 { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
-.page-head p { color: var(--mid); font-size: 0.88rem; margin: 0.35rem 0 0; }
-.staff-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 1.5rem; }
-.staff-links a {
-  display: inline-flex; align-items: center;
-  padding: 0.45rem 0.9rem; border-radius: 999px;
-  border: 1px solid var(--border); background: var(--card);
-  font-size: 0.82rem; font-weight: 650; text-decoration: none; color: var(--ink);
+.page-head h1 {
+  font-size: clamp(1.4rem, 2.5vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
 }
-.staff-links a:hover { border-color: rgba(0,107,182,0.35); color: var(--sixers-blue); }
-.staff-links a.active { background: var(--sixers-blue); border-color: var(--sixers-blue); color: #fff; }
+.page-head p { color: var(--mid); font-size: 0.86rem; margin: 0.3rem 0 0; max-width: 36rem; line-height: 1.45; }
+
+.staff-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.35rem;
+}
+.staff-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-decoration: none;
+  color: var(--ink);
+}
+.staff-nav a:hover { border-color: rgba(0,107,182,0.35); color: var(--blue); }
+.staff-nav a.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+.stat-val { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+.stat-label { font-size: 0.72rem; font-weight: 600; color: var(--mid); margin-top: 0.15rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
 .toolbar {
-  display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem;
-  padding: 0.85rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  align-items: center;
 }
-.toolbar input {
-  flex: 1; min-width: 180px; padding: 0.65rem 0.85rem; border-radius: 10px;
-  border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem;
+.toolbar input[type="search"],
+.toolbar select {
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  outline: none;
 }
-.user-list { display: flex; flex-direction: column; gap: 0.55rem; }
-.user-row {
-  display: grid; grid-template-columns: 1fr auto; gap: 0.75rem;
-  align-items: center; padding: 0.95rem 1.1rem;
-  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+.toolbar input[type="search"] { flex: 1; min-width: 200px; }
+.toolbar select { min-width: 140px; }
+.toolbar input:focus, .toolbar select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,107,182,0.15);
 }
-.user-name { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.015em; }
-.user-meta { font-size: 0.78rem; color: var(--mid); margin-top: 0.2rem; word-break: break-all; }
-.user-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
-.toggle {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  font-size: 0.78rem; font-weight: 650; color: var(--mid);
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 1rem;
+  align-items: start;
 }
-.toggle input { width: 16px; height: 16px; accent-color: var(--sixers-blue); }
-.badge {
-  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  padding: 0.2rem 0.5rem; border-radius: 999px;
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  padding-right: 0.15rem;
 }
-.badge.on { background: #dcfce7; color: #166534; }
-.badge.off { background: #f1f5f9; color: #64748b; }
+.user-card {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: inherit;
+}
+.user-card:hover { border-color: rgba(0,107,182,0.3); }
+.user-card.selected {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,107,182,0.12);
+}
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #001a57;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.uc-body { flex: 1; min-width: 0; }
+.uc-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.uc-user {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--blue);
+  margin-top: 0.1rem;
+}
+.uc-email {
+  font-size: 0.75rem;
+  color: var(--mid);
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.uc-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
+.pill {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+}
+.pill.active { background: #dcfce7; color: #166534; }
+.pill.suspended { background: #fef3c7; color: #92400e; }
+.pill.banned { background: #fee2e2; color: #991b1b; }
+.pill.perm { background: #e0f2fe; color: #075985; }
+
+.detail {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.detail-empty {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: var(--mid);
+  font-size: 0.9rem;
+}
+.detail-head {
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.detail-head .avatar { width: 56px; height: 56px; font-size: 1.2rem; margin-bottom: 0.75rem; }
+.detail-name { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+.detail-user { font-size: 0.9rem; font-weight: 650; color: var(--blue); margin: 0.25rem 0 0; }
+.detail-email { font-size: 0.8rem; color: var(--mid); margin: 0.2rem 0 0; word-break: break-all; }
+.detail-uid {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 0.45rem;
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+.detail-section {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.detail-section:last-child { border-bottom: none; }
+.sec-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin: 0 0 0.75rem;
+}
+.perm-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.perm-row:last-child { border-bottom: none; }
+.perm-info { min-width: 0; }
+.perm-label { font-size: 0.86rem; font-weight: 650; }
+.perm-desc { font-size: 0.72rem; color: var(--mid); margin-top: 0.15rem; line-height: 1.35; }
+.switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider {
+  position: absolute; inset: 0;
+  background: #cbd5e1;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.switch .slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.switch input:checked + .slider { background: var(--blue); }
+.switch input:checked + .slider::before { transform: translateX(18px); }
+.switch input:disabled + .slider { opacity: 0.45; cursor: not-allowed; }
+
+.status-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+.btn {
+  font-family: inherit;
+  font-weight: 650;
+  font-size: 0.8rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+.btn:hover { background: var(--soft); }
+.btn-blue { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn-blue:hover { background: #005a9a; }
+.btn-amber { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.btn-red { background: #fff1f2; border-color: #fecdd3; color: var(--red); }
+.btn-green { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+.field { margin-bottom: 0.65rem; }
+.field label { display: block; font-size: 0.72rem; font-weight: 650; color: var(--mid); margin-bottom: 0.3rem; }
+.field input, .field textarea, .field select {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.86rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+}
+.field textarea { min-height: 72px; resize: vertical; }
+.note { font-size: 0.75rem; color: var(--mid); line-height: 1.4; margin-top: 0.5rem; }
+
 .gate {
-  display: none; min-height: 50vh; align-items: center; justify-content: center; padding: 2rem;
+  display: none;
+  min-height: 55vh;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 .gate.show { display: flex; }
 .gate-card {
-  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-  padding: 2rem; text-align: center; max-width: 400px; width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
 }
-.gate-card h2 { margin: 0 0 0.5rem; font-size: 1.25rem; font-weight: 800; }
-.gate-card p { color: var(--mid); font-size: 0.88rem; margin: 0 0 1.25rem; }
-.btn {
-  border: none; border-radius: 10px; padding: 0.7rem 1.25rem; font-family: inherit;
-  font-weight: 700; font-size: 0.88rem; cursor: pointer; background: var(--sixers-blue); color: #fff;
-}
-.empty { text-align: center; padding: 2.5rem; color: var(--mid); background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+.gate-card h2 { margin: 0 0 0.45rem; font-size: 1.25rem; font-weight: 800; }
+.gate-card p { color: var(--mid); font-size: 0.88rem; margin: 0 0 1.25rem; line-height: 1.45; }
+
 #toast {
-  position: fixed; bottom: 1.25rem; right: 1.25rem; background: #0f172a; color: #fff;
-  padding: 0.75rem 1.1rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;
-  opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 99;
+  position: fixed; bottom: 1.25rem; right: 1.25rem;
+  background: #0f172a; color: #fff;
+  padding: 0.75rem 1.1rem; border-radius: 12px;
+  font-size: 0.85rem; font-weight: 600;
+  opacity: 0; transform: translateY(8px); transition: 0.25s;
+  pointer-events: none; z-index: 100;
+  max-width: 320px;
 }
 #toast.show { opacity: 1; transform: none; }
-@media (max-width: 640px) {
-  .user-row { grid-template-columns: 1fr; }
+#toast.err { background: #9f1239; }
+
+.empty {
+  padding: 2rem; text-align: center; color: var(--mid);
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .detail { position: static; max-height: none; }
+  .user-list { max-height: 50vh; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
 <body>
-<div id="gate" class="gate"><div class="gate-card">
-  <h2>Admin only</h2>
-  <p>Sign in with the site owner account to manage users and writer access.</p>
-  <button class="btn" id="sign-in">Sign in with Google</button>
-</div></div>
+<div id="gate" class="gate show">
+  <div class="gate-card">
+    <h2>Staff access only</h2>
+    <p>Sign in with an owner account.</p>
+    <button class="btn btn-blue" id="sign-in">Sign in with Google</button>
+  </div>
+</div>
 
 <div id="app" style="display:none;">
   <div class="wrap">
     <div class="page-head">
-      <span class="page-eyebrow">Staff</span>
-      <h1>Manage Users</h1>
-      <p>Grant article-writing access and review accounts. Changes save to Firestore immediately.</p>
+      <div>
+        <span class="page-eyebrow">Staff control</span>
+        <h1>User management</h1>
+        <p>View accounts, grant permissions, suspend or ban users.</p>
+      </div>
     </div>
-    <div class="staff-links">
+
+    <div class="staff-nav">
       <a href="/articles-admin.html">Articles Admin</a>
       <a href="/moderation.html">Moderation</a>
       <a href="/staff-admin.html" class="active">Manage Users</a>
     </div>
-    <div class="toolbar">
-      <input type="search" id="search" placeholder="Search name, email, or username">
+
+    <div class="stats" id="stats">
+      <div class="stat"><div class="stat-val" id="st-total">—</div><div class="stat-label">Users</div></div>
+      <div class="stat"><div class="stat-val" id="st-writers">—</div><div class="stat-label">Writers</div></div>
+      <div class="stat"><div class="stat-val" id="st-suspended">—</div><div class="stat-label">Suspended</div></div>
+      <div class="stat"><div class="stat-val" id="st-banned">—</div><div class="stat-label">Banned</div></div>
     </div>
-    <div class="user-list" id="user-list"><div class="empty">Loading users…</div></div>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Search username, display name, email, or UID">
+      <select id="filter-status">
+        <option value="">All statuses</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+        <option value="banned">Banned</option>
+      </select>
+      <select id="filter-perm">
+        <option value="">All permissions</option>
+        <option value="canWriteArticles">Article writers</option>
+        <option value="canPostTrades">Trade posters</option>
+        <option value="canPostCommunity">Community posters</option>
+        <option value="canModerate">Moderators</option>
+      </select>
+    </div>
+
+    <div class="layout">
+      <div class="user-list" id="user-list"><div class="empty">Loading users…</div></div>
+      <aside class="detail" id="detail">
+        <div class="detail-empty">Select a user to manage permissions, suspension, or bans.</div>
+      </aside>
+    </div>
   </div>
 </div>
 <div id="toast"></div>
 
 <script src="/nav.js"></script>
 <script>
-const OWNER = 'rhatus13@gmail.com';
-let users = [];
-let currentUser = null;
+(function () {
+  var OWNER = 'rhatus13@gmail.com';
+  var PERMS = [
+    { key: 'canWriteArticles', label: 'Write articles', desc: 'Access Articles Admin and publish editorial content.' },
+    { key: 'canPostTrades', label: 'Post trades', desc: 'Publish trades to the NBA Trade Machine community section.' },
+    { key: 'canPostCommunity', label: 'Community posts', desc: 'Create posts in the community feed.' },
+    { key: 'canModerate', label: 'Moderation tools', desc: 'Access moderation (reports, removals). Owner still required for user management.' }
+  ];
+  var users = [];
+  var selectedId = null;
+  var currentUser = null;
+  var unsub = null;
 
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show';
-  setTimeout(function(){ el.className = ''; }, 2800);
-}
-function isOwner(user) {
-  return user && user.email && user.email.toLowerCase() === OWNER;
-}
-function waitDb(cb, n) {
-  n = n || 0;
-  if (window.db && window.auth) return cb();
-  if (n > 50) return;
-  setTimeout(function(){ waitDb(cb, n + 1); }, 200);
-}
-function displayName(u) {
-  return u.displayName || u.username || u.email || u.id || 'User';
-}
-function render() {
-  const q = (document.getElementById('search').value || '').trim().toLowerCase();
-  const list = document.getElementById('user-list');
-  let rows = users.slice();
-  if (q) {
-    rows = rows.filter(function(u) {
-      const hay = [u.email, u.displayName, u.username, u.usernameLower, u.id].join(' ').toLowerCase();
+  function toast(msg, err) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'show' + (err ? ' err' : '');
+    setTimeout(function () { el.className = ''; }, 3200);
+  }
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function isOwner(u) {
+    return u && u.email && u.email.toLowerCase() === OWNER;
+  }
+  function waitReady(cb, n) {
+    n = n || 0;
+    if (window.db && window.auth && window.firebase) return cb();
+    if (n > 60) return toast('Could not connect to Firebase', true);
+    setTimeout(function () { waitReady(cb, n + 1); }, 200);
+  }
+  function statusOf(u) {
+    var s = (u.accountStatus || 'active').toLowerCase();
+    if (s === 'banned') return 'banned';
+    if (s === 'suspended') {
+      if (u.suspendedUntil) {
+        var until = u.suspendedUntil.toDate ? u.suspendedUntil.toDate() : new Date(u.suspendedUntil);
+        if (until && until.getTime() < Date.now()) return 'active';
+      }
+      return 'suspended';
+    }
+    return 'active';
+  }
+  function displayName(u) {
+    return u.displayName || u.username || (u.email ? u.email.split('@')[0] : 'User');
+  }
+  function usernameOf(u) {
+    return u.username || u.usernameLower || '';
+  }
+  function initial(u) {
+    return displayName(u).charAt(0).toUpperCase();
+  }
+  function hasPerm(u, key) {
+    if (u.isAdmin || u.role === 'admin') return true;
+    return !!u[key];
+  }
+
+  function updateStats() {
+    var total = users.length, writers = 0, sus = 0, ban = 0;
+    users.forEach(function (u) {
+      if (hasPerm(u, 'canWriteArticles')) writers++;
+      var st = statusOf(u);
+      if (st === 'suspended') sus++;
+      if (st === 'banned') ban++;
+    });
+    document.getElementById('st-total').textContent = total;
+    document.getElementById('st-writers').textContent = writers;
+    document.getElementById('st-suspended').textContent = sus;
+    document.getElementById('st-banned').textContent = ban;
+  }
+
+  function filtered() {
+    var q = (document.getElementById('search').value || '').trim().toLowerCase();
+    var st = document.getElementById('filter-status').value;
+    var perm = document.getElementById('filter-perm').value;
+    return users.filter(function (u) {
+      if (st && statusOf(u) !== st) return false;
+      if (perm && !hasPerm(u, perm)) return false;
+      if (!q) return true;
+      var hay = [u.email, u.displayName, u.username, u.usernameLower, u.id].join(' ').toLowerCase();
       return hay.indexOf(q) !== -1;
     });
   }
-  if (!rows.length) {
-    list.innerHTML = '<div class="empty">No users match.</div>';
-    return;
-  }
-  list.innerHTML = rows.map(function(u) {
-    const writer = !!(u.canWriteArticles || u.role === 'writer' || u.role === 'admin' || u.isAdmin);
-    const name = displayName(u);
-    const meta = [u.email || '', u.username ? '@' + u.username : '', u.id].filter(Boolean).join(' · ');
-    return (
-      '<div class="user-row" data-id="' + u.id + '">' +
-        '<div>' +
-          '<div class="user-name">' + escapeHtml(name) + '</div>' +
-          '<div class="user-meta">' + escapeHtml(meta) + '</div>' +
-        '</div>' +
-        '<div class="user-actions">' +
-          '<span class="badge ' + (writer ? 'on' : 'off') + '">' + (writer ? 'Writer' : 'Member') + '</span>' +
-          '<label class="toggle"><input type="checkbox" class="write-toggle" ' + (writer ? 'checked' : '') + ' data-id="' + u.id + '"> Can write articles</label>' +
-        '</div>' +
-      '</div>'
-    );
-  }).join('');
-  list.querySelectorAll('.write-toggle').forEach(function(inp) {
-    inp.addEventListener('change', function() {
-      setWriter(inp.getAttribute('data-id'), inp.checked);
-    });
-  });
-}
-function escapeHtml(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-async function setWriter(uid, on) {
-  try {
-    await window.db.collection('users').doc(uid).set({
-      canWriteArticles: !!on,
-      role: on ? 'writer' : 'member',
-      updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    const u = users.find(function(x){ return x.id === uid; });
-    if (u) {
-      u.canWriteArticles = !!on;
-      u.role = on ? 'writer' : 'member';
+
+  function renderList() {
+    var list = document.getElementById('user-list');
+    var rows = filtered();
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty">No users match your filters.</div>';
+      return;
     }
-    render();
-    toast(on ? 'Writer access granted' : 'Writer access removed');
-  } catch (e) {
-    toast('Error: ' + (e.message || e));
+    list.innerHTML = rows.map(function (u) {
+      var st = statusOf(u);
+      var un = usernameOf(u);
+      var photo = u.photoURL || '';
+      var avatar = photo
+        ? '<div class="avatar"><img src="' + esc(photo) + '" alt=""></div>'
+        : '<div class="avatar" style="background:' + esc(u.avatarColor || '#001a57') + '">' + esc(initial(u)) + '</div>';
+      var pills = '<span class="pill ' + st + '">' + st + '</span>';
+      if (hasPerm(u, 'canWriteArticles')) pills += '<span class="pill perm">Writer</span>';
+      if (hasPerm(u, 'canPostTrades')) pills += '<span class="pill perm">Trades</span>';
+      if (hasPerm(u, 'canModerate')) pills += '<span class="pill perm">Mod</span>';
+      return (
+        '<button type="button" class="user-card' + (u.id === selectedId ? ' selected' : '') + '" data-id="' + esc(u.id) + '">' +
+          avatar +
+          '<div class="uc-body">' +
+            '<div class="uc-name">' + esc(displayName(u)) + '</div>' +
+            (un ? '<div class="uc-user">@' + esc(un) + '</div>' : '') +
+            '<div class="uc-email">' + esc(u.email || 'No email on profile') + '</div>' +
+            '<div class="uc-badges">' + pills + '</div>' +
+          '</div>' +
+        '</button>'
+      );
+    }).join('');
+    list.querySelectorAll('.user-card').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        selectedId = btn.getAttribute('data-id');
+        renderList();
+        renderDetail();
+      });
+    });
   }
-}
-function loadUsers() {
-  window.db.collection('users').limit(500).onSnapshot(function(snap) {
-    users = snap.docs.map(function(d) {
-      var data = d.data() || {};
-      data.id = d.id;
-      return data;
-    }).sort(function(a, b) {
-      return displayName(a).localeCompare(displayName(b));
+
+  function renderDetail() {
+    var el = document.getElementById('detail');
+    var u = users.find(function (x) { return x.id === selectedId; });
+    if (!u) {
+      el.innerHTML = '<div class="detail-empty">Select a user to manage permissions, suspension, or bans.</div>';
+      return;
+    }
+    var st = statusOf(u);
+    var un = usernameOf(u);
+    var photo = u.photoURL || '';
+    var avatar = photo
+      ? '<div class="avatar"><img src="' + esc(photo) + '" alt=""></div>'
+      : '<div class="avatar" style="background:' + esc(u.avatarColor || '#001a57') + '">' + esc(initial(u)) + '</div>';
+
+    var permsHtml = PERMS.map(function (p) {
+      var on = hasPerm(u, p.key);
+      return (
+        '<div class="perm-row">' +
+          '<div class="perm-info"><div class="perm-label">' + esc(p.label) + '</div><div class="perm-desc">' + esc(p.desc) + '</div></div>' +
+          '<label class="switch"><input type="checkbox" data-perm="' + p.key + '" ' + (on ? 'checked' : '') + '><span class="slider"></span></label>' +
+        '</div>'
+      );
+    }).join('');
+
+    el.innerHTML =
+      '<div class="detail-head">' + avatar +
+        '<h2 class="detail-name">' + esc(displayName(u)) + '</h2>' +
+        (un ? '<div class="detail-user">@' + esc(un) + '</div>' : '') +
+        '<div class="detail-email">' + esc(u.email || 'No email') + '</div>' +
+        '<div class="detail-uid">UID: ' + esc(u.id) + '</div>' +
+      '</div>' +
+      '<div class="detail-section">' +
+        '<div class="sec-title">Account status · ' + esc(st) + '</div>' +
+        '<div class="status-row">' +
+          '<button type="button" class="btn btn-green" data-act="activate">Set active</button>' +
+          '<button type="button" class="btn btn-amber" data-act="suspend">Suspend</button>' +
+          '<button type="button" class="btn btn-red" data-act="ban">Ban</button>' +
+        '</div>' +
+        '<div class="field"><label>Reason / note (saved with status change)</label><textarea id="status-reason" placeholder="Optional reason shown in admin records">' + esc(u.adminNote || u.banReason || '') + '</textarea></div>' +
+        '<div class="field"><label>Suspend until (optional)</label><input type="datetime-local" id="suspend-until"></div>' +
+        '<p class="note">Banned users cannot post. Suspended users are blocked until the end date, or indefinitely if no date is set.</p>' +
+      '</div>' +
+      '<div class="detail-section">' +
+        '<div class="sec-title">Permissions</div>' +
+        permsHtml +
+        '<p class="note">Only the site owner can open this panel.</p>' +
+      '</div>';
+
+    el.querySelectorAll('input[data-perm]').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        setPerm(u.id, inp.getAttribute('data-perm'), inp.checked);
+      });
     });
-    render();
-  }, function(err) {
-    document.getElementById('user-list').innerHTML = '<div class="empty">Could not load users: ' + escapeHtml(err.message) + '</div>';
-  });
-}
-document.getElementById('search').addEventListener('input', render);
-document.getElementById('sign-in').addEventListener('click', function() {
-  waitDb(function() {
-    window.auth.signInWithPopup(new window.firebase.auth.GoogleAuthProvider()).catch(function(e) {
-      toast(e.message || String(e));
+    el.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setStatus(u.id, btn.getAttribute('data-act'));
+      });
     });
-  });
-});
-waitDb(function() {
-  window.auth.onAuthStateChanged(function(user) {
-    currentUser = user;
-    if (isOwner(user)) {
-      document.getElementById('gate').classList.remove('show');
-      document.getElementById('gate').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      loadUsers();
-    } else {
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('gate').style.display = 'flex';
-      document.getElementById('gate').classList.add('show');
-      if (user) {
-        document.querySelector('.gate-card p').textContent = 'This area is limited to the site owner account.';
-        document.getElementById('sign-in').style.display = 'none';
+  }
+
+  async function patchUser(uid, data) {
+    await window.db.collection('users').doc(uid).set(Object.assign({
+      updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser ? currentUser.uid : null
+    }, data), { merge: true });
+  }
+
+  async function setPerm(uid, key, on) {
+    try {
+      var payload = {};
+      payload[key] = !!on;
+      await patchUser(uid, payload);
+      var u = users.find(function (x) { return x.id === uid; });
+      if (u) u[key] = !!on;
+      updateStats();
+      renderList();
+      renderDetail();
+      toast((on ? 'Granted: ' : 'Revoked: ') + key);
+    } catch (e) {
+      toast(e.message || String(e), true);
+      renderDetail();
+    }
+  }
+
+  async function setStatus(uid, act) {
+    var reason = (document.getElementById('status-reason') || {}).value || '';
+    var untilVal = (document.getElementById('suspend-until') || {}).value || '';
+    var data = { adminNote: reason.trim() };
+    if (act === 'activate') {
+      data.accountStatus = 'active';
+      data.banReason = '';
+      data.suspendedUntil = null;
+    } else if (act === 'suspend') {
+      data.accountStatus = 'suspended';
+      data.banReason = reason.trim();
+      if (untilVal) {
+        data.suspendedUntil = window.firebase.firestore.Timestamp.fromDate(new Date(untilVal));
+      } else {
+        data.suspendedUntil = null;
       }
+    } else if (act === 'ban') {
+      if (!confirm('Ban this account? They will be blocked from posting site-wide (enforced by rules).')) return;
+      data.accountStatus = 'banned';
+      data.banReason = reason.trim() || 'Banned by admin';
+      data.suspendedUntil = null;
     }
+    try {
+      await patchUser(uid, data);
+      var u = users.find(function (x) { return x.id === uid; });
+      if (u) Object.assign(u, data);
+      updateStats();
+      renderList();
+      renderDetail();
+      toast('Status updated to ' + (data.accountStatus || act));
+    } catch (e) {
+      toast(e.message || String(e), true);
+    }
+  }
+
+  function loadUsers() {
+    if (unsub) unsub();
+    unsub = window.db.collection('users').limit(500).onSnapshot(function (snap) {
+      users = snap.docs.map(function (d) {
+        var data = d.data() || {};
+        data.id = d.id;
+        return data;
+      }).sort(function (a, b) {
+        return displayName(a).localeCompare(displayName(b));
+      });
+      updateStats();
+      renderList();
+      if (selectedId) renderDetail();
+    }, function (err) {
+      document.getElementById('user-list').innerHTML = '<div class="empty">Load error: ' + esc(err.message) + '</div>';
+    });
+  }
+
+  document.getElementById('search').addEventListener('input', renderList);
+  document.getElementById('filter-status').addEventListener('change', renderList);
+  document.getElementById('filter-perm').addEventListener('change', renderList);
+  document.getElementById('sign-in').addEventListener('click', function () {
+    waitReady(function () {
+      window.auth.signInWithPopup(new window.firebase.auth.GoogleAuthProvider()).catch(function (e) {
+        toast(e.message || String(e), true);
+      });
+    });
   });
-});
+
+  waitReady(function () {
+    window.auth.onAuthStateChanged(function (user) {
+      currentUser = user;
+      // Owner only for this panel (hard gate). Permissions for others are assigned FROM here.
+      if (isOwner(user)) {
+        document.getElementById('gate').classList.remove('show');
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        loadUsers();
+      } else {
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('gate').style.display = 'flex';
+        document.getElementById('gate').classList.add('show');
+        if (user) {
+          document.querySelector('.gate-card p').textContent = 'Sign in with an owner account.';
+          document.getElementById('sign-in').style.display = 'none';
+        }
+      }
+    });
+  });
+})();
 </script>
 </body>
 </html>

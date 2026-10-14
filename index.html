@@ -905,6 +905,8 @@ function toDate(ts) {
   return new Date(ts);
 }
 function isPublished(a) {
+  if (a && a.status === 'draft') return false;
+  if (a && a.visibility === 'private') return false;
   return !a.status || a.status === 'published';
 }
 function byline(a) {

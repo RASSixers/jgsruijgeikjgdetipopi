@@ -24,8 +24,8 @@
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: #fff;
-    color: #0f172a;
+    background: var(--cream, #fff);
+    color: var(--ink, #0f172a);
     font-family: "Lexend", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -79,7 +79,7 @@
     letter-spacing: -0.03em;
     line-height: 1.15;
     margin: 0 0 0.9rem;
-    color: #0f172a;
+    color: var(--ink, #0f172a);
   }
   .article-meta {
     display: flex;
@@ -87,7 +87,7 @@
     gap: 0.3rem 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--mid, #64748b);
     justify-content: center;
     align-items: center;
     line-height: 1.4;
@@ -101,7 +101,7 @@
     font-size: 1.0625rem;
     font-weight: 400;
     line-height: 1.65;
-    color: #475569;
+    color: var(--mid, #475569);
     margin: 1.25rem auto 0;
     max-width: 34rem;
   }
@@ -128,7 +128,7 @@
   .article-photo-credit {
     font-size: 0.75rem;
     font-weight: 500;
-    color: #94a3b8;
+    color: var(--mid, #94a3b8);
     margin: 0 0 1.75rem;
     line-height: 1.4;
     text-align: center;
@@ -143,7 +143,7 @@
     font-size: 1.0625rem;
     font-weight: 400;
     line-height: 1.8;
-    color: #1e293b;
+    color: var(--ink, #1e293b);
     margin: 0 0 1.35rem;
     white-space: pre-wrap;
   }
@@ -165,7 +165,7 @@
     font-family: inherit;
     font-size: 0.8125rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--mid, #64748b);
     padding: 0.55rem 0.85rem 0.7rem;
     line-height: 1.45;
     text-align: center;
@@ -184,7 +184,7 @@
     font-family: inherit;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--mid, #64748b);
   }
   .tweet-fallback-card a {
     color: var(--sixers-blue);
@@ -203,7 +203,7 @@
     margin: 0 0 1rem;
     padding-bottom: 0.6rem;
     border-bottom: 2px solid #0f172a;
-    color: #0f172a;
+    color: var(--ink, #0f172a);
   }
   .grade-card {
     border: 1px solid var(--border-light);
@@ -235,13 +235,13 @@
     font-weight: 700;
     margin: 0 0 0.2rem;
     letter-spacing: -0.015em;
-    color: #0f172a;
+    color: var(--ink, #0f172a);
   }
   .grade-card-stats {
     font-family: inherit;
     font-size: 0.8125rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--mid, #64748b);
     margin: 0 0 0.5rem;
     line-height: 1.45;
   }
@@ -250,7 +250,7 @@
     font-size: 0.9375rem;
     font-weight: 400;
     line-height: 1.65;
-    color: #1e293b;
+    color: var(--ink, #1e293b);
     margin: 0;
   }
   .grade-card-tweet { margin-top: 0.85rem; }
@@ -278,7 +278,7 @@
     font-size: 1.0625rem;
     font-weight: 400;
     line-height: 1.75;
-    color: #0f172a;
+    color: var(--ink, #0f172a);
     white-space: pre-wrap;
   }
 
@@ -295,13 +295,13 @@
     font-weight: 800;
     letter-spacing: -0.02em;
     margin: 0 0 0.45rem;
-    color: #0f172a;
+    color: var(--ink, #0f172a);
   }
   .article-locked p {
     font-family: inherit;
     font-size: 0.9375rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--mid, #64748b);
     margin: 0;
   }
 
@@ -316,7 +316,7 @@
     font-weight: 800;
     letter-spacing: -0.02em;
     margin: 0 0 1rem;
-    color: #0f172a;
+    color: var(--ink, #0f172a);
   }
   .more-list { display: flex; flex-direction: column; gap: 0.65rem; }
   .more-item {
@@ -346,7 +346,7 @@
     font-weight: 700;
     letter-spacing: -0.015em;
     line-height: 1.35;
-    color: #0f172a;
+    color: var(--ink, #0f172a);
     margin: 0;
   }
   .more-item-excerpt {
@@ -354,14 +354,14 @@
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.5;
-    color: #64748b;
+    color: var(--mid, #64748b);
     margin: 0.4rem 0 0;
   }
   .more-item-meta {
     font-family: inherit;
     font-size: 0.75rem;
     font-weight: 500;
-    color: #94a3b8;
+    color: var(--mid, #94a3b8);
     margin-top: 0.45rem;
   }
 

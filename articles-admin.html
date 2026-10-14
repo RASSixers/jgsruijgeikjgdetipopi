@@ -272,6 +272,16 @@ body, html {
   color: var(--sixers-blue);
   opacity: 1;
 }
+.vis-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+.vis-badge.public { background: #dcfce7; color: #166534; }
+.vis-badge.private { background: #fee2e2; color: #991b1b; }
 .draft-badge {
   font-size: 0.62rem;
   font-weight: 700;
@@ -1022,6 +1032,8 @@ body, html {
           <option value="">All statuses</option>
           <option value="published">Published</option>
           <option value="draft">Drafts</option>
+          <option value="public">Public</option>
+          <option value="private">Private</option>
         </select>
       </div>
       <div class="article-list" id="article-list">
@@ -1065,6 +1077,13 @@ body, html {
                 <option value="Preview">Preview</option>
                 <option value="Recap">Recap</option>
                 <option value="News">News</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Visibility *</label>
+              <select class="form-select" id="f-visibility">
+                <option value="public">Public</option>
+                <option value="private">Private</option>
               </select>
             </div>
             <div class="form-group">
@@ -1164,15 +1183,7 @@ First paragraph.
 Next paragraph…"></textarea>
               <div class="char-count" id="intro-count">0 words</div>
             </div>
-            <div class="tweet-embed-section">
-              <div class="tweet-embed-header"><span class="tweet-embed-label">Primary tweet (optional)</span></div>
-              <input type="text" class="form-input" id="f-tweet-url" placeholder="https://x.com/user/status/1234567890" oninput="handleTweetInput(this.value)">
-              <div class="tweet-embed-hint">Optional single embed if you prefer not to place links in the body.</div>
-              <div class="tweet-preview-box" id="tweet-preview-box">Tweet preview appears here when a valid URL is entered.</div>
-            </div>
-          </div>
-
-          <div class="editor-card" id="grades-section" style="margin-top:1rem;">
+            <div class="editor-card" id="grades-section" style="margin-top:1rem;">
             <h3>Player grades</h3>
             <p class="section-note">Only used when category is Player Grades. Load roster, set each grade, add stats and a short note.</p>
             <div class="grade-toolbar">
@@ -1352,6 +1363,10 @@ function articleStatus(a) {
   if (a && a.status === 'draft') return 'draft';
   return 'published';
 }
+function articleVisibility(a) {
+  if (a && a.visibility === 'private') return 'private';
+  return 'public';
+}
 
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -1365,12 +1380,15 @@ function switchTab(name) {
 function handleTweetInput(val) {
   const box = document.getElementById('tweet-preview-box');
   const badge = document.getElementById('prev-tweet-badge');
-  const clean = val.trim();
+  if (!box && !badge) return;
+  const clean = (val || '').trim();
   const valid = /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/.test(clean);
-  box.classList.toggle('visible', clean.length > 0);
+  if (box) {
+    box.classList.toggle('visible', clean.length > 0);
+    if (valid) { box.innerHTML = 'Valid tweet URL — will be embedded in article.'; box.style.color = '#15803d'; }
+    else if (clean.length > 0) { box.innerHTML = 'Paste a full x.com or twitter.com status URL.'; box.style.color = '#b06b00'; }
+  }
   if (badge) badge.style.display = clean.length > 0 ? 'inline-flex' : 'none';
-  if (valid) { box.innerHTML = 'Valid tweet URL — will be embedded in article.'; box.style.color = '#15803d'; }
-  else if (clean.length > 0) { box.innerHTML = 'Paste a full x.com or twitter.com status URL.'; box.style.color = '#b06b00'; }
 }
 
 function compressPic(file, maxSide, quality) {
@@ -1758,10 +1776,16 @@ function filteredArticles() {
   const status = document.getElementById('article-filter-status').value;
   return articles.filter(a => {
     if (cat && a.category !== cat) return false;
-    if (status && articleStatus(a) !== status) return false;
-    if (!q) return true;
-    const hay = [a.title, a.slug, a.author, a.excerpt, a.category].join(' ').toLowerCase();
-    return hay.indexOf(q) !== -1;
+    if (status === 'draft' || status === 'published') {
+      if (articleStatus(a) !== status) return false;
+    } else if (status === 'public' || status === 'private') {
+      if (articleVisibility(a) !== status) return false;
+    }
+    if (q) {
+      const hay = ((a.title || '') + ' ' + (a.slug || '') + ' ' + (a.author || '')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
   });
 }
 function renderArticleList() {
@@ -1787,7 +1811,7 @@ function renderArticleList() {
       : '';
     return '<div class="article-item"><div class="article-item-accent" style="background:' + color + ';"></div>' + thumb +
       '<div class="article-item-body"><div class="article-item-tag-row"><span class="article-item-tag" style="color:' + color + ';background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
-      (status === 'draft' ? '<span class="draft-badge">Draft</span>' : '') + '</div>' +
+      (status === 'draft' ? '<span class="draft-badge">Draft</span>' : '') + '<span class="vis-badge ' + articleVisibility(a) + '">' + (articleVisibility(a) === 'private' ? 'Private' : 'Public') + '</span>' + '</div>' +
       '<div class="article-item-title">' + escapeHtml(a.title || 'Untitled') + '</div>' +
       '<div class="article-item-meta"><span>By: ' + escapeHtml(a.author || 'SixersHoops') + '</span><span>·</span><span>' + escapeHtml(date) + '</span></div>' +
       (a.slug ? '<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;">/article/' + escapeHtml(a.slug) + '</div>' : '') +
@@ -1832,10 +1856,12 @@ function defaultAuthor() {
 function clearEditor(opts) {
   opts = opts || {};
   document.getElementById('editing-doc-id').value = '';
-  ['f-title','f-slug','f-excerpt','f-intro','f-closing','f-tweet-url'].forEach(id => document.getElementById(id).value = '');
+  ['f-title','f-slug','f-excerpt','f-intro','f-closing'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-author').value = defaultAuthor();
   const pd = document.getElementById('f-publish-date');
   if (pd) pd.value = todayInputValue();
+  const vis = document.getElementById('f-visibility');
+  if (vis) vis.value = 'public';
   document.getElementById('f-category').value = opts.category || 'News';
   document.getElementById('grade-entries').innerHTML = '';
   document.getElementById('tweet-preview-box').classList.remove('visible');
@@ -1857,6 +1883,8 @@ function editArticle(id) {
   document.getElementById('f-author').value = a.author || defaultAuthor();
   const pdEdit = document.getElementById('f-publish-date');
   if (pdEdit) pdEdit.value = dateToInputValue(a.createdAt) || todayInputValue();
+  const visE = document.getElementById('f-visibility');
+  if (visE) visE.value = articleVisibility(a);
   slugManual = !!(a.slug);
   document.getElementById('f-slug').value = a.slug || '';
   handleSlugInput(a.slug || '', false);
@@ -1865,7 +1893,6 @@ function editArticle(id) {
   document.getElementById('f-excerpt').value = a.excerpt || '';
   document.getElementById('f-intro').value = a.intro || '';
   document.getElementById('f-closing').value = a.closing || '';
-  if (a.tweetUrl) { document.getElementById('f-tweet-url').value = a.tweetUrl; handleTweetInput(a.tweetUrl); }
   document.getElementById('grade-entries').innerHTML = '';
   gradeCount = 0;
   (a.grades || []).forEach(g => addGradeEntry(g));
@@ -1896,12 +1923,12 @@ function collectArticleData(status) {
     intro: document.getElementById('f-intro').value.trim(),
     closing: document.getElementById('f-closing').value.trim(),
     tweetUrl: (function () {
-      var explicit = document.getElementById('f-tweet-url').value.trim();
-      if (explicit) return explicit;
       var body = document.getElementById('f-intro').value || '';
       var m = body.match(/https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/[^\s]+\/status\/\d+/i);
       return m ? m[0] : '';
     })(),
+    visibility: (document.getElementById('f-visibility') && document.getElementById('f-visibility').value) || 'public',
+
     grades: collectGrades(),
     gradient: CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'],
     updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),

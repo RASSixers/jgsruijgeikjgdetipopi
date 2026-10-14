@@ -1832,7 +1832,7 @@ function renderArticleList() {
       '<div class="article-item-meta"><span>By: ' + escapeHtml(a.author || 'SixersHoops') + '</span><span>·</span><span>' + escapeHtml(date) + '</span></div>' +
       (a.slug ? '<div style="font-size:0.72rem;color:var(--sixers-blue);margin-top:0.3rem;">/article/' + escapeHtml(a.slug) + '</div>' : '') +
       '</div><div class="article-item-actions"><button class="btn-edit" onclick="editArticle(\'' + a.id + '\')">Edit</button>' + live +
-      '<button class="btn-delete" onclick="deleteArticle(\'' + a.id + '\')">Delete</button></div></div>';
+      (function(){ var isOwnerAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === MOD_EMAIL.toLowerCase(); var isAuthor = currentUser && (a.authorUid === currentUser.uid || (a.authorEmail && a.authorEmail.toLowerCase() === (currentUser.email || '').toLowerCase())); return (isOwnerAdmin || isAuthor) ? ('<button class="btn-delete" onclick="deleteArticle(\'' + a.id + '\')">Delete</button>') : ''; })() + '</div></div>';
   }).join('');
 }
 ['article-search','article-filter-category','article-filter-status'].forEach(id => {
@@ -1918,10 +1918,20 @@ function editArticle(id) {
 async function deleteArticle(id) {
   const a = articles.find(x => x.id === id);
   const label = a && a.title ? a.title : 'this article';
+  const isOwnerAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === MOD_EMAIL.toLowerCase();
+  const isAuthor = a && currentUser && (
+    a.authorUid === currentUser.uid
+    || (a.authorEmail && a.authorEmail.toLowerCase() === (currentUser.email || '').toLowerCase())
+  );
+  if (!isOwnerAdmin && !isAuthor) {
+    toast('You can only delete articles you wrote', 'error');
+    return;
+  }
   if (!confirm('Delete "' + label + '"?')) return;
   try { await window.db.collection(COLLECTION).doc(id).delete(); toast('Article deleted'); }
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
+
 
 function collectArticleData(status) {
   const title = document.getElementById('f-title').value.trim();
@@ -1948,7 +1958,9 @@ function collectArticleData(status) {
     grades: collectGrades(),
     gradient: CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS['Analysis'],
     updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
-    updatedBy: currentUser ? (currentUser.email || '') : ''
+    updatedBy: currentUser ? (currentUser.email || '') : '',
+    authorUid: currentUser ? currentUser.uid : '',
+    authorEmail: currentUser ? (currentUser.email || '') : ''
   };
 }
 function validateArticle(data, allowEmptyTitle) {

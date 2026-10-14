@@ -48,6 +48,10 @@
   <script>
 (function(){
   const REPORTS='community_reports';
+  const CONTACT='contactMessages';
+  let panel='reports';
+  let contactItems=[];
+
   const COLLECTION='community_trades';
   const MOD_EMAIL='rhatus13@gmail.com';
   let filter='open';
@@ -63,8 +67,45 @@
   }
 
   function render(){
+    let html='<div class="wrap"><h1>MODERATION</h1><p class="sub">Reports, contact messages, and community tools</p>';
+    html+='<div class="tabs" style="margin-bottom:1rem;">'+
+      '<button type="button" class="tab'+(panel==='reports'?' active':'')+'" data-panel="reports">REPORTS</button>'+
+      '<button type="button" class="tab'+(panel==='contact'?' active':'')+'" data-panel="contact">CONTACT</button></div>';
+
+    if(panel==='contact'){
+      const clist=contactItems.slice();
+      html+='<div class="tabs">'+
+        '<button type="button" class="tab'+(filter==='new'||filter==='open'?' active':'')+'" data-f="new">NEW</button>'+
+        '<button type="button" class="tab'+(filter==='read'?' active':'')+'" data-f="read">READ</button>'+
+        '<button type="button" class="tab'+(filter==='all'?' active':'')+'" data-f="all">ALL</button></div>';
+      const view=clist.filter(function(c){
+        if(filter==='all')return true;
+        if(filter==='read')return (c.status||'new')==='read';
+        return (c.status||'new')==='new'||(c.status||'new')==='open';
+      });
+      if(!view.length)html+='<div class="state">No contact messages.</div>';
+      else view.forEach(function(c){
+        const st=c.status||'new';
+        html+='<div class="card">';
+        html+='<div class="row"><span class="pill '+esc(st)+'">'+esc(st)+'</span><span class="meta">'+esc(timeAgo(c.createdAt))+'</span></div>';
+        html+='<div class="reason">'+esc(c.name||'Anonymous')+' · '+esc(c.email||'')+'</div>';
+        html+='<div class="snippet">'+esc(c.message||'')+'</div>';
+        html+='<div class="actions">';
+        if(c.email)html+='<a class="btn btn-ghost" href="mailto:'+esc(c.email)+'">Reply</a>';
+        if(st!=='read')html+='<button type="button" class="btn btn-primary act-cread" data-id="'+esc(c.id)+'">Mark read</button>';
+        html+='<button type="button" class="btn btn-danger act-cdel" data-id="'+esc(c.id)+'">Delete</button>';
+        html+='</div></div>';
+      });
+      html+='</div>';
+      document.getElementById('root').innerHTML=html;
+      document.querySelectorAll('[data-panel]').forEach(function(t){t.onclick=function(){panel=t.getAttribute('data-panel');filter=panel==='contact'?'new':'open';render();};});
+      document.querySelectorAll('[data-f]').forEach(function(t){t.onclick=function(){filter=t.getAttribute('data-f');render();};});
+      document.querySelectorAll('.act-cread').forEach(function(b){b.onclick=function(){markContactRead(b.getAttribute('data-id'));};});
+      document.querySelectorAll('.act-cdel').forEach(function(b){b.onclick=function(){deleteContact(b.getAttribute('data-id'));};});
+      return;
+    }
+
     const list=items.filter(function(r){return filter==='all'?true:(r.status||'open')===filter;});
-    let html='<h1>MODERATION</h1><p class="sub">Review community reports on posts and comments.</p>';
     html+='<div class="tabs">'+
       '<button type="button" class="tab'+(filter==='open'?' active':'')+'" data-f="open">OPEN</button>'+
       '<button type="button" class="tab'+(filter==='resolved'?' active':'')+'" data-f="resolved">RESOLVED</button>'+
@@ -91,14 +132,22 @@
       }
       html+='</div></div>';
     });
+    html+='</div>';
     document.getElementById('root').innerHTML=html;
-    document.querySelectorAll('.tab').forEach(function(t){t.onclick=function(){filter=t.getAttribute('data-f');render();};});
+    document.querySelectorAll('[data-panel]').forEach(function(t){t.onclick=function(){panel=t.getAttribute('data-panel');filter=panel==='contact'?'new':'open';render();};});
+    document.querySelectorAll('[data-f]').forEach(function(t){t.onclick=function(){filter=t.getAttribute('data-f');render();};});
     document.querySelectorAll('.act-resolve').forEach(function(b){b.onclick=function(){setStatus(b.getAttribute('data-id'),'resolved');};});
     document.querySelectorAll('.act-dismiss').forEach(function(b){b.onclick=function(){setStatus(b.getAttribute('data-id'),'dismissed');};});
     document.querySelectorAll('.act-del-c').forEach(function(b){b.onclick=function(){deleteComment(b.getAttribute('data-tid'),+b.getAttribute('data-ci'),b.getAttribute('data-id'));};});
     document.querySelectorAll('.act-del-p').forEach(function(b){b.onclick=function(){deletePost(b.getAttribute('data-tid'),b.getAttribute('data-id'));};});
   }
-
+  async function markContactRead(id){
+    try{await window.db.collection(CONTACT).doc(id).update({status:'read'});}catch(e){alert(e.message);}
+  }
+  async function deleteContact(id){
+    if(!confirm('Delete this message?'))return;
+    try{await window.db.collection(CONTACT).doc(id).delete();}catch(e){alert(e.message);}
+  }
   async function setStatus(id,status){
     try{await window.db.collection(REPORTS).doc(id).update({status:status,resolvedAt:window.firebase.firestore.FieldValue.serverTimestamp()});}
     catch(e){alert(e.message||'Update failed');}
@@ -127,6 +176,7 @@
     window.auth.onAuthStateChanged(function(user){
       if(!isMod(user)){renderDenied();return;}
       if(!window.db){document.getElementById('root').innerHTML='<div class="state">Database not ready.</div>';return;}
+      window.db.collection(CONTACT).orderBy('createdAt','desc').limit(100).onSnapshot(function(snap){contactItems=snap.docs.map(function(d){var x=d.data()||{};x.id=d.id;return x;});if(panel==='contact')render();},function(err){console.warn(err);});
       window.db.collection(REPORTS).orderBy('createdAt','desc').limit(100).onSnapshot(function(snap){
         items=snap.docs.map(function(d){const x=d.data();x.id=d.id;return x;});
         render();

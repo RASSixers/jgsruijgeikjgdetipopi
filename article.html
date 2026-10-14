@@ -61,6 +61,27 @@
     line-height: 1.4;
   }
   .article-body p { font-size: 1.05rem; line-height: 1.75; color: var(--ink); margin: 0 0 1.5rem; white-space: pre-wrap; }
+  .article-body .article-inline-img {
+    margin: 1.5rem 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    background: #f8fafc;
+  }
+  .article-body .article-inline-img img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 560px;
+    object-fit: contain;
+    background: #0f172a08;
+  }
+  .article-body .article-inline-img figcaption {
+    font-size: 0.8rem;
+    color: var(--mid);
+    padding: 0.55rem 0.85rem 0.7rem;
+    line-height: 1.4;
+  }
 
   .tweet-embed-wrap {
     margin: 1.25rem 0;
@@ -220,6 +241,96 @@ function tweetEmbedHtml(url) {
     '</div>'
   );
 }
+function isTweetUrl(line) {
+  return /^https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/[^\s]+\/status\/\d+/i.test(String(line || '').trim());
+}
+function isImageUrl(line) {
+  const s = String(line || '').trim();
+  // Direct image URLs or common CDNs
+  if (/^https?:\/\/\S+\.(?:png|jpe?g|gif|webp|avif)(?:\?\S*)?$/i.test(s)) return true;
+  if (/^https?:\/\/(?:i\.imgur\.com|images\.unsplash\.com|cdn\.nba\.com|a\.espncdn\.com)\S+/i.test(s)) return true;
+  return false;
+}
+function parseMarkdownImage(line) {
+  const m = String(line || '').trim().match(/^!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)$/);
+  if (!m) return null;
+  return { alt: m[1] || '', src: m[2] };
+}
+function imageEmbedHtml(src, alt) {
+  const safeSrc = escapeHtml(src);
+  const safeAlt = escapeHtml(alt || '');
+  return (
+    '<figure class="article-inline-img">' +
+      '<img src="' + safeSrc + '" alt="' + safeAlt + '" loading="lazy">' +
+      (safeAlt ? '<figcaption>' + safeAlt + '</figcaption>' : '') +
+    '</figure>'
+  );
+}
+/** Parse article body into paragraphs, tweet embeds, and images. */
+function renderBodyHtml(raw) {
+  const text = String(raw || '').replace(/\r\n/g, '\n').trim();
+  if (!text) return { html: '', tweetUrls: [] };
+  const blocks = text.split(/\n{2,}/);
+  const tweetUrls = [];
+  const parts = [];
+  blocks.forEach(function (block) {
+    const lines = block.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    if (!lines.length) return;
+    // Single-line special blocks
+    if (lines.length === 1) {
+      const line = lines[0];
+      const mdImg = parseMarkdownImage(line);
+      if (mdImg) {
+        parts.push(imageEmbedHtml(mdImg.src, mdImg.alt));
+        return;
+      }
+      if (isTweetUrl(line)) {
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        tweetUrls.push(url);
+        parts.push(tweetEmbedHtml(url));
+        return;
+      }
+      if (isImageUrl(line)) {
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        parts.push(imageEmbedHtml(url, ''));
+        return;
+      }
+    }
+    // Multi-line: check each line for embeds mixed with text
+    let paraBuf = [];
+    function flushPara() {
+      if (!paraBuf.length) return;
+      parts.push('<p>' + escapeHtml(paraBuf.join('\n')) + '</p>');
+      paraBuf = [];
+    }
+    lines.forEach(function (line) {
+      const mdImg = parseMarkdownImage(line);
+      if (mdImg) {
+        flushPara();
+        parts.push(imageEmbedHtml(mdImg.src, mdImg.alt));
+        return;
+      }
+      if (isTweetUrl(line)) {
+        flushPara();
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        tweetUrls.push(url);
+        parts.push(tweetEmbedHtml(url));
+        return;
+      }
+      if (isImageUrl(line)) {
+        flushPara();
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        parts.push(imageEmbedHtml(url, ''));
+        return;
+      }
+      paraBuf.push(line);
+    });
+    flushPara();
+  });
+  return { html: '<div class="article-body">' + parts.join('') + '</div>', tweetUrls: tweetUrls };
+}
+
+
 
 function renderError(message) {
   document.getElementById('article-root').innerHTML =
@@ -286,8 +397,12 @@ function renderArticle(a, more) {
     if (a.imageCredit) html += '<p class="article-photo-credit">' + escapeHtml(a.imageCredit) + '</p>';
   }
 
-  if (a.intro) html += '<div class="article-body"><p>' + escapeHtml(a.intro) + '</p></div>';
-  if (a.tweetUrl) html += tweetEmbedHtml(a.tweetUrl);
+  var bodyParsed = renderBodyHtml(a.intro || '');
+  html += bodyParsed.html;
+  // Primary tweet field only if not already embedded in the body
+  if (a.tweetUrl && bodyParsed.tweetUrls.indexOf(a.tweetUrl) === -1) {
+    html += tweetEmbedHtml(a.tweetUrl);
+  }
 
   const grades = (a.grades || []).filter(function (g) { return g.grade && g.grade !== 'DNP'; });
   if (grades.length) {
@@ -314,7 +429,8 @@ function renderArticle(a, more) {
 
   document.getElementById('article-root').innerHTML = html;
 
-  if (a.tweetUrl || grades.some(function (g) { return g.tweetUrl; })) {
+  var needsWidgets = !!(a.tweetUrl || bodyParsed.tweetUrls.length || grades.some(function (g) { return g.tweetUrl; }));
+  if (needsWidgets) {
     if (window.twttr && window.twttr.widgets) {
       window.twttr.widgets.load();
     } else {

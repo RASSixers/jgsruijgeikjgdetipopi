@@ -285,88 +285,79 @@
   }
   .news-feature-meta .news-read { display: none; }
 
-  /* Sidebar list — refined */
+  /* Sidebar list — clean professional */
   .news-stack {
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0;
-    background: #fff;
-    border: 1px solid #e8ecf1;
-    border-radius: 16px;
+    padding: 1.35rem 0 0.25rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
     min-width: 0;
-    overflow: hidden;
   }
   .news-stack-label {
-    font-size: 0.7rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #64748b;
-    margin: 0;
-    padding: 1rem 1.25rem;
-    background: #f8fafc;
-    border-bottom: 1px solid #eef1f5;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    color: var(--ink);
+    margin: 0 0 0.15rem;
+    padding: 0 0 0.75rem;
+    border-bottom: 2px solid var(--ink);
+    background: transparent;
   }
   .news-stack-empty {
     font-size: 0.88rem;
     color: #94a3b8;
-    margin: 0;
-    padding: 1.25rem;
+    margin: 1rem 0 0;
     line-height: 1.5;
+    padding: 0;
   }
   .news-row {
-    display: grid;
-    grid-template-columns: 1.75rem minmax(0, 1fr);
-    gap: 0.65rem 0.85rem;
-    align-items: start;
-    padding: 1.05rem 1.25rem;
+    display: block;
+    padding: 1.15rem 0;
     text-decoration: none;
     color: inherit;
     background: transparent;
     border: none;
-    border-bottom: 1px solid #f1f4f8;
+    border-bottom: 1px solid #e8ebf0;
     border-radius: 0;
     min-width: 0;
-    transition: background 0.12s;
+    transition: none;
   }
-  .news-row:last-child { border-bottom: none; }
+  .news-row:last-child { border-bottom: 1px solid #e8ebf0; }
   .news-row:hover {
-    background: #f8fafc;
+    background: transparent;
     box-shadow: none;
     transform: none;
   }
-  .news-row-num {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #cbd5e1;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.55;
-    padding-top: 0.12rem;
-  }
-  .news-row:hover .news-row-num { color: var(--sixers-blue); }
+  .news-row-num { display: none; }
   .news-row-body { min-width: 0; }
   .news-row-top,
   .news-row .news-tag,
   .news-row-time,
   .news-row-excerpt { display: none; }
   .news-row-title {
-    font-size: 0.92rem;
+    font-size: 0.98rem;
     font-weight: 600;
     line-height: 1.4;
-    margin: 0 0 0.4rem;
+    margin: 0 0 0.5rem;
     color: var(--ink);
-    letter-spacing: -0.012em;
+    letter-spacing: -0.015em;
     display: block;
     transition: color 0.12s;
   }
-  .news-row:hover .news-row-title { color: var(--sixers-blue); }
+  .news-row:hover .news-row-title {
+    color: var(--sixers-blue);
+  }
   .news-row-meta {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.72rem;
-    color: #94a3b8;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.78rem;
+    color: #9ca3af;
     font-weight: 500;
     margin: 0;
   }
@@ -374,11 +365,9 @@
     white-space: nowrap;
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
-    color: #b0b8c4;
+    color: #9ca3af;
   }
-  .news-row-meta .news-row-sep {
-    color: #d1d5db;
-  }
+  .news-row-meta .news-row-sep { display: none; }
 
   .news-tag {
     font-size: 0.58rem;
@@ -441,13 +430,13 @@
       font-size: 0.68rem;
       padding-bottom: 0.7rem;
     }
-    .news-row {
-      padding: 0.9rem 1rem;
-      grid-template-columns: 1.5rem minmax(0, 1fr);
-      gap: 0.5rem 0.7rem;
+    .news-row { padding: 1rem 0; }
+    .news-row-title { font-size: 0.94rem; }
+    .news-stack-label {
+      font-size: 1rem;
+      padding-bottom: 0.65rem;
     }
-    .news-row-title { font-size: 0.9rem; }
-    .news-stack-label { padding: 0.9rem 1rem; }
+    .news-stack { padding-top: 0.5rem; }
   }
 
   /* Homepage team stats — match schedule page */
@@ -928,18 +917,18 @@ function renderNews(articles) {
       '</div>' +
     '</a>';
 
-  const listHtml = rest.map(function (a, idx) {
+  const listHtml = rest.map(function (a) {
     const when = toDate(a.createdAt);
     const dateStr = shortDate(when);
-    const num = String(idx + 1).padStart(2, '0');
+    // Sidebar matches editorial style: author name only (no "By:"), date on the right
+    const author = (a.author || a.byline || 'SixersHoops').trim();
     return (
       '<a href="' + articleUrl(a) + '" class="news-row">' +
-        '<span class="news-row-num">' + num + '</span>' +
         '<div class="news-row-body">' +
           '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
           '<div class="news-row-meta">' +
-            '<span>' + escapeHtml(byline(a)) + '</span>' +
-            (dateStr ? '<span class="news-row-sep">·</span><span class="news-row-date">' + escapeHtml(dateStr) + '</span>' : '') +
+            '<span>' + escapeHtml(author) + '</span>' +
+            (dateStr ? '<span class="news-row-date">' + escapeHtml(dateStr) + '</span>' : '') +
           '</div>' +
         '</div>' +
       '</a>'

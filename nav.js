@@ -766,6 +766,18 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {}
     }
 
+    
+    function syncStaffFlags(user) {
+        if (!user || !window.db) return Promise.resolve();
+        return window.db.collection('users').doc(user.uid).get().then(function(doc) {
+            var d = doc.exists ? (doc.data() || {}) : {};
+            var can = !!(d.canWriteArticles || d.isAdmin || d.role === 'writer' || d.role === 'admin');
+            if (user.email && user.email.toLowerCase() === 'rhatus13@gmail.com') can = true;
+            try { localStorage.setItem('canWriteArticles', can ? '1' : '0'); } catch (e) {}
+            return can;
+        }).catch(function() { return false; });
+    }
+
     function renderUserNav(user) {
         const authNav = document.getElementById('authNavContainer');
         const mobileAuth = document.getElementById('mobileAuthContainer');
@@ -811,8 +823,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span>Notifications</span>
                         </button>
                         <button class="user-dropdown-item" id="navSettingsBtn">Account Settings</button>
-                        ${user.email && user.email.toLowerCase() === 'rhatus13@gmail.com' ? `<div class="user-dropdown-divider"></div>
-                        <button class="user-dropdown-item" id="navModerationLink">Moderation</button>` : ''}
+                        ${(function(){
+                          var isOwner = user.email && user.email.toLowerCase() === 'rhatus13@gmail.com';
+                          var canWrite = isOwner || localStorage.getItem('canWriteArticles') === '1';
+                          if (!isOwner && !canWrite) return '';
+                          var html = '<div class="user-dropdown-divider"></div>';
+                          if (canWrite) html += '<button class="user-dropdown-item" id="navArticlesAdminLink">Articles Admin</button>';
+                          if (isOwner) {
+                            html += '<button class="user-dropdown-item" id="navModerationLink">Moderation</button>';
+                            html += '<button class="user-dropdown-item" id="navStaffLink">Manage Users</button>';
+                          }
+                          return html;
+                        })()}
                         <div class="user-dropdown-divider"></div>
                         <button class="user-dropdown-item logout-action" id="navDropdownLogout">Sign Out</button>
                     </div>
@@ -871,6 +893,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (modLink) modLink.onclick = function(e) {
                 e.preventDefault();
                 window.location.href = '/moderation.html';
+            };
+            const articlesAdminLink = document.getElementById('navArticlesAdminLink');
+            if (articlesAdminLink) articlesAdminLink.onclick = function(e) {
+                e.preventDefault();
+                window.location.href = '/articles-admin.html';
+            };
+            const staffLink = document.getElementById('navStaffLink');
+            if (staffLink) staffLink.onclick = function(e) {
+                e.preventDefault();
+                window.location.href = '/staff-admin.html';
             };
             if (smallLogoutBtn) smallLogoutBtn.onclick = function(e) { e.stopPropagation(); window.auth.signOut(); };
             if (dropdownLogoutBtn) dropdownLogoutBtn.onclick = function(e) { e.stopPropagation(); window.auth.signOut(); };
@@ -966,7 +998,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (!user) {
                 localStorage.removeItem('usernameLower');
             }
-            renderUserNav(user);
+            syncStaffFlags(user).then(function(){ renderUserNav(user); });
             setupNotificationListener(user);
         });
     }
@@ -1666,7 +1698,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, { merge: true });
 
             try { await user.reload(); } catch (_) {}
-            renderUserNav(window.auth.currentUser);
+            syncStaffFlags(window.auth.currentUser).then(function(){ renderUserNav(window.auth.currentUser); });
             showNavMessage('Settings saved successfully!', 'success');
             setTimeout(closeAuthModal, 1800);
         } catch (err) {
@@ -1738,7 +1770,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, { merge: true });
 
             await user.reload();
-            renderUserNav(window.auth.currentUser);
+            syncStaffFlags(window.auth.currentUser).then(function(){ renderUserNav(window.auth.currentUser); });
 
             showNavMessage('Account created! Settings updated.', 'success');
             setTimeout(closeAuthModal, 1500);

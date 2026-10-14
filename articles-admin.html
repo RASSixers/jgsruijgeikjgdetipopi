@@ -1013,9 +1013,10 @@ body, html {
             <div class="writer-guide">
               <strong>How to format</strong>
               <ol>
-                <li>Write your story in the large box — one idea per paragraph.</li>
-                <li>To embed a tweet, paste the full X URL on its own line, for example: <code>https://x.com/user/status/123</code></li>
-                <li>For Player Grades, set the category above, then load the roster and fill grades under the body.</li>
+                <li>Write normally. Leave a blank line between paragraphs.</li>
+                <li><strong>Tweet embed:</strong> put the full X URL alone on its own line (or its own paragraph), e.g. <code>https://x.com/user/status/123</code> — you can do this as many times as you want throughout the article.</li>
+                <li><strong>Image embed:</strong> put a direct image URL alone on its own line, e.g. <code>https://…/photo.jpg</code>, or use <code>![caption](https://…/photo.jpg)</code>. Only use images you have rights to use.</li>
+                <li>For Player Grades, set the category, then load roster and fill grades below.</li>
                 <li>Optional closing note goes in the short field at the bottom.</li>
               </ol>
             </div>
@@ -1033,7 +1034,7 @@ Continue with more analysis after the embedded tweet…"></textarea>
             <div class="tweet-embed-section">
               <div class="tweet-embed-header"><span class="tweet-embed-label">Primary tweet (optional)</span></div>
               <input type="text" class="form-input" id="f-tweet-url" placeholder="https://x.com/user/status/1234567890" oninput="handleTweetInput(this.value)">
-              <div class="tweet-embed-hint">If you only want one main embed, paste it here. Tweet links inside the body also work when the article page supports them.</div>
+              <div class="tweet-embed-hint">Optional. Body tweet links are preferred for multiple embeds. This field is a single primary embed if you don’t put URLs in the body.</div>
               <div class="tweet-preview-box" id="tweet-preview-box">Tweet preview appears here when a valid URL is entered.</div>
             </div>
           </div>

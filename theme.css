@@ -396,3 +396,27 @@ html.navy-mode .navbar {
 .navbar {
   background: var(--sh-bg, var(--cream, #f4f6f9));
 }
+
+
+/* Homepage CTAs readable in dark mode */
+html.dark-mode .hero-cta-primary {
+  background: #006BB6 !important;
+  border-color: #006BB6 !important;
+  color: #ffffff !important;
+}
+html.dark-mode .hero-cta-secondary {
+  background: var(--sh-card) !important;
+  border-color: var(--sh-border) !important;
+  color: #e8eaf0 !important;
+}
+html.dark-mode .hero-cta-secondary:hover {
+  border-color: #5eb0f0 !important;
+  color: #7dd3fc !important;
+}
+html.dark-mode .feature-card {
+  background: var(--sh-card) !important;
+  border-color: var(--sh-border) !important;
+}
+html.dark-mode .feature-card-title { color: #f1f5f9 !important; }
+html.dark-mode .feature-card-desc { color: #94a3b8 !important; }
+html.dark-mode .feature-card-arrow { color: #5eb0f0 !important; }

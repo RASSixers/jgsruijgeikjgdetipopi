@@ -33,36 +33,104 @@
   }
   a { color: inherit; }
 
-  .article-wrap { max-width: 760px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
-  .article-back { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--sixers-blue); text-decoration: none; margin-bottom: 1.75rem; }
+  .article-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.75rem 1.5rem 5rem;
+  }
+  .article-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--sixers-blue);
+    text-decoration: none;
+    margin-bottom: 2rem;
+  }
   .article-back:hover { text-decoration: underline; }
 
-  .article-header { margin-bottom: 1.25rem; }
-  .article-tag {
-    display: inline-flex; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; padding: 4px 11px; border-radius: 999px; margin-bottom: 1rem;
+  .article-header {
+    text-align: center;
+    margin: 0 auto 2rem;
+    max-width: 40rem;
   }
-  .article-title { font-size: clamp(1.8rem, 4.5vw, 2.6rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.12; margin: 0 0 0.75rem; }
-  .article-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; color: var(--mid); }
-  .article-excerpt { font-size: 1.05rem; line-height: 1.65; color: var(--mid); margin: 1.15rem 0 1.25rem; font-weight: 400; }
-  .article-hero { margin: 0 0 0.4rem; }
-  .article-hero img {
-    width: 100%;
-    max-height: 420px;
-    object-fit: cover;
-    border-radius: 14px;
-    display: block;
+  .article-tag {
+    display: inline-flex;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 1.1rem;
+  }
+  .article-title {
+    font-size: clamp(1.85rem, 4.5vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+    margin: 0 0 1rem;
+    color: var(--ink);
+  }
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.55rem;
+    font-size: 0.88rem;
+    color: var(--mid);
+    justify-content: center;
+    align-items: center;
+  }
+  .article-meta .meta-dot {
+    color: #cbd5e1;
+  }
+  .article-excerpt {
+    font-size: 1.12rem;
+    line-height: 1.65;
+    color: #475569;
+    margin: 1.35rem auto 0;
+    font-weight: 400;
+    max-width: 36rem;
+  }
+  .article-divider {
+    width: 3rem;
+    height: 3px;
+    background: var(--sixers-blue);
+    border-radius: 2px;
+    margin: 1.75rem auto 2rem;
+  }
+  .article-hero {
+    margin: 0 0 0.5rem;
+    border-radius: 16px;
+    overflow: hidden;
     border: 1px solid var(--border-light);
   }
-  .article-photo-credit {
-    font-size: 0.72rem;
-    color: #94a3b8;
-    margin: 0 0 1.5rem;
-    line-height: 1.4;
+  .article-hero img {
+    width: 100%;
+    max-height: 440px;
+    object-fit: cover;
+    display: block;
   }
-  .article-body p { font-size: 1.05rem; line-height: 1.75; color: var(--ink); margin: 0 0 1.5rem; white-space: pre-wrap; }
+  .article-photo-credit {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0 0 1.75rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .article-body {
+    margin-top: 0.25rem;
+  }
+  .article-body p {
+    font-size: 1.08rem;
+    line-height: 1.8;
+    color: #1e293b;
+    margin: 0 0 1.45rem;
+    white-space: pre-wrap;
+  }
   .article-body .article-inline-img {
-    margin: 1.5rem 0;
+    margin: 1.75rem 0;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--border-light);
@@ -74,21 +142,21 @@
     height: auto;
     max-height: 560px;
     object-fit: contain;
-    background: #0f172a08;
   }
   .article-body .article-inline-img figcaption {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--mid);
-    padding: 0.55rem 0.85rem 0.7rem;
+    padding: 0.6rem 0.9rem 0.75rem;
     line-height: 1.4;
+    text-align: center;
   }
 
   .tweet-embed-wrap {
-    margin: 1.25rem 0;
+    margin: 1.75rem 0;
     background: #f8fafc;
     border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 1rem 1.25rem 0.5rem;
+    border-radius: 16px;
+    padding: 1.1rem 1.25rem 0.65rem;
     overflow: hidden;
   }
   .tweet-embed-wrap .twitter-tweet { margin: 0 auto !important; }
@@ -96,45 +164,81 @@
   .tweet-fallback-card a { color: var(--sixers-blue); font-weight: 600; text-decoration: none; }
   .tweet-fallback-card a:hover { text-decoration: underline; }
 
-  .grades-section { margin: 2.5rem 0; }
-  .grades-heading { font-size: 1.3rem; font-weight: 700; margin: 0 0 1.25rem; }
-  .grade-card {
-    border: 1px solid var(--border-light); border-radius: 12px; padding: 1.1rem 1.25rem;
-    margin-bottom: 1rem; display: flex; gap: 1rem; align-items: flex-start;
+  .grades-section { margin: 2.75rem 0 1.5rem; }
+  .grades-heading {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.15rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 2px solid var(--ink);
   }
+  .grade-card {
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 1.15rem 1.2rem;
+    margin-bottom: 0.85rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+  .grade-card:hover { border-color: #d0d7e2; }
   .grade-pill {
-    flex-shrink: 0; width: 48px; height: 48px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.05rem;
   }
   .grade-card-body { flex: 1; min-width: 0; }
-  .grade-card-name { font-size: 1rem; font-weight: 700; margin: 0 0 0.2rem; }
-  .grade-card-stats { font-size: 0.82rem; color: var(--mid); margin: 0 0 0.5rem; }
-  .grade-card-analysis { font-size: 0.92rem; line-height: 1.55; color: var(--ink); margin: 0; }
-  .grade-card-tweet { margin-top: 0.85rem; }
+  .grade-card-name { font-size: 1.02rem; font-weight: 700; margin: 0 0 0.25rem; letter-spacing: -0.015em; }
+  .grade-card-stats { font-size: 0.84rem; color: var(--mid); margin: 0 0 0.55rem; line-height: 1.4; }
+  .grade-card-analysis { font-size: 0.95rem; line-height: 1.6; color: #1e293b; margin: 0; }
+  .grade-card-tweet { margin-top: 0.9rem; }
 
   .bottom-line {
-    margin: 1.75rem 0 0;
+    margin: 2.25rem 0 0;
     border: 1px solid var(--border-light);
     border-radius: 16px;
-    padding: 1.1rem 1.2rem 1.2rem;
-    background: #f8fafc;
+    padding: 1.25rem 1.35rem 1.35rem;
+    background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
   }
   .bottom-line-label {
     display: block;
     font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--sixers-blue);
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.5rem;
   }
   .bottom-line p {
     margin: 0;
-    font-size: 1.02rem;
-    line-height: 1.65;
+    font-size: 1.05rem;
+    line-height: 1.7;
     color: var(--ink);
     white-space: pre-wrap;
   }
+
+  .article-locked {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+  }
+  .article-locked h1 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+  }
+  .article-locked p { color: var(--mid); margin: 0; }
 
   .more-section { margin-top: 2.75rem; }
   .more-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 0.9rem; }
@@ -229,6 +333,7 @@ function readMinutes(a) {
 }
 
 function isPublished(a) {
+  if (a && a.status === 'draft') return false;
   return !a.status || a.status === 'published';
 }
 
@@ -353,10 +458,22 @@ function renderMore(more) {
 }
 
 function renderArticle(a, more) {
+  // Private articles are not shown publicly
+  if (a.visibility === 'private') {
+    document.title = 'Private article — Sixers Hoops';
+    document.getElementById('article-root').innerHTML =
+      '<a href="/" class="article-back">&larr; Back to Sixers Hoops</a>' +
+      '<div class="article-locked">' +
+        '<h1>This article is private</h1>' +
+        '<p>It is not available on the public site.</p>' +
+      '</div>';
+    return;
+  }
+
   const color = CATEGORY_COLORS[a.category] || '#006bb6';
   const dateObj = a.createdAt ? toDate(a.createdAt) : null;
   const date = dateObj ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-  const author = a.author || 'Sixers Hoops Staff';
+  const author = 'By: ' + (a.author || 'SixersHoops');
   document.title = a.title + ' — Sixers Hoops';
 
   function setMeta(name, content, prop) {
@@ -388,9 +505,16 @@ function renderArticle(a, more) {
   html += '<div class="article-header">';
   html += '<span class="article-tag" style="color:' + color + ';border:1px solid ' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>';
   html += '<h1 class="article-title">' + escapeHtml(a.title) + '</h1>';
-  html += '<div class="article-meta"><span>' + escapeHtml(author) + '</span><span>·</span><span>' + escapeHtml(date) + '</span><span>·</span><span>' + escapeHtml(readMinutes(a)) + '</span></div>';
+  html += '<div class="article-meta">' +
+    '<span>' + escapeHtml(author) + '</span>' +
+    '<span class="meta-dot">·</span>' +
+    '<span>' + escapeHtml(date) + '</span>' +
+    '<span class="meta-dot">·</span>' +
+    '<span>' + escapeHtml(readMinutes(a)) + '</span>' +
+  '</div>';
   if (a.excerpt) html += '<p class="article-excerpt">' + escapeHtml(a.excerpt) + '</p>';
   html += '</div>';
+  html += '<div class="article-divider" aria-hidden="true"></div>';
 
   if (a.imageUrl) {
     html += '<figure class="article-hero"><img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.title) + '"></figure>';

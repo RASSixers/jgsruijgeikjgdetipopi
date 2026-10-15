@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Philadelphia 76ers Roster 2026-27 | Sixers Hoops</title>
+<link rel="icon" href="/favicon.ico" />
 <link rel="icon" type="image/png" href="/favicon.png" />
 <meta name="description" content="Official 2026-27 Philadelphia 76ers roster: 16 players, NBA headshots, salaries, heights, weights, colleges, and front office. Updated weekly." />
 <link rel="canonical" href="https://sixershoops.com/roster" />
@@ -263,6 +264,22 @@
     letter-spacing: 0.1em;
     color: var(--mid-2);
     font-variant-numeric: tabular-nums;
+  }
+  .injury-badge {
+    background: #991b1b;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+  }
+  .injury-note {
+    font-size: 0.72rem;
+    font-weight: 650;
+    color: #b91c1c;
+    margin: 0.25rem 0 0.15rem;
+    line-height: 1.3;
   }
   .card .badges {
     position: absolute;
@@ -723,6 +740,18 @@
 /* ── 2025–26 Philadelphia 76ers roster ── */
 
 // Optional extras keyed by display name (salary/awards when ESPN omits them)
+
+const ROSTER_EXCLUDE = new Set([
+  "Dillon Jones",
+  "Saint Thomas",
+  "Tacko Fall",
+  "Duke Miles",
+  "Jameer Nelson Jr."
+]);
+const INJURY_NOTES = {
+  "Ariel Hukporti": "OUT FOR SEASON: Achilles tear"
+};
+
 const ROSTER_EXTRAS = {
   "Joel Embiid": { salary: 57985752, awards: ["NBA MVP (2023)","7× NBA All-Star","NBA Scoring Champion (2022, 2023)"], careerHighs:{points:70,rebounds:22,assists:11} },
   "Jaylen Brown": { salary: 57736350, awards: ["NBA Champion (2024)","Finals MVP (2024)","5× NBA All-Star","2× All-NBA"], careerHighs:{points:50,rebounds:15,assists:9} },
@@ -741,8 +770,8 @@ const ROSTER_RANK = [
   "Tyrese Maxey", "Jaylen Brown", "Joel Embiid", "LeBron James", "VJ Edgecombe",
   "Anfernee Simons", "Kentavious Caldwell-Pope", "Dean Wade", "Justin Edwards",
   "Adem Bona", "Labaron Philon Jr.", "Jabari Walker", "Dominick Barlow",
-  "Ariel Hukporti", "Rayan Rupert", "Caleb Love", "Dillon Jones", "Saint Thomas",
-  "Tacko Fall", "Duke Miles", "Jameer Nelson Jr."
+  "Ariel Hukporti", "Rayan Rupert", "Caleb Love",
+  "Jameer Nelson Jr."
 ];
 function rosterRank(name) {
   const i = ROSTER_RANK.indexOf(name);
@@ -865,9 +894,12 @@ async function loadRosterFromEspn() {
     if (!res.ok) throw new Error("roster " + res.status);
     const data = await res.json();
     const athletes = data.athletes || [];
-    ROSTER = athletes.map(mapEspnPlayer).filter(p => p.status !== "injured" || true);
-    // Prefer active; still show all
-    // Starters / best players first (then everyone else alphabetically)
+    ROSTER = athletes.map(mapEspnPlayer)
+      .filter(p => !ROSTER_EXCLUDE.has(p.name))
+      .map(p => {
+        if (INJURY_NOTES[p.name]) p.injuryNote = INJURY_NOTES[p.name];
+        return p;
+      });
     ROSTER.sort((a, b) => rosterRank(a.name) - rosterRank(b.name) || a.name.localeCompare(b.name));
   } catch (err) {
     console.warn("ESPN roster failed", err);
@@ -901,6 +933,7 @@ function cardHTML(p,i){
         <span class="pos">${p.pos}</span>
         <span class="num">#${p.jersey}</span>
         ${p.isTwoWay?'<span class="twoway">2-Way</span>':''}
+        ${p.injuryNote?'<span class="injury-badge" title="'+p.injuryNote+'">OUT</span>':''}
       </div>
       <div class="photo">
         <img src="${p.photo ?? photoURL(p)}" alt="${p.name} headshot, Philadelphia 76ers"
@@ -909,6 +942,7 @@ function cardHTML(p,i){
       </div>
       <div class="meta">
         <div class="name">${p.name}</div>
+        ${p.injuryNote?'<div class="injury-note">'+p.injuryNote+'</div>':''}
         <div class="sub">
           <span>${p.ht}</span><span class="sep">/</span>
           <span>${p.wt}</span><span class="sep">/</span>

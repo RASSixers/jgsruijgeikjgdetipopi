@@ -591,45 +591,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const footerHTML = `
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <a href="/" class="footer-brand">
-                </a>
-                <span class="footer-brand-accent"></span>
-                <p class="footer-tagline">Independent Philadelphia 76ers analysis, advanced stats, and draft tools built for fans who want the full picture.</p>
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-brand-block">
+                    <a href="/" class="footer-brand">
+                        <img src="/favicon.ico" alt="" class="footer-logo" width="28" height="28">
+                        <span class="footer-brand-name">SixersHoops</span>
+                    </a>
+                    <p class="footer-tagline">Independent Philadelphia 76ers coverage, tools, and community for fans who want the full picture.</p>
+                </div>
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-title">Explore</h3>
+                        <ul class="footer-links">
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/pickem">Pick'em</a></li>
+                            <li><a href="/nba-trade-machine">Trade Machine</a></li>
+                            <li><a href="/schedule">Schedule</a></li>
+                            <li><a href="/roster">Roster</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-title">Support</h3>
+                        <ul class="footer-links">
+                            <li><a href="/contact">Contact</a></li>
+                            <li><a href="mailto:info@sixershoops.com">info@sixershoops.com</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-title">Legal</h3>
+                        <ul class="footer-links">
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/cookie-policy">Cookie Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-
-            <div class="footer-section">
-                <h3 class="footer-title">Explore</h3>
-                <ul class="footer-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/pickem">Pick'em</a></li>
-                    <li><a href="https://sixershoops.com/standings">NBA Standings</a></li>
-                    <li><a href="https://sixershoops.com/schedule">Schedule</a></li>
-                    
-                </ul>
+            <div class="footer-disclaimer">
+                <p>SixersHoops is an independent fan site and is not affiliated with, endorsed by, or sponsored by the National Basketball Association (NBA), the Philadelphia 76ers, or any related entity. All trademarks and team names belong to their respective owners.</p>
+                <p>User-generated content (including chat, comments, trades, picks, and posts) is provided by users. SixersHoops does not control, verify, or guarantee that content and is not responsible for it. Use of this site is at your own risk.</p>
             </div>
-
-            <div class="footer-section">
-                <h3 class="footer-title">Legal</h3>
-                <ul class="footer-links">
-                    <li><a href="/privacy-policy">Privacy Policy</a></li>
-                    <li><a href="/cookie-policy">Cookie Policy</a></li>
-                    <li><a href="/terms-of-service">Terms of Service</a></li>
-                    <li><a href="/disclaimer">Disclaimer</a></li>
-                </ul>
+            <div class="footer-bottom">
+                <span>&copy; <span id="footer-year"></span> SixersHoops. All rights reserved.</span>
+                <span class="footer-bottom-meta">For entertainment and informational purposes only</span>
             </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2025 Sixers Hoops &middot; All rights reserved</p>
-            <span class="footer-bottom-meta">Not affiliated with the NBA or the Philadelphia 76ers</span>
         </div>
     </footer>
     `;
 
     document.body.insertAdjacentHTML('afterbegin', navbarHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
+    try {
+        var fy = document.getElementById('footer-year');
+        if (fy) fy.textContent = String(new Date().getFullYear());
+    } catch (e) {}
 
  const firebaseConfig = {
     apiKey: "AIzaSyBzMlBV5gbZZlg_eTwNWrRDrhx-_ATIPS0",

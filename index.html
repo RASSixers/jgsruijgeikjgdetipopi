@@ -103,13 +103,13 @@
   }
   .hero-cta-primary {
     background: var(--sixers-blue);
-    color: #fff;
+    color: #fff !important;
     border: 1px solid var(--sixers-blue);
   }
-  .hero-cta-primary:hover { background: #0057a0; border-color: #0057a0; }
+  .hero-cta-primary:hover { background: #0057a0; border-color: #0057a0; color: #fff !important; }
   .hero-cta-secondary {
     color: var(--ink);
-    background: #fff;
+    background: var(--card-bg, #fff);
     border: 1px solid var(--border-light);
   }
   .hero-cta-secondary:hover {
@@ -582,12 +582,17 @@
   .updates-heading {
     margin-bottom: 1.15rem;
   }
-  /* 3 across × 2 rows per page on desktop */
+  /* 3 tweets per page */
   .updates-feed {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.9rem;
     align-items: start;
+  }
+  @media (min-width: 700px) {
+    .updates-feed {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
   .update-card {
     background: #fff;
@@ -863,11 +868,8 @@ const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
 const POLLS_COLLECTION = 'fan_polls';
 function updatesPerPage() {
-  // Mobile: 3 tweets; desktop: 6 (3×2)
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 699px)').matches) return 3;
-  } catch (e) {}
-  return 6;
+  // 3 tweets per page on all screen sizes
+  return 3;
 }
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};

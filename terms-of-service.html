@@ -1,222 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Terms of Service | SixersHoops</title>
-  <link rel="icon" href="/favicon.ico"/>
-  <link rel="apple-touch-icon" href="/favicon.ico"/>
-
-  <link rel="stylesheet" href="styles.css"/>
-  <link rel="stylesheet" href="navbar-styles.css"/>
-
-  <!-- Google Tag Manager -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-T1V9Q0MNEM');
-  </script>
-
-  <style>
-    :root {
-      --color-navy: #0a174e;
-      --color-navy-soft: #122860;
-      --color-sky: #3b82f6;
-      --color-cyan: #06b6d4;
-      --color-ice: #f8fafc;
-      --color-white: #ffffff;
-      --color-slate-900: #0f172a;
-      --color-slate-700: #334155;
-      --color-slate-500: #64748b;
-      --color-gold: #f59e0b;
-      --card-radius: 22px;
-      --card-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
-      --border-glow: 1px solid rgba(59, 130, 246, 0.25);
-      --blur: blur(18px);
-      --transition: all 0.35s ease;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f9fafb;
-      color: #111827;
-      line-height: 1.6;
-      padding-top: 80px;
-      margin: 0;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .page-header {
-      padding: 5rem 2rem;
-      text-align: center;
-      animation: fadeIn 0.5s ease-in;
-    }
-
-    .page-header-content {
-      max-width: 56rem;
-      margin: 0 auto;
-    }
-
-    .page-title {
-      font-size: clamp(2.5rem, 7vw, 4rem);
-      font-weight: 800;
-      margin-bottom: 1.5rem;
-      line-height: 1.2;
-      color: var(--color-navy);
-    }
-
-    .page-title .highlight {
-      color: var(--color-sky);
-    }
-
-    .page-subtitle {
-      font-size: clamp(1rem, 2vw, 1.25rem);
-      color: var(--color-slate-500);
-      max-width: 42rem;
-      margin: 0 auto;
-      font-weight: 500;
-    }
-
-    .content-wrapper {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .legal-container {
-      background: #ffffff;
-      border-radius: 28px;
-      box-shadow: 0 24px 45px rgba(15, 23, 42, 0.12);
-      padding: clamp(1.5rem, 5vw, 4rem);
-      border: 1px solid rgba(226, 232, 240, 0.9);
-      margin-bottom: 8rem;
-      animation: fadeIn 0.6s ease-out;
-    }
-
-    .legal-section {
-      margin-bottom: 3rem;
-    }
-
-    .legal-section h2 {
-      font-size: 1.75rem;
-      color: var(--color-navy);
-      font-weight: 800;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 3px solid var(--color-sky);
-      display: inline-block;
-    }
-
-    .legal-section h3 {
-      font-size: 1.25rem;
-      color: var(--color-navy);
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .legal-section p {
-      margin-bottom: 1.2rem;
-      color: var(--color-slate-700);
-      font-size: 1.05rem;
-    }
-
-    .legal-section ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1.5rem;
-      color: var(--color-slate-700);
-    }
-
-    .legal-section li {
-      margin-bottom: 0.5rem;
-    }
-
-    @media (max-width: 768px) {
-      .page-header { padding: 3rem 1rem; }
-      .legal-container { padding: 2rem 1.5rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service | SixersHoops</title>
+<meta name="description" content="Terms of Service for SixersHoops, an independent Philadelphia 76ers fan site.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/navbar-styles.css">
+<style>
+:root {
+  --ink: #0f172a; --mid: #64748b; --border: #e2e8f0; --blue: #006BB6;
+  --bg: #ffffff; --soft: #f8fafc;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; margin-top: 64px;
+  font-family: Lexend, system-ui, -apple-system, sans-serif;
+  background: var(--bg); color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+.policy-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.5rem 1.35rem 4rem;
+}
+.policy-eyebrow {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--blue); margin: 0 0 0.5rem;
+}
+.policy-wrap h1 {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  margin: 0 0 0.5rem; line-height: 1.15;
+}
+.policy-updated {
+  font-size: 0.85rem; color: var(--mid); margin: 0 0 2rem;
+}
+.policy-wrap h2 {
+  font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em;
+  margin: 2rem 0 0.65rem; padding-top: 0.25rem;
+}
+.policy-wrap p, .policy-wrap li {
+  font-size: 0.95rem; color: #334155; line-height: 1.7; margin: 0 0 0.9rem;
+}
+.policy-wrap ul { margin: 0 0 1rem; padding-left: 1.25rem; }
+.policy-wrap li { margin-bottom: 0.4rem; }
+.policy-callout {
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin: 1.25rem 0;
+  font-size: 0.9rem;
+  color: #334155;
+  line-height: 1.6;
+}
+.policy-callout strong { color: var(--ink); }
+a { color: var(--blue); font-weight: 600; }
+</style>
 </head>
 <body>
-  <script src="nav.js"></script>
-
-  <section class="page-header">
-    <div class="page-header-content">
-      <h1 class="page-title">Terms of <span class="highlight">Service</span></h1>
-      <p class="page-subtitle">Binding Agreement and Usage Guidelines</p>
-    </div>
-  </section>
-
-  <div class="content-wrapper">
-    <main class="legal-container">
-      <div class="legal-section">
-        <h2>1. Agreement to Terms</h2>
-        <p>By accessing or using SixersHoops.com (the "Website"), you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>2. Intellectual Property Rights</h2>
-        <p>The Website and its original content, features, and functionality are owned by SixersHoops and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.</p>
-        <p>You may not:
-          <ul>
-            <li>Modify or copy the materials;</li>
-            <li>Use the materials for any commercial purpose or for any public display;</li>
-            <li>Attempt to decompile or reverse engineer any software contained on the Website;</li>
-            <li>Remove any copyright or other proprietary notations from the materials.</li>
-          </ul>
-        </p>
-      </div>
-
-      <div class="legal-section">
-        <h2>3. Use License and Restrictions</h2>
-        <p>Permission is granted to temporarily download one copy of the materials on SixersHoops for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.</p>
-        <p>You agree not to use the Website to:
-          <ul>
-            <li>Upload or distribute any computer viruses or any software intended to damage or alter a computer system or data;</li>
-            <li>Send unsolicited or unauthorized advertising, promotional materials, junk mail, spam, or other forms of duplicative or unsolicited messages;</li>
-            <li>Harvest, collect, gather or assemble information or data regarding other users without their consent.</li>
-          </ul>
-        </p>
-      </div>
-
-      <div class="legal-section">
-        <h2>4. Limitation of Liability</h2>
-        <p>In no event shall SixersHoops, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Website; (ii) any conduct or content of any third party on the Website; (iii) any content obtained from the Website; and (iv) unauthorized access, use or alteration of your transmissions or content, whether based on warranty, contract, tort (including negligence) or any other legal theory, whether or not we have been informed of the possibility of such damage.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>5. Indemnification</h2>
-        <p>You agree to defend, indemnify and hold harmless SixersHoops and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Website, or b) a breach of these Terms.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>6. Disclaimer of Warranties</h2>
-        <p>Your use of the Website is at your sole risk. The Website is provided on an "AS IS" and "AS AVAILABLE" basis. The Website is provided without warranties of any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, fitness for a particular purpose, non-infringement or course of performance.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>7. Governing Law and Jurisdiction</h2>
-        <p>These Terms shall be governed and construed in accordance with the laws of the United States, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. If any provision of these Terms is held to be invalid or unenforceable by a court, the remaining provisions of these Terms will remain in effect.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>8. Dispute Resolution (Arbitration Clause)</h2>
-        <p>Any dispute arising from or relating to the subject matter of these Terms shall be finally settled by arbitration in accordance with the Streamlined Arbitration Rules and Procedures of JAMS then in effect, by one commercial arbitrator with substantial experience in resolving intellectual property and commercial contract disputes.</p>
-      </div>
-    </main>
+<div class="policy-wrap">
+  <div class="policy-eyebrow">Legal</div>
+  <h1>Terms of Service</h1>
+  <p class="policy-updated">Last updated: October 14, 2026</p>
+  
+  <div class="policy-callout">
+    <strong>Important:</strong> By accessing or using SixersHoops (the "Site"), you agree to these Terms of Service ("Terms"). If you do not agree, do not use the Site.
   </div>
+
+  <h2>1. Who we are</h2>
+  <p>SixersHoops is an independent fan-operated website providing news, analysis, tools (including Pick'em and trade-related features), and community features related to the Philadelphia 76ers and the NBA. The Site is not affiliated with, endorsed by, or sponsored by the National Basketball Association, the Philadelphia 76ers, or any team, league, or related entity.</p>
+
+  <h2>2. Eligibility and accounts</h2>
+  <p>You must be able to form a binding contract in your jurisdiction to create an account. You are responsible for your account credentials and for all activity under your account. Provide accurate information and keep it updated. We may suspend or terminate accounts that violate these Terms or that we reasonably believe pose a risk to the Site or other users.</p>
+
+  <h2>3. Informational and entertainment use only</h2>
+  <p>All content on the Site, including articles, grades, statistics, projections, Pick'em questions, trade machine outputs, salary figures, and similar materials, is for informational and entertainment purposes only. It is not professional, financial, legal, or gambling advice. You should not rely on Site content as the sole basis for any decision.</p>
+
+  <h2>4. User-generated content (including chat, comments, trades, and posts)</h2>
+  <p>The Site may allow you to submit, post, or share content, including but not limited to comments, chat or group messages, trade ideas, community posts, profile information, and Pick'em related activity ("User Content").</p>
+  <ul>
+    <li>You retain ownership of your User Content, but you grant SixersHoops a worldwide, non-exclusive, royalty-free license to host, store, display, reproduce, and distribute that content as needed to operate and improve the Site.</li>
+    <li><strong>You are solely responsible for your User Content.</strong> SixersHoops does not endorse User Content and does not guarantee its accuracy, legality, or quality.</li>
+    <li><strong>We are not responsible for User Content</strong> posted by you or by any other user, including in chat, comments, trade posts, group leagues, or any other interactive feature.</li>
+    <li>You agree not to post content that is illegal, harassing, defamatory, fraudulent, infringing, or that violates the rights of others.</li>
+    <li>We may remove, hide, or restrict User Content or accounts at our discretion, including for moderation, safety, or legal reasons, without prior notice.</li>
+  </ul>
+
+  <h2>5. Community features, chat, and groups</h2>
+  <p>Interactive features (including chat, group leagues, and community feeds) are provided as-is. Conversations may be public or visible to other members of a group. Do not share sensitive personal information. SixersHoops is not a party to interactions between users and is not liable for disputes, statements, or conduct of users in chat or elsewhere on the Site.</p>
+
+  <h2>6. Pick'em, tools, and scores</h2>
+  <p>Pick'em games, leaderboards, grading, trade machine calculations, and similar tools are recreational. Results may be delayed, incomplete, or incorrect. We do not guarantee uninterrupted availability, accurate scoring, or error-free data from third-party sources (including game results and statistics feeds).</p>
+
+  <h2>7. Intellectual property</h2>
+  <p>Site design, branding, original articles, and software are owned by SixersHoops or its licensors. NBA, team names, logos, and related marks are property of their respective owners. You may not scrape, copy, or republish Site content at scale without permission, except for ordinary personal, non-commercial use permitted by law.</p>
+
+  <h2>8. Third-party services and links</h2>
+  <p>The Site may link to or embed third-party services (for example social media embeds, authentication providers, or data sources). We do not control those services and are not responsible for their content, policies, or availability.</p>
+
+  <h2>9. Disclaimers</h2>
+  <p>THE SITE AND ALL CONTENT AND FEATURES ARE PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SITE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.</p>
+
+  <h2>10. Limitation of liability</h2>
+  <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, SIXERSHOOPS AND ITS OPERATORS, CONTRIBUTORS, AND AFFILIATES SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF DATA, PROFITS, OR GOODWILL, ARISING FROM YOUR USE OF THE SITE, USER CONTENT, CHAT, PICK'EM, TRADE TOOLS, OR ANY THIRD-PARTY SERVICE, WHETHER BASED ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE), OR ANY OTHER LEGAL THEORY.</p>
+  <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, OUR TOTAL LIABILITY FOR ANY CLAIM RELATED TO THE SITE SHALL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US TO USE THE SITE IN THE TWELVE MONTHS BEFORE THE CLAIM (IF ANY) OR (B) ONE HUNDRED U.S. DOLLARS (USD $100).</p>
+
+  <h2>11. Indemnity</h2>
+  <p>You agree to defend, indemnify, and hold harmless SixersHoops and its operators from claims, damages, losses, and expenses (including reasonable attorneys' fees) arising from your User Content, your use of the Site, or your violation of these Terms or applicable law.</p>
+
+  <h2>12. Suspension and termination</h2>
+  <p>We may suspend or terminate access for any reason, including violation of these Terms, suspected abuse, or to protect the Site or other users. You may stop using the Site at any time. Provisions that by their nature should survive (including disclaimers, limitations of liability, and indemnity) will survive termination.</p>
+
+  <h2>13. Changes</h2>
+  <p>We may update these Terms from time to time. Continued use of the Site after changes become effective constitutes acceptance of the updated Terms. The "Last updated" date at the top will change when we revise this page.</p>
+
+  <h2>14. Governing law</h2>
+  <p>These Terms are governed by the laws of the United States and the State of Pennsylvania, without regard to conflict-of-law rules, except where mandatory local law applies to you. Courts in Pennsylvania shall have exclusive jurisdiction over disputes arising from these Terms, except where prohibited by law.</p>
+
+  <h2>15. Contact</h2>
+  <p>Questions about these Terms: <a href="mailto:info@sixershoops.com">info@sixershoops.com</a> or our <a href="/contact">Contact</a> page.</p>
+
+</div>
+<script src="/nav.js"></script>
 </body>
 </html>

@@ -181,6 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <li class="nav-item">
                 <a href="/pickem" class="nav-link">Pick'em</a>
             </li>
+            <li class="nav-item">
+                <a href="/nba-trade-machine" class="nav-link">Trade Machine</a>
+            </li>
             <li class="nav-item dropdown">
                 <button class="dropdown-toggle">Team Hub</button>
                 <div class="dropdown-menu">
@@ -193,9 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
             <li class="nav-item">
                 <a href="https://sixershoops.com/schedule" class="nav-link">Schedule</a>
-            </li>
-            <li class="nav-item">
-                <a href="https://sixershoops.com/contact" class="nav-link">Contact</a>
             </li>
         </ul>
 
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="https://sixershoops.com/future-draft-picks" class="mobile-nav-link">Draft Picks</a>
 
             <p class="mobile-menu-label">Site</p>
-            <a href="https://sixershoops.com/contact" class="mobile-nav-link">Contact</a>
+            <a href="/nba-trade-machine" class="mobile-nav-link">Trade Machine</a>
         </div>
     </div>
 
@@ -591,45 +591,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const footerHTML = `
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <a href="/" class="footer-brand">
-                </a>
-                <span class="footer-brand-accent"></span>
-                <p class="footer-tagline">Independent Philadelphia 76ers analysis, advanced stats, and draft tools built for fans who want the full picture.</p>
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-brand-block">
+                    <a href="/" class="footer-brand">
+                        <img src="/favicon.ico" alt="" class="footer-logo" width="28" height="28">
+                        <span class="footer-brand-name">SixersHoops</span>
+                    </a>
+                    <p class="footer-tagline">Independent Philadelphia 76ers coverage, tools, and community for fans who want the full picture.</p>
+                </div>
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-title">Explore</h3>
+                        <ul class="footer-links">
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/pickem">Pick'em</a></li>
+                            <li><a href="/nba-trade-machine">Trade Machine</a></li>
+                            <li><a href="/schedule">Schedule</a></li>
+                            <li><a href="/roster">Roster</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-title">Support</h3>
+                        <ul class="footer-links">
+                            <li><a href="/contact">Contact</a></li>
+                            <li><a href="mailto:info@sixershoops.com">info@sixershoops.com</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-title">Legal</h3>
+                        <ul class="footer-links">
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/cookie-policy">Cookie Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-
-            <div class="footer-section">
-                <h3 class="footer-title">Explore</h3>
-                <ul class="footer-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/pickem">Pick'em</a></li>
-                    <li><a href="https://sixershoops.com/standings">NBA Standings</a></li>
-                    <li><a href="https://sixershoops.com/schedule">Schedule</a></li>
-                    <li><a href="https://sixershoops.com/contact">Contact</a></li>
-                </ul>
+            <div class="footer-disclaimer">
+                <p>SixersHoops is an independent fan site and is not affiliated with, endorsed by, or sponsored by the National Basketball Association (NBA), the Philadelphia 76ers, or any related entity. All trademarks and team names belong to their respective owners.</p>
+                <p>User-generated content (including chat, comments, trades, picks, and posts) is provided by users. SixersHoops does not control, verify, or guarantee that content and is not responsible for it. Use of this site is at your own risk.</p>
             </div>
-
-            <div class="footer-section">
-                <h3 class="footer-title">Legal</h3>
-                <ul class="footer-links">
-                    <li><a href="/privacy-policy">Privacy Policy</a></li>
-                    <li><a href="/cookie-policy">Cookie Policy</a></li>
-                    <li><a href="/terms-of-service">Terms of Service</a></li>
-                    <li><a href="/disclaimer">Disclaimer</a></li>
-                </ul>
+            <div class="footer-bottom">
+                <span>&copy; <span id="footer-year"></span> SixersHoops. All rights reserved.</span>
+                <span class="footer-bottom-meta">For entertainment and informational purposes only</span>
             </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2025 Sixers Hoops &middot; All rights reserved</p>
-            <span class="footer-bottom-meta">Not affiliated with the NBA or the Philadelphia 76ers</span>
         </div>
     </footer>
     `;
 
     document.body.insertAdjacentHTML('afterbegin', navbarHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
+    try {
+        var fy = document.getElementById('footer-year');
+        if (fy) fy.textContent = String(new Date().getFullYear());
+    } catch (e) {}
 
  const firebaseConfig = {
     apiKey: "AIzaSyBzMlBV5gbZZlg_eTwNWrRDrhx-_ATIPS0",
@@ -682,6 +698,9 @@ document.addEventListener('DOMContentLoaded', function() {
             window.auth = firebase.auth();
             window.db = firebase.firestore();
             window.storage = firebase.storage();
+            try {
+                window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            } catch (pe) { console.warn('persistence', pe); }
             setupAuthListeners();
         } catch (err) {
             console.error('Firebase init error:', err);
@@ -767,8 +786,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     
+    
+    function showAccountBlocked(status, reason) {
+        if (document.getElementById('sh-account-block')) return;
+        var title = status === 'banned' ? 'Account banned' : 'Account suspended';
+        var msg = status === 'banned'
+            ? 'Your account has been banned from posting and limited site features.'
+            : 'Your account has been temporarily suspended from posting and limited site features.';
+        if (reason) msg += ' Reason: ' + reason;
+        msg += ' To appeal, email info@sixershoops.com.';
+        var el = document.createElement('div');
+        el.id = 'sh-account-block';
+        el.setAttribute('role', 'alert');
+        el.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:1.25rem;';
+        el.innerHTML = '<div style="max-width:420px;width:100%;background:#fff;border-radius:16px;padding:1.5rem 1.35rem;font-family:Lexend,system-ui,sans-serif;box-shadow:0 20px 50px rgba(0,0,0,0.25);">' +
+            '<h2 style="margin:0 0 0.5rem;font-size:1.2rem;font-weight:800;color:#0f172a;">' + title + '</h2>' +
+            '<p style="margin:0 0 1.15rem;font-size:0.9rem;line-height:1.55;color:#475569;">' + msg.replace(/</g,'&lt;') + '</p>' +
+            '<a href="mailto:info@sixershoops.com" style="display:inline-flex;font-weight:700;font-size:0.88rem;color:#006BB6;text-decoration:none;">Email info@sixershoops.com</a>' +
+            '<button type="button" id="sh-block-close" style="display:block;width:100%;margin-top:1rem;padding:0.65rem;border:none;border-radius:10px;background:#0f172a;color:#fff;font-family:inherit;font-weight:700;cursor:pointer;">Dismiss</button>' +
+            '</div>';
+        document.body.appendChild(el);
+        document.getElementById('sh-block-close').onclick = function () { el.remove(); };
+    }
+    function checkAccountStatus(user) {
+        if (!user || !window.db) return Promise.resolve(null);
+        return window.db.collection('users').doc(user.uid).get().then(function (doc) {
+            if (!doc.exists) return null;
+            var d = doc.data() || {};
+            var st = (d.accountStatus || 'active').toLowerCase();
+            if (st === 'suspended' && d.suspendedUntil) {
+                var until = d.suspendedUntil.toDate ? d.suspendedUntil.toDate() : new Date(d.suspendedUntil);
+                if (until && until.getTime() < Date.now()) st = 'active';
+            }
+            try {
+                localStorage.setItem('accountStatus', st);
+                localStorage.setItem('accountBanReason', d.banReason || d.adminNote || '');
+            } catch (e) {}
+            if (st === 'banned' || st === 'suspended') {
+                showAccountBlocked(st, d.banReason || d.adminNote || '');
+            }
+            return st;
+        }).catch(function () { return null; });
+    }
+
     function syncStaffFlags(user) {
         if (!user || !window.db) return Promise.resolve();
+        checkAccountStatus(user);
         return window.db.collection('users').doc(user.uid).get().then(function(doc) {
             var d = doc.exists ? (doc.data() || {}) : {};
             var can = !!(d.canWriteArticles || d.isAdmin || d.role === 'writer' || d.role === 'admin');
@@ -939,8 +1002,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const signInBtn = document.getElementById('navSignInBtn');
             const mobileSignInBtn = document.getElementById('mobileSignInBtn');
-            if(signInBtn) signInBtn.onclick = openAuthModal;
-            if(mobileSignInBtn) mobileSignInBtn.onclick = openAuthModal;
+            // Click handled by document delegation on #navSignInBtn / #mobileSignInBtn
             listenNotifications(null);
             updateNotifBadge(0);
         }
@@ -964,42 +1026,68 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setupAuthListeners() {
-        window.auth.onAuthStateChanged(async user => {
-            if (user) trackVisitStreak(user);
-
-            if (user && window.db) {
-                try {
-                    const ref = window.db.collection('users').doc(user.uid);
-                    const doc = await ref.get();
-                    const display = user.displayName || (user.email ? user.email.split('@')[0] : 'fan');
-                    const usernameLower = (display || 'fan').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'fan';
-                    if (!doc.exists) {
-                        await ref.set({
-                            username: display,
-                            usernameLower: usernameLower,
-                            email: user.email || '',
-                            followerCount: 0,
-                            followingCount: 0,
-                            createdAt: new Date().toISOString()
-                        }, { merge: true });
-                        localStorage.setItem('usernameLower', usernameLower);
-                    } else {
-                        const d = doc.data() || {};
-                        let lower = (d.usernameLower || '').toString().trim();
-                        if (!lower) {
-                            lower = (d.username || display).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || usernameLower;
-                            await ref.set({ username: d.username || display, usernameLower: lower }, { merge: true });
-                        }
-                        localStorage.setItem('usernameLower', lower);
-                        if (d.photoURL) localStorage.setItem('photoURL', d.photoURL);
-                        if (d.avatarColor) localStorage.setItem('avatarColor', d.avatarColor);
-                    }
-                } catch(err) { console.warn('ensure user profile', err); }
-            } else if (!user) {
-                localStorage.removeItem('usernameLower');
+        // Keep session across refreshes (do not use SESSION or NONE)
+        try {
+            if (window.auth && window.firebase && firebase.auth && firebase.auth.Auth) {
+                window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function (e) {
+                    console.warn('setPersistence', e);
+                });
             }
-            syncStaffFlags(user).then(function(){ renderUserNav(user); });
-            setupNotificationListener(user);
+        } catch (e) { console.warn('setPersistence', e); }
+
+        window.auth.onAuthStateChanged(function (user) {
+            // Update nav immediately — do not wait on Firestore
+            try {
+                renderUserNav(user || null);
+            } catch (e) { console.warn('renderUserNav', e); }
+            try {
+                setupNotificationListener(user || null);
+            } catch (e) {}
+
+            if (!user) {
+                try { localStorage.removeItem('usernameLower'); } catch (e) {}
+                return;
+            }
+
+            // Background work only (must not delay "logged in" UI)
+            if (user) {
+                try { trackVisitStreak(user); } catch (e) {}
+                try { syncStaffFlags(user); } catch (e) {}
+            }
+
+            if (!window.db) return;
+            var ref = window.db.collection('users').doc(user.uid);
+            ref.get().then(function (doc) {
+                var display = user.displayName || (user.email ? user.email.split('@')[0] : 'fan');
+                var usernameLower = (display || 'fan').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'fan';
+                if (!doc.exists) {
+                    return ref.set({
+                        username: display,
+                        usernameLower: usernameLower,
+                        email: user.email || '',
+                        followerCount: 0,
+                        followingCount: 0,
+                        createdAt: new Date().toISOString()
+                    }, { merge: true }).then(function () {
+                        try { localStorage.setItem('usernameLower', usernameLower); } catch (e) {}
+                    });
+                }
+                var d = doc.data() || {};
+                var lower = (d.usernameLower || '').toString().trim();
+                if (!lower) {
+                    lower = (d.username || display).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || usernameLower;
+                    return ref.set({ username: d.username || display, usernameLower: lower }, { merge: true }).then(function () {
+                        try { localStorage.setItem('usernameLower', lower); } catch (e) {}
+                    });
+                }
+                try {
+                    localStorage.setItem('usernameLower', lower);
+                    if (d.photoURL) localStorage.setItem('photoURL', d.photoURL);
+                    if (d.avatarColor) localStorage.setItem('avatarColor', d.avatarColor);
+                } catch (e) {}
+            }).catch(function (err) {
+                console.warn('ensure user profile', err);
+            });
         });
     }
 
@@ -1012,8 +1100,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    initFirebase();
-
     const modal = document.getElementById('authModalOverlay');
     const closeBtn = document.getElementById('authModalClose');
     const tabs = document.querySelectorAll('.auth-modal-tab');
@@ -1025,11 +1111,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const forgotPasswordLink = document.getElementById('forgotPasswordLink');
     const backToLoginLink = document.getElementById('backToLoginLink');
 
+    var _authModalOpening = false;
     function openAuthModal() {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        if (tabs[0]) tabs[0].click();
+        if (_authModalOpening) return;
+        _authModalOpening = true;
+        try {
+            var m = document.getElementById('authModalOverlay') || modal;
+            if (!m) {
+                console.error('[SixersAuth] auth modal not found in DOM');
+                return;
+            }
+            m.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            // Show login form without synthetic .click() (avoids handler loops)
+            document.querySelectorAll('.auth-modal-tab').forEach(function (t) {
+                t.classList.toggle('active', t.getAttribute('data-tab') === 'login');
+                t.style.display = 'block';
+            });
+            var lf = document.getElementById('navLoginForm');
+            var rf = document.getElementById('navRegisterForm');
+            var ff = document.getElementById('navForgotForm');
+            var pf = document.getElementById('navProfileForm');
+            if (lf) lf.style.display = 'block';
+            if (rf) rf.style.display = 'none';
+            if (ff) ff.style.display = 'none';
+            if (pf) pf.style.display = 'none';
+            var title = document.querySelector('.auth-modal-title');
+            if (title) title.textContent = 'Sixers Hoops';
+        } catch (err) {
+            console.error('[SixersAuth] openAuthModal error', err);
+        } finally {
+            setTimeout(function () { _authModalOpening = false; }, 150);
+        }
     }
+    window.openAuthModal = openAuthModal;
+
+    // Single delegated handler (bubble phase only) for Sign In buttons
+    if (!window.__shSignInDelegated) {
+        window.__shSignInDelegated = true;
+        document.addEventListener('click', function (e) {
+            var t = e.target;
+            if (!t || !t.closest) return;
+            var btn = t.closest('#navSignInBtn, #mobileSignInBtn');
+            if (!btn) return;
+            e.preventDefault();
+            openAuthModal();
+        });
+    }
+
+    initFirebase();
 
     function openProfileModal() {
         modal.classList.add('active');
@@ -1332,17 +1462,26 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function closeAuthModal() {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        authMessage.className = 'auth-message';
-        authMessage.textContent = '';
-        document.querySelector('.auth-modal-title').textContent = 'Sixers Hoops';
-        tabs.forEach(t => t.style.display = 'block');
-        if (loginForm) loginForm.reset();
-        if (registerForm) registerForm.reset();
-        if (forgotForm) forgotForm.reset();
-        if (profileForm) profileForm.reset();
+        try {
+            var m = document.getElementById('authModalOverlay') || modal;
+            if (m) m.classList.remove('active');
+            document.body.style.overflow = '';
+            var am = document.getElementById('navAuthMessage') || authMessage;
+            if (am) { am.className = 'auth-message'; am.textContent = ''; }
+            var title = document.querySelector('.auth-modal-title');
+            if (title) title.textContent = 'Sixers Hoops';
+            document.querySelectorAll('.auth-modal-tab').forEach(function (t) { t.style.display = 'block'; });
+            var lf = document.getElementById('navLoginForm');
+            var rf = document.getElementById('navRegisterForm');
+            var ff = document.getElementById('navForgotForm');
+            var pf = document.getElementById('navProfileForm');
+            if (lf) lf.reset();
+            if (rf) rf.reset();
+            if (ff) ff.reset();
+            if (pf) pf.reset();
+        } catch (err) { console.warn('closeAuthModal', err); }
     }
+    window.closeAuthModal = closeAuthModal;
 
     if(closeBtn) closeBtn.addEventListener('click', closeAuthModal);
     if(modal) modal.addEventListener('click', (e) => {

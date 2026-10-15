@@ -999,8 +999,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const signInBtn = document.getElementById('navSignInBtn');
             const mobileSignInBtn = document.getElementById('mobileSignInBtn');
-            if(signInBtn) signInBtn.onclick = openAuthModal;
-            if(mobileSignInBtn) mobileSignInBtn.onclick = openAuthModal;
+            if (signInBtn) signInBtn.onclick = function (e) { e.preventDefault(); (window.openAuthModal || openAuthModal)(); };
+            if (mobileSignInBtn) mobileSignInBtn.onclick = function (e) { e.preventDefault(); (window.openAuthModal || openAuthModal)(); };
             listenNotifications(null);
             updateNotifBadge(0);
         }
@@ -1072,8 +1072,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    initFirebase();
-
     const modal = document.getElementById('authModalOverlay');
     const closeBtn = document.getElementById('authModalClose');
     const tabs = document.querySelectorAll('.auth-modal-tab');
@@ -1086,10 +1084,53 @@ document.addEventListener('DOMContentLoaded', function() {
     const backToLoginLink = document.getElementById('backToLoginLink');
 
     function openAuthModal() {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        if (tabs[0]) tabs[0].click();
+        try {
+            var m = document.getElementById('authModalOverlay') || modal;
+            if (!m) {
+                console.error('[SixersAuth] auth modal not found in DOM');
+                alert('Sign-in is temporarily unavailable. Please refresh the page.');
+                return;
+            }
+            m.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            var tabLogin = document.querySelector('.auth-modal-tab[data-tab="login"]') || (tabs && tabs[0]);
+            if (tabLogin) tabLogin.click();
+            var lf = document.getElementById('navLoginForm');
+            var rf = document.getElementById('navRegisterForm');
+            var ff = document.getElementById('navForgotForm');
+            var pf = document.getElementById('navProfileForm');
+            if (lf) lf.style.display = 'block';
+            if (rf) rf.style.display = 'none';
+            if (ff) ff.style.display = 'none';
+            if (pf) pf.style.display = 'none';
+        } catch (err) {
+            console.error('[SixersAuth] openAuthModal error', err);
+        }
     }
+    // Expose globally so buttons always work even if re-rendered
+    window.openAuthModal = openAuthModal;
+
+    // Event delegation: Sign In always opens modal (survives innerHTML re-renders)
+    document.addEventListener('click', function (e) {
+        var btn = e.target && e.target.closest && e.target.closest('#navSignInBtn, #mobileSignInBtn, .auth-nav-btn');
+        if (!btn) return;
+        // Do not intercept if user is already signed in (profile btn area)
+        if (btn.id === 'navSignInBtn' || btn.id === 'mobileSignInBtn' || (btn.classList.contains('auth-nav-btn') && btn.textContent && btn.textContent.indexOf('Sign') !== -1)) {
+            e.preventDefault();
+            e.stopPropagation();
+            openAuthModal();
+        }
+    }, true);
+
+    // Wire any existing sign-in buttons now
+    try {
+        var _sib = document.getElementById('navSignInBtn');
+        if (_sib) _sib.onclick = function (e) { e.preventDefault(); openAuthModal(); };
+        var _msb = document.getElementById('mobileSignInBtn');
+        if (_msb) _msb.onclick = function (e) { e.preventDefault(); openAuthModal(); };
+    } catch (e) {}
+
+    initFirebase();
 
     function openProfileModal() {
         modal.classList.add('active');
@@ -1392,17 +1433,26 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function closeAuthModal() {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        authMessage.className = 'auth-message';
-        authMessage.textContent = '';
-        document.querySelector('.auth-modal-title').textContent = 'Sixers Hoops';
-        tabs.forEach(t => t.style.display = 'block');
-        if (loginForm) loginForm.reset();
-        if (registerForm) registerForm.reset();
-        if (forgotForm) forgotForm.reset();
-        if (profileForm) profileForm.reset();
+        try {
+            var m = document.getElementById('authModalOverlay') || modal;
+            if (m) m.classList.remove('active');
+            document.body.style.overflow = '';
+            var am = document.getElementById('navAuthMessage') || authMessage;
+            if (am) { am.className = 'auth-message'; am.textContent = ''; }
+            var title = document.querySelector('.auth-modal-title');
+            if (title) title.textContent = 'Sixers Hoops';
+            document.querySelectorAll('.auth-modal-tab').forEach(function (t) { t.style.display = 'block'; });
+            var lf = document.getElementById('navLoginForm');
+            var rf = document.getElementById('navRegisterForm');
+            var ff = document.getElementById('navForgotForm');
+            var pf = document.getElementById('navProfileForm');
+            if (lf) lf.reset();
+            if (rf) rf.reset();
+            if (ff) ff.reset();
+            if (pf) pf.reset();
+        } catch (err) { console.warn('closeAuthModal', err); }
     }
+    window.closeAuthModal = closeAuthModal;
 
     if(closeBtn) closeBtn.addEventListener('click', closeAuthModal);
     if(modal) modal.addEventListener('click', (e) => {

@@ -5,9 +5,9 @@
   left: 0;
   right: 0;
   height: 64px;
-  background: var(--sh-bg, var(--cream, #f4f6f9));
+  background: #ffffff;
   box-shadow: none;
-  border-bottom: 1px solid var(--sh-border, #e5e7eb);
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1512,4 +1512,112 @@ html.dark-mode .navbar.scrolled {
     font-size: 0.7rem;
     padding-top: 1rem;
   }
+}
+
+
+/* —— Modern footer —— */
+.footer {
+  background: #0b0f1a;
+  color: #e2e8f0;
+  margin-top: 3.5rem;
+  border-top: none;
+  font-family: Lexend, system-ui, sans-serif;
+}
+.footer-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2.75rem 1.5rem 1.5rem;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.2fr 1.8fr;
+  gap: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+.footer-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.footer-brand-name { color: #fff; }
+.footer-tagline {
+  margin: 0.85rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #94a3b8;
+  max-width: 22rem;
+}
+.footer-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.footer-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 0.85rem;
+}
+.footer-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.footer-links a {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.footer-links a:hover { color: #7dd3fc; }
+.footer-disclaimer {
+  padding: 1.35rem 0 1.15rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.footer-disclaimer p {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+.footer-disclaimer p:last-child { margin-bottom: 0; }
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 1.15rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+.footer-bottom-meta { color: #64748b; }
+@media (max-width: 800px) {
+  .footer-top { grid-template-columns: 1fr; gap: 1.75rem; }
+  .footer-cols { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+}
+@media (max-width: 480px) {
+  .footer-cols { grid-template-columns: 1fr; }
+}
+/* Override old dark-mode footer rules that assumed light footer */
+:root.dark-mode .footer,
+html.dark-mode .footer {
+  background: #070a12;
 }

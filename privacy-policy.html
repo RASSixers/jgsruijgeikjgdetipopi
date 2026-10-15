@@ -1,227 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Privacy Policy | SixersHoops</title>
-  <link rel="icon" href="/favicon.ico"/>
-  <link rel="apple-touch-icon" href="/favicon.ico"/>
-
-  <link rel="stylesheet" href="styles.css"/>
-  <link rel="stylesheet" href="navbar-styles.css"/>
-
-  <!-- Google Tag Manager -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-T1V9Q0MNEM');
-  </script>
-
-  <style>
-    :root {
-      --color-navy: #0a174e;
-      --color-navy-soft: #122860;
-      --color-sky: #3b82f6;
-      --color-cyan: #06b6d4;
-      --color-ice: #f8fafc;
-      --color-white: #ffffff;
-      --color-slate-900: #0f172a;
-      --color-slate-700: #334155;
-      --color-slate-500: #64748b;
-      --color-gold: #f59e0b;
-      --card-radius: 22px;
-      --card-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
-      --border-glow: 1px solid rgba(59, 130, 246, 0.25);
-      --blur: blur(18px);
-      --transition: all 0.35s ease;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f9fafb;
-      color: #111827;
-      line-height: 1.6;
-      padding-top: 80px;
-      margin: 0;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .page-header {
-      padding: 5rem 2rem;
-      text-align: center;
-      animation: fadeIn 0.5s ease-in;
-    }
-
-    .page-header-content {
-      max-width: 56rem;
-      margin: 0 auto;
-    }
-
-    .page-title {
-      font-size: clamp(2.5rem, 7vw, 4rem);
-      font-weight: 800;
-      margin-bottom: 1.5rem;
-      line-height: 1.2;
-      color: var(--color-navy);
-    }
-
-    .page-title .highlight {
-      color: var(--color-sky);
-    }
-
-    .page-subtitle {
-      font-size: clamp(1rem, 2vw, 1.25rem);
-      color: var(--color-slate-500);
-      max-width: 42rem;
-      margin: 0 auto;
-      font-weight: 500;
-    }
-
-    .content-wrapper {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .legal-container {
-      background: #ffffff;
-      border-radius: 28px;
-      box-shadow: 0 24px 45px rgba(15, 23, 42, 0.12);
-      padding: clamp(1.5rem, 5vw, 4rem);
-      border: 1px solid rgba(226, 232, 240, 0.9);
-      margin-bottom: 8rem;
-      animation: fadeIn 0.6s ease-out;
-    }
-
-    .legal-section {
-      margin-bottom: 3rem;
-    }
-
-    .legal-section h2 {
-      font-size: 1.75rem;
-      color: var(--color-navy);
-      font-weight: 800;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 3px solid var(--color-sky);
-      display: inline-block;
-    }
-
-    .legal-section h3 {
-      font-size: 1.25rem;
-      color: var(--color-navy);
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .legal-section p {
-      margin-bottom: 1.2rem;
-      color: var(--color-slate-700);
-      font-size: 1.05rem;
-    }
-
-    .legal-section ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1.5rem;
-      color: var(--color-slate-700);
-    }
-
-    .legal-section li {
-      margin-bottom: 0.5rem;
-    }
-
-    @media (max-width: 768px) {
-      .page-header { padding: 3rem 1rem; }
-      .legal-container { padding: 2rem 1.5rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy | SixersHoops</title>
+<meta name="description" content="Privacy Policy for SixersHoops, an independent Philadelphia 76ers fan site.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/navbar-styles.css">
+<style>
+:root {
+  --ink: #0f172a; --mid: #64748b; --border: #e2e8f0; --blue: #006BB6;
+  --bg: #ffffff; --soft: #f8fafc;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; margin-top: 64px;
+  font-family: Lexend, system-ui, -apple-system, sans-serif;
+  background: var(--bg); color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+.policy-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.5rem 1.35rem 4rem;
+}
+.policy-eyebrow {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--blue); margin: 0 0 0.5rem;
+}
+.policy-wrap h1 {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  margin: 0 0 0.5rem; line-height: 1.15;
+}
+.policy-updated {
+  font-size: 0.85rem; color: var(--mid); margin: 0 0 2rem;
+}
+.policy-wrap h2 {
+  font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em;
+  margin: 2rem 0 0.65rem; padding-top: 0.25rem;
+}
+.policy-wrap p, .policy-wrap li {
+  font-size: 0.95rem; color: #334155; line-height: 1.7; margin: 0 0 0.9rem;
+}
+.policy-wrap ul { margin: 0 0 1rem; padding-left: 1.25rem; }
+.policy-wrap li { margin-bottom: 0.4rem; }
+.policy-callout {
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin: 1.25rem 0;
+  font-size: 0.9rem;
+  color: #334155;
+  line-height: 1.6;
+}
+.policy-callout strong { color: var(--ink); }
+a { color: var(--blue); font-weight: 600; }
+</style>
 </head>
 <body>
-  <script src="nav.js"></script>
-
-  <section class="page-header">
-    <div class="page-header-content">
-      <h1 class="page-title">Privacy <span class="highlight">Policy</span></h1>
-      <p class="page-subtitle">Last Updated: February 16, 2026</p>
-    </div>
-  </section>
-
-  <div class="content-wrapper">
-    <main class="legal-container">
-      <div class="legal-section">
-        <h2>1. Comprehensive Policy Overview</h2>
-        <p>SixersHoops ("we", "our", or "us") is committed to protecting the privacy of our visitors. This Privacy Policy is a legally binding document that outlines how your personal data is collected, processed, and stored in compliance with major global privacy standards, including the General Data Protection Regulation (GDPR), the California Consumer Privacy Act (CCPA), and the California Privacy Rights Act (CPRA).</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>2. Information Collection and Usage</h2>
-        <h3>2.1 Personal Identification Information</h3>
-        <p>We may collect personal identification information from Users in various ways, including, but not limited to, when Users visit our site, register, subscribe to newsletters, or fill out forms. This may include names, email addresses, and voluntary profile data.</p>
-        
-        <h3>2.2 Non-personal Identification Information</h3>
-        <p>We collect non-personal identification information about Users whenever they interact with our Site. This information may include browser names, computer types, and technical information about Users' means of connection to our Site, such as operating systems and Internet service providers utilized.</p>
-
-        <h3>2.3 Log Files and IP Tracking</h3>
-        <p>Like most standard website servers, we use log files. This includes internet protocol (IP) addresses, browser type, internet service provider (ISP), referring/exit pages, platform type, date/time stamp, and number of clicks to analyze trends, administer the site, track user's movement in the aggregate, and gather broad demographic information for aggregate use. IP addresses, etc. are not linked to personally identifiable information.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>3. Third-Party Service Disclosures</h2>
-        <p>We employ third-party companies and individuals due to the following reasons:</p>
-        <ul>
-          <li>To facilitate our Service (e.g., ESPN API for sports data);</li>
-          <li>To provide the Service on our behalf;</li>
-          <li>To perform Service-related services; or</li>
-          <li>To assist us in analyzing how our Service is used (e.g., Google Analytics and GTM).</li>
-        </ul>
-        <p>These third parties have access to your Personal Information only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>4. Data Retention and Deletion Rights</h2>
-        <p>We will retain your personal information only for as long as is necessary for the purposes set out in this Privacy Policy. You have the right to:</p>
-        <ul>
-          <li><strong>Request Access:</strong> Obtain a copy of the personal data we hold about you.</li>
-          <li><strong>Request Rectification:</strong> Correction of any inaccurate data.</li>
-          <li><strong>Request Erasure:</strong> Also known as the 'right to be forgotten' under GDPR.</li>
-          <li><strong>Opt-Out of Sale:</strong> Under CCPA, you have the right to opt-out of the "sale" of your personal information. Note: We do not sell personal data.</li>
-        </ul>
-      </div>
-
-      <div class="legal-section">
-        <h2>5. California Privacy Rights (CCPA/CPRA)</h2>
-        <p>If you are a California resident, you have specific rights regarding your personal information. These include the right to know what personal information is collected, the right to delete personal information (with certain exceptions), the right to opt-out of the sale of personal information, and the right to non-discrimination for exercising these rights.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>6. European Privacy Rights (GDPR)</h2>
-        <p>For users in the European Economic Area (EEA), we process data based on legitimate interests and contractual necessity. Our legal basis for collecting and using the personal information described in this Privacy Policy depends on the Personal Information we collect and the specific context in which we collect it.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>7. Children's Privacy (COPPA)</h2>
-        <p>Our website is not directed to anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13. If we discover that a child under 13 has provided us with personal information, we immediately delete this from our servers.</p>
-      </div>
-
-      <div class="legal-section">
-        <h2>8. Contact Information</h2>
-        <p>For any legal inquiries regarding this Privacy Policy or to exercise your data rights, please contact our Data Protection Officer through the official SixersHoops contact page.</p>
-      </div>
-    </main>
+<div class="policy-wrap">
+  <div class="policy-eyebrow">Legal</div>
+  <h1>Privacy Policy</h1>
+  <p class="policy-updated">Last updated: October 14, 2026</p>
+  
+  <div class="policy-callout">
+    <strong>Summary:</strong> We collect limited information needed to run accounts, features, and the Site. We do not sell your personal information. Contact us at <a href="mailto:info@sixershoops.com">info@sixershoops.com</a> with privacy questions.
   </div>
+
+  <h2>1. Scope</h2>
+  <p>This Privacy Policy explains how SixersHoops ("we," "us") collects, uses, and shares information when you use the Site. It applies to visitors and registered users.</p>
+
+  <h2>2. Information we collect</h2>
+  <p><strong>Account information:</strong> If you sign in (for example with Google or email), we may receive your name, email address, profile photo, and a unique account identifier from the authentication provider.</p>
+  <p><strong>Profile information:</strong> Username, display name, avatar, and similar details you choose to provide.</p>
+  <p><strong>User Content:</strong> Content you submit, including posts, comments, chat messages, trade ideas, Pick'em picks, and contact form messages.</p>
+  <p><strong>Usage and device data:</strong> Log data such as browser type, approximate location derived from IP, pages viewed, and timestamps. We may use analytics tools that set cookies or similar technologies.</p>
+  <p><strong>Communications:</strong> Messages you send us through the contact form or email.</p>
+
+  <h2>3. How we use information</h2>
+  <ul>
+    <li>To operate, secure, and improve the Site and its features</li>
+    <li>To create and manage accounts and show public profile information you choose to share</li>
+    <li>To display User Content you submit and to moderate the community</li>
+    <li>To respond to contact requests and support issues</li>
+    <li>To enforce our Terms, prevent abuse, and protect rights and safety</li>
+    <li>To comply with law and respond to lawful requests</li>
+  </ul>
+
+  <h2>4. How we share information</h2>
+  <p>We do not sell your personal information. We may share information with:</p>
+  <ul>
+    <li><strong>Service providers</strong> that host data, authenticate users, or provide analytics (for example cloud and auth providers), under obligations to protect data</li>
+    <li><strong>Other users</strong>, when you post public or group-visible User Content (including username and profile details you make visible)</li>
+    <li><strong>Legal and safety</strong> recipients when required by law or to protect rights, safety, or the Site</li>
+    <li><strong>Business transfers</strong>, if we transfer operations, subject to appropriate protections</li>
+  </ul>
+
+  <h2>5. Public and community content</h2>
+  <p>Content you post in public or group areas (including chat, comments, and trade posts) may be visible to other users. Do not post sensitive personal data you do not want others to see. We are not responsible for how other users use information you make available.</p>
+
+  <h2>6. Cookies and similar technologies</h2>
+  <p>We use cookies and local storage for sign-in sessions, preferences (such as theme), and analytics. See our <a href="/cookie-policy">Cookie Policy</a> for more detail.</p>
+
+  <h2>7. Data retention</h2>
+  <p>We retain account and content data as long as needed to operate the Site and for legitimate business or legal purposes. You may request deletion of your account by contacting us; some information may remain in backups or logs for a limited period, or where we must keep it for legal reasons.</p>
+
+  <h2>8. Security</h2>
+  <p>We use reasonable administrative and technical measures to protect information. No method of transmission or storage is completely secure. You use the Site at your own risk.</p>
+
+  <h2>9. Children</h2>
+  <p>The Site is not directed to children under 13 (or the minimum age required in your region). We do not knowingly collect personal information from children. If you believe a child has provided information, contact us and we will take appropriate steps.</p>
+
+  <h2>10. Your choices</h2>
+  <ul>
+    <li>Update profile information in account settings where available</li>
+    <li>Control some cookies through your browser settings</li>
+    <li>Request access, correction, or deletion by emailing <a href="mailto:info@sixershoops.com">info@sixershoops.com</a></li>
+  </ul>
+  <p>Depending on where you live, you may have additional rights under applicable privacy laws. We will respond to verifiable requests as required by law.</p>
+
+  <h2>11. International users</h2>
+  <p>The Site may be operated from the United States. If you access it from elsewhere, you understand information may be processed in the U.S. and other countries that may have different data-protection rules.</p>
+
+  <h2>12. Changes</h2>
+  <p>We may update this Privacy Policy from time to time. We will revise the "Last updated" date when we do. Continued use after changes means you accept the updated policy where permitted by law.</p>
+
+  <h2>13. Contact</h2>
+  <p>Privacy requests: <a href="mailto:info@sixershoops.com">info@sixershoops.com</a>.</p>
+
+</div>
+<script src="/nav.js"></script>
 </body>
 </html>

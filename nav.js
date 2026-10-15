@@ -999,8 +999,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const signInBtn = document.getElementById('navSignInBtn');
             const mobileSignInBtn = document.getElementById('mobileSignInBtn');
-            if (signInBtn) signInBtn.onclick = function (e) { e.preventDefault(); (window.openAuthModal || openAuthModal)(); };
-            if (mobileSignInBtn) mobileSignInBtn.onclick = function (e) { e.preventDefault(); (window.openAuthModal || openAuthModal)(); };
+            // Click handled by document delegation on #navSignInBtn / #mobileSignInBtn
             listenNotifications(null);
             updateNotifBadge(0);
         }
@@ -1023,8 +1022,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }, err => console.error("Notification listener error:", err));
     }
 
+    var __lastNavUid = undefined;
     function setupAuthListeners() {
         window.auth.onAuthStateChanged(async user => {
+            var uid = user ? user.uid : null;
+            // Skip redundant full nav rebuilds that cause homepage flicker
+            var sameUser = (__lastNavUid === uid);
+            __lastNavUid = uid;
             if (user) trackVisitStreak(user);
 
             if (user && window.db) {
@@ -1058,8 +1062,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (!user) {
                 localStorage.removeItem('usernameLower');
             }
-            syncStaffFlags(user).then(function(){ renderUserNav(user); });
-            setupNotificationListener(user);
+            if (!sameUser) {
+                syncStaffFlags(user).then(function(){ renderUserNav(user); });
+                setupNotificationListener(user);
+            } else if (user) {
+                syncStaffFlags(user);
+            } else {
+                renderUserNav(null);
+            }
         });
     }
 
@@ -1083,18 +1093,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const forgotPasswordLink = document.getElementById('forgotPasswordLink');
     const backToLoginLink = document.getElementById('backToLoginLink');
 
+    var _authModalOpening = false;
     function openAuthModal() {
+        if (_authModalOpening) return;
+        _authModalOpening = true;
         try {
             var m = document.getElementById('authModalOverlay') || modal;
             if (!m) {
                 console.error('[SixersAuth] auth modal not found in DOM');
-                alert('Sign-in is temporarily unavailable. Please refresh the page.');
                 return;
             }
             m.classList.add('active');
             document.body.style.overflow = 'hidden';
-            var tabLogin = document.querySelector('.auth-modal-tab[data-tab="login"]') || (tabs && tabs[0]);
-            if (tabLogin) tabLogin.click();
+            // Show login form without synthetic .click() (avoids handler loops)
+            document.querySelectorAll('.auth-modal-tab').forEach(function (t) {
+                t.classList.toggle('active', t.getAttribute('data-tab') === 'login');
+                t.style.display = 'block';
+            });
             var lf = document.getElementById('navLoginForm');
             var rf = document.getElementById('navRegisterForm');
             var ff = document.getElementById('navForgotForm');
@@ -1103,32 +1118,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (rf) rf.style.display = 'none';
             if (ff) ff.style.display = 'none';
             if (pf) pf.style.display = 'none';
+            var title = document.querySelector('.auth-modal-title');
+            if (title) title.textContent = 'Sixers Hoops';
         } catch (err) {
             console.error('[SixersAuth] openAuthModal error', err);
+        } finally {
+            setTimeout(function () { _authModalOpening = false; }, 150);
         }
     }
-    // Expose globally so buttons always work even if re-rendered
     window.openAuthModal = openAuthModal;
 
-    // Event delegation: Sign In always opens modal (survives innerHTML re-renders)
-    document.addEventListener('click', function (e) {
-        var btn = e.target && e.target.closest && e.target.closest('#navSignInBtn, #mobileSignInBtn, .auth-nav-btn');
-        if (!btn) return;
-        // Do not intercept if user is already signed in (profile btn area)
-        if (btn.id === 'navSignInBtn' || btn.id === 'mobileSignInBtn' || (btn.classList.contains('auth-nav-btn') && btn.textContent && btn.textContent.indexOf('Sign') !== -1)) {
+    // Single delegated handler (bubble phase only) for Sign In buttons
+    if (!window.__shSignInDelegated) {
+        window.__shSignInDelegated = true;
+        document.addEventListener('click', function (e) {
+            var t = e.target;
+            if (!t || !t.closest) return;
+            var btn = t.closest('#navSignInBtn, #mobileSignInBtn');
+            if (!btn) return;
             e.preventDefault();
-            e.stopPropagation();
             openAuthModal();
-        }
-    }, true);
-
-    // Wire any existing sign-in buttons now
-    try {
-        var _sib = document.getElementById('navSignInBtn');
-        if (_sib) _sib.onclick = function (e) { e.preventDefault(); openAuthModal(); };
-        var _msb = document.getElementById('mobileSignInBtn');
-        if (_msb) _msb.onclick = function (e) { e.preventDefault(); openAuthModal(); };
-    } catch (e) {}
+        });
+    }
 
     initFirebase();
 

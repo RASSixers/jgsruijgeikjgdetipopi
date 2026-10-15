@@ -1435,119 +1435,188 @@
     }
 
 
-    /* Standings-style share graphic */
+    /* Standings-style share graphic (fixed canvas, compact cards) */
     #pickem-social-export {
-      position: fixed; left: -10000px; top: 0; width: 1080px;
+      position: fixed; left: -10000px; top: 0; width: 900px;
       background: #fff; color: #0d0f1a; font-family: 'Lexend', system-ui, sans-serif;
-      z-index: -1;
+      z-index: -1; pointer-events: none;
     }
-    #pickem-social-export .sg-page { padding: 48px 48px 40px; background: #fff; }
+    #pickem-social-export .sg-page {
+      width: 900px;
+      box-sizing: border-box;
+      padding: 36px 36px 28px;
+      background: #fff;
+    }
     #pickem-social-export .sg-wordmark {
-      margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: #0d0f1a;
+      margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.03em; color: #0d0f1a;
+      text-align: center;
     }
     #pickem-social-export .sg-subtitle {
-      margin: 6px 0 28px; font-size: 13px; font-weight: 600; letter-spacing: .12em;
-      text-transform: uppercase; color: #64748b;
+      margin: 8px 0 18px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: #64748b; text-align: center;
     }
     #pickem-social-export .sg-stat-row {
-      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+      display: flex; gap: 10px; margin-bottom: 18px; justify-content: center; flex-wrap: wrap;
     }
     #pickem-social-export .sg-stat {
-      flex: 1; min-width: 120px; border: 1px solid #e4e8f0; border-radius: 12px;
-      padding: 14px 16px; background: #f6f8fc;
+      flex: 1 1 120px; max-width: 160px; text-align: center;
+      background: #f6f8fc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 10px 8px;
     }
-    #pickem-social-export .sg-stat b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; }
-    #pickem-social-export .sg-stat span { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748b; }
-    #pickem-social-export .sg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
-    #pickem-social-export .sg-list li {
-      display: block;
-      margin: 0;
-      padding: 0;
-      border: none;
-      font-size: 15px;
-      font-weight: 600;
+    #pickem-social-export .sg-stat b {
+      display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; line-height: 1.1;
     }
+    #pickem-social-export .sg-stat span {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #64748b;
+    }
+    #pickem-social-export .sg-list {
+      list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;
+    }
+    #pickem-social-export .sg-list li { display: block; margin: 0; padding: 0; border: none; }
     #pickem-social-export .sg-q-card {
       border: 1px solid #e4e8f0;
-      border-radius: 14px;
-      padding: 14px 16px;
+      border-radius: 10px;
+      padding: 10px 12px;
       background: #f8fafc;
       text-align: left;
     }
     #pickem-social-export .sg-q-card.sg-card-ok {
-      border-color: rgba(22,163,74,0.45);
-      background: linear-gradient(135deg, rgba(22,163,74,0.08), #f8fafc);
+      border-color: rgba(22,163,74,0.4);
+      background: #f0fdf4;
     }
     #pickem-social-export .sg-q-card.sg-card-no {
-      border-color: rgba(220,38,38,0.4);
-      background: linear-gradient(135deg, rgba(220,38,38,0.07), #f8fafc);
+      border-color: rgba(220,38,38,0.35);
+      background: #fef2f2;
     }
     #pickem-social-export .sg-q-num {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #006BB6;
-      margin: 0 0 6px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #006BB6; margin: 0 0 4px;
     }
     #pickem-social-export .sg-q-text {
-      margin: 0 0 12px;
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.35;
-      color: #0d0f1a;
+      margin: 0 0 8px; font-size: 13px; font-weight: 700; line-height: 1.3; color: #0d0f1a;
     }
     #pickem-social-export .sg-q-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      display: flex; flex-wrap: wrap; gap: 6px;
     }
     #pickem-social-export .sg-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1.5px solid #dbe3ee;
-      background: #fff;
-      font-size: 13px;
-      font-weight: 700;
-      color: #475569;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 5px 10px; border-radius: 999px;
+      border: 1.5px solid #dbe3ee; background: #fff;
+      font-size: 12px; font-weight: 700; color: #475569;
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     #pickem-social-export .sg-chip.sg-selected {
-      border-color: #006BB6;
-      background: rgba(0,107,182,0.1);
-      color: #006BB6;
-      box-shadow: 0 0 0 1px rgba(0,107,182,0.15);
+      border-color: #006BB6; background: rgba(0,107,182,0.1); color: #006BB6;
     }
     #pickem-social-export .sg-chip.sg-correct {
-      border-color: #16a34a;
-      background: rgba(22,163,74,0.12);
-      color: #15803d;
+      border-color: #16a34a; background: rgba(22,163,74,0.12); color: #15803d;
     }
     #pickem-social-export .sg-chip.sg-wrong {
-      border-color: #dc2626;
-      background: rgba(220,38,38,0.1);
-      color: #b91c1c;
+      border-color: #dc2626; background: rgba(220,38,38,0.1); color: #b91c1c;
     }
     #pickem-social-export .sg-ok { color: #16a34a; }
     #pickem-social-export .sg-no { color: #dc2626; }
-    #pickem-social-export .sg-bottom { text-align: center; margin-top: 36px; }
-    #pickem-social-export .sg-bottom-rule { width: 40px; height: 2px; background: #dbe3ee; margin: 0 auto 16px; }
-    #pickem-social-export .sg-bottom-mark { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
-    #pickem-social-export .sg-bottom-url { margin: 8px 0 0; color: #64748b; font-size: 14px; font-weight: 500; }
+    #pickem-social-export .sg-bottom { text-align: center; margin-top: 20px; }
+    #pickem-social-export .sg-bottom-rule { width: 36px; height: 2px; background: #dbe3ee; margin: 0 auto 12px; }
+    #pickem-social-export .sg-bottom-mark { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
+    #pickem-social-export .sg-bottom-url { margin: 6px 0 0; color: #64748b; font-size: 12px; font-weight: 500; }
 
+    /* Preview modal: always closable, fits viewport */
     .pickem-export-modal {
-      display: none; position: fixed; inset: 0; background: rgba(13,15,26,.62);
-      align-items: center; justify-content: center; z-index: 90; padding: 20px;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13,15,26,.72);
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 12px;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     .pickem-export-modal.open { display: flex; }
     .pickem-export-modal .modal-card {
-      background: #fff; border-radius: 20px; width: min(920px, calc(100vw - 32px));
-      max-height: calc(100vh - 32px); overflow: auto; padding: 24px;
-      box-shadow: 0 24px 80px rgba(13,15,26,.22);
+      background: #fff;
+      border-radius: 16px;
+      width: min(420px, calc(100vw - 24px));
+      max-height: min(88vh, 720px);
+      overflow: hidden;
+      padding: 0;
+      box-shadow: 0 24px 80px rgba(13,15,26,.28);
+      display: flex;
+      flex-direction: column;
     }
-
+    .pickem-export-modal .modal-head {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #e4e8f0;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .pickem-export-modal .modal-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: #0d0f1a;
+    }
+    .pickem-export-modal .modal-kicker {
+      margin: 0 0 2px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #006BB6;
+    }
+    .pickem-export-modal .modal-close-x {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-size: 1.25rem;
+      line-height: 1;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .pickem-export-modal .modal-close-x:hover { background: #e2e8f0; }
+    .pickem-export-modal .modal-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.75rem 1rem 0.5rem;
+      text-align: center;
+    }
+    .pickem-export-modal #pickemExportPreview {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: none;
+      border-radius: 10px;
+      border: 1px solid #e4e8f0;
+      object-fit: contain;
+      margin: 0 auto;
+    }
+    .pickem-export-modal .modal-actions {
+      flex: 0 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem 1rem;
+      border-top: 1px solid #e4e8f0;
+      background: #fff;
+      position: sticky;
+      bottom: 0;
+    }
+    .pickem-export-modal .modal-actions .btn { flex: 1 1 auto; min-width: 120px; }
 
     /* Extra mobile stability */
     @media (max-width: 768px) {
@@ -2605,12 +2674,19 @@
       </div>
     </div>
   </div>
-  <div class="pickem-export-modal" id="pickemExportModal">
+  <div class="pickem-export-modal" id="pickemExportModal" role="dialog" aria-modal="true" aria-labelledby="pickemExportTitle">
     <div class="modal-card">
-      <p class="modal-kicker" style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#006BB6;">Share</p>
-      <h2 style="margin:0 0 16px;font-size:1.5rem;font-weight:800;letter-spacing:-.03em;">Recap card ready</h2>
-      <img id="pickemExportPreview" alt="Recap preview" style="width:100%;border-radius:12px;border:1px solid #e4e8f0;"/>
-      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;">
+      <div class="modal-head">
+        <div>
+          <p class="modal-kicker">Share</p>
+          <h2 id="pickemExportTitle">Card ready</h2>
+        </div>
+        <button type="button" class="modal-close-x" id="pickemExportCloseX" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img id="pickemExportPreview" alt="Share card preview" />
+      </div>
+      <div class="modal-actions">
         <button type="button" class="btn btn-primary" id="pickemExportDownload">Download PNG</button>
         <button type="button" class="btn btn-secondary" id="pickemExportClose">Close</button>
       </div>
@@ -9432,7 +9508,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       const lines = [];
       questions.forEach((q, i) => {
         const mine = answers[i];
-        const label = String(q.question || ('Q' + (i + 1))).slice(0, 90);
+        const label = String(q.question || ('Q' + (i + 1))).slice(0, 72);
         let opts = [];
         if (Array.isArray(q.options)) opts = q.options.map(String);
         else if (typeof q.options === 'string') opts = q.options.split(',').map(s => s.trim()).filter(Boolean);
@@ -9520,13 +9596,21 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       await fillShareGraphic(mode, dateStr);
       const node = document.querySelector('#pickem-social-export .sg-page');
       if (!node) return;
-      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+      const canvas = await html2canvas(node, {
+        backgroundColor: '#ffffff',
+        scale: 1.5,
+        useCORS: true,
+        width: 900,
+        windowWidth: 900,
+        scrollX: 0,
+        scrollY: 0
+      });
       const url = canvas.toDataURL('image/png');
       const prev = document.getElementById('pickemExportPreview');
       if (prev) prev.src = url;
       const modal = document.getElementById('pickemExportModal');
       if (modal) modal.classList.add('open');
-      const title = modal && modal.querySelector('h2');
+      const title = document.getElementById('pickemExportTitle') || (modal && modal.querySelector('h2'));
       if (title) title.textContent = mode === 'picks' ? 'Picks card ready' : 'Results card ready';
       const dl = document.getElementById('pickemExportDownload');
       if (dl) {
@@ -9605,7 +9689,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         if (status) status.textContent = 'Share template missing.';
         return;
       }
-      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 1.5, useCORS: true, width: 900, windowWidth: 900, scrollX: 0, scrollY: 0 });
       const url = canvas.toDataURL('image/png');
       const prev = document.getElementById('pickemExportPreview');
       if (prev) prev.src = url;
@@ -9697,7 +9781,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       }
 
       const node = document.querySelector('#pickem-social-export .sg-page');
-      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+      const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 1.5, useCORS: true, width: 900, windowWidth: 900, scrollX: 0, scrollY: 0 });
       const url = canvas.toDataURL('image/png');
       _lastRecapUrl = url;
       const prev = document.getElementById('pickemExportPreview');
@@ -9720,8 +9804,16 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         if (status) status.textContent = 'Failed to build card';
       });
     });
-    document.getElementById('pickemExportClose')?.addEventListener('click', () => {
+    function closePickemExportModal() {
       document.getElementById('pickemExportModal')?.classList.remove('open');
+    }
+    document.getElementById('pickemExportClose')?.addEventListener('click', closePickemExportModal);
+    document.getElementById('pickemExportCloseX')?.addEventListener('click', closePickemExportModal);
+    document.getElementById('pickemExportModal')?.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'pickemExportModal') closePickemExportModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePickemExportModal();
     });
     document.getElementById('pickemExportDownload')?.addEventListener('click', () => {
       if (!_lastRecapUrl) return;

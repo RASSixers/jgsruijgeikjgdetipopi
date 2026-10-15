@@ -170,7 +170,7 @@
     <div class="contact-grid">
       <section class="panel">
         <h2 class="panel-title">Send a message</h2>
-        <form class="contact-form" id="contactForm" method="POST" action="#">
+        <form class="contact-form" id="contactForm" action="javascript:void(0);" onsubmit="return false;">
           <div class="field">
             <label for="name">Name</label>
             <input id="name" name="name" type="text" placeholder="Your name" required>
@@ -248,8 +248,9 @@
       const statusEl = document.getElementById("formStatus");
       if (!form || !statusEl) return;
 
-      form.addEventListener("submit", async function (e) {
+      form.addEventListener("submit", function (e) {
         e.preventDefault();
+        e.stopPropagation();
         statusEl.textContent = "Sending…";
         statusEl.className = "form-status";
         var name = (document.getElementById("name") || {}).value || "";
@@ -282,19 +283,13 @@
         }
         trySend();
       });
-          if (res.ok) {
-            statusEl.textContent = "Message sent. Thank you.";
-            form.reset();
-          } else {
-            statusEl.textContent = "Submission failed. Please try again.";
-            statusEl.classList.add("error");
-          }
-        } catch (err) {
-          statusEl.textContent = "Network error. Please try again.";
-          statusEl.classList.add("error");
-        }
+
+      document.querySelectorAll(".faq-question").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var item = btn.closest(".faq-item");
+          if (item) item.classList.toggle("open");
+        });
       });
-    });
   </script>
 </body>
 </html>

@@ -95,6 +95,7 @@ button{font-family:inherit}
 @media (max-width:1024px){.depth-grid{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:640px){.depth-grid{grid-template-columns:repeat(2,1fr)}.toolbar{flex-direction:column;align-items:stretch}.export-btn{margin-left:0;justify-content:center}}
 @media (max-width:420px){.depth-grid{grid-template-columns:1fr}}
+.injury-line{font-size:0.65rem;font-weight:700;color:#b91c1c;margin-top:0.2rem;line-height:1.25}
 </style>
 </head>
 <body>
@@ -141,7 +142,7 @@ button{font-family:inherit}
         </div>
       </div>
       <div class="social-grid" id="socialGrid"></div>
-      <div class="social-footer">https://sixershoops.com/sixers-depth-chart</div>
+      <div class="social-footer">sixershoops.com/sixers-depth-chart</div>
     </div>
   </div>
 </div>
@@ -157,11 +158,17 @@ let COLUMNS = [
 
 // Projected depth order (first listed = starter) for known Sixers
 const DEPTH_ORDER = {
-  PG: ["Tyrese Maxey", "Labaron Philon Jr.", "Caleb Love", "Duke Miles", "Jameer Nelson Jr."],
+  PG: ["Tyrese Maxey", "Labaron Philon Jr.", "Caleb Love"],
   SG: ["VJ Edgecombe", "Anfernee Simons", "Kentavious Caldwell-Pope", "Rayan Rupert"],
-  SF: ["Jaylen Brown", "Justin Edwards", "Saint Thomas", "Dillon Jones"],
+  SF: ["Jaylen Brown", "Justin Edwards"],
   PF: ["LeBron James", "Dean Wade", "Jabari Walker", "Dominick Barlow"],
-  C:  ["Joel Embiid", "Adem Bona", "Ariel Hukporti", "Tacko Fall"]
+  C:  ["Joel Embiid", "Adem Bona", "Ariel Hukporti"]
+};
+const DEPTH_EXCLUDE = new Set([
+  "Dillon Jones", "Saint Thomas", "Tacko Fall", "Duke Miles", "Jameer Nelson Jr."
+]);
+const DEPTH_INJURY = {
+  "Ariel Hukporti": "OUT FOR SEASON: Achilles tear"
 };
 
 function rankIn(list, name) {
@@ -173,6 +180,7 @@ function assignSlots(athletes) {
   const buckets = { PG: [], SG: [], SF: [], PF: [], C: [] };
   athletes.forEach(a => {
     const name = a.displayName || a.fullName;
+    if (DEPTH_EXCLUDE.has(name)) return;
     const pos = ((a.position && a.position.abbreviation) || "").toUpperCase();
     // ESPN often uses G / F / C only
     if (pos === "C") buckets.C.push(name);
@@ -264,7 +272,9 @@ function renderGrid(){
       slot.className = "player-slot " + p.type;
       let badge = "";
       if (p.type === "starter") badge = `<span class="slot-badge starter">Starter</span>`;
-      slot.innerHTML = badge + `<div class="player-name">${p.name}</div>`;
+      const inj = (typeof DEPTH_INJURY !== 'undefined' && DEPTH_INJURY[p.name])
+        ? `<div class="injury-line">${DEPTH_INJURY[p.name]}</div>` : '';
+      slot.innerHTML = badge + `<div class="player-name">${p.name}</div>` + inj;
       c.appendChild(slot);
     });
     grid.appendChild(c);
@@ -278,7 +288,10 @@ function renderSocial(){
     const c = document.createElement("div");
     c.className = "social-col";
     c.innerHTML = `<div class="social-pos-label">${col.pos}</div>` +
-      col.players.map(p=>`<div class="social-player ${p.type==='starter'?'starter':''}">${p.name}</div>`).join("");
+      col.players.map(p=>{
+        const note = (typeof DEPTH_INJURY !== 'undefined' && DEPTH_INJURY[p.name]) ? ` · ${DEPTH_INJURY[p.name]}` : '';
+        return `<div class="social-player ${p.type==='starter'?'starter':''}">${p.name}${note}</div>`;
+      }).join("");
     g.appendChild(c);
   });
 }

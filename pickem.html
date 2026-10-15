@@ -723,13 +723,35 @@
     :root.dark-mode .date-picker-btn { background: var(--card-bg); border-color: var(--border-light); }
 
     .date-picker-date { font-size: 10px; opacity: 0.65; margin-top: 2px; }
-    .date-slider-controls { display: flex; gap: 8px; align-items: center; }
+    .date-slider-controls {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 42px;
+      align-items: center;
+      justify-items: center;
+      gap: 0.4rem;
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .date-picker-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.35rem;
+      width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
     .date-nav-btn {
       background: var(--card-bg); border: 1px solid var(--border-light);
-      width: 34px; height: 34px; border-radius: 8px;
-      cursor: pointer; font-size: 16px; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
+      width: 42px; height: 42px; min-width: 42px; border-radius: 10px;
+      cursor: pointer; font-size: 18px; transition: all 0.2s;
+      display: inline-flex; align-items: center; justify-content: center;
+      justify-self: center; align-self: center;
       color: var(--sixers-blue); font-weight: 700;
+      padding: 0; margin: 0; line-height: 1;
     }
     .date-nav-btn:hover { background: rgba(0,107,182,0.06); border-color: var(--sixers-blue); }
     .date-nav-btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -870,6 +892,15 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── ADMIN PANEL ── */
+    :root.dark-mode #lockTimeStatus {
+      background: rgba(127, 29, 29, 0.35) !important;
+      border-color: #f87171 !important;
+    }
+    :root.dark-mode #lockTimeStatusMessage { color: #fecaca !important; }
+    :root.dark-mode #countdownTimer {
+      background: rgba(0, 107, 182, 0.2) !important;
+      border-color: #38bdf8 !important;
+    }
     .admin-panel { max-width: 900px; margin: 0 auto; }
     .admin-panel h2 { margin-bottom: 1.5rem; color: var(--sixers-blue); font-weight: 700; }
     .admin-panel h3 {
@@ -1066,9 +1097,16 @@
       }
 
       .date-slider-controls {
-        flex-wrap: wrap;
-        gap: 0.4rem;
-        justify-content: center;
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) 40px !important;
+        align-items: center !important;
+        justify-items: center !important;
+        gap: 0.35rem !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+      }
+      .date-picker-container {
+        justify-content: center !important;
       }
       .date-nav-btn { min-width: 40px; min-height: 40px; }
 
@@ -1420,10 +1458,77 @@
     }
     #pickem-social-export .sg-stat b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; }
     #pickem-social-export .sg-stat span { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748b; }
-    #pickem-social-export .sg-list { list-style: none; margin: 0; padding: 0; }
+    #pickem-social-export .sg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
     #pickem-social-export .sg-list li {
-      display: flex; justify-content: space-between; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid #eef2f7; font-size: 15px; font-weight: 600;
+      display: block;
+      margin: 0;
+      padding: 0;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    #pickem-social-export .sg-q-card {
+      border: 1px solid #e4e8f0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #f8fafc;
+      text-align: left;
+    }
+    #pickem-social-export .sg-q-card.sg-card-ok {
+      border-color: rgba(22,163,74,0.45);
+      background: linear-gradient(135deg, rgba(22,163,74,0.08), #f8fafc);
+    }
+    #pickem-social-export .sg-q-card.sg-card-no {
+      border-color: rgba(220,38,38,0.4);
+      background: linear-gradient(135deg, rgba(220,38,38,0.07), #f8fafc);
+    }
+    #pickem-social-export .sg-q-num {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #006BB6;
+      margin: 0 0 6px;
+    }
+    #pickem-social-export .sg-q-text {
+      margin: 0 0 12px;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #0d0f1a;
+    }
+    #pickem-social-export .sg-q-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    #pickem-social-export .sg-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1.5px solid #dbe3ee;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+    }
+    #pickem-social-export .sg-chip.sg-selected {
+      border-color: #006BB6;
+      background: rgba(0,107,182,0.1);
+      color: #006BB6;
+      box-shadow: 0 0 0 1px rgba(0,107,182,0.15);
+    }
+    #pickem-social-export .sg-chip.sg-correct {
+      border-color: #16a34a;
+      background: rgba(22,163,74,0.12);
+      color: #15803d;
+    }
+    #pickem-social-export .sg-chip.sg-wrong {
+      border-color: #dc2626;
+      background: rgba(220,38,38,0.1);
+      color: #b91c1c;
     }
     #pickem-social-export .sg-ok { color: #16a34a; }
     #pickem-social-export .sg-no { color: #dc2626; }
@@ -1749,21 +1854,25 @@
           <button type="button" class="btn btn-secondary" id="sharePicksBtn">Share my picks</button>
           <button type="button" class="btn btn-secondary" id="shareResultsBtn">Share my results</button>
         </div>
-        <div id="questionsContainer" class="questions-container"></div>
-        
-        <!-- Lock Time Status Display -->
-        <div id="lockTimeStatus" style="display: none; margin-bottom: 1.5rem; padding: 1rem; border-radius: 12px; border-left: 4px solid var(--error); background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));">
-          <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: var(--error);"> Submissions Closed</p>
-          <p id="lockTimeStatusMessage" style="margin: 0; color: var(--ink); font-size: 0.95rem;"></p>
+<!-- Lock Time Status Display -->
+        <div id="lockTimeStatus" style="display: none; margin-bottom: 1.25rem; padding: 1.1rem 1.2rem; border-radius: 14px; border: 2px solid #dc2626; background: #fef2f2; box-shadow: 0 4px 18px rgba(220,38,38,0.12);">
+          <div style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;margin-bottom:0.35rem;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;padding:0.25rem 0.65rem;border-radius:999px;background:#dc2626;color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">Locked</span>
+            <p style="margin:0;font-weight:800;color:#991b1b;font-size:1.05rem;">Submissions closed</p>
+          </div>
+          <p id="lockTimeStatusMessage" style="margin:0;color:#7f1d1d;font-size:0.95rem;line-height:1.45;font-weight:600;"></p>
         </div>
 
         <!-- Countdown Timer Display -->
-        <div id="countdownTimer" style="display: none; margin-bottom: 1.5rem; padding: 1rem; border-radius: 12px; border-left: 4px solid var(--brand); background: linear-gradient(135deg, rgba(0, 61, 166, 0.1), rgba(0, 61, 166, 0.05));">
-          <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: var(--brand);"> Time Until Submissions Close</p>
-          <p id="countdownText" style="margin: 0; color: var(--ink); font-size: 1.1rem; font-weight: 700;"></p>
+        <div id="countdownTimer" style="display: none; margin-bottom: 1.25rem; padding: 1.1rem 1.2rem; border-radius: 14px; border: 2px solid #006BB6; background: #eff6ff;">
+          <p style="margin: 0 0 0.35rem 0; font-weight: 800; color: #006BB6; font-size: 0.95rem;">Time until lock</p>
+          <p id="countdownText" style="margin: 0; color: var(--ink); font-size: 1.05rem; font-weight: 700;"></p>
         </div>
         
-        <div class="submit-section">
+
+        <div id="questionsContainer" class="questions-container"></div>
+        
+                <div class="submit-section">
           <button type="button" class="btn btn-primary" id="submitBtn">Submit Picks</button>
 
           <button type="button" class="btn btn-secondary" id="clearBtn">Clear All</button>
@@ -2210,8 +2319,8 @@
                     </select>
                   </div>
                   <div>
-                    <label class="form-label">Lock date override</label>
-                    <input type="date" id="autoLockDateOverride" class="form-input" />
+                    <label class="form-label">Lock date override (optional)</label>
+                    <input type="date" id="autoLockDateOverride" class="form-input" title="Leave blank to lock on the same date as the slate" />
                   </div>
                   <div>
                     <label class="form-label">Lock time override (ET)</label>
@@ -3924,40 +4033,36 @@
     }
 
     // Check if submissions are locked for a given date and time
-    async function areSubmissionsLocked(date, lockTime) {
-      if (!lockTime) return false; // No lock time set
+    async function areSubmissionsLocked(date, lockTime, lockDoc) {
+      if (!lockTime && !(lockDoc && (lockDoc.lockTime24 || lockDoc.lockDateTime))) return false;
       
       const isImmediatelyLocked = await getImmediateLockStatus(date);
       if (isImmediatelyLocked) return true;
-      
-      const now = getESTNow();
-      const today = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      
-      // Parse the date to compare
-      const [dateYear, dateMonth, dateDay] = date.split('-');
-      const dateObj = new Date(parseInt(dateYear), parseInt(dateMonth) - 1, parseInt(dateDay));
-      dateObj.setHours(0, 0, 0, 0);
-      
-      const todayObj = new Date(today);
-      todayObj.setHours(0, 0, 0, 0);
-      
-      // Past dates are always locked
-      if (dateObj < todayObj) {
-        return true;
+
+      // Prefer full lock doc when available
+      if (lockDoc && typeof getLockMomentMs === 'function') {
+        const ms = getLockMomentMs(date, Object.assign({ lockTime: lockTime }, lockDoc));
+        if (ms != null) return Date.now() >= ms;
       }
-      
-      // Future dates are never locked
-      if (dateObj > todayObj) {
-        return false;
-      }
-      
-      // For today's date, check if current time is past lock time
-      const time24 = convert12To24(lockTime);
-      const [lockHours, lockMinutes] = time24.split(':');
-      const lockDate = new Date(today);
-      lockDate.setHours(parseInt(lockHours), parseInt(lockMinutes), 0);
-      return now >= lockDate;
+
+      const nowMs = Date.now();
+      // ET calendar today
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(new Date());
+      const get = (ty) => parts.find(p => p.type === ty)?.value;
+      const todayStr = get('year') + '-' + get('month') + '-' + get('day');
+
+      if (date < todayStr) return true;
+      if (date > todayStr) return false;
+
+      const time24 = (lockDoc && lockDoc.lockTime24) || (typeof convert12To24 === 'function' ? convert12To24(lockTime) : lockTime);
+      const fakeDoc = { lockDate: date, lockTime24: time24, lockTime: lockTime };
+      const ms = typeof getLockMomentMs === 'function' ? getLockMomentMs(date, fakeDoc) : null;
+      if (ms != null) return nowMs >= ms;
+
+      // last resort
+      return false;
     }
 
     // Get time until lock
@@ -4275,8 +4380,8 @@
         const lockDoc = snapshot.docs[0].data() || {};
         const lockTime = lockDoc.lockTime;
         const isImmediatelyLocked = lockDoc.immediateLock === true;
-        // Use lockDate if set (override), else the pickem date
-        const isLocked = await areSubmissionsLocked(lockDoc.lockDate || date, lockTime);
+        // Always evaluate against the pickem date; lockDoc carries lockDate/lockTime24
+        const isLocked = await areSubmissionsLocked(date, lockTime, lockDoc);
 
         if (isLocked) {
           document.getElementById('lockTimeStatus').style.display = 'block';
@@ -4294,7 +4399,7 @@
               datePretty = new Date(yy, mm - 1, dd).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             } catch (_) {}
             const timeLabel = lockTime || lockData.lockTime24 || '';
-            lockReason = 'Submissions are closed. Locked at ' + timeLabel + ' ET on ' + datePretty + '.';
+            lockReason = 'This slate locked at ' + timeLabel + ' ET on ' + datePretty + '. You can view picks but cannot change or submit them.';
           }
           document.getElementById('lockTimeStatusMessage').textContent = lockReason;
           const sb = document.getElementById('submitBtn');
@@ -5305,25 +5410,38 @@
 
     function getLockMomentMs(dateStr, lockDoc) {
       lockDoc = lockDoc || {};
+      // Prefer explicit date + time in ET (avoids wrong calendar day from bad ISO conversions)
+      const lockDateStr = lockDoc.lockDate || dateStr;
+      const time24 = lockDoc.lockTime24
+        || ((typeof convert12To24 === 'function' && lockDoc.lockTime) ? convert12To24(lockDoc.lockTime) : null)
+        || null;
+      if (lockDateStr && time24) {
+        try {
+          const [y, m, d] = String(lockDateStr).split('-').map(Number);
+          const [hh, mm] = String(time24).split(':').map(Number);
+          // Convert ET wall time -> UTC ms
+          for (let delta = -3; delta <= 8; delta++) {
+            const utcMs = Date.UTC(y, m - 1, d, (hh || 0) + delta, mm || 0, 0);
+            const parts = new Intl.DateTimeFormat('en-US', {
+              timeZone: 'America/New_York',
+              year: 'numeric', month: '2-digit', day: '2-digit',
+              hour: '2-digit', minute: '2-digit', hour12: false
+            }).formatToParts(new Date(utcMs));
+            const get = (ty) => parts.find(p => p.type === ty)?.value;
+            const py = Number(get('year')), pmo = Number(get('month')), pd = Number(get('day'));
+            let ph = Number(get('hour')); if (ph === 24) ph = 0;
+            const pm = Number(get('minute'));
+            if (py === y && pmo === m && pd === d && ph === (hh || 0) && pm === (mm || 0)) {
+              return utcMs;
+            }
+          }
+        } catch (_) {}
+      }
       if (lockDoc.lockDateTime) {
         const t = new Date(lockDoc.lockDateTime).getTime();
         if (!isNaN(t)) return t;
       }
-      const lockDateStr = lockDoc.lockDate || dateStr;
-      const time24 = lockDoc.lockTime24
-        || ((typeof convert12To24 === 'function' && lockDoc.lockTime) ? convert12To24(lockDoc.lockTime) : null)
-        || '23:59';
-      try {
-        const [y, m, d] = String(lockDateStr).split('-').map(Number);
-        const [hh, mm] = String(time24).split(':').map(Number);
-        const now = (typeof getESTNow === 'function') ? getESTNow() : new Date();
-        const lockMoment = new Date(now);
-        lockMoment.setFullYear(y, m - 1, d);
-        lockMoment.setHours(hh || 0, mm || 0, 0, 0);
-        return lockMoment.getTime();
-      } catch (_) {
-        return null;
-      }
+      return null;
     }
 
     function clearAutoSubmitTimer() {
@@ -5642,8 +5760,9 @@
         let lockTime = null;
         
         if (!lockSnapshot.empty) {
-          lockTime = lockSnapshot.docs[0].data().lockTime;
-          isLocked = await areSubmissionsLocked(dateStr, lockTime);
+          const lockDoc = lockSnapshot.docs[0].data() || {};
+          lockTime = lockDoc.lockTime;
+          isLocked = await areSubmissionsLocked(dateStr, lockTime, lockDoc);
           console.log(` Lock time found: ${lockTime}, isLocked: ${isLocked}`);
         }
         
@@ -5724,7 +5843,7 @@
         if (!lockSnapshot.empty) {
           const lockDoc = lockSnapshot.docs[0].data() || {};
           const lockTime = lockDoc.lockTime;
-          const isLocked = await areSubmissionsLocked(lockDoc.lockDate || selectedPickDate, lockTime, lockDoc);
+          const isLocked = await areSubmissionsLocked(selectedPickDate, lockTime, lockDoc);
           console.log(` Lock time found: ${lockTime}, isLocked: ${isLocked}`);
           if (isLocked) {
             console.log(` Submissions BLOCKED - date is locked`);
@@ -9313,9 +9432,12 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       const lines = [];
       questions.forEach((q, i) => {
         const mine = answers[i];
-        const label = String(q.question || ('Q' + (i + 1))).slice(0, 72);
+        const label = String(q.question || ('Q' + (i + 1))).slice(0, 90);
+        let opts = [];
+        if (Array.isArray(q.options)) opts = q.options.map(String);
+        else if (typeof q.options === 'string') opts = q.options.split(',').map(s => s.trim()).filter(Boolean);
         if (mode === 'picks') {
-          lines.push({ label: label, detail: mine != null && mine !== '' ? String(mine) : '—', ok: null });
+          lines.push({ label: label, mine: mine, options: opts, ok: null, right: null });
         } else {
           const right = correctMap[i];
           let ok = null;
@@ -9323,11 +9445,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             ok = String(mine).toLowerCase() === String(right).toLowerCase() || mine === right;
             if (ok) correct++;
           }
-          lines.push({
-            label: label,
-            detail: (mine != null ? String(mine) : '—') + (right != null ? ' → ' + right : ''),
-            ok: ok
-          });
+          lines.push({ label: label, mine: mine, right: right, options: opts, ok: ok });
         }
       });
 
@@ -9352,14 +9470,44 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       }
       const list = document.getElementById('pickemSgList');
       if (list) {
-        list.innerHTML = lines.map(l => {
-          if (mode === 'picks') {
-            return '<li><span>' + l.label + '</span><span>' + l.detail + '</span></li>';
+        list.innerHTML = lines.map((l, idx) => {
+          const cardCls = mode === 'results'
+            ? (l.ok === true ? ' sg-card-ok' : (l.ok === false ? ' sg-card-no' : ''))
+            : '';
+          let chips = '';
+          const opts = Array.isArray(l.options) ? l.options : [];
+          if (opts.length) {
+            chips = '<div class="sg-q-options">' + opts.map(opt => {
+              const selected = l.mine != null && String(l.mine).toLowerCase() === String(opt).toLowerCase();
+              let chipCls = 'sg-chip';
+              if (mode === 'picks' && selected) chipCls += ' sg-selected';
+              if (mode === 'results') {
+                if (selected && l.ok === true) chipCls += ' sg-correct';
+                else if (selected && l.ok === false) chipCls += ' sg-wrong';
+                else if (l.right != null && String(l.right).toLowerCase() === String(opt).toLowerCase()) chipCls += ' sg-correct';
+                else if (selected) chipCls += ' sg-selected';
+              }
+              const mark = (mode === 'results' && selected)
+                ? (l.ok === true ? ' ✓' : (l.ok === false ? ' ✗' : ''))
+                : (selected ? ' ●' : '');
+              return '<span class="' + chipCls + '">' + opt + mark + '</span>';
+            }).join('') + '</div>';
+          } else {
+            // free-text / numeric
+            const val = l.mine != null && l.mine !== '' ? String(l.mine) : '—';
+            let chipCls = 'sg-chip sg-selected';
+            if (mode === 'results') {
+              if (l.ok === true) chipCls = 'sg-chip sg-correct';
+              else if (l.ok === false) chipCls = 'sg-chip sg-wrong';
+            }
+            chips = '<div class="sg-q-options"><span class="' + chipCls + '">' + val + '</span></div>';
           }
-          const mark = l.ok === true ? '✓' : (l.ok === false ? '✗' : '·');
-          const cls = l.ok === true ? 'sg-ok' : (l.ok === false ? 'sg-no' : '');
-          return '<li><span>' + l.label + '</span><span class="' + cls + '">' + mark + '</span></li>';
-        }).join('') || '<li>No picks for this date</li>';
+          return '<li><div class="sg-q-card' + cardCls + '">' +
+            '<div class="sg-q-num">Question ' + (idx + 1) + '</div>' +
+            '<p class="sg-q-text">' + l.label + '</p>' +
+            chips +
+            '</div></li>';
+        }).join('') || '<li><div class="sg-q-card"><p class="sg-q-text">No picks for this date</p></div></li>';
       }
       return true;
     }
@@ -9973,8 +10121,11 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       document.getElementById('autoSlateDate')?.addEventListener('change', () => {
         syncWeekFromDate();
         const d = document.getElementById('autoSlateDate')?.value;
+        // Clear lock overrides when the slate date changes so lock stays on the pickem date
         const ld = document.getElementById('autoLockDateOverride');
-        if (ld && d && !ld.value) ld.value = d;
+        if (ld) ld.value = '';
+        const lt = document.getElementById('autoLockOverride');
+        if (lt) lt.value = '';
         const mad = document.getElementById('markAnswersDate');
         if (mad && d) mad.value = d;
       });
@@ -10216,12 +10367,14 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         }
       });
 
-      // defaults
+      // defaults — do NOT pre-fill lock date override (stale values caused wrong lock dates)
       try {
         const el = document.getElementById('autoSlateDate');
         if (el && !el.value) el.value = todayISO();
         const ld = document.getElementById('autoLockDateOverride');
-        if (ld && !ld.value && el) ld.value = el.value;
+        if (ld) ld.value = '';
+        const lt = document.getElementById('autoLockOverride');
+        if (lt) lt.value = '';
       } catch (_) {}
 
             document.getElementById('autoPublishBtn')?.addEventListener('click', async () => {
@@ -10349,11 +10502,15 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           return bestStr || '19:30';
         }
         let tip24 = earliestTipET(games);
+        // Always lock on the pickem date unless admin explicitly overrides to a different date
         let lockDateStr = dateStr;
-        // Manual override only if filled in
-        const lockDateOv = document.getElementById('autoLockDateOverride')?.value;
-        const lockOv = document.getElementById('autoLockOverride')?.value;
-        if (lockDateOv) lockDateStr = lockDateOv;
+        const lockDateOv = (document.getElementById('autoLockDateOverride')?.value || '').trim();
+        const lockOv = (document.getElementById('autoLockOverride')?.value || '').trim();
+        // Only apply date override when it is filled AND different from the slate date
+        // (prevents a stale leftover date from a previous generation)
+        if (lockDateOv && lockDateOv !== dateStr) {
+          lockDateStr = lockDateOv;
+        }
         if (lockOv) tip24 = lockOv;
         // Offset only applies when NOT using manual time override
         const off = Number(document.getElementById('autoSlateLockOffset')?.value || 0);
@@ -10406,15 +10563,41 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         const lock12 = h + ':' + m + ' ' + ampm;
         try {
           const lockSnap = await db.collection('lockTimes').where('date', '==', dateStr).get();
+          // Build lockDateTime as ET wall-clock encoded to a stable ISO (no browser-TZ shift of the calendar day)
+          // Store date + lockTime24 as source of truth; lockDateTime is helper only.
           const [ly, lmo, ld] = lockDateStr.split('-').map(Number);
           const [lhh, lmm] = tip24.split(':').map(Number);
-          const lockLocal = new Date(ly, lmo - 1, ld, lhh, lmm, 0, 0);
+          function etWallToUtcIso(y, mo, d, hh, mm) {
+            // Interpret y-mo-d hh:mm as America/New_York, return UTC ISO
+            const pad = (n) => String(n).padStart(2, '0');
+            // Guess offset via binary search on UTC candidates
+            const guess = Date.UTC(y, mo - 1, d, hh + 5, mm, 0); // start near EST
+            for (let delta = -3; delta <= 8; delta++) {
+              const utcMs = Date.UTC(y, mo - 1, d, hh + delta, mm, 0);
+              const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/New_York',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', hour12: false
+              }).formatToParts(new Date(utcMs));
+              const get = (t) => parts.find(p => p.type === t)?.value;
+              const py = Number(get('year')), pmo = Number(get('month')), pd = Number(get('day'));
+              let ph = Number(get('hour')); if (ph === 24) ph = 0;
+              const pm = Number(get('minute'));
+              if (py === y && pmo === mo && pd === d && ph === hh && pm === mm) {
+                return new Date(utcMs).toISOString();
+              }
+            }
+            // Fallback: treat as local (better than nothing)
+            return new Date(y, mo - 1, d, hh, mm, 0, 0).toISOString();
+          }
+          const lockIso = etWallToUtcIso(ly, lmo, ld, lhh || 0, lmm || 0);
           const lockPayload = sanitizeForFirestore({
             date: dateStr,
             lockDate: lockDateStr,
             lockTime: lock12,
             lockTime24: tip24,
-            lockDateTime: lockLocal.toISOString(),
+            lockDateTime: lockIso,
+            timezone: 'America/New_York',
             updatedAt: new Date().toISOString(),
             source: draft ? 'auto-slate-draft' : 'auto-slate-publish'
           });

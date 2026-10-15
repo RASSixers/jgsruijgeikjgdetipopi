@@ -598,19 +598,23 @@
     background: #fff;
     border: 1px solid var(--border-light);
     border-radius: 14px;
-    padding: 0.85rem 0.9rem 1rem;
-    overflow: hidden;
+    padding: 0.75rem 0.75rem 0.85rem;
+    overflow: visible;
     word-wrap: break-word;
     overflow-wrap: anywhere;
     min-width: 0;
+    min-height: 280px;
   }
   .update-card .update-embed {
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
+    min-height: 260px;
   }
   .update-card .update-embed blockquote,
-  .update-card .update-embed iframe {
+  .update-card .update-embed iframe,
+  .update-card .update-embed twitter-widget {
     max-width: 100% !important;
+    width: 100% !important;
     margin: 0 auto !important;
   }
   .update-card p,
@@ -1047,11 +1051,47 @@ function listenToPoll() {
 }
 
 function isTweetUrl(url) {
-  return /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/i.test(String(url || '').trim());
+  return /^https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/.+\/status\/\d+/i.test(String(url || '').trim());
+}
+function extractTweetUrl(p) {
+  var u = (p && p.tweetUrl) ? String(p.tweetUrl).trim() : '';
+  if (isTweetUrl(u)) return u;
+  var text = (p && p.text) ? String(p.text) : '';
+  var m = text.match(/https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[^\s]+\/status\/\d+/i);
+  return m ? m[0] : '';
 }
 function tweetCardEmbed(url) {
   const safe = escapeHtml(url);
-  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true"><a href="' + safe + '"></a></blockquote></div>';
+  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true" data-theme="light"><a href="' + safe + '">Loading post…</a></blockquote></div>';
+}
+function loadTweetWidgets(container) {
+  function doLoad() {
+    try {
+      if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
+        window.twttr.widgets.load(container || document.body);
+      }
+    } catch (e) { console.warn('tweet widgets', e); }
+  }
+  if (window.twttr && window.twttr.widgets) {
+    if (window.twttr.ready) window.twttr.ready(doLoad);
+    else doLoad();
+    return;
+  }
+  var existing = document.getElementById('twitter-wjs');
+  if (existing) {
+    existing.addEventListener('load', doLoad);
+    setTimeout(doLoad, 800);
+    return;
+  }
+  var s = document.createElement('script');
+  s.id = 'twitter-wjs';
+  s.async = true;
+  s.src = 'https://platform.twitter.com/widgets.js';
+  s.onload = function () {
+    if (window.twttr && window.twttr.ready) window.twttr.ready(doLoad);
+    else setTimeout(doLoad, 200);
+  };
+  document.body.appendChild(s);
 }
 function renderUpdatesPage() {
   const feed = document.getElementById('updates-feed');
@@ -1074,10 +1114,18 @@ function renderUpdatesPage() {
   const start = updatesPage * perPage;
   const pagePosts = allUpdates.slice(start, start + perPage);
 
+  var hasTweet = false;
   feed.innerHTML = pagePosts.map(function (p) {
-    const body = isTweetUrl(p.tweetUrl)
-      ? tweetCardEmbed(p.tweetUrl)
-      : (p.text ? '<p class="update-text">' + escapeHtml(p.text) + '</p>' : '');
+    var tweet = extractTweetUrl(p);
+    var body;
+    if (tweet) {
+      hasTweet = true;
+      body = tweetCardEmbed(tweet);
+    } else if (p.text) {
+      body = '<p class="update-text">' + escapeHtml(p.text) + '</p>';
+    } else {
+      body = '';
+    }
     return '<div class="update-card">' + body + '</div>';
   }).join('');
 
@@ -1086,15 +1134,10 @@ function renderUpdatesPage() {
   prev.disabled = updatesPage === 0;
   next.disabled = updatesPage >= totalPages - 1;
 
-  if (pagePosts.some(function (p) { return isTweetUrl(p.tweetUrl); })) {
-    if (window.twttr && window.twttr.widgets) window.twttr.widgets.load(feed);
-    else if (!document.getElementById('twitter-wjs')) {
-      const s = document.createElement('script');
-      s.id = 'twitter-wjs';
-      s.async = true;
-      s.src = 'https://platform.twitter.com/widgets.js';
-      document.body.appendChild(s);
-    }
+  if (hasTweet) {
+    loadTweetWidgets(feed);
+    // Retry once after widgets settle
+    setTimeout(function () { loadTweetWidgets(feed); }, 1200);
   }
 }
 function listenToUpdates() {

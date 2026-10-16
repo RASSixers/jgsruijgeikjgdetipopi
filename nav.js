@@ -1,5 +1,20 @@
 // Navbar Injection Script
 
+// Google AdSense (backup for SPA routes like /article/slug)
+(function () {
+    try {
+        if (document.querySelector('script[src*="adsbygoogle.js"]')) return;
+        if (document.getElementById('sixers-adsbygoogle')) return;
+        var s = document.createElement('script');
+        s.id = 'sixers-adsbygoogle';
+        s.async = true;
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287';
+        s.crossOrigin = 'anonymous';
+        (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+})();
+
+
 
 // === DARK MODE ANTI-FLASH ===
 // Run immediately (outside DOMContentLoaded) so theme applies before first paint.

@@ -1561,23 +1561,64 @@
       margin: 0 0 8px; font-size: 13px; font-weight: 700; line-height: 1.3; color: #0d0f1a;
     }
     #pickem-social-export .sg-q-options {
-      display: flex; flex-wrap: wrap; gap: 6px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #pickem-social-export .sg-q-options.sg-opts-1 {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    #pickem-social-export .sg-q-options.sg-opts-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    #pickem-social-export .sg-q-options.sg-opts-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     #pickem-social-export .sg-chip {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 5px 10px; border-radius: 999px;
-      border: 1.5px solid #dbe3ee; background: #fff;
-      font-size: 12px; font-weight: 700; color: #475569;
-      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 34px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1.5px solid #dbe3ee;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #475569;
+      text-align: center;
+      white-space: normal;
+      overflow: hidden;
+      word-break: break-word;
+      hyphens: auto;
     }
     #pickem-social-export .sg-chip.sg-selected {
-      border-color: #006BB6; background: rgba(0,107,182,0.1); color: #006BB6;
+      border-color: #006BB6;
+      background: rgba(0,107,182,0.12);
+      color: #006BB6;
+      box-shadow: inset 0 0 0 1px rgba(0,107,182,0.15);
     }
     #pickem-social-export .sg-chip.sg-correct {
-      border-color: #16a34a; background: rgba(22,163,74,0.12); color: #15803d;
+      border-color: #16a34a;
+      background: rgba(22,163,74,0.12);
+      color: #15803d;
+    }
+    #pickem-social-export .sg-chip .sg-chip-label {
+      display: block;
+      width: 100%;
+      text-align: center;
+      line-height: 1.25;
     }
     #pickem-social-export .sg-chip.sg-wrong {
-      border-color: #dc2626; background: rgba(220,38,38,0.1); color: #b91c1c;
+      border-color: #dc2626;
+      background: rgba(220,38,38,0.1);
+      color: #b91c1c;
     }
     #pickem-social-export .sg-ok { color: #16a34a; }
     #pickem-social-export .sg-no { color: #dc2626; }
@@ -9668,7 +9709,9 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           let chips = '';
           const opts = Array.isArray(l.options) ? l.options : [];
           if (opts.length) {
-            chips = '<div class="sg-q-options">' + opts.map(opt => {
+            const optCount = opts.length;
+            const optsCls = 'sg-q-options' + (optCount === 1 ? ' sg-opts-1' : (optCount === 3 ? ' sg-opts-3' : (optCount >= 4 ? ' sg-opts-4' : '')));
+            chips = '<div class="' + optsCls + '">' + opts.map(opt => {
               const selected = l.mine != null && String(l.mine).toLowerCase() === String(opt).toLowerCase();
               let chipCls = 'sg-chip';
               if (mode === 'picks' && selected) chipCls += ' sg-selected';
@@ -9681,7 +9724,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
               const mark = (mode === 'results' && selected)
                 ? (l.ok === true ? ' ✓' : (l.ok === false ? ' ✗' : ''))
                 : (selected ? ' ●' : '');
-              return '<span class="' + chipCls + '">' + opt + mark + '</span>';
+              const label = String(opt || '').trim();
+              return '<span class="' + chipCls + '"><span class="sg-chip-label">' + label + mark + '</span></span>';
             }).join('') + '</div>';
           } else {
             // free-text / numeric
@@ -9691,7 +9735,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
               if (l.ok === true) chipCls = 'sg-chip sg-correct';
               else if (l.ok === false) chipCls = 'sg-chip sg-wrong';
             }
-            chips = '<div class="sg-q-options"><span class="' + chipCls + '">' + val + '</span></div>';
+            chips = '<div class="sg-q-options sg-opts-1"><span class="' + chipCls + '"><span class="sg-chip-label">' + val + '</span></span></div>';
           }
           return '<li><div class="sg-q-card' + cardCls + '">' +
             '<div class="sg-q-num">Question ' + (idx + 1) + '</div>' +

@@ -1594,23 +1594,21 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
       box-sizing: border-box;
       width: 100%;
-      min-height: 34px;
-      padding: 7px 10px;
+      height: 36px;
+      min-height: 36px;
+      max-height: 36px;
+      padding: 0 8px;
       border-radius: 10px;
       border: 1.5px solid #dbe3ee;
       background: #fff;
       font-size: 12px;
       font-weight: 700;
-      line-height: 1.25;
+      line-height: 1;
       color: #475569;
       text-align: center;
-      white-space: normal;
       overflow: hidden;
-      word-break: break-word;
-      hyphens: auto;
     }
     #pickem-social-export .sg-chip.sg-selected {
       border-color: #006BB6;
@@ -1626,8 +1624,14 @@
     #pickem-social-export .sg-chip .sg-chip-label {
       display: block;
       width: 100%;
+      max-width: 100%;
       text-align: center;
-      line-height: 1.25;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+      font-weight: 700;
     }
     #pickem-social-export .sg-chip.sg-wrong {
       border-color: #dc2626;
@@ -9749,7 +9753,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
               const mark = (mode === 'results' && selected)
                 ? (l.ok === true ? ' ✓' : (l.ok === false ? ' ✗' : ''))
                 : (selected ? ' ●' : '');
-              const label = String(opt || '').trim();
+              let label = String(opt || '').trim();
+              if (label.length > 16) label = label.slice(0, 15) + '…';
               return '<span class="' + chipCls + '"><span class="sg-chip-label">' + label + mark + '</span></span>';
             }).join('') + '</div>';
           } else {

@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287"
+     crossorigin="anonymous"></script>
+
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sixers Hoops — News, Analysis & Community</title>
-<meta name="description" content="The ultimate destination for Philadelphia 76ers fans. News, analysis, and community for everything Sixers." />
-<meta property="og:title" content="Sixers Hoops" />
-<meta property="og:description" content="The ultimate destination for Philadelphia 76ers fans. News, analysis, and community for everything Sixers." />
+<title>Sixers Hoops — Article</title>
+<meta name="description" content="News and analysis for Philadelphia 76ers fans." />
 <link rel="icon" href="/favicon.ico" />
-<link rel="canonical" href="/" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/navbar-styles.css" />
 <style>
   :root {
@@ -25,867 +25,403 @@
     --card-bg: #ffffff;
   }
   *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
+  html, body { margin: 0; padding: 0; }
   body {
-    background: var(--cream);
-    color: var(--ink);
+    background: var(--cream, #fff);
+    color: var(--ink, #0f172a);
     font-family: "Lexend", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     margin-top: 64px;
+    font-size: 16px;
+    line-height: 1.5;
   }
   a { color: inherit; }
 
-  .hero {
-    background: var(--cream);
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 720px;
+  .article-wrap {
+    max-width: 680px;
     margin: 0 auto;
-    padding: 1.75rem 1.25rem 1.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    padding: 2.5rem 1.35rem 4.5rem;
   }
-  .hero-wordmark {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  .hero-title-top,
-  .hero-title-bottom {
-    font-size: clamp(2.1rem, 8vw, 3.75rem);
-    font-weight: 800;
-    line-height: 0.92;
-    letter-spacing: -0.035em;
-    margin: 0;
-    text-transform: uppercase;
-  }
-  .hero-title-top { color: var(--ink); }
-  .hero-title-bottom { color: var(--sixers-blue); }
-  .hero-sub {
-    font-size: 0.88rem;
-    color: var(--mid);
-    max-width: 420px;
-    line-height: 1.55;
-    margin: 0.85rem auto 0;
-    font-weight: 500;
-    text-transform: none;
-  }
-  .hero-cta-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
-    margin-top: 1.35rem;
-    width: 100%;
-    flex-wrap: wrap;
-  }
-  .hero-cta-primary,
-  .hero-cta-secondary {
+  .article-back {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 0.01em;
-    padding: 0.72rem 1.25rem;
-    border-radius: 999px;
-    text-decoration: none;
-    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
-    white-space: nowrap;
-  }
-  .hero-cta-primary {
-    background: var(--sixers-blue);
-    color: #fff !important;
-    border: 1px solid var(--sixers-blue);
-  }
-  .hero-cta-primary:hover { background: #0057a0; border-color: #0057a0; color: #fff !important; }
-  .hero-cta-secondary {
-    color: var(--ink);
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-light);
-  }
-  .hero-cta-secondary:hover {
-    border-color: var(--sixers-blue);
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
     color: var(--sixers-blue);
-  }
-
-  .feature-cards-section {
-    background: var(--cream);
-    border-top: 1px solid var(--border-light);
-    padding: 0 0 1.75rem;
-  }
-  .feature-cards-inner {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 1.1rem 1.25rem 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.55rem;
-  }
-  .feature-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-light);
-    padding: 0.85rem 0.9rem;
     text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    border-radius: 12px;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    margin-bottom: 2.25rem;
+    letter-spacing: -0.01em;
   }
-  .feature-card:hover {
-    border-color: rgba(0, 107, 182, 0.35);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-  }
-  .feature-card-title { font-size: 0.8rem; font-weight: 700; color: var(--ink); }
-  .feature-card-desc { font-size: 0.68rem; color: var(--mid); line-height: 1.4; flex: 1; }
-  .feature-card-arrow { margin-top: 0.25rem; color: var(--sixers-blue); font-weight: 700; font-size: 0.85rem; }
+  .article-back:hover { opacity: 0.85; }
 
-  /* —— Articles: modern featured + sidebar list —— */
-  .news-section {
-    background: #fafbfc;
-    padding: 3rem 0 3.75rem;
-    border-top: 1px solid #eef1f5;
+  /* —— Header: one centered system —— */
+  .article-header {
+    text-align: center;
+    margin: 0 auto 0;
+    max-width: 36rem;
   }
-  .news-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .news-heading {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.75rem;
-  }
-  .news-eyebrow {
-    display: block;
-    font-size: 0.68rem;
+  .article-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.6875rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    margin: 0 0 1rem;
+    font-family: inherit;
+  }
+  .article-title {
+    font-family: inherit;
+    font-size: clamp(1.75rem, 4.2vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin: 0 0 0.9rem;
+    color: var(--ink, #0f172a);
+  }
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--mid, #64748b);
+    justify-content: center;
+    align-items: center;
+    line-height: 1.4;
+  }
+  .article-meta .meta-dot {
+    color: #cbd5e1;
+    font-weight: 400;
+  }
+  .article-excerpt {
+    font-family: inherit;
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--mid, #475569);
+    margin: 1.25rem auto 0;
+    max-width: 34rem;
+  }
+  .article-divider {
+    width: 2.5rem;
+    height: 2px;
+    background: var(--sixers-blue);
+    border-radius: 1px;
+    margin: 1.75rem auto 2rem;
+  }
+
+  .article-hero {
+    margin: 0 0 0.5rem;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+  }
+  .article-hero img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    display: block;
+  }
+  .article-photo-credit {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--mid, #94a3b8);
+    margin: 0 0 1.75rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  /* —— Body: same font, consistent measure —— */
+  .article-body {
+    margin: 0;
+  }
+  .article-body p {
+    font-family: inherit;
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.8;
+    color: var(--ink, #1e293b);
+    margin: 0 0 1.35rem;
+    white-space: pre-wrap;
+  }
+  .article-body .article-inline-img {
+    margin: 1.75rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    background: #f8fafc;
+  }
+  .article-body .article-inline-img img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 520px;
+    object-fit: contain;
+  }
+  .article-body .article-inline-img figcaption {
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--mid, #64748b);
+    padding: 0.55rem 0.85rem 0.7rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  .tweet-embed-wrap {
+    margin: 1.75rem 0;
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 1rem 1.1rem 0.55rem;
+    overflow: hidden;
+  }
+  .tweet-embed-wrap .twitter-tweet { margin: 0 auto !important; }
+  .tweet-fallback-card {
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--mid, #64748b);
+  }
+  .tweet-fallback-card a {
+    color: var(--sixers-blue);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .tweet-fallback-card a:hover { text-decoration: underline; }
+
+  /* —— Grades: same type family —— */
+  .grades-section { margin: 2.5rem 0 1.25rem; }
+  .grades-heading {
+    font-family: inherit;
+    font-size: 1.125rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid #0f172a;
+    color: var(--ink, #0f172a);
+  }
+  .grade-card {
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 1.05rem 1.1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    background: #fff;
+  }
+  .grade-pill {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .grade-card-body { flex: 1; min-width: 0; }
+  .grade-card-name {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    letter-spacing: -0.015em;
+    color: var(--ink, #0f172a);
+  }
+  .grade-card-stats {
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--mid, #64748b);
+    margin: 0 0 0.5rem;
+    line-height: 1.45;
+  }
+  .grade-card-analysis {
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--ink, #1e293b);
+    margin: 0;
+  }
+  .grade-card-tweet { margin-top: 0.85rem; }
+
+  .bottom-line {
+    margin: 2.25rem 0 0;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 1.15rem 1.2rem 1.25rem;
+    background: #f8fafc;
+  }
+  .bottom-line-label {
+    display: block;
+    font-family: inherit;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sixers-blue);
+    margin-bottom: 0.45rem;
+  }
+  .bottom-line p {
+    font-family: inherit;
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.75;
+    color: var(--ink, #0f172a);
+    white-space: pre-wrap;
+  }
+
+  .article-locked {
+    text-align: center;
+    padding: 3.25rem 1.5rem;
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+  }
+  .article-locked h1 {
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.45rem;
+    color: var(--ink, #0f172a);
+  }
+  .article-locked p {
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--mid, #64748b);
+    margin: 0;
+  }
+
+  .more-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+  }
+  .more-title {
+    font-family: inherit;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    color: var(--ink, #0f172a);
+  }
+  .more-list { display: flex; flex-direction: column; gap: 0.65rem; }
+  .more-item {
+    display: block;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 0.95rem 1.05rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .more-item:hover {
+    border-color: rgba(0, 107, 182, 0.35);
+    background: #f8fafc;
+  }
+  .more-item-cat {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--sixers-blue);
     margin-bottom: 0.3rem;
   }
-  .news-title {
-    font-size: clamp(1.4rem, 2.6vw, 1.7rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: var(--ink);
-    margin: 0;
-  }
-
-  .news-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.95fr);
-    gap: 2rem 2.25rem;
-    align-items: start;
-    width: 100%;
-    min-width: 0;
-  }
-
-  /* Lead story card */
-  .news-feature {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    background: #fff;
-    border: 1px solid #e8ecf1;
-    border-radius: 16px;
-    padding: 0;
-    overflow: hidden;
-    min-width: 0;
-    transition: border-color 0.18s, box-shadow 0.18s;
-  }
-  .news-feature:hover {
-    border-color: rgba(0, 107, 182, 0.28);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
-  }
-  .news-feature-visual {
-    display: block;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 0;
-    background:
-      radial-gradient(ellipse at 20% 80%, rgba(0, 107, 182, 0.22), transparent 55%),
-      radial-gradient(ellipse at 90% 10%, rgba(237, 23, 76, 0.14), transparent 50%),
-      linear-gradient(160deg, #0d1b2a 0%, #1b3a5a 45%, #243b55 100%);
-    margin: 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .news-feature-visual::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.35) 100%);
-    pointer-events: none;
-  }
-  .news-feature-visual::after {
-    content: attr(data-cat);
-    position: absolute;
-    left: 1.1rem;
-    bottom: 1.1rem;
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.14);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    padding: 0.38rem 0.7rem;
-    border-radius: 999px;
-    z-index: 1;
-  }
-  .news-feature-body {
-    padding: 1.25rem 1.35rem 1.35rem;
-  }
-  .news-feature .news-kicker,
-  .news-feature .news-tag { display: none; }
-  .news-feature-title {
-    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
-    font-weight: 800;
-    letter-spacing: -0.032em;
-    line-height: 1.2;
-    margin: 0 0 0.55rem;
-    color: var(--ink);
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
-  }
-  .news-feature:hover .news-feature-title { color: var(--sixers-blue); }
-  .news-feature-excerpt {
-    font-size: 0.94rem;
-    line-height: 1.6;
-    color: #64748b;
-    margin: 0 0 1rem;
-  }
-  .news-feature-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem 0.55rem;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    font-weight: 500;
-    padding-top: 0.85rem;
-    border-top: 1px solid #f1f4f8;
-  }
-  .news-feature-meta .news-read { display: none; }
-
-  /* Sidebar list — modern editorial */
-  .news-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: 1.25rem 0 0.5rem;
-    background: #fff;
-    border: 1px solid #e8ecf2;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    min-width: 0;
-  }
-  .news-stack-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #64748b;
-    margin: 0;
-    padding: 0 1.35rem 0.95rem;
-    border-bottom: 1px solid #eef1f5;
-    background: transparent;
-    position: relative;
-  }
-  .news-stack-label::after {
-    content: '';
-    position: absolute;
-    left: 1.35rem;
-    bottom: -1px;
-    width: 1.75rem;
-    height: 2px;
-    background: var(--sixers-blue);
-    border-radius: 1px;
-  }
-  .news-stack-empty {
-    font-size: 0.88rem;
-    color: #94a3b8;
-    margin: 0.35rem 0.35rem 0.5rem;
-    line-height: 1.5;
-    padding: 0;
-  }
-  .news-row {
-    display: block;
-    padding: 1.1rem 1.35rem;
-    text-decoration: none;
-    color: inherit;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #f1f4f8;
-    border-radius: 0;
-    min-width: 0;
-    transition: background 0.14s ease;
-  }
-  .news-row:last-child { border-bottom: none; }
-  .news-row:hover {
-    background: #f7f9fc;
-    box-shadow: none;
-    transform: none;
-  }
-  .news-row-num { display: none; }
-  .news-row-body { min-width: 0; }
-  .news-row-top,
-  .news-row .news-tag,
-  .news-row-time,
-  .news-row-excerpt { display: none; }
-  .news-row-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    line-height: 1.4;
-    margin: 0 0 0.45rem;
-    color: #0f172a;
-    letter-spacing: -0.015em;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    transition: color 0.12s ease;
-  }
-  .news-row:hover .news-row-title {
-    color: var(--sixers-blue);
-  }
-  .news-row-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    font-weight: 500;
-    margin: 0;
-  }
-  .news-row-meta .news-row-author {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .news-row-meta .news-row-date {
-    white-space: nowrap;
-    flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
-    color: #94a3b8;
-    font-weight: 500;
-    background: none;
-    padding: 0;
-    border-radius: 0;
-    font-size: 0.75rem;
-  }
-  .news-row-meta .news-row-sep { display: none; }
-
-  .news-tag {
-    font-size: 0.58rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--sixers-blue);
-    background: rgba(0, 107, 182, 0.08);
-    border: 1px solid rgba(0, 107, 182, 0.14);
-    padding: 3px 8px;
-    border-radius: 999px;
-  }
-  .news-empty, .news-loading {
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-    color: var(--mid);
-    font-size: 0.9rem;
-    background: #fff;
-    border: 1px solid #e8ecf1;
-    border-radius: 16px;
-    grid-column: 1 / -1;
-  }
-
-  @media (max-width: 900px) {
-    .news-grid {
-      grid-template-columns: 1fr;
-      gap: 1.35rem;
-    }
-  }
-  @media (min-width: 768px) {
-    .news-inner { padding: 0 2rem; }
-    .news-section { padding: 3.5rem 0 4.25rem; }
-  }
-  @media (max-width: 699px) {
-    .news-section {
-      padding: 1.85rem 0 2.5rem;
-      overflow-x: hidden;
-      width: 100%;
-      max-width: 100vw;
-      box-sizing: border-box;
-    }
-    .news-inner {
-      padding: 0 1rem;
-      max-width: 100%;
-      overflow-x: hidden;
-      box-sizing: border-box;
-    }
-    .news-heading { margin-bottom: 1.2rem; }
-    .news-title { font-size: 1.3rem; }
-    .news-feature { border-radius: 14px; }
-    .news-feature-visual { aspect-ratio: 16 / 10; }
-    .news-feature-body { padding: 1.05rem 1.1rem 1.15rem; }
-    .news-feature-title { font-size: 1.28rem; line-height: 1.22; }
-    .news-feature-excerpt { font-size: 0.88rem; margin-bottom: 0.85rem; }
-    .news-stack {
-      padding: 1rem 1.05rem 0.7rem;
-      border-radius: 14px;
-    }
-    .news-stack-label {
-      font-size: 0.68rem;
-      padding-bottom: 0.7rem;
-    }
-    .news-stack {
-      padding: 1rem 0 0.35rem;
-      border-radius: 14px;
-    }
-    .news-stack-label {
-      font-size: 0.65rem;
-      padding: 0 1.1rem 0.8rem;
-    }
-    .news-stack-label::after { left: 1.1rem; }
-    .news-row { padding: 0.95rem 1.1rem; }
-    .news-row-title { font-size: 0.92rem; }
-  }
-
-  /* Homepage team stats — match schedule page */
-  .hg-panel-team { padding: 0; }
-  .hg-panel-team .team-stats-wrap {
-    padding: 0.65rem 1rem 1rem;
-    overflow-x: auto;
-  }
-  .hg-panel-team .team-stats-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-    font-variant-numeric: tabular-nums;
-  }
-  .hg-panel-team .team-stats-table th,
-  .hg-panel-team .team-stats-table td {
-    padding: 0.4rem 0.55rem;
-    text-align: right;
-    border-bottom: 1px solid var(--border-light);
-  }
-  .hg-panel-team .team-stats-table th:first-child,
-  .hg-panel-team .team-stats-table td.ts-label {
-    text-align: left;
-    font-weight: 700;
-    color: var(--mid);
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
-  }
-  .hg-panel-team .team-stats-table th {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--ink);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .hg-panel-team .team-stats-table tbody tr:hover {
-    background: rgba(0, 107, 182, 0.04);
-  }
-
-  @media (min-width: 768px) {
-}
-  @media (max-width: 767px) {
-}
-
-  @media (min-width: 768px) {
-    .hero-inner { padding: 2.5rem 2rem 2.25rem; }
-    .hero-sub { margin-top: 1rem; }
-    .hero-cta-row { margin-top: 1.6rem; gap: 0.75rem; }
-    .feature-cards-inner { padding: 1.35rem 2rem 0; gap: 0.65rem; }
-}
-  @media (max-width: 767px) {
-    body { margin-top: 56px; }
-    .hero-inner { padding: 1.1rem 1rem 1.25rem; }
-    .hero-sub { font-size: 0.82rem; margin-top: 0.7rem; }
-    .hero-cta-row {
-      flex-direction: column;
-      align-items: stretch;
-      margin-top: 1.1rem;
-      gap: 0.5rem;
-      max-width: 280px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .hero-cta-primary,
-    .hero-cta-secondary {
-      width: 100%;
-      padding: 0.78rem 1rem;
-      font-size: 0.82rem;
-    }
-    .feature-cards-inner {
-      grid-template-columns: 1fr 1fr;
-      padding: 0.85rem 0.85rem 0;
-      gap: 0.45rem;
-    }
-    .feature-card { padding: 0.75rem 0.7rem; }
-    .feature-card-desc { display: none; }
-}
-  @media (max-width: 480px) {
-    .hero-title-top,
-    .hero-title-bottom { font-size: clamp(1.9rem, 11vw, 2.4rem); }
-  }
-
-
-  /* Fan poll */
-  .poll-section {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 1.25rem 2rem;
-  }
-  .poll-inner {
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 1.25rem 1.35rem;
-  }
-  .poll-loading, .updates-loading, .updates-empty {
-    color: var(--mid);
-    font-size: 0.9rem;
-    padding: 0.5rem 0;
-  }
-
-  /* From the desk */
-  .updates-section {
-    background: var(--cream);
-    border-top: 1px solid var(--border-light);
-    padding: 2.25rem 0 3.5rem;
-  }
-  .updates-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.25rem;
-  }
-  .updates-heading {
-    margin-bottom: 1.15rem;
-  }
-  /* 3 across × 2 rows per page on desktop */
-  .updates-feed {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.9rem;
-    align-items: start;
-  }
-  .update-card {
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 0.85rem 0.9rem 1rem;
-    overflow: hidden;
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
-    min-width: 0;
-  }
-  .update-card .update-embed {
-    max-width: 100%;
-    overflow: hidden;
-  }
-  .update-card .update-embed blockquote,
-  .update-card .update-embed iframe {
-    max-width: 100% !important;
-    margin: 0 auto !important;
-  }
-  .update-card p,
-  .update-card .update-text {
-    margin: 0 0 0.65rem;
-    font-size: 0.9rem;
-    line-height: 1.55;
-    color: var(--ink);
-  }
-  .update-card p:last-child { margin-bottom: 0; }
-  .update-card img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    display: block;
-    margin: 0.5rem 0;
-  }
-  .update-card a { color: var(--sixers-blue); }
-  .updates-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.35rem;
-  }
-  .updates-page-btn {
+  .more-item-title {
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     font-weight: 700;
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    border: 1px solid var(--border-light);
-    background: #fff;
-    color: var(--ink);
-    cursor: pointer;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+    color: var(--ink, #0f172a);
+    margin: 0;
   }
-  .updates-page-btn:hover:not(:disabled) {
-    border-color: var(--sixers-blue);
-    color: var(--sixers-blue);
+  .more-item-excerpt {
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--mid, #64748b);
+    margin: 0.4rem 0 0;
   }
-  .updates-page-btn:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-  .updates-page-label {
-    font-size: 0.78rem;
-    color: var(--mid);
-    font-weight: 600;
-  }
-  @media (min-width: 640px) {
-    .updates-feed { grid-template-columns: 1fr 1fr; }
-  }
-  @media (min-width: 900px) {
-    .updates-feed { grid-template-columns: 1fr 1fr 1fr; }
-    .updates-inner { padding: 0 2rem; }
-  }
-  @media (min-width: 768px) {
-    .poll-section { padding: 0 2rem 2.25rem; max-width: 720px; }
+  .more-item-meta {
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--mid, #94a3b8);
+    margin-top: 0.45rem;
   }
 
-  .home-game {
-    max-width: 1080px; margin: 0 auto; padding: 0 2rem 2rem;
-  }
-  .home-game-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .home-game-card.is-live { border-color: rgba(237,23,76,.35); }
-  .home-game-head {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 1rem; padding: 0.85rem 1.15rem; background: var(--surface-soft, rgba(0,0,0,.02));
-    border-bottom: 1px solid var(--border-light);
-  }
-  .home-game-kicker {
-    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--mid);
-  }
-  .home-game-card.is-live .home-game-kicker { color: var(--sixers-red, #ED174C); }
-  .home-game-clock {
-    font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums;
-    padding: 0.25rem 0.65rem; border-radius: 999px;
-    border: 1px solid var(--border-light); color: var(--ink);
-  }
-  .home-game-card.is-live .home-game-clock {
-    color: var(--sixers-red, #ED174C);
-    border-color: rgba(237,23,76,.35);
-    background: rgba(237,23,76,.06);
-  }
-  .home-game-scoreline {
-    display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
-    gap: 0.75rem; align-items: center; padding: 1rem 1.15rem;
-  }
-  .home-game-team {
-    display: flex; align-items: center; gap: 0.5rem; font-weight: 700; min-width: 0;
-  }
-  .home-game-team.away { justify-content: flex-end; text-align: right; }
-  .home-game-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .home-game-logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
-  .home-game-score {
-    font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums; white-space: nowrap;
-  }
-  .home-game-tabs {
-    display: flex; gap: 0; padding: 0 1.15rem;
-    border-top: 1px solid var(--border-light);
-  }
-  .home-game-tab {
-    border: none; background: transparent; color: var(--mid);
-    font: inherit; font-size: 0.78rem; font-weight: 700;
-    padding: 0.55rem 0.75rem; cursor: pointer;
-    border-bottom: 2px solid transparent;
-  }
-  .home-game-tab.on { color: var(--sixers-blue); border-bottom-color: var(--sixers-blue); }
-  .home-game-pbp {
-    list-style: none; margin: 0; padding: 0; max-height: 280px; overflow: auto;
-  }
-  .home-game-pbp li {
-    display: grid; grid-template-columns: 5rem minmax(0,1fr) auto;
-    gap: 0.5rem; padding: 0.5rem 1.15rem; border-top: 1px solid var(--border-light);
-    font-size: 0.8rem; line-height: 1.35;
-  }
-  .home-game-pbp .clk { color: var(--mid); font-weight: 700; font-size: 0.72rem; white-space: nowrap; }
-  .home-game-pbp .sc { color: var(--mid); font-variant-numeric: tabular-nums; font-size: 0.75rem; }
-  .home-game-box { padding: 0.5rem 0 0.75rem; max-height: 320px; overflow: auto; }
-  .home-game-box-team { font-weight: 800; font-size: 0.85rem; padding: 0.4rem 1.15rem; }
-  .home-game-box table {
-    width: 100%; border-collapse: collapse; font-size: 0.72rem; min-width: 480px;
-  }
-  .home-game-box th, .home-game-box td {
-    padding: 0.3rem 0.35rem; text-align: right; border-bottom: 1px solid var(--border-light);
-    font-variant-numeric: tabular-nums; white-space: nowrap;
-  }
-  .home-game-box th { font-size: 0.62rem; color: var(--mid); text-transform: uppercase; }
-  .home-game-box .pl { text-align: left; font-weight: 600; position: sticky; left: 0; background: var(--card-bg); min-width: 7rem; }
-  .home-game-foot {
-    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
-    padding: 0.75rem 1.15rem; border-top: 1px solid var(--border-light);
-    font-size: 0.8rem;
-  }
-  .home-game-foot a {
-    color: var(--sixers-blue); font-weight: 700; text-decoration: none;
-  }
-  .home-game-empty { padding: 1.25rem; color: var(--mid); font-size: 0.9rem; margin: 0; }
-  .home-game-meta { padding: 0 1.15rem 0.85rem; color: var(--mid); font-size: 0.82rem; }
-  @media (max-width: 720px) {
-    .home-game { padding: 0 0.85rem 1.5rem; }
-    .home-game-score { font-size: 1.4rem; }
-    .home-game-pbp li { grid-template-columns: 4.5rem minmax(0,1fr); }
-    .home-game-pbp .sc { grid-column: 2; justify-self: start; font-size: 0.7rem; }
+  @media (max-width: 640px) {
+    .article-wrap { padding: 1.75rem 1.1rem 3.5rem; }
+    .article-title { font-size: 1.65rem; }
+    .article-body p,
+    .bottom-line p { font-size: 1.02rem; }
   }
 
 </style>
 </head>
 <body>
 <main>
-  <header class="hero">
-    <div class="hero-inner">
-      <div class="hero-wordmark">
-        <p class="hero-title-top">Sixers</p>
-        <p class="hero-title-bottom">Hoops</p>
-        <p class="hero-sub">The ultimate destination for Sixers fans. News, analysis, community, and everything 76ers.</p>
-        <div class="hero-cta-row">
-          <a href="/nba-trade-machine" class="hero-cta-primary">NBA Trade Machine</a>
-          <a href="/pickem" class="hero-cta-secondary">Play Pick'em →</a>
-        </div>
-      </div>
-    </div>
-    <div class="feature-cards-section" id="features">
-      <div class="feature-cards-inner">
-        <a href="/future-draft-picks" class="feature-card">
-          <div class="feature-card-title">Future Draft Picks</div>
-          <div class="feature-card-desc">Owned picks, swaps, and protections by year.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-        <a href="/roster" class="feature-card">
-          <div class="feature-card-title">Roster</div>
-          <div class="feature-card-desc">Full squad, contracts, and player info.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-        <a href="/sixers-depth-chart" class="feature-card">
-          <div class="feature-card-title">Depth Chart</div>
-          <div class="feature-card-desc">Starters, rotation, and positional depth.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-        <a href="/salary" class="feature-card">
-          <div class="feature-card-title">Salary Sheet</div>
-          <div class="feature-card-desc">Cap figures, contracts, and luxury tax outlook.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <section id="game-center" class="home-game" aria-live="polite">
-    <div class="home-game-card" id="home-game-card">
-      <div class="home-game-head">
-        <span class="home-game-kicker" id="home-game-kicker">Loading</span>
-        <span class="home-game-clock" id="home-game-clock">—</span>
-      </div>
-      <div id="home-game-body">
-        <p class="home-game-empty">Loading game center…</p>
-      </div>
-      <div class="home-game-foot">
-        <span id="home-game-note" style="color:var(--mid);font-size:0.78rem;"></span>
-        <a href="/schedule">Full schedule →</a>
-      </div>
-    </div>
-  </section>
-
-  <section id="news" class="news-section">
-    <div class="news-inner">
-      <div class="news-heading">
-        <div>
-          <span class="news-eyebrow">Latest</span>
-          <h2 class="news-title">News &amp; Analysis</h2>
-        </div>
-      </div>
-      <div class="news-grid" id="news-grid">
-        <div class="news-loading">Loading the latest…</div>
-      </div>
-    </div>
-  </section>
-
-  <section id="fan-poll" class="poll-section">
-    <div class="poll-inner" id="poll-box">
-      <div class="poll-loading">Loading poll…</div>
-    </div>
-  </section>
-
-  <section id="updates" class="updates-section">
-    <div class="updates-inner">
-      <div class="updates-heading">
-        <div>
-          <span class="news-eyebrow">From the desk</span>
-          <h2 class="news-title">Sixers Updates</h2>
-        </div>
-      </div>
-      <div class="updates-feed" id="updates-feed">
-        <div class="updates-loading">Loading updates…</div>
-      </div>
-      <div class="updates-pagination" id="updates-pagination" hidden>
-        <button type="button" class="updates-page-btn" id="updates-prev">Previous</button>
-        <span class="updates-page-label" id="updates-page-label"></span>
-        <button type="button" class="updates-page-btn" id="updates-next">Next</button>
-      </div>
-    </div>
-  </section>
+  <div class="article-wrap" id="article-root">
+    <a href="/" class="article-back">← Back to Sixers Hoops</a>
+    <div class="article-skel" style="height:28px;width:120px;margin-bottom:1rem;"></div>
+    <div class="article-skel" style="height:42px;width:90%;margin-bottom:2rem;"></div>
+    <div class="article-skel" style="aspect-ratio:21/9;width:100%;margin-bottom:2rem;"></div>
+    <div class="article-skel" style="height:16px;width:100%;margin-bottom:0.75rem;"></div>
+    <div class="article-skel" style="height:16px;width:95%;margin-bottom:0.75rem;"></div>
+    <div class="article-skel" style="height:16px;width:88%;"></div>
+  </div>
 </main>
 
 <script src="/nav.js"></script>
 <script>
 const NEWS_COLLECTION = 'editorial_articles';
-const UPDATES_COLLECTION = 'social_posts';
-const POLLS_COLLECTION = 'fan_polls';
-function updatesPerPage() {
-  // Mobile: 3 tweets; desktop: 6 (3×2)
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 699px)').matches) return 3;
-  } catch (e) {}
-  return 6;
-}
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
-const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
-
-let allUpdates = [];
-let updatesPage = 0;
-let activePoll = null;
 
 function waitForDb(cb, tries) {
   tries = tries || 0;
   if (window.db) { cb(); return; }
-  if (tries > 60) return;
+  if (tries > 60) { renderError('Could not connect right now. Please refresh and try again.'); return; }
   setTimeout(function () { waitForDb(cb, tries + 1); }, 250);
 }
+
 function escapeHtml(str) {
-  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+function getSlugFromPath() {
+  var path = (window.location.pathname || '').replace(/\/+$/, '');
+  var fromPath = path.match(/^\/article\/(.+)$/i);
+  if (fromPath && fromPath[1] && fromPath[1].toLowerCase() !== 'article.html' && fromPath[1].toLowerCase() !== 'articles.html') {
+    return decodeURIComponent(fromPath[1]);
+  }
+  return new URLSearchParams(window.location.search).get('slug') || null;
+}
+
+function toDate(ts) {
+  if (!ts) return null;
+  if (ts.toDate) return ts.toDate();
+  return new Date(ts);
+}
+
 function timeAgo(date) {
   if (!date) return '';
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -899,650 +435,276 @@ function timeAgo(date) {
   if (days < 7) return days + 'd ago';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-function toDate(ts) {
-  if (!ts) return null;
-  if (ts.toDate) return ts.toDate();
-  return new Date(ts);
+
+function readMinutes(a) {
+  const text = [a.excerpt, a.intro, a.closing].join(' ') +
+    (a.grades || []).map(function (g) { return (g.analysis || '') + ' ' + (g.stats || ''); }).join(' ');
+  const words = String(text).trim() ? String(text).trim().split(/\s+/).length : 0;
+  return Math.max(1, Math.round(words / 220)) + ' min read';
 }
+
 function isPublished(a) {
   if (a && a.status === 'draft') return false;
-  if (a && a.visibility === 'private') return false;
   return !a.status || a.status === 'published';
 }
-function byline(a) {
-  const name = (a.author || a.byline || 'SixersHoops').trim();
-  return 'By: ' + name;
+
+function tweetEmbedHtml(url) {
+  const safeUrl = escapeHtml(url);
+  return (
+    '<div class="tweet-embed-wrap">' +
+      '<blockquote class="twitter-tweet"><a href="' + safeUrl + '"></a></blockquote>' +
+      '<noscript><div class="tweet-fallback-card">View this post on <a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">X / Twitter</a>.</div></noscript>' +
+    '</div>'
+  );
 }
-
-function renderNews(articles) {
-  const grid = document.getElementById('news-grid');
-  if (!grid) return;
-  articles = (articles || []).filter(isPublished);
-  if (!articles.length) {
-    grid.innerHTML = '<div class="news-empty">No articles published yet. Check back soon.</div>';
-    return;
-  }
-
-  // Text-only (no article photos — copyright-safe). Layout mirrors a featured + sidebar list.
-  const featured = articles[0];
-  const rest = articles.slice(1, 8);
-
-  function articleUrl(a) {
-    return a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
-  }
-  function shortDate(d) {
-    if (!d || isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
-  }
-
-  const featDate = shortDate(toDate(featured.createdAt));
-  const featuredHtml =
-    '<a href="' + articleUrl(featured) + '" class="news-feature">' +
-      '<div class="news-feature-visual" data-cat="' + escapeHtml(featured.category || 'News') + '" aria-hidden="true"></div>' +
-      '<div class="news-feature-body">' +
-        '<h3 class="news-feature-title">' + escapeHtml(featured.title) + '</h3>' +
-        (featured.excerpt ? '<p class="news-feature-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
-        '<div class="news-feature-meta">' +
-          '<span>' + escapeHtml(byline(featured)) + '</span>' +
-          (featDate ? '<span>·</span><span>' + escapeHtml(featDate) + '</span>' : '') +
-        '</div>' +
-      '</div>' +
-    '</a>';
-
-  const listHtml = rest.map(function (a) {
-    const when = toDate(a.createdAt);
-    const dateStr = shortDate(when);
-    return (
-      '<a href="' + articleUrl(a) + '" class="news-row">' +
-        '<div class="news-row-body">' +
-          '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
-          '<div class="news-row-meta">' +
-            '<span class="news-row-author">' + escapeHtml(byline(a)) + '</span>' +
-            (dateStr ? '<span class="news-row-date">' + escapeHtml(dateStr) + '</span>' : '') +
-          '</div>' +
-        '</div>' +
-      '</a>'
-    );
-  }).join('');
-
-  const stackBody = listHtml
-    ? listHtml
-    : '<p class="news-stack-empty">More stories will appear here as they are published.</p>';
-  grid.innerHTML = featuredHtml +
-    '<div class="news-stack"><div class="news-stack-label">Featured Posts</div>' + stackBody + '</div>';
+function isTweetUrl(line) {
+  return /^https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/[^\s]+\/status\/\d+/i.test(String(line || '').trim());
 }
-
-function listenToNews() {
-  waitForDb(function () {
-    window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(12).onSnapshot(
-      function (snap) {
-        renderNews(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }));
-      },
-      function (err) {
-        console.error(err);
-        document.getElementById('news-grid').innerHTML = '<div class="news-empty">Couldn\'t load news right now.</div>';
+function isImageUrl(line) {
+  const s = String(line || '').trim();
+  // Direct image URLs or common CDNs
+  if (/^https?:\/\/\S+\.(?:png|jpe?g|gif|webp|avif)(?:\?\S*)?$/i.test(s)) return true;
+  if (/^https?:\/\/(?:i\.imgur\.com|images\.unsplash\.com|cdn\.nba\.com|a\.espncdn\.com)\S+/i.test(s)) return true;
+  return false;
+}
+function parseMarkdownImage(line) {
+  const m = String(line || '').trim().match(/^!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)$/);
+  if (!m) return null;
+  return { alt: m[1] || '', src: m[2] };
+}
+function imageEmbedHtml(src, alt) {
+  const safeSrc = escapeHtml(src);
+  const safeAlt = escapeHtml(alt || '');
+  return (
+    '<figure class="article-inline-img">' +
+      '<img src="' + safeSrc + '" alt="' + safeAlt + '" loading="lazy">' +
+      (safeAlt ? '<figcaption>' + safeAlt + '</figcaption>' : '') +
+    '</figure>'
+  );
+}
+/** Parse article body into paragraphs, tweet embeds, and images. */
+function renderBodyHtml(raw) {
+  const text = String(raw || '').replace(/\r\n/g, '\n').trim();
+  if (!text) return { html: '', tweetUrls: [] };
+  const blocks = text.split(/\n{2,}/);
+  const tweetUrls = [];
+  const parts = [];
+  blocks.forEach(function (block) {
+    const lines = block.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    if (!lines.length) return;
+    // Single-line special blocks
+    if (lines.length === 1) {
+      const line = lines[0];
+      const mdImg = parseMarkdownImage(line);
+      if (mdImg) {
+        parts.push(imageEmbedHtml(mdImg.src, mdImg.alt));
+        return;
       }
-    );
-  });
-}
-
-function pollVoteKey(id) {
-  return 'sixers_poll_vote_' + id;
-}
-function renderPoll(poll) {
-  const box = document.getElementById('poll-box');
-  if (!poll || !poll.options || poll.options.length < 2) {
-    box.innerHTML = '';
-    return;
-  }
-  const total = poll.options.reduce(function (sum, o) { return sum + (Number(o.votes) || 0); }, 0);
-  const voted = localStorage.getItem(pollVoteKey(poll.id));
-  const optionsHtml = poll.options.map(function (o, i) {
-    const votes = Number(o.votes) || 0;
-    const pct = total ? Math.round((votes / total) * 100) : 0;
-    return '<button type="button" class="poll-option" data-idx="' + i + '"' + (voted ? ' disabled' : '') + '>' +
-      '<span class="poll-option-fill" style="width:' + (voted || total ? pct : 0) + '%;"></span>' +
-      '<span class="poll-option-row"><span class="poll-option-name">' + escapeHtml(o.text) + '</span>' +
-      '<span class="poll-option-pct">' + pct + '%</span></span></button>';
-  }).join('');
-  box.innerHTML =
-    '<div class="poll-card">' +
-      '<span class="news-eyebrow">Fan Poll</span>' +
-      '<h2 class="poll-question">' + escapeHtml(poll.question || '') + '</h2>' +
-      '<div class="poll-options">' + optionsHtml + '</div>' +
-    '</div>';
-  if (!voted) {
-    box.querySelectorAll('.poll-option').forEach(function (btn) {
-      btn.addEventListener('click', function () { votePoll(poll.id, Number(btn.getAttribute('data-idx'))); });
+      if (isTweetUrl(line)) {
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        tweetUrls.push(url);
+        parts.push(tweetEmbedHtml(url));
+        return;
+      }
+      if (isImageUrl(line)) {
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        parts.push(imageEmbedHtml(url, ''));
+        return;
+      }
+    }
+    // Multi-line: check each line for embeds mixed with text
+    let paraBuf = [];
+    function flushPara() {
+      if (!paraBuf.length) return;
+      parts.push('<p>' + escapeHtml(paraBuf.join('\n')) + '</p>');
+      paraBuf = [];
+    }
+    lines.forEach(function (line) {
+      const mdImg = parseMarkdownImage(line);
+      if (mdImg) {
+        flushPara();
+        parts.push(imageEmbedHtml(mdImg.src, mdImg.alt));
+        return;
+      }
+      if (isTweetUrl(line)) {
+        flushPara();
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        tweetUrls.push(url);
+        parts.push(tweetEmbedHtml(url));
+        return;
+      }
+      if (isImageUrl(line)) {
+        flushPara();
+        const url = line.replace(/[.,;:!?)]+$/, '');
+        parts.push(imageEmbedHtml(url, ''));
+        return;
+      }
+      paraBuf.push(line);
     });
-  }
-}
-async function votePoll(id, idx) {
-  if (!activePoll || localStorage.getItem(pollVoteKey(id))) return;
-  const options = (activePoll.options || []).map(function (o, i) {
-    return { text: o.text, votes: (Number(o.votes) || 0) + (i === idx ? 1 : 0) };
+    flushPara();
   });
-  localStorage.setItem(pollVoteKey(id), String(idx));
-  try {
-    await window.db.collection(POLLS_COLLECTION).doc(id).update({ options: options });
-  } catch (e) {
-    console.error(e);
-  }
-}
-function listenToPoll() {
-  waitForDb(function () {
-    window.db.collection(POLLS_COLLECTION).where('isActive', '==', true).limit(8).onSnapshot(
-      function (snap) {
-        const polls = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        activePoll = polls[0] || null;
-        renderPoll(activePoll);
-      },
-      function () {
-        document.getElementById('poll-box').innerHTML = '';
-      }
-    );
-  });
+  return { html: '<div class="article-body">' + parts.join('') + '</div>', tweetUrls: tweetUrls };
 }
 
-function isTweetUrl(url) {
-  return /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/i.test(String(url || '').trim());
-}
-function tweetCardEmbed(url) {
-  const safe = escapeHtml(url);
-  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true"><a href="' + safe + '"></a></blockquote></div>';
-}
-function renderUpdatesPage() {
-  const feed = document.getElementById('updates-feed');
-  const pager = document.getElementById('updates-pagination');
-  const label = document.getElementById('updates-page-label');
-  const prev = document.getElementById('updates-prev');
-  const next = document.getElementById('updates-next');
 
-  if (!allUpdates.length) {
-    feed.innerHTML = '<div class="updates-empty" style="grid-column:1/-1">No updates posted yet. Check back soon.</div>';
-    pager.hidden = true;
+
+function renderError(message) {
+  document.getElementById('article-root').innerHTML =
+    '<a href="/" class="article-back">← Back to Sixers Hoops</a>' +
+    '<div class="article-state"><h2>' + escapeHtml(message) + '</h2><p>Head back to the homepage for the latest news.</p></div>';
+}
+
+function renderMore(more) {
+  if (!more || !more.length) return '';
+  return '<section class="more-section"><h2 class="more-title">More from the desk</h2><div class="more-list">' +
+    more.map(function (a) {
+      const color = CATEGORY_COLORS[a.category] || '#006bb6';
+      return '<a class="more-item" href="/article/' + encodeURIComponent(a.slug || '') + '">' +
+        '<span class="article-tag" style="color:' + color + ';border:1px solid ' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>' +
+        '<h3 class="more-item-title">' + escapeHtml(a.title || '') + '</h3>' +
+        (a.excerpt ? '<p class="more-item-excerpt">' + escapeHtml(a.excerpt) + '</p>' : '') +
+        '<div class="more-item-meta">By: ' + escapeHtml(a.author || 'SixersHoops') + ' · ' + escapeHtml(timeAgo(toDate(a.createdAt))) + '</div>' +
+        '</a>';
+    }).join('') + '</div></section>';
+}
+
+function renderArticle(a, more) {
+  // Private articles are not shown publicly
+  if (a.visibility === 'private') {
+    document.title = 'Private article — Sixers Hoops';
+    document.getElementById('article-root').innerHTML =
+      '<a href="/" class="article-back">&larr; Back to Sixers Hoops</a>' +
+      '<div class="article-locked">' +
+        '<h1>This article is private</h1>' +
+        '<p>It is not available on the public site.</p>' +
+      '</div>';
     return;
   }
 
-  const perPage = updatesPerPage();
-  const totalPages = Math.max(1, Math.ceil(allUpdates.length / perPage));
-  if (updatesPage >= totalPages) updatesPage = totalPages - 1;
-  if (updatesPage < 0) updatesPage = 0;
+  const color = CATEGORY_COLORS[a.category] || '#006bb6';
+  const dateObj = a.createdAt ? toDate(a.createdAt) : null;
+  const date = dateObj ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  const author = 'By: ' + (a.author || 'SixersHoops');
+  document.title = a.title + ' — Sixers Hoops';
 
-  const start = updatesPage * perPage;
-  const pagePosts = allUpdates.slice(start, start + perPage);
+  function setMeta(name, content, prop) {
+    const sel = prop ? 'meta[property="' + name + '"]' : 'meta[name="' + name + '"]';
+    let el = document.querySelector(sel);
+    if (!el) { el = document.createElement('meta'); if (prop) el.setAttribute('property', name); else el.setAttribute('name', name); document.head.appendChild(el); }
+    el.setAttribute('content', content);
+  }
+  const desc = a.excerpt || (a.intro ? a.intro.slice(0, 155) : 'Sixers Hoops — Philadelphia 76ers news and analysis.');
+  const canonical = 'https://sixershoops.com/article/' + encodeURIComponent(a.slug || '');
+  setMeta('description', desc);
+  setMeta('og:title', a.title + ' — Sixers Hoops', true);
+  setMeta('og:description', desc, true);
+  setMeta('og:url', canonical, true);
+  setMeta('og:type', 'article', true);
+  setMeta('twitter:card', a.imageUrl ? 'summary_large_image' : 'summary');
+  setMeta('twitter:title', a.title + ' — Sixers Hoops');
+  setMeta('twitter:description', desc);
+  if (a.imageUrl) {
+    setMeta('og:image', a.imageUrl, true);
+    setMeta('twitter:image', a.imageUrl);
+  }
+  let canonEl = document.querySelector('link[rel="canonical"]');
+  if (!canonEl) { canonEl = document.createElement('link'); canonEl.setAttribute('rel', 'canonical'); document.head.appendChild(canonEl); }
+  canonEl.setAttribute('href', canonical);
 
-  feed.innerHTML = pagePosts.map(function (p) {
-    const body = isTweetUrl(p.tweetUrl)
-      ? tweetCardEmbed(p.tweetUrl)
-      : (p.text ? '<p class="update-text">' + escapeHtml(p.text) + '</p>' : '');
-    return '<div class="update-card">' + body + '</div>';
-  }).join('');
+  let html = '<a href="/" class="article-back">← Back to Sixers Hoops</a>';
 
-  pager.hidden = totalPages <= 1;
-  label.textContent = 'Page ' + (updatesPage + 1) + ' of ' + totalPages;
-  prev.disabled = updatesPage === 0;
-  next.disabled = updatesPage >= totalPages - 1;
+  html += '<div class="article-header">';
+  html += '<span class="article-tag" style="color:' + color + ';border:1px solid ' + color + '33;background:' + color + '14;">' + escapeHtml(a.category || 'News') + '</span>';
+  html += '<h1 class="article-title">' + escapeHtml(a.title) + '</h1>';
+  html += '<div class="article-meta">' +
+    '<span>' + escapeHtml(author) + '</span>' +
+    '<span class="meta-dot">·</span>' +
+    '<span>' + escapeHtml(date) + '</span>' +
+    '<span class="meta-dot">·</span>' +
+    '<span>' + escapeHtml(readMinutes(a)) + '</span>' +
+  '</div>';
+  if (a.excerpt) html += '<p class="article-excerpt">' + escapeHtml(a.excerpt) + '</p>';
+  html += '</div>';
+  html += '<div class="article-divider" aria-hidden="true"></div>';
 
-  if (pagePosts.some(function (p) { return isTweetUrl(p.tweetUrl); })) {
-    if (window.twttr && window.twttr.widgets) window.twttr.widgets.load(feed);
-    else if (!document.getElementById('twitter-wjs')) {
+  if (a.imageUrl) {
+    html += '<figure class="article-hero"><img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.title) + '"></figure>';
+    if (a.imageCredit) html += '<p class="article-photo-credit">' + escapeHtml(a.imageCredit) + '</p>';
+  }
+
+  var bodyParsed = renderBodyHtml(a.intro || '');
+  html += bodyParsed.html;
+  // Primary tweet field only if not already embedded in the body
+  if (a.tweetUrl && bodyParsed.tweetUrls.indexOf(a.tweetUrl) === -1) {
+    html += tweetEmbedHtml(a.tweetUrl);
+  }
+
+  const grades = (a.grades || []).filter(function (g) { return g.grade && g.grade !== 'DNP'; });
+  if (grades.length) {
+    html += '<div class="grades-section"><h2 class="grades-heading">Player Grades</h2>';
+    grades.forEach(function (g) {
+      const gColor = GRADE_COLORS[g.grade] || '#006bb6';
+      html += '<div class="grade-card">';
+      html += '<div class="grade-pill" style="background:' + gColor + ';color:#fff;">' + escapeHtml(g.grade) + '</div>';
+      html += '<div class="grade-card-body">';
+      html += '<h3 class="grade-card-name">' + escapeHtml(g.name) + '</h3>';
+      if (g.stats) html += '<p class="grade-card-stats">' + escapeHtml(g.stats) + '</p>';
+      if (g.analysis) html += '<p class="grade-card-analysis">' + escapeHtml(g.analysis) + '</p>';
+      if (g.tweetUrl) html += '<div class="grade-card-tweet">' + tweetEmbedHtml(g.tweetUrl) + '</div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+  }
+
+  if (a.closing) {
+    html += '<aside class="bottom-line"><span class="bottom-line-label">Bottom Line</span><p>' + escapeHtml(a.closing) + '</p></aside>';
+  }
+
+  html += renderMore(more);
+
+  document.getElementById('article-root').innerHTML = html;
+
+  var needsWidgets = !!(a.tweetUrl || bodyParsed.tweetUrls.length || grades.some(function (g) { return g.tweetUrl; }));
+  if (needsWidgets) {
+    if (window.twttr && window.twttr.widgets) {
+      window.twttr.widgets.load();
+    } else {
       const s = document.createElement('script');
-      s.id = 'twitter-wjs';
       s.async = true;
       s.src = 'https://platform.twitter.com/widgets.js';
+      s.charset = 'utf-8';
       document.body.appendChild(s);
     }
   }
 }
-function listenToUpdates() {
+
+function loadArticle() {
+  const slug = getSlugFromPath();
+  if (!slug) { renderError('Article not found'); return; }
   waitForDb(function () {
-    window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(60).onSnapshot(
-      function (snap) {
-        allUpdates = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        updatesPage = 0;
-        renderUpdatesPage();
-      },
-      function (err) {
+    window.db.collection(NEWS_COLLECTION).where('slug', '==', slug).limit(1).get()
+      .then(function (snap) {
+        if (snap.empty) { renderError('Article not found'); return; }
+        const article = Object.assign({ id: snap.docs[0].id }, snap.docs[0].data());
+        if (!isPublished(article)) { renderError('Article not found'); return; }
+        window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(8).get()
+          .then(function (moreSnap) {
+            const more = moreSnap.docs
+              .map(function (d) { return Object.assign({ id: d.id }, d.data()); })
+              .filter(function (x) { return isPublished(x) && x.slug && x.slug !== article.slug; })
+              .slice(0, 3);
+            renderArticle(article, more);
+          })
+          .catch(function () { renderArticle(article, []); });
+      })
+      .catch(function (err) {
         console.error(err);
-        document.getElementById('updates-feed').innerHTML = '<div class="updates-empty">Couldn\'t load updates right now.</div>';
-      }
-    );
+        renderError("Couldn't load this article right now");
+      });
   });
 }
 
-document.getElementById('updates-prev').addEventListener('click', function () {
-  updatesPage -= 1;
-  renderUpdatesPage();
-});
-document.getElementById('updates-next').addEventListener('click', function () {
-  updatesPage += 1;
-  renderUpdatesPage();
-});
-(function () {
-  let lastMobile = null;
-  function checkUpdatesLayout() {
-    const mobile = !!(window.matchMedia && window.matchMedia('(max-width: 699px)').matches);
-    if (lastMobile === null) { lastMobile = mobile; return; }
-    if (mobile !== lastMobile) {
-      lastMobile = mobile;
-      updatesPage = 0;
-      renderUpdatesPage();
-    }
-  }
-  window.addEventListener('resize', checkUpdatesLayout);
-})();
-
-listenToNews();
-listenToPoll();
-listenToUpdates();
+loadArticle();
 </script>
-
-<script>
-(function () {
-  const SCHEDULE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/schedule";
-  const SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard";
-  const SUMMARY = "https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary";
-
-  let panel = "pbp";
-  let lastSummary = null;
-  let featured = null;
-  let timer = null;
-
-  function get(obj, path, fb) {
-    const v = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
-    return v == null ? fb : v;
-  }
-  function isLive(ev) {
-    const n = String(get(ev, "competitions.0.status.type.name", "")).toUpperCase();
-    const s = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
-    return s === "in" || n.includes("PROGRESS") || n.includes("HALFTIME") || n.includes("LIVE");
-  }
-  function isFinal(ev) {
-    const n = String(get(ev, "competitions.0.status.type.name", "")).toUpperCase();
-    const s = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
-    return s === "post" || n.includes("FINAL");
-  }
-
-  function buildPlayerStatMap(summary) {
-    const map = Object.create(null);
-    const groups = (((summary || {}).boxscore || {}).players) || [];
-    groups.forEach(function (group) {
-      const stats = (group.statistics || [])[0] || {};
-      const keys = stats.keys || [];
-      const idx = {};
-      keys.forEach(function (k, i) { idx[k] = i; });
-      (stats.athletes || []).forEach(function (a) {
-        const name = get(a, "athlete.displayName", "") || get(a, "athlete.shortName", "");
-        if (!name) return;
-        const st = a.stats || [];
-        function val(k) {
-          const i = idx[k];
-          return i != null && st[i] != null && st[i] !== "" ? st[i] : null;
-        }
-        const entry = {
-          pts: val("points"), reb: val("rebounds"), oreb: val("offensiveRebounds"),
-          dreb: val("defensiveRebounds"), ast: val("assists"), stl: val("steals"),
-          blk: val("blocks"), to: val("turnovers")
-        };
-        map[name.toLowerCase()] = entry;
-        const parts = name.split(/\s+/);
-        if (parts.length >= 2) {
-          map[parts[parts.length - 1].toLowerCase()] = entry;
-          map[(parts[0][0] + ". " + parts[parts.length - 1]).toLowerCase()] = entry;
-        }
-      });
-    });
-    return map;
-  }
-  function lookupPlayerStat(map, name) {
-    if (!name || !map) return null;
-    const n = String(name).replace(/\s+/g, " ").trim().toLowerCase();
-    if (map[n]) return map[n];
-    const last = n.split(" ").pop();
-    if (last && map[last]) return map[last];
-    return null;
-  }
-  function enrichPlayText(raw, statMap) {
-    if (!raw) return "—";
-    if (!statMap) return String(raw);
-    let text = String(raw);
-    text = text.replace(/\(([A-Za-z.''\-\s]+?)\s+assists?\)/gi, function (_, name) {
-      const s = lookupPlayerStat(statMap, name);
-      const n = name.trim();
-      if (!s || s.ast == null) return "(" + n + " assists)";
-      return "(" + n + " assists · " + s.ast + " AST)";
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+(offensive|defensive)\s+rebound\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      if (!s) return m;
-      return m + " (Off:" + (s.oreb != null ? s.oreb : "–") + " Def:" + (s.dreb != null ? s.dreb : "–") + ")";
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+rebound\b/gi, function (m, name) {
-      if (/offensive|defensive/i.test(m) || /\(Off:/i.test(m)) return m;
-      const s = lookupPlayerStat(statMap, name);
-      if (!s) return m;
-      return m + " (Off:" + (s.oreb != null ? s.oreb : "–") + " Def:" + (s.dreb != null ? s.dreb : "–") + ")";
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+steal\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      return (!s || s.stl == null) ? m : (m + " (" + s.stl + " STL)");
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+blocks?\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      return (!s || s.blk == null) ? m : (m + " (" + s.blk + " BLK)");
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+turnover\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      return (!s || s.to == null) ? m : (m + " (" + s.to + " TO)");
-    });
-    if (!/\(\d+\s*PTS\)/i.test(text)) {
-      text = text.replace(/^(.*?\bmakes\b.*?)(\s*\(|$)/i, function (full, head, tail) {
-        const mm = head.match(/^([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+makes\b/i);
-        if (!mm) return full;
-        const s = lookupPlayerStat(statMap, mm[1]);
-        if (!s || s.pts == null) return full;
-        return head.replace(/\s+$/, "") + " (" + s.pts + " PTS)" + tail;
-      });
-    }
-    return text;
-  }
-  function renderTeamStats(summary) {
-    const teams = (((summary || {}).boxscore || {}).teams) || [];
-    const prefer = [
-      ["fieldGoalsMade-fieldGoalsAttempted", "FG"],
-      ["fieldGoalPct", "FG%"],
-      ["threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3PT"],
-      ["threePointFieldGoalPct", "3P%"],
-      ["freeThrowsMade-freeThrowsAttempted", "FT"],
-      ["freeThrowPct", "FT%"],
-      ["totalRebounds", "REB"],
-      ["rebounds", "REB"],
-      ["offensiveRebounds", "OREB"],
-      ["defensiveRebounds", "DREB"],
-      ["assists", "AST"],
-      ["steals", "STL"],
-      ["blocks", "BLK"],
-      ["turnovers", "TO"],
-      ["points", "PTS"],
-      ["pointsInPaint", "PITP"],
-      ["fastBreakPoints", "FB PTS"],
-      ["pointsOffTurnovers", "PTS OFF TO"],
-      ["benchPoints", "BENCH"],
-      ["largestLead", "Largest Lead"]
-    ];
-    function parseTeam(t) {
-      const abbr = get(t, "team.abbreviation", "") || get(t, "team.shortDisplayName", "TM");
-      const byKey = {};
-      (t.statistics || t.stats || []).forEach(function (s) {
-        if (!s) return;
-        const val = s.displayValue != null ? s.displayValue : (s.value != null ? String(s.value) : null);
-        if (val == null) return;
-        [s.name, s.abbreviation, s.label, s.displayName].forEach(function (k) {
-          if (k) byKey[k] = val;
-        });
-      });
-      return { abbr: abbr, byKey: byKey };
-    }
-    let parsed = teams.map(parseTeam);
-    if (!parsed.length || parsed.every(function (p) { return !Object.keys(p.byKey).length; })) {
-      const groups = (((summary || {}).boxscore || {}).players) || [];
-      parsed = groups.map(function (group) {
-        const abbr = get(group, "team.abbreviation", "TM");
-        const stats = (group.statistics || [])[0] || {};
-        const keys = stats.keys || [];
-        const totals = stats.totals || [];
-        const byKey = {};
-        keys.forEach(function (k, i) {
-          if (totals[i] != null && totals[i] !== "") byKey[k] = String(totals[i]);
-        });
-        return { abbr: abbr, byKey: byKey };
-      });
-    }
-    if (!parsed.length) {
-      return '<p class="home-game-empty">Team stats will appear once the game starts.</p>';
-    }
-    const seen = {};
-    const rows = [];
-    prefer.forEach(function (pair) {
-      const key = pair[0], label = pair[1];
-      if (seen[label]) return;
-      const vals = parsed.map(function (p) { return p.byKey[key]; });
-      if (vals.some(function (v) { return v != null; })) {
-        seen[label] = true;
-        rows.push({ label: label, vals: vals.map(function (v) { return v != null ? v : "—"; }) });
-      }
-    });
-    if (!rows.length) {
-      return '<p class="home-game-empty">Team stats unavailable.</p>';
-    }
-    const head = parsed.map(function (p) { return "<th>" + p.abbr + "</th>"; }).join("");
-    const body = rows.map(function (r) {
-      return '<tr><td class="ts-label">' + r.label + "</td>" +
-        r.vals.map(function (v) { return "<td>" + v + "</td>"; }).join("") + "</tr>";
-    }).join("");
-    return '<div class="team-stats-wrap"><table class="team-stats-table"><thead><tr><th>Stat</th>' +
-      head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
-  }
-
-
-  function logo(team) {
-    return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
-  }
-  function fmtClock(status) {
-    const period = get(status, "period", "");
-    const clock = get(status, "displayClock", "");
-    const short = get(status, "type.shortDetail", "") || get(status, "type.detail", "");
-    const name = String(get(status, "type.name", "")).toUpperCase();
-    if (name.includes("HALFTIME") || /half/i.test(short)) return "Halftime";
-    if (period && Number(period) > 4) {
-      const ot = Number(period) - 4;
-      return clock ? "OT" + ot + " · " + clock : "OT" + ot;
-    }
-    if (period && clock) return "Q" + period + " · " + clock;
-    return short || "—";
-  }
-
-  async function fetchEvents() {
-    const res = await fetch(SCHEDULE);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.events || [];
-  }
-  async function findLive() {
-    try {
-      const res = await fetch(SCOREBOARD + "?limit=50");
-      if (!res.ok) return null;
-      const data = await res.json();
-      return (data.events || []).find(e => {
-        const comps = get(e, "competitions.0.competitors", []) || [];
-        return comps.some(c => get(c, "team.abbreviation", "") === "PHI") && isLive(e);
-      }) || null;
-    } catch (_) { return null; }
-  }
-  async function fetchSummary(id) {
-    try {
-      const res = await fetch(SUMMARY + "?event=" + encodeURIComponent(id), { cache: "no-store" });
-      if (!res.ok) return null;
-      return await res.json();
-    } catch (_) { return null; }
-  }
-
-  function pickFeatured(events) {
-    // Priority: live → previous final until 12h before next tip → upcoming
-    const live = events.find(isLive);
-    if (live) return { event: live, mode: "live" };
-
-    const upcoming = events
-      .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-    const next = upcoming[0] || null;
-    const untilNext = next ? (new Date(next.date).getTime() - Date.now()) : null;
-
-    const finals = events.filter(isFinal).sort((a, b) => new Date(b.date) - new Date(a.date));
-    const latestFinal = finals[0] || null;
-
-    // Keep post-game result until it is within 12 hours of the next tip-off
-    const TWELVE_H = 12 * 60 * 60 * 1000;
-    if (latestFinal) {
-      if (untilNext == null || untilNext > TWELVE_H) {
-        return { event: latestFinal, mode: "final" };
-      }
-    }
-
-    // Inside the 12h window before tip (or no final available) → preview next game
-    if (next) return { event: next, mode: "upcoming" };
-    return latestFinal ? { event: latestFinal, mode: "final" } : null;
-  }
-
-  function renderBox(summary) {
-    const groups = get(summary, "boxscore.players", []) || [];
-    if (!groups.length) return '<p class="home-game-empty">Box score unavailable yet.</p>';
-    return groups.map(g => {
-      const abbr = get(g, "team.abbreviation", "Team");
-      const name = get(g, "team.displayName", abbr);
-      const st = (g.statistics || [])[0] || {};
-      const labels = st.labels || st.names || [];
-      const keys = st.keys || [];
-      const want = ["minutes","points","rebounds","assists","steals","blocks","turnovers","plusMinus"];
-      let idx = want.map(k => keys.indexOf(k)).filter(i => i >= 0);
-      if (!idx.length) idx = labels.map((_, i) => i).slice(0, 7);
-      const head = idx.map(i => "<th>" + (labels[i] || "") + "</th>").join("");
-      const rows = (st.athletes || []).map(a => {
-        const player = get(a, "athlete.displayName", "Player");
-        const stats = a.stats || [];
-        if ((a.didNotPlay || a.reason) && !stats.length) {
-          return '<tr><td class="pl">' + player + '</td><td colspan="' + idx.length + '" style="text-align:left;color:var(--mid)">' + (a.reason || "DNP") + "</td></tr>";
-        }
-        return "<tr><td class=\"pl\">" + player + "</td>" + idx.map(i => "<td>" + (stats[i] != null ? stats[i] : "—") + "</td>").join("") + "</tr>";
-      }).join("");
-      return '<div class="home-game-box-team">' + name + '</div><div style="overflow-x:auto;padding:0 .65rem 0.5rem"><table><thead><tr><th class="pl">Player</th>' + head + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
-    }).join("");
-  }
-
-  function renderBoard(event, summary, mode) {
-    const card = document.getElementById("home-game-card");
-    const body = document.getElementById("home-game-body");
-    const kicker = document.getElementById("home-game-kicker");
-    const clockEl = document.getElementById("home-game-clock");
-    const note = document.getElementById("home-game-note");
-    if (!card || !body) return;
-
-    card.classList.toggle("is-live", mode === "live");
-    kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : "Up next");
-
-    const comps = get(summary, "header.competitions.0.competitors", []) ||
-      get(event, "competitions.0.competitors", []) || [];
-    const home = comps.find(c => c.homeAway === "home") || comps[0] || {};
-    const away = comps.find(c => c.homeAway === "away") || comps[1] || {};
-    const status = get(summary, "header.competitions.0.status", {}) || get(event, "competitions.0.status", {}) || {};
-
-    if (mode === "upcoming") {
-      const tip = new Date(event.date);
-      const tipStr = isNaN(tip) ? "TBD" : tip.toLocaleString("en-US", {
-        weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
-      });
-      clockEl.textContent = tipStr;
-      const awayN = get(away, "team.abbreviation", get(away, "team.shortDisplayName", "AWAY"));
-      const homeN = get(home, "team.abbreviation", get(home, "team.shortDisplayName", "HOME"));
-      body.innerHTML =
-        '<div class="home-game-scoreline">' +
-          '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
-          '<div class="home-game-score">vs</div>' +
-          '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
-        '</div>' +
-        '<p class="home-game-meta">Tip-off in under 12 hours · Watch live scores & play-by-play here when the game starts.</p>';
-      note.textContent = "";
-      return;
-    }
-
-    clockEl.textContent = mode === "final"
-      ? (get(status, "type.shortDetail", "Final") || "Final")
-      : fmtClock(status);
-
-    const awayScore = get(away, "score", "0");
-    const homeScore = get(home, "score", "0");
-    const awayN = get(away, "team.abbreviation", "AWAY");
-    const homeN = get(home, "team.abbreviation", "HOME");
-
-    let plays = Array.isArray(get(summary, "plays", null)) ? summary.plays.slice() : [];
-    plays = plays.reverse().slice(0, 40);
-    const playerStatMap = buildPlayerStatMap(summary || {});
-    const pbp = plays.length
-      ? '<ul class="home-game-pbp">' + plays.map(p => {
-          const n = get(p, "period.number", "");
-          const clk = (n ? ("Q" + n + " ") : "") + (get(p, "clock.displayValue", "") || "");
-          const text = enrichPlayText(get(p, "text", "") || "—", playerStatMap);
-          const sc = (get(p, "awayScore", "") !== "" ? get(p, "awayScore", "") + "–" + get(p, "homeScore", "") : "");
-          return '<li><span class="clk">' + clk + '</span><span>' + text + '</span><span class="sc">' + sc + "</span></li>";
-        }).join("") + "</ul>"
-      : '<p class="home-game-empty">Play-by-play will appear as the game progresses…</p>';
-
-    body.innerHTML =
-      '<div class="home-game-scoreline">' +
-        '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
-        '<div class="home-game-score">' + awayScore + "–" + homeScore + "</div>" +
-        '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
-      "</div>" +
-      '<div class="home-game-tabs">' +
-        '<button type="button" class="home-game-tab' + (panel === "pbp" ? " on" : "") + '" data-hg-panel="pbp">Play-by-play</button>' +
-        '<button type="button" class="home-game-tab' + (panel === "box" ? " on" : "") + '" data-hg-panel="box">Box score</button>' +
-        '<button type="button" class="home-game-tab' + (panel === "team" ? " on" : "") + '" data-hg-panel="team">Team stats</button>' +
-      "</div>" +
-      '<div class="hg-panel-pbp" style="' + (panel === "pbp" ? "" : "display:none") + '">' + pbp + "</div>" +
-      '<div class="hg-panel-box home-game-box" style="' + (panel === "box" ? "" : "display:none") + '">' + renderBox(summary || {}) + "</div>" +
-      '<div class="hg-panel-team" style="' + (panel === "team" ? "" : "display:none") + '">' + renderTeamStats(summary || {}) + "</div>";
-
-    note.textContent = mode === "live" ? "Updates automatically" : "Full box score & PBP";
-  }
-
-  async function refresh() {
-    try {
-      const live = await findLive();
-      let chosen;
-      if (live) chosen = { event: live, mode: "live" };
-      else {
-        const events = await fetchEvents();
-        chosen = pickFeatured(events);
-      }
-      if (!chosen) {
-        document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">No Sixers games to show right now.</p>';
-        return;
-      }
-      featured = chosen.event;
-      let summary = null;
-      if (chosen.mode !== "upcoming") {
-        summary = await fetchSummary(featured.id);
-        if (summary) lastSummary = summary;
-        else summary = lastSummary;
-      }
-      renderBoard(featured, summary || {}, chosen.mode);
-
-      clearTimeout(timer);
-      timer = setTimeout(refresh, chosen.mode === "live" ? 2000 : 60000);
-    } catch (err) {
-      console.warn("home game", err);
-      document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">Could not load game center.</p>';
-    }
-  }
-
-  document.addEventListener("click", e => {
-    const btn = e.target.closest("[data-hg-panel]");
-    if (!btn) return;
-    panel = btn.getAttribute("data-hg-panel") || "pbp";
-    document.querySelectorAll(".home-game-tab").forEach(b => b.classList.toggle("on", b.getAttribute("data-hg-panel") === panel));
-    const pbp = document.querySelector(".hg-panel-pbp");
-    const box = document.querySelector(".hg-panel-box");
-    const team = document.querySelector(".hg-panel-team");
-    if (pbp) pbp.style.display = panel === "pbp" ? "" : "none";
-    if (box) box.style.display = panel === "box" ? "" : "none";
-    if (team) team.style.display = panel === "team" ? "" : "none";
-  });
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh);
-  else refresh();
-})();
-</script>
-
 </body>
 </html>

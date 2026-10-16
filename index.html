@@ -1635,6 +1635,46 @@ listenToUpdates();
     }).join("");
   }
 
+
+  function filterInjuriesForEvent(groups, event) {
+    const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    function resolveGameDate(ev) {
+      if (!ev) return null;
+      const candidates = [ev.date, get(ev, "competitions.0.date", null), get(ev, "competitions.0.startDate", null)];
+      for (let i = 0; i < candidates.length; i++) {
+        if (!candidates[i]) continue;
+        const d = new Date(candidates[i]);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
+    }
+    const gameDate = resolveGameDate(event);
+    if (!gameDate) return [];
+    const gameWeekday = gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase();
+
+    function textOf(inj) {
+      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
+        get(inj, "details.type", ""), get(inj, "type.description", "")]
+        .filter(Boolean).join(" ").toLowerCase();
+    }
+    function keep(inj) {
+      const text = textOf(inj);
+      if (/out for (the )?season/.test(text) || /season-ending/.test(text) || /out indefinitely/.test(text)) return true;
+      if (/achilles/.test(text) && /rupture/.test(text)) return true;
+      const days = WEEKDAYS.filter(function (d) { return text.indexOf(d) !== -1; });
+      const hasThis = days.indexOf(gameWeekday) !== -1;
+      const hasOther = days.some(function (d) { return d !== gameWeekday; });
+      if (hasOther && !hasThis) return false;
+      return hasThis;
+    }
+    return (groups || []).map(function (g) {
+      return {
+        team: g.team,
+        injuries: (g.injuries || []).filter(keep)
+      };
+    }).filter(function (g) { return g.injuries && g.injuries.length; });
+  }
+
   function renderInjuriesBlock(summary, event) {
     let groups = (summary && Array.isArray(summary.injuries)) ? summary.injuries : [];
     if (!groups.length) {
@@ -1674,44 +1714,39 @@ listenToUpdates();
 
     function weekdaysInText(text) {
       const lower = String(text || "").toLowerCase();
-      return WEEKDAYS.filter(function (d) {
-        return new RegExp("\\b" + d + "s?\\b", "i").test(lower);
-      });
+      // plain includes so "saturday's" / "Friday's" always match
+      return WEEKDAYS.filter(function (d) { return lower.indexOf(d) !== -1; });
     }
 
     function isSeasonLong(inj, text) {
       const official = String(inj.status || "").toLowerCase();
-      return official === "out" ||
-        /\bout for (the )?season\b/i.test(text) ||
-        /\bseason-ending\b/i.test(text) ||
-        /\bout indefinitely\b/i.test(text) ||
-        (/\bachilles\b/i.test(text) && /\b(rupture|season)\b/i.test(text));
+      const lower = String(text || "").toLowerCase();
+      // Official ESPN status "Out" alone is NOT enough (can be stale); need season language
+      return /out for (the )?season/.test(lower) ||
+        /season-ending/.test(lower) ||
+        /out indefinitely/.test(lower) ||
+        (/achilles/.test(lower) && /rupture/.test(lower));
     }
 
-    // ONLY keep: season-long absences OR write-ups that name THIS game's weekday
-    // Drop: any write-up that names a different weekday (Wed/Sat/etc.)
     function isRelevantToGame(inj) {
       const text = collectText(inj);
-      if (isSeasonLong(inj, text)) return true;
+      const lower = String(text || "").toLowerCase();
 
-      // Without a known tip date, do not dump the full roster list
+      if (isSeasonLong(inj, text)) return true;
       if (!gameValid || !gameWeekday) return false;
 
-      const days = weekdaysInText(text);
-      const namesThisDay = days.indexOf(gameWeekday) !== -1;
-      const namesOtherDay = days.some(function (d) { return d !== gameWeekday; });
+      const daysFound = weekdaysInText(text);
+      const hasThis = daysFound.indexOf(gameWeekday) !== -1;
+      const hasOther = daysFound.some(function (d) { return d !== gameWeekday; });
 
-      // "won't play Saturday" when game is Friday → drop
-      if (namesOtherDay && !namesThisDay) return false;
-
-      // Must explicitly reference this game day (Friday, etc.)
-      if (namesThisDay) return true;
-
-      // No weekday in the note → not specific enough for this game card
+      // Hard rule: any other weekday in the note without this game's weekday → drop
+      if (hasOther && !hasThis) return false;
+      // Must name this game's weekday (e.g. "Friday")
+      if (hasThis) return true;
       return false;
     }
 
-    function displayStatus(inj) {
+    function displayStatus(inj)    function displayStatus(inj) {
       const text = collectText(inj);
       const official = String(inj.status || "").toLowerCase();
       const outFromWriteup = (
@@ -1772,7 +1807,7 @@ listenToUpdates();
     const head = '<div class="home-inj-title">Injury report</div>' +
       '<div class="home-inj-updated">' +
         (updatedLabel ? ('Last ESPN update: <strong>' + updatedLabel + '</strong> · ') : '') +
-        'Showing notes for <strong>' + dayNote + '</strong> only' +
+        'Only <strong>' + dayNote + '</strong> game notes' +
       '</div>';
 
     const body = groups.map(function (g) {
@@ -1923,6 +1958,10 @@ listenToUpdates();
         if (!abbrs.includes("PHI")) abbrs.push("PHI");
         const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
         if (leagueInj && leagueInj.length) summary.injuries = leagueInj;
+      } catch (_) {}
+      // Pre-filter injuries to this tip's weekday before paint (same rules as render)
+      try {
+        summary.injuries = filterInjuriesForEvent(summary.injuries || [], featured);
       } catch (_) {}
       renderBoard(featured, summary, chosen.mode);
 

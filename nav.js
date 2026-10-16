@@ -655,7 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
 
     const footerHTML = `
-    <footer class="footer">
+    <footer class="footer" id="site-footer">
         <div class="footer-inner">
             <div class="footer-top">
                 <div class="footer-brand-block">
@@ -707,7 +707,9 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
 
     document.body.insertAdjacentHTML('afterbegin', navbarHTML);
-    document.body.insertAdjacentHTML('beforeend', footerHTML);
+    if (!document.getElementById('site-footer')) {
+        document.body.insertAdjacentHTML('beforeend', footerHTML);
+    }
     try {
         var fy = document.getElementById('footer-year');
         if (fy) fy.textContent = String(new Date().getFullYear());

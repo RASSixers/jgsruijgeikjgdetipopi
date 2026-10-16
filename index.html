@@ -764,6 +764,38 @@
   }
   .home-game-empty { padding: 1.25rem; color: var(--mid); font-size: 0.9rem; margin: 0; }
   .home-game-meta { padding: 0 1.15rem 0.85rem; color: var(--mid); font-size: 0.82rem; }
+
+  .home-inj {
+    padding: 0.35rem 1.15rem 0.75rem;
+    border-top: 1px solid var(--border-light);
+  }
+  .home-inj-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin: 0.55rem 0 0.5rem;
+  }
+  .home-inj-team { margin-bottom: 0.55rem; }
+  .home-inj-team-name {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+  }
+  .home-inj-list { list-style: none; margin: 0; padding: 0; }
+  .home-inj-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.82rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(15,23,42,0.05);
+  }
+  .home-inj-name { font-weight: 600; color: var(--ink); }
+  .home-inj-status { color: var(--mid); font-weight: 500; text-align: right; }
+
   @media (max-width: 720px) {
     .home-game { padding: 0 0.85rem 1.5rem; }
     .home-game-score { font-size: 1.4rem; }
@@ -1517,7 +1549,30 @@ listenToUpdates();
     }).join("");
   }
 
+  function renderInjuriesBlock(summary) {
+    const groups = (summary && Array.isArray(summary.injuries)) ? summary.injuries : [];
+    if (!groups.length) {
+      return '<div class="home-inj"><div class="home-inj-title">Injury report</div><p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed yet.</p></div>';
+    }
+    return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
+      groups.map(function (g) {
+        const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
+        const items = Array.isArray(g.injuries) ? g.injuries : [];
+        if (!items.length) return "";
+        const rows = items.map(function (inj) {
+          const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
+          const status = inj.status || get(inj, "type.description", "") || "";
+          const detail = get(inj, "details.type", "") || get(inj, "details.fantasyStatus.displayDescription", "") || "";
+          const extra = [status, detail].filter(Boolean).join(" · ");
+          return '<li><span class="home-inj-name">' + name + '</span>' +
+            (extra ? '<span class="home-inj-status">' + extra + '</span>' : '') + '</li>';
+        }).join("");
+        return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
+      }).join("") + '</div>';
+  }
+
   function renderBoard(event, summary, mode) {
+
     const card = document.getElementById("home-game-card");
     const body = document.getElementById("home-game-body");
     const kicker = document.getElementById("home-game-kicker");
@@ -1528,11 +1583,23 @@ listenToUpdates();
     card.classList.toggle("is-live", mode === "live");
     kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : "Up next");
 
-    const comps = get(summary, "header.competitions.0.competitors", []) ||
-      get(event, "competitions.0.competitors", []) || [];
-    const home = comps.find(c => c.homeAway === "home") || comps[0] || {};
-    const away = comps.find(c => c.homeAway === "away") || comps[1] || {};
-    const status = get(summary, "header.competitions.0.status", {}) || get(event, "competitions.0.status", {}) || {};
+    let comps = get(summary, "header.competitions.0.competitors", null);
+    if (!Array.isArray(comps) || !comps.length) {
+      comps = get(event, "competitions.0.competitors", null);
+    }
+    if (!Array.isArray(comps)) comps = [];
+    let home = comps.find(c => c && c.homeAway === "home") || comps[0] || null;
+    let away = comps.find(c => c && c.homeAway === "away") || comps[1] || null;
+    if ((!home || !away) && event && event.name) {
+      const m = String(event.name).match(/^(.+?)\s+at\s+(.+)$/i);
+      if (m) {
+        if (!away) away = { team: { displayName: m[1].trim(), shortDisplayName: m[1].trim() } };
+        if (!home) home = { team: { displayName: m[2].trim(), shortDisplayName: m[2].trim() } };
+      }
+    }
+    home = home || {};
+    away = away || {};
+    const status = get(summary, "header.competitions.0.status", null) || get(event, "competitions.0.status", {}) || {};
 
     if (mode === "upcoming") {
       const tip = new Date(event.date);
@@ -1540,14 +1607,21 @@ listenToUpdates();
         weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
       });
       clockEl.textContent = tipStr;
-      const awayN = get(away, "team.abbreviation", get(away, "team.shortDisplayName", "AWAY"));
-      const homeN = get(home, "team.abbreviation", get(home, "team.shortDisplayName", "HOME"));
+      function sideLabel(side, fb) {
+        return get(side, "team.abbreviation", null) ||
+          get(side, "team.shortDisplayName", null) ||
+          get(side, "team.displayName", null) ||
+          get(side, "team.location", null) || fb;
+      }
+      const awayN = sideLabel(away, "AWAY");
+      const homeN = sideLabel(home, "HOME");
       body.innerHTML =
         '<div class="home-game-scoreline">' +
           '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
           '<div class="home-game-score">vs</div>' +
           '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
         '</div>' +
+        renderInjuriesBlock(summary) +
         '<p class="home-game-meta">Upcoming tip · Live scores & play-by-play appear here when the game starts.</p>';
       note.textContent = "";
       return;
@@ -1607,12 +1681,9 @@ listenToUpdates();
         return;
       }
       featured = chosen.event;
-      let summary = null;
-      if (chosen.mode !== "upcoming") {
-        summary = await fetchSummary(featured.id);
-        if (summary) lastSummary = summary;
-        else summary = lastSummary;
-      }
+      let summary = await fetchSummary(featured.id);
+      if (summary) lastSummary = summary;
+      else if (chosen.mode !== "upcoming") summary = lastSummary;
       renderBoard(featured, summary || {}, chosen.mode);
 
       clearTimeout(timer);

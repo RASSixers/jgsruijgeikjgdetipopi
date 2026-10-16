@@ -417,6 +417,19 @@
 
 <script src="/nav.js"></script>
 <script>
+
+function ensureAdsbygoogle() {
+  try {
+    if (document.querySelector('script[src*="adsbygoogle.js"]')) return;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287';
+    s.crossOrigin = 'anonymous';
+    (document.head || document.documentElement).appendChild(s);
+  } catch (e) {}
+}
+ensureAdsbygoogle();
+
 const NEWS_COLLECTION = 'editorial_articles';
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};

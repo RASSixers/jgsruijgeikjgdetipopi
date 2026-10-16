@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287"
+     crossorigin="anonymous"></script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Articles Admin | Sixers Hoops</title>
@@ -1232,26 +1235,35 @@ Next paragraph…"></textarea>
     </div>
 
     <div class="tab-panel" id="tab-updates">
-      <div style="margin-top:0.5rem;margin-bottom:0.25rem;">
-        <div class="list-toolbar-title">Sixers Updates</div>
-        <div class="list-toolbar-sub">Paste tweet links to show in the homepage updates grid</div>
+      <div class="list-toolbar" style="margin-top:0.35rem;">
+        <div>
+          <div class="list-toolbar-title">From the Desk</div>
+          <div class="list-toolbar-sub">Post X/Twitter links for the homepage "From the Desk" section</div>
+        </div>
       </div>
-      <div class="editor-card" style="margin-top:1.25rem;max-width:560px;">
-        <h3>New Update</h3>
+      <div class="editor-card" style="margin-top:0.5rem;max-width:640px;">
+        <h3 style="margin-top:0;">New update</h3>
+        <p class="section-note">Paste a full status URL (x.com/.../status/...). Caption is optional.</p>
         <div class="form-group">
           <label class="form-label">Tweet / X URL</label>
-          <input type="text" class="form-input" id="u-tweet-url" placeholder="https://x.com/user/status/1234567890">
+          <input type="url" class="form-input" id="u-tweet-url" placeholder="https://x.com/username/status/1234567890" autocomplete="off">
         </div>
         <div class="form-group">
           <label class="form-label">Optional caption</label>
-          <textarea class="form-textarea" id="u-text" rows="3" maxlength="280" oninput="document.getElementById('u-char-count').textContent=(280-this.value.length)+' characters left'"></textarea>
+          <textarea class="form-textarea" id="u-text" rows="3" maxlength="280" oninput="var el=document.getElementById('u-char-count'); if(el) el.textContent=(280-this.value.length)+' characters left'"></textarea>
           <div id="u-char-count" style="font-size:0.72rem;color:var(--mid);text-align:right;">280 characters left</div>
         </div>
         <input type="hidden" id="u-handle" value="SixersHoops">
-        <button class="btn-primary" id="post-update-btn">Post Update</button>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+          <button type="button" class="btn-primary" id="post-update-btn">Post Update</button>
+          <button type="button" class="btn-secondary" id="refresh-updates-btn">Refresh list</button>
+        </div>
       </div>
-      <div style="margin-top:1.75rem;">
-        <div class="article-list" id="updates-admin-list"></div>
+      <div style="margin-top:1.5rem;">
+        <div class="list-toolbar-title" style="font-size:1rem;margin-bottom:0.65rem;">Posted updates</div>
+        <div class="article-list" id="updates-admin-list">
+          <div class="empty-state"><h3>Loading updates…</h3></div>
+        </div>
       </div>
     </div>
 
@@ -1388,9 +1400,22 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', () => switchTab(tab.dataset.tab));
 });
 function switchTab(name) {
+  name = String(name || 'list');
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+  var panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  else {
+    var fallback = document.getElementById('tab-list');
+    if (fallback) fallback.classList.add('active');
+  }
+  if (name === 'updates') {
+    try { renderUpdatesAdminList(); } catch (e) {}
+    try {
+      var url = document.getElementById('u-tweet-url');
+      if (url) setTimeout(function () { url.focus(); }, 50);
+    } catch (e) {}
+  }
 }
 
 function handleTweetInput(val) {
@@ -2035,57 +2060,123 @@ function timeAgoAdmin(date) {
   if (days < 7) return days + 'd ago';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+function sortUpdatesCache() {
+  updatesCache.sort(function (a, b) {
+    function ts(x) {
+      if (!x || !x.createdAt) return 0;
+      if (x.createdAt.toDate) return x.createdAt.toDate().getTime();
+      return new Date(x.createdAt).getTime() || 0;
+    }
+    return ts(b) - ts(a);
+  });
+}
 function listenToUpdates() {
-  waitForDb(() => {
-    window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').onSnapshot(snap => {
-      updatesCache = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+  waitForDb(function () {
+    if (!window.db) {
+      toast('Database not ready. Refresh and try again.', 'error');
+      return;
+    }
+    var col = window.db.collection(UPDATES_COLLECTION);
+    function applySnap(snap) {
+      updatesCache = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+      sortUpdatesCache();
       renderUpdatesAdminList();
-    }, err => toast('Could not load updates: ' + err.message, 'error'));
+    }
+    function onErr(err) {
+      console.error('updates listen', err);
+      // Fallback without composite index / orderBy
+      col.limit(80).onSnapshot(function (snap) {
+        applySnap(snap);
+      }, function (err2) {
+        toast('Could not load updates: ' + (err2.message || err.message || 'unknown'), 'error');
+        var list = document.getElementById('updates-admin-list');
+        if (list) {
+          list.innerHTML = '<div class="empty-state"><h3>Could not load updates</h3><p>' +
+            escapeHtml(err2.message || err.message || '') + '</p></div>';
+        }
+      });
+    }
+    col.orderBy('createdAt', 'desc').limit(80).onSnapshot(applySnap, onErr);
   });
 }
 function renderUpdatesAdminList() {
-  const list = document.getElementById('updates-admin-list');
+  var list = document.getElementById('updates-admin-list');
   if (!list) return;
   if (!updatesCache.length) {
-    list.innerHTML = '<div class="empty-state"><h3>No updates yet</h3></div>';
+    list.innerHTML = '<div class="empty-state"><h3>No updates yet</h3><p>Paste an X/Twitter status URL above and post it.</p></div>';
     return;
   }
-  list.innerHTML = updatesCache.map(u => {
-    const date = u.createdAt ? (u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt)) : null;
-    const text = escapeHtml(u.text || '');
-    const tweet = u.tweetUrl ? '<div style="font-size:0.72rem;color:#1d9bf0;margin-top:0.35rem;word-break:break-all;">' + escapeHtml(u.tweetUrl) + '</div>' : '';
-    return '<div class="article-item"><div class="article-item-accent" style="background:#1d9bf0;"></div><div class="article-item-body">' +
+  list.innerHTML = updatesCache.map(function (u) {
+    var date = null;
+    try {
+      if (u.createdAt) date = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
+    } catch (e) {}
+    var text = escapeHtml(u.text || '');
+    var tweet = u.tweetUrl
+      ? '<div style="font-size:0.75rem;color:#1d9bf0;margin-top:0.35rem;word-break:break-all;">' + escapeHtml(u.tweetUrl) + '</div>'
+      : '';
+    var safeId = String(u.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    return '<div class="article-item">' +
+      '<div class="article-item-accent" style="background:#1d9bf0;"></div>' +
+      '<div class="article-item-body">' +
       (u.tweetUrl ? '<span class="article-item-tweet-badge">Tweet</span>' : '') +
-      (text ? '<div class="article-item-excerpt">' + text + '</div>' : '') + tweet +
-      '<div class="article-item-meta" style="margin-top:0.5rem;"><span>' + (date ? timeAgoAdmin(date) : 'Posting…') + '</span></div></div>' +
-      '<div class="article-item-actions"><button class="btn-delete" onclick="deleteUpdate(\'' + u.id + '\')">Delete</button></div></div>';
+      (text ? '<div class="article-item-excerpt">' + text + '</div>' : '<div class="article-item-excerpt" style="color:#94a3b8;">Tweet embed only</div>') +
+      tweet +
+      '<div class="article-item-meta" style="margin-top:0.5rem;"><span>' + (date ? timeAgoAdmin(date) : 'Just now') + '</span></div>' +
+      '</div>' +
+      '<div class="article-item-actions"><button type="button" class="btn-delete" data-update-id="' + safeId + '">Delete</button></div>' +
+      '</div>';
   }).join('');
+  list.querySelectorAll('[data-update-id]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      deleteUpdate(btn.getAttribute('data-update-id'));
+    });
+  });
+}
+function normalizeTweetUrl(raw) {
+  var s = String(raw || '').trim();
+  if (!s) return '';
+  // strip tracking query for cleaner embeds
+  var m = s.match(/https?:\/\/(?:www\.)?(?:twitter|x)\.com\/[^\/\s]+\/status\/(\d+)/i);
+  if (!m) return s;
+  var handle = (s.match(/https?:\/\/(?:www\.)?(?:twitter|x)\.com\/([^\/\s]+)\/status\//i) || [])[1] || 'i';
+  return 'https://x.com/' + handle + '/status/' + m[1];
+}
+function isValidTweetUrl(url) {
+  return /^https?:\/\/(?:www\.)?(?:twitter|x)\.com\/[^\/\s]+\/status\/\d+/i.test(String(url || '').trim());
 }
 async function postUpdate() {
-  const text = document.getElementById('u-text').value.trim();
-  const tweetUrl = (document.getElementById('u-tweet-url').value || '').trim();
-  const validTweet = /^https?:\/\/(twitter\.com|x\.com)\/.+\/status\/\d+/i.test(tweetUrl);
+  var textEl = document.getElementById('u-text');
+  var urlEl = document.getElementById('u-tweet-url');
+  var text = textEl ? textEl.value.trim() : '';
+  var tweetUrl = normalizeTweetUrl(urlEl ? urlEl.value : '');
+  var validTweet = isValidTweetUrl(tweetUrl);
   if (!text && !validTweet) { toast('Add a tweet URL or caption', 'error'); return; }
   if (tweetUrl && !validTweet) { toast('Use a full x.com or twitter.com status URL', 'error'); return; }
-  const btn = document.getElementById('post-update-btn');
-  btn.textContent = 'Posting...';
-  btn.disabled = true;
+  if (!window.db) { toast('Database not ready. Wait a second and try again.', 'error'); return; }
+  var btn = document.getElementById('post-update-btn');
+  if (btn) { btn.textContent = 'Posting...'; btn.disabled = true; }
   try {
     await window.db.collection(UPDATES_COLLECTION).add({
       handle: 'SixersHoops',
       text: text,
       tweetUrl: validTweet ? tweetUrl : '',
-      createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+      createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser ? (currentUser.uid || '') : '',
+      createdByEmail: currentUser ? (currentUser.email || '') : ''
     });
-    document.getElementById('u-text').value = '';
-    document.getElementById('u-tweet-url').value = '';
-    document.getElementById('u-char-count').textContent = '280 characters left';
+    if (textEl) textEl.value = '';
+    if (urlEl) urlEl.value = '';
+    var cc = document.getElementById('u-char-count');
+    if (cc) cc.textContent = '280 characters left';
     toast('Update posted');
+    // optimistic local refresh if listener is slow
+    renderUpdatesAdminList();
   } catch (e) {
-    toast('Error: ' + e.message, 'error');
+    console.error(e);
+    toast('Error: ' + (e.message || e), 'error');
   } finally {
-    btn.textContent = 'Post Update';
-    btn.disabled = false;
+    if (btn) { btn.textContent = 'Post Update'; btn.disabled = false; }
   }
 }
 async function deleteUpdate(id) {
@@ -2094,6 +2185,12 @@ async function deleteUpdate(id) {
   catch (e) { toast('Error: ' + e.message, 'error'); }
 }
 document.getElementById('post-update-btn').addEventListener('click', postUpdate);
+document.getElementById('refresh-updates-btn')?.addEventListener('click', function () {
+  try { renderUpdatesAdminList(); } catch (e) {}
+  listenToUpdates();
+  toast('Refreshing updates…');
+});
+
 
 function initAdmin() {
   function tryAuth(tries) {

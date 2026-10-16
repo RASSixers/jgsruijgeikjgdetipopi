@@ -206,8 +206,31 @@ ${needsTwitterWidget ? '<script async src="https://platform.twitter.com/widgets.
 // --- Sitemap ----------------------------------------------------------------
 
 function renderSitemap(articles) {
+  const staticPages = [
+    ['/', 'hourly', '1.0'],
+    ['/about', 'monthly', '0.8'],
+    ['/contact', 'monthly', '0.8'],
+    ['/terms-of-service', 'yearly', '0.5'],
+    ['/privacy-policy', 'yearly', '0.5'],
+    ['/cookie-policy', 'yearly', '0.5'],
+    ['/disclaimer', 'yearly', '0.5'],
+    ['/pickem', 'daily', '0.9'],
+    ['/roster', 'weekly', '0.85'],
+    ['/schedule', 'daily', '0.85'],
+    ['/salary', 'weekly', '0.85'],
+    ['/sixers-depth-chart', 'weekly', '0.8'],
+    ['/future-draft-picks', 'weekly', '0.8'],
+    ['/nba-trade-machine', 'weekly', '0.85'],
+    ['/standings', 'daily', '0.75'],
+    ['/stats', 'weekly', '0.75'],
+    ['/lottery-simulator', 'monthly', '0.65'],
+    ['/mock-draft-simulator', 'monthly', '0.65'],
+    ['/community', 'daily', '0.7'],
+  ];
   const urls = [
-    `  <url><loc>${SITE_URL}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`,
+    ...staticPages.map(([path, freq, pri]) =>
+      `  <url><loc>${SITE_URL}${path}</loc><changefreq>${freq}</changefreq><priority>${pri}</priority></url>`
+    ),
     ...articles.map(a => {
       const lastmod = a.createdAt ? new Date(a.createdAt).toISOString().slice(0, 10) : '';
       return `  <url><loc>${SITE_URL}/article/${encodeURIComponent(a.slug)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>weekly</changefreq><priority>0.8</priority></url>`;

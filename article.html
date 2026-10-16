@@ -196,67 +196,92 @@
   }
   .tweet-fallback-card a:hover { text-decoration: underline; }
 
-  /* —— Grades: same type family —— */
-  .grades-section { margin: 2.5rem 0 1.25rem; }
+  /* —— Player grades —— */
+  .grades-section { margin: 2.75rem 0 1.5rem; }
   .grades-heading {
     font-family: inherit;
-    font-size: 1.125rem;
+    font-size: 1.15rem;
     font-weight: 800;
     letter-spacing: -0.02em;
-    margin: 0 0 1rem;
-    padding-bottom: 0.6rem;
+    margin: 0 0 1.1rem;
+    padding-bottom: 0.65rem;
     border-bottom: 2px solid #0f172a;
     color: var(--ink, #0f172a);
   }
+  .grades-subhead {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin: 1.35rem 0 0.65rem;
+  }
   .grade-card {
     border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 1.05rem 1.1rem;
-    margin-bottom: 0.75rem;
+    border-radius: 14px;
+    padding: 1.1rem 1.15rem;
+    margin-bottom: 0.85rem;
     display: flex;
-    gap: 0.9rem;
+    gap: 1rem;
     align-items: flex-start;
     background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .grade-card.grade-muted {
+    background: #f8fafc;
+    opacity: 0.92;
   }
   .grade-pill {
     flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+    min-width: 52px;
+    height: 52px;
+    padding: 0 0.35rem;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: inherit;
     font-weight: 800;
-    font-size: 1rem;
+    font-size: 1.05rem;
     letter-spacing: -0.02em;
+    color: #fff !important;
   }
   .grade-card-body { flex: 1; min-width: 0; }
   .grade-card-name {
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    margin: 0 0 0.2rem;
+    margin: 0 0 0.25rem;
     letter-spacing: -0.015em;
     color: var(--ink, #0f172a);
   }
   .grade-card-stats {
     font-family: inherit;
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--mid, #64748b);
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.55rem;
     line-height: 1.45;
   }
   .grade-card-analysis {
     font-family: inherit;
-    font-size: 0.9375rem;
+    font-size: 0.95rem;
     font-weight: 400;
-    line-height: 1.65;
+    line-height: 1.7;
     color: var(--ink, #1e293b);
     margin: 0;
+    white-space: pre-wrap;
   }
-  .grade-card-tweet { margin-top: 0.85rem; }
+  .grade-card-tweet { margin-top: 0.9rem; }
+  .grades-empty {
+    font-size: 0.9rem;
+    color: var(--mid);
+    padding: 0.75rem 0;
+  }
+  @media (max-width: 640px) {
+    .grade-card { padding: 0.95rem 1rem; gap: 0.75rem; }
+    .grade-pill { min-width: 46px; height: 46px; font-size: 0.95rem; }
+  }
 
   .bottom-line {
     margin: 2.25rem 0 0;
@@ -632,29 +657,58 @@ function renderArticle(a, more) {
     if (a.imageCredit) html += '<p class="article-photo-credit">' + escapeHtml(a.imageCredit) + '</p>';
   }
 
-  var bodyParsed = renderBodyHtml(a.intro || '');
+  // Body: prefer intro, fall back to body/content for older docs
+  var bodySource = a.intro || a.body || a.content || '';
+  var bodyParsed = renderBodyHtml(bodySource);
   html += bodyParsed.html;
-  // Primary tweet field only if not already embedded in the body
   if (a.tweetUrl && bodyParsed.tweetUrls.indexOf(a.tweetUrl) === -1) {
     html += tweetEmbedHtml(a.tweetUrl);
   }
 
-  const grades = (a.grades || []).filter(function (g) { return g.grade && g.grade !== 'DNP'; });
-  if (grades.length) {
-    html += '<div class="grades-section"><h2 class="grades-heading">Player Grades</h2>';
-    grades.forEach(function (g) {
-      const gColor = GRADE_COLORS[g.grade] || '#006bb6';
-      html += '<div class="grade-card">';
-      html += '<div class="grade-pill" style="background:' + gColor + ';color:#fff;">' + escapeHtml(g.grade) + '</div>';
-      html += '<div class="grade-card-body">';
-      html += '<h3 class="grade-card-name">' + escapeHtml(g.name) + '</h3>';
-      if (g.stats) html += '<p class="grade-card-stats">' + escapeHtml(g.stats) + '</p>';
-      if (g.analysis) html += '<p class="grade-card-analysis">' + escapeHtml(g.analysis) + '</p>';
-      if (g.tweetUrl) html += '<div class="grade-card-tweet">' + tweetEmbedHtml(g.tweetUrl) + '</div>';
-      html += '</div></div>';
-    });
-    html += '</div>';
+  var allGrades = Array.isArray(a.grades) ? a.grades.filter(function (g) {
+    return g && (g.name || g.player) && g.grade;
+  }) : [];
+  var graded = allGrades.filter(function (g) {
+    var gr = String(g.grade || '').toUpperCase();
+    return gr && gr !== 'DNP';
+  });
+  var dnps = allGrades.filter(function (g) {
+    return String(g.grade || '').toUpperCase() === 'DNP';
+  });
+
+  function gradeCardHtml(g, muted) {
+    var name = g.name || g.player || 'Player';
+    var gr = String(g.grade || '');
+    var gColor = GRADE_COLORS[gr] || (gr === 'DNP' ? '#94a3b8' : '#006bb6');
+    var out = '<div class="grade-card' + (muted ? ' grade-muted' : '') + '">';
+    out += '<div class="grade-pill" style="background:' + gColor + ';">' + escapeHtml(gr) + '</div>';
+    out += '<div class="grade-card-body">';
+    out += '<h3 class="grade-card-name">' + escapeHtml(name) + '</h3>';
+    if (g.stats) out += '<p class="grade-card-stats">' + escapeHtml(g.stats) + '</p>';
+    if (g.analysis) out += '<p class="grade-card-analysis">' + escapeHtml(g.analysis) + '</p>';
+    if (g.tweetUrl) out += '<div class="grade-card-tweet">' + tweetEmbedHtml(g.tweetUrl) + '</div>';
+    out += '</div></div>';
+    return out;
   }
+
+  if (graded.length || dnps.length) {
+    html += '<div class="grades-section"><h2 class="grades-heading">Player Grades</h2>';
+    if (graded.length) {
+      graded.forEach(function (g) { html += gradeCardHtml(g, false); });
+    } else {
+      html += '<p class="grades-empty">No letter grades were entered for this game.</p>';
+    }
+    if (dnps.length) {
+      html += '<div class="grades-subhead">Did not play</div>';
+      dnps.forEach(function (g) { html += gradeCardHtml(g, true); });
+    }
+    html += '</div>';
+  } else if (String(a.category || '') === 'Player Grades') {
+    html += '<div class="grades-section"><h2 class="grades-heading">Player Grades</h2>';
+    html += '<p class="grades-empty">Grades for this article are not available yet.</p></div>';
+  }
+
+  var grades = graded; // for tweet widget detection below
 
   if (a.closing) {
     html += '<aside class="bottom-line"><span class="bottom-line-label">Bottom Line</span><p>' + escapeHtml(a.closing) + '</p></aside>';
@@ -664,17 +718,34 @@ function renderArticle(a, more) {
 
   document.getElementById('article-root').innerHTML = html;
 
-  var needsWidgets = !!(a.tweetUrl || bodyParsed.tweetUrls.length || grades.some(function (g) { return g.tweetUrl; }));
+  var gradeTweets = (allGrades || []).some(function (g) { return g && g.tweetUrl; });
+  var needsWidgets = !!(a.tweetUrl || (bodyParsed && bodyParsed.tweetUrls && bodyParsed.tweetUrls.length) || gradeTweets);
   if (needsWidgets) {
-    if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load();
-    } else {
-      const s = document.createElement('script');
-      s.async = true;
-      s.src = 'https://platform.twitter.com/widgets.js';
-      s.charset = 'utf-8';
-      document.body.appendChild(s);
+    function loadTw() {
+      try {
+        if (window.twttr && window.twttr.widgets) {
+          if (window.twttr.ready) window.twttr.ready(function () { window.twttr.widgets.load(); });
+          else window.twttr.widgets.load();
+        }
+      } catch (e) {}
     }
+    if (window.twttr && window.twttr.widgets) loadTw();
+    else {
+      var existing = document.getElementById('twitter-wjs');
+      if (!existing) {
+        var s = document.createElement('script');
+        s.id = 'twitter-wjs';
+        s.async = true;
+        s.src = 'https://platform.twitter.com/widgets.js';
+        s.charset = 'utf-8';
+        s.onload = loadTw;
+        document.body.appendChild(s);
+      } else {
+        existing.addEventListener('load', loadTw);
+        setTimeout(loadTw, 600);
+      }
+    }
+    setTimeout(loadTw, 1200);
   }
 }
 

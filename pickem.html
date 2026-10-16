@@ -720,6 +720,20 @@
     .date-picker-btn:hover  { border-color: var(--sixers-blue); background: rgba(0,107,182,0.04); }
     .date-picker-btn.active { background: var(--sixers-blue); color: white; border-color: var(--sixers-blue); }
     .date-picker-btn.disabled { opacity: 0.45; cursor: not-allowed; }
+    .date-picker-btn.date-soon {
+      opacity: 0.78;
+      border-style: dashed;
+    }
+    .date-picker-soon {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .date-picker-btn.active.date-soon .date-picker-soon { color: rgba(255,255,255,0.9); }
+
     :root.dark-mode .date-picker-btn { background: var(--card-bg); border-color: var(--border-light); }
 
     .date-picker-date { font-size: 10px; opacity: 0.65; margin-top: 2px; }
@@ -6189,7 +6203,7 @@
     const _earliestPick = new Date(new Date().getFullYear(), 2, 1); // March 1
     const _pastFromEarliest = Math.ceil((Date.now() - _earliestPick.getTime()) / 86400000);
     const PAST_DAYS = Math.max(220, _pastFromEarliest + 5);
-    const FUTURE_DAYS = 4; // picks only available for today + next 4 days
+    const FUTURE_DAYS = 280; // show full season on the slider; picks stay locked until within 4 days
 
     function formatDateLabel(date) {
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -6234,12 +6248,23 @@
       // Show DATES_TO_SHOW dates at a time
       const visibleDates = dates.slice(currentDateOffset, currentDateOffset + DATES_TO_SHOW);
 
+      const todayStr = formatDateForComparison(new Date());
+      function daysFromToday(dateStr) {
+        try {
+          const [ty, tm, td] = todayStr.split('-').map(Number);
+          const [dy, dm, dd] = String(dateStr).split('-').map(Number);
+          return Math.round((Date.UTC(dy, dm - 1, dd) - Date.UTC(ty, tm - 1, td)) / 86400000);
+        } catch (_) { return 0; }
+      }
       container.innerHTML = visibleDates.map(d => {
         const isActive = document.getElementById('pickDate').value === d.value;
+        const ahead = daysFromToday(d.value);
+        const soon = ahead > 4;
         return `
-          <button class="date-picker-btn ${isActive ? 'active' : ''}" data-date="${d.value}">
+          <button type="button" class="date-picker-btn ${isActive ? 'active' : ''}${soon ? ' date-soon' : ''}" data-date="${d.value}" title="${soon ? 'Picks open within 4 days of this slate' : ''}">
             <div style="font-weight: 700; font-size: 12px;">${d.label.day}</div>
             <div class="date-picker-date">${d.label.date}</div>
+            ${soon ? '<div class="date-picker-soon">Soon</div>' : ''}
           </button>
         `;
       }).join('');

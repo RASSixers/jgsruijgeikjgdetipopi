@@ -1392,10 +1392,43 @@ listenToUpdates();
   }
 
   async function fetchEvents() {
-    const res = await fetch(SCHEDULE);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.events || [];
+    const byId = new Map();
+    function addAll(list) {
+      (list || []).forEach(function (e) {
+        if (e && e.id) byId.set(String(e.id), e);
+      });
+    }
+    // Team schedule (season slate)
+    try {
+      const res = await fetch(SCHEDULE + "?seasontype=2", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        addAll(data.events || []);
+      }
+    } catch (_) {}
+    try {
+      const res = await fetch(SCHEDULE, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        addAll(data.events || []);
+      }
+    } catch (_) {}
+    // Scoreboard for today / nearby days (catches preseason & tip-soon games)
+    try {
+      const res = await fetch(SCOREBOARD + "?limit=100", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        (data.events || []).forEach(function (e) {
+          const comps = get(e, "competitions.0.competitors", []) || [];
+          const isPhi = comps.some(function (c) {
+            return get(c, "team.abbreviation", "") === "PHI" ||
+              /76ers|philadelphia/i.test(get(c, "team.displayName", ""));
+          });
+          if (isPhi) byId.set(String(e.id), e);
+        });
+      }
+    } catch (_) {}
+    return Array.from(byId.values());
   }
   async function findLive() {
     try {
@@ -1416,29 +1449,45 @@ listenToUpdates();
     } catch (_) { return null; }
   }
 
+  function isUpcoming(ev) {
+    if (isLive(ev) || isFinal(ev)) return false;
+    const state = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
+    if (state === "pre") return true;
+    const tip = new Date(ev.date).getTime();
+    if (isNaN(tip)) return false;
+    // Not started yet (or tip within last 30 min and not marked final)
+    return tip > Date.now() - 30 * 60 * 1000;
+  }
+
   function pickFeatured(events) {
-    // Priority: live → previous final until 12h before next tip → upcoming
+    // Priority: live → upcoming if within 12h of tip → previous final until then → next upcoming
     const live = events.find(isLive);
     if (live) return { event: live, mode: "live" };
 
-    const upcoming = events
-      .filter(e => get(e, "competitions.0.status.type.state", "") === "pre")
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-    const next = upcoming[0] || null;
-    const untilNext = next ? (new Date(next.date).getTime() - Date.now()) : null;
+    const now = Date.now();
+    const TWELVE_H = 12 * 60 * 60 * 1000;
 
-    const finals = events.filter(isFinal).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const upcoming = events
+      .filter(isUpcoming)
+      .sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+    const next = upcoming[0] || null;
+    const untilNext = next ? (new Date(next.date).getTime() - now) : null;
+
+    const finals = events.filter(isFinal).sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
     const latestFinal = finals[0] || null;
 
-    // Keep post-game result until it is within 12 hours of the next tip-off
-    const TWELVE_H = 12 * 60 * 60 * 1000;
+    // Next tip is within 12 hours → always show that game
+    if (next && untilNext != null && untilNext <= TWELVE_H) {
+      return { event: next, mode: "upcoming" };
+    }
+
+    // Otherwise keep showing the last final while we are still more than 12h from tip
     if (latestFinal) {
       if (untilNext == null || untilNext > TWELVE_H) {
         return { event: latestFinal, mode: "final" };
       }
     }
 
-    // Inside the 12h window before tip (or no final available) → preview next game
     if (next) return { event: next, mode: "upcoming" };
     return latestFinal ? { event: latestFinal, mode: "final" } : null;
   }
@@ -1499,7 +1548,7 @@ listenToUpdates();
           '<div class="home-game-score">vs</div>' +
           '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
         '</div>' +
-        '<p class="home-game-meta">Tip-off in under 12 hours · Watch live scores & play-by-play here when the game starts.</p>';
+        '<p class="home-game-meta">Upcoming tip · Live scores & play-by-play appear here when the game starts.</p>';
       note.textContent = "";
       return;
     }

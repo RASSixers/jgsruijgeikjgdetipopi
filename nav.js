@@ -707,13 +707,29 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
 
     document.body.insertAdjacentHTML('afterbegin', navbarHTML);
-    if (!document.getElementById('site-footer')) {
-        document.body.insertAdjacentHTML('beforeend', footerHTML);
-    }
-    try {
-        var fy = document.getElementById('footer-year');
-        if (fy) fy.textContent = String(new Date().getFullYear());
-    } catch (e) {}
+
+    // One footer only. Homepage ships a static footer for crawlers/AdSense checkers
+    // (no JS). Other pages get the shared footer from nav.js.
+    (function ensureSingleFooter() {
+        try {
+            var path = (location.pathname || '/').replace(/\/+$/, '') || '/';
+            var isHome = (path === '/' || path === '/index.html');
+            var footers = Array.prototype.slice.call(document.querySelectorAll('footer.footer, #site-footer'));
+            if (isHome) {
+                // Keep the first static footer; drop any extras
+                footers.forEach(function (el, i) {
+                    if (i > 0) el.parentNode && el.parentNode.removeChild(el);
+                });
+            } else {
+                footers.forEach(function (el) {
+                    el.parentNode && el.parentNode.removeChild(el);
+                });
+                document.body.insertAdjacentHTML('beforeend', footerHTML);
+            }
+            var fy = document.getElementById('footer-year');
+            if (fy) fy.textContent = String(new Date().getFullYear());
+        } catch (err) {}
+    })();
 
  const firebaseConfig = {
     apiKey: "AIzaSyBzMlBV5gbZZlg_eTwNWrRDrhx-_ATIPS0",

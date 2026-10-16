@@ -452,14 +452,6 @@
     .news-feature-title { font-size: 1.28rem; line-height: 1.22; }
     .news-feature-excerpt { font-size: 0.88rem; margin-bottom: 0.85rem; }
     .news-stack {
-      padding: 1rem 1.05rem 0.7rem;
-      border-radius: 14px;
-    }
-    .news-stack-label {
-      font-size: 0.68rem;
-      padding-bottom: 0.7rem;
-    }
-    .news-stack {
       padding: 1rem 0 0.35rem;
       border-radius: 14px;
     }
@@ -491,12 +483,9 @@
     border-bottom: 1px solid var(--border-light);
   }
   .hg-panel-team .team-stats-table th:first-child,
-  .hg-panel-team .team-stats-table td.ts-label {
+  .hg-panel-team .team-stats-table td:first-child {
     text-align: left;
-    font-weight: 700;
-    color: var(--mid);
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
+    font-weight: 600;
   }
   .hg-panel-team .team-stats-table th {
     font-size: 0.72rem;
@@ -510,16 +499,16 @@
   }
 
   @media (min-width: 768px) {
-}
+  }
   @media (max-width: 767px) {
-}
+  }
 
   @media (min-width: 768px) {
     .hero-inner { padding: 2.5rem 2rem 2.25rem; }
     .hero-sub { margin-top: 1rem; }
     .hero-cta-row { margin-top: 1.6rem; gap: 0.75rem; }
     .feature-cards-inner { padding: 1.35rem 2rem 0; gap: 0.65rem; }
-}
+  }
   @media (max-width: 767px) {
     body { margin-top: 56px; }
     .hero-inner { padding: 1.1rem 1rem 1.25rem; }
@@ -546,12 +535,11 @@
     }
     .feature-card { padding: 0.75rem 0.7rem; }
     .feature-card-desc { display: none; }
-}
+  }
   @media (max-width: 480px) {
     .hero-title-top,
     .hero-title-bottom { font-size: clamp(1.9rem, 11vw, 2.4rem); }
   }
-
 
   /* Fan poll */
   .poll-section {
@@ -905,7 +893,7 @@
       <div class="news-heading">
         <div>
           <span class="news-eyebrow">Latest</span>
-          <h2 class="news-title">News &amp; Analysis</h2>
+          <h2 class="news-title">News & Analysis</h2>
         </div>
       </div>
       <div class="news-grid" id="news-grid">
@@ -964,7 +952,7 @@ function waitForDb(cb, tries) {
   setTimeout(function () { waitForDb(cb, tries + 1); }, 250);
 }
 function escapeHtml(str) {
-  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(str || '').replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
 }
 function timeAgo(date) {
   if (!date) return '';
@@ -1445,7 +1433,6 @@ listenToUpdates();
       head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
   }
 
-
   function logo(team) {
     return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
   }
@@ -1635,7 +1622,6 @@ listenToUpdates();
     }).join("");
   }
 
-
   function filterInjuriesForEvent(groups, event) {
     const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     function resolveGameDate(ev) {
@@ -1746,7 +1732,7 @@ listenToUpdates();
       return false;
     }
 
-    function displayStatus(inj)    function displayStatus(inj) {
+    function displayStatus(inj) {
       const text = collectText(inj);
       const official = String(inj.status || "").toLowerCase();
       const outFromWriteup = (
@@ -1991,7 +1977,6 @@ listenToUpdates();
 })();
 </script>
 
-
 <footer class="footer" id="site-footer">
   <div class="footer-inner">
     <div class="footer-top">
@@ -2024,23 +2009,18 @@ listenToUpdates();
         <div class="footer-col">
           <h3 class="footer-title">Legal</h3>
           <ul class="footer-links">
-            <li><a href="/terms-of-service">Terms of Service</a></li>
             <li><a href="/privacy-policy">Privacy Policy</a></li>
+            <li><a href="/terms-of-service">Terms of Service</a></li>
             <li><a href="/cookie-policy">Cookie Policy</a></li>
+            <li><a href="/disclaimer">Disclaimer</a></li>
           </ul>
         </div>
       </div>
     </div>
-    <div class="footer-disclaimer">
-      <p>SixersHoops is an independent fan site and is not affiliated with, endorsed by, or sponsored by the National Basketball Association (NBA), the Philadelphia 76ers, or any related entity. All trademarks and team names belong to their respective owners.</p>
-      <p>User-generated content (including chat, comments, trades, picks, and posts) is provided by users. SixersHoops does not control, verify, or guarantee that content and is not responsible for it. Use of this site is at your own risk.</p>
-    </div>
     <div class="footer-bottom">
-      <span>&copy; 2026 SixersHoops. All rights reserved.</span>
-      <span class="footer-bottom-meta">For entertainment and informational purposes only</span>
+      <p class="footer-copy">© 2025 SixersHoops. All rights reserved. Not affiliated with the NBA or the Philadelphia 76ers.</p>
     </div>
   </div>
 </footer>
-
 </body>
 </html>

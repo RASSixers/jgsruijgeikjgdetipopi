@@ -1649,44 +1649,45 @@ listenToUpdates();
     const gameWeekdayShort = gameValid
       ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short" }).toLowerCase()
       : "";
-    const gameMonthDay = gameValid
+    // e.g. "october 16" / "oct 16"
+    const gameMonthDayLong = gameValid
       ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", month: "long", day: "numeric" }).toLowerCase()
       : "";
     const gameMonthDayShort = gameValid
       ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" }).toLowerCase()
       : "";
 
-    // Opponent names for relevance matching
     const comps = get(event, "competitions.0.competitors", []) || [];
     const oppTokens = [];
     comps.forEach(function (c) {
-      const ab = get(c, "team.abbreviation", "");
-      const loc = get(c, "team.location", "");
-      const nm = get(c, "team.displayName", "");
-      const short = get(c, "team.shortDisplayName", "");
-      [ab, loc, nm, short].forEach(function (x) {
-        if (x && String(x).length > 2) oppTokens.push(String(x).toLowerCase());
-      });
+      if (get(c, "team.abbreviation", "") === "PHI") return; // opponent tokens only
+      [get(c, "team.abbreviation", ""), get(c, "team.location", ""), get(c, "team.shortDisplayName", ""), get(c, "team.displayName", "")]
+        .forEach(function (x) {
+          String(x || "").toLowerCase().split(/[\s\-]+/).forEach(function (w) {
+            w = w.replace(/[^a-z]/g, "");
+            if (w.length >= 3) oppTokens.push(w);
+          });
+        });
     });
-    // also from event name "Boston Celtics at Philadelphia 76ers"
+    // from event name: "Boston Celtics at Philadelphia 76ers" → take non-PHI side
     if (event && event.name) {
-      String(event.name).split(/\s+at\s+/i).forEach(function (part) {
-        String(part).toLowerCase().split(/\s+/).forEach(function (w) {
-          if (w.length > 3) oppTokens.push(w.replace(/[^a-z]/g, ""));
+      const parts = String(event.name).split(/\s+at\s+/i);
+      parts.forEach(function (part) {
+        if (/76ers|philadelphia/i.test(part)) return;
+        String(part).toLowerCase().split(/[\s\-]+/).forEach(function (w) {
+          w = w.replace(/[^a-z]/g, "");
+          if (w.length >= 3) oppTokens.push(w);
         });
       });
     }
 
-    const WEEKDAYS = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+    const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
     function collectText(inj) {
       const parts = [
         inj.status, inj.shortComment, inj.longComment, inj.comment, inj.description,
-        get(inj, "type.description", ""), get(inj, "type.abbreviation", ""),
-        get(inj, "details.type", ""), get(inj, "details.detail", ""),
-        get(inj, "details.fantasyStatus.description", ""),
-        get(inj, "details.fantasyStatus.displayDescription", ""),
-        get(inj, "details.fantasyStatus.abbreviation", "")
+        get(inj, "type.description", ""), get(inj, "details.type", ""), get(inj, "details.detail", ""),
+        get(inj, "details.fantasyStatus.description", ""), get(inj, "details.fantasyStatus.displayDescription", "")
       ];
       const notes = get(inj, "notes.items", null);
       if (Array.isArray(notes)) {
@@ -1698,64 +1699,73 @@ listenToUpdates();
       return parts.filter(Boolean).join(" ");
     }
 
+    function mentionsWeekday(text, day) {
+      if (!day) return false;
+      return new RegExp("\\b" + day + "\\b", "i").test(text);
+    }
+
+    // STRICT: only keep injuries clearly about THIS tip, or season-long absences
     function isRelevantToGame(inj) {
       if (!gameValid) return true;
       const text = collectText(inj);
       const lower = text.toLowerCase();
       const official = String(inj.status || "").toLowerCase();
 
-      // Always keep season-long / indefinite absences
-      if (official === "out" || /\bout for (the )?season\b/i.test(text) || /\bseason-ending\b/i.test(text) || /\bout indefinitely\b/i.test(text)) {
+      // Season-long / indefinite always belongs on the report
+      if (
+        official === "out" ||
+        /\bout for (the )?season\b/i.test(text) ||
+        /\bseason-ending\b/i.test(text) ||
+        /\bout indefinitely\b/i.test(text) ||
+        /\bruptured\b/i.test(text) && /\bachilles\b/i.test(text)
+      ) {
         return true;
       }
 
-      // Mentions this game's weekday or date → keep
-      if (gameWeekday && lower.includes(gameWeekday)) return true;
-      if (gameWeekdayShort && new RegExp("\\b" + gameWeekdayShort + "\\b", "i").test(text)) return true;
-      if (gameMonthDay && lower.includes(gameMonthDay)) return true;
-      if (gameMonthDayShort && lower.includes(gameMonthDayShort)) return true;
-      if (/\b(tonight|today|this game|tip-?off)\b/i.test(text)) return true;
+      const mentionsThisDay =
+        mentionsWeekday(lower, gameWeekday) ||
+        mentionsWeekday(lower, gameWeekdayShort) ||
+        (gameMonthDayLong && lower.includes(gameMonthDayLong)) ||
+        (gameMonthDayShort && lower.includes(gameMonthDayShort));
 
-      // Mentions opponent → keep
-      for (let i = 0; i < oppTokens.length; i++) {
-        const tok = oppTokens[i];
-        if (tok.length >= 4 && lower.includes(tok)) return true;
-      }
-
-      // Write-up clearly about a *different* weekday than game day → drop
-      const otherDays = WEEKDAYS.filter(function (d) { return d !== gameWeekday; });
-      let mentionsOther = false;
-      let mentionsGameDay = gameWeekday && lower.includes(gameWeekday);
-      otherDays.forEach(function (d) {
-        if (new RegExp("\\b" + d + "\\b", "i").test(text)) mentionsOther = true;
+      // Any other weekday named in the write-up
+      const otherDaysMentioned = WEEKDAYS.filter(function (d) {
+        return d !== gameWeekday && mentionsWeekday(lower, d);
       });
-      if (mentionsOther && !mentionsGameDay) {
-        // e.g. "won't play Wednesday" when game is Friday
+
+      // If write-up is about a different day and not this day → exclude
+      // (e.g. "won't play Saturday" when tip is Friday)
+      if (otherDaysMentioned.length && !mentionsThisDay) {
         return false;
       }
 
-      // returnDate before game day and only past-tense practice notes → weak relevance
-      const ret = get(inj, "details.returnDate", "");
-      if (ret) {
-        try {
-          const rd = new Date(String(ret).length <= 10 ? ret + "T23:59:00" : ret);
-          // If listed return is before game and comment is only about practice, still show GTD for game if no other-day exclusion
-        } catch (_) {}
-      }
+      // Explicitly about this game day
+      if (mentionsThisDay) return true;
 
-      // No day-specific write-up (generic GTD) → keep for this game's report
-      if (!/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(text)) {
+      // "tonight" / "today" / "this game" only if no conflicting other weekday
+      if (/\b(tonight|today|this game|tip-?off)\b/i.test(text) && !otherDaysMentioned.length) {
         return true;
       }
 
-      // Default: keep if we didn't exclude
-      return !mentionsOther || mentionsGameDay;
+      // Opponent mentioned AND no other weekday → likely this matchup
+      const mentionsOpp = oppTokens.some(function (tok) {
+        return tok.length >= 4 && lower.includes(tok);
+      });
+      if (mentionsOpp && !otherDaysMentioned.length) {
+        // Still require some game-availability language so random opponent news doesn't slip in
+        if (/\b(out|won'?t play|will not play|won'?t suit|doubtful|questionable|gtd|available|miss)\b/i.test(text)) {
+          return true;
+        }
+      }
+
+      // Everything else (practice notes, other games, stale GTD with no this-game context) → out
+      return false;
     }
 
     function displayStatus(inj) {
       const text = collectText(inj);
       const official = String(inj.status || get(inj, "type.description", "") || "").toLowerCase();
-      const fantasy = String(get(inj, "details.fantasyStatus.abbreviation", "") || get(inj, "details.fantasyStatus.description", "") || "").toUpperCase();
+      const fantasy = String(get(inj, "details.fantasyStatus.abbreviation", "") || "").toUpperCase();
 
       const outFromWriteup = (
         /\bis out\b/i.test(text) ||
@@ -1769,8 +1779,7 @@ listenToUpdates();
         /\bruled out\b/i.test(text) ||
         /\bout for (the )?season\b/i.test(text) ||
         /\bout indefinitely\b/i.test(text) ||
-        /\bseason-ending\b/i.test(text) ||
-        /\bwill miss at least\b/i.test(text)
+        /\bseason-ending\b/i.test(text)
       );
 
       if (outFromWriteup || official === "out" || official.includes("out for season") || fantasy === "O" || fantasy === "OUT") {
@@ -1788,7 +1797,7 @@ listenToUpdates();
       if (official.includes("probable") || fantasy === "P") {
         return { label: "Probable", cls: "inj-prob" };
       }
-      return { label: inj.status || get(inj, "type.description", "Listed") || "Listed", cls: "inj-other" };
+      return { label: inj.status || "Listed", cls: "inj-other" };
     }
 
     function formatInjDate(iso) {
@@ -1804,7 +1813,6 @@ listenToUpdates();
       } catch (_) { return null; }
     }
 
-    // Filter each team's list to this game only
     groups = groups.map(function (g) {
       const items = (Array.isArray(g.injuries) ? g.injuries : []).filter(isRelevantToGame);
       return { team: g.team, injuries: items };
@@ -1830,8 +1838,7 @@ listenToUpdates();
 
     const body = groups.map(function (g) {
       const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-      const items = (g.injuries || []).slice();
-      items.sort(function (a, b) {
+      const items = (g.injuries || []).slice().sort(function (a, b) {
         return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
       });
       const rows = items.map(function (inj) {

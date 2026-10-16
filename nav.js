@@ -1,5 +1,19 @@
 // Navbar Injection Script
 
+// Google AdSense (sitewide — every page that loads nav.js)
+(function () {
+    try {
+        if (document.getElementById('sixers-adsbygoogle')) return;
+        var s = document.createElement('script');
+        s.id = 'sixers-adsbygoogle';
+        s.async = true;
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287';
+        s.crossOrigin = 'anonymous';
+        (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+})();
+
+
 // === DARK MODE ANTI-FLASH ===
 // Run immediately (outside DOMContentLoaded) so theme applies before first paint.
 (function() {
@@ -35,7 +49,56 @@ window.__sixersGoogleSignIn = function () {
     return false;
 };
 
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Early sign-in opener (works as soon as modal HTML is in the page)
+    window.openAuthModal = function openAuthModal() {
+        try {
+            var m = document.getElementById('authModalOverlay');
+            if (!m) {
+                console.error('[SixersAuth] auth modal missing');
+                return;
+            }
+            m.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.querySelectorAll('.auth-modal-tab').forEach(function (t) {
+                var isLogin = t.getAttribute('data-tab') === 'login';
+                t.classList.toggle('active', isLogin);
+                t.style.display = 'block';
+            });
+            var lf = document.getElementById('navLoginForm');
+            var rf = document.getElementById('navRegisterForm');
+            var ff = document.getElementById('navForgotForm');
+            var pf = document.getElementById('navProfileForm');
+            if (lf) lf.style.display = 'block';
+            if (rf) rf.style.display = 'none';
+            if (ff) ff.style.display = 'none';
+            if (pf) pf.style.display = 'none';
+            var title = document.querySelector('.auth-modal-title');
+            if (title) title.textContent = 'Sixers Hoops';
+            var am = document.getElementById('navAuthMessage');
+            if (am) { am.className = 'auth-message'; am.textContent = ''; }
+        } catch (err) {
+            console.error('[SixersAuth] openAuthModal', err);
+        }
+    };
+    window.closeAuthModal = function closeAuthModal() {
+        try {
+            var m = document.getElementById('authModalOverlay');
+            if (m) m.classList.remove('active');
+            document.body.style.overflow = '';
+            var am = document.getElementById('navAuthMessage');
+            if (am) { am.className = 'auth-message'; am.textContent = ''; }
+            document.querySelectorAll('.auth-modal-tab').forEach(function (t) { t.style.display = 'block'; });
+            ['navLoginForm','navRegisterForm','navForgotForm','navProfileForm'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el && el.reset) el.reset();
+            });
+            var title = document.querySelector('.auth-modal-title');
+            if (title) title.textContent = 'Sixers Hoops';
+        } catch (err) { console.warn('closeAuthModal', err); }
+    };
+
     // Add Navbar Styles if not present
     if (!document.getElementById('navbar-styles')) {
         const link = document.createElement('link');
@@ -201,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         <div class="nav-icons">
             <div id="authNavContainer">
-                <button class="auth-nav-btn" id="navSignInBtn">Sign In</button>
+                <button type="button" class="auth-nav-btn" id="navSignInBtn" onclick="window.openAuthModal && window.openAuthModal(); return false;">Sign In</button>
             </div>
             <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle light and dark mode" title="Theme">
                 <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -997,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
         } else {
-            if (authNav) authNav.innerHTML = '<button class="auth-nav-btn" id="navSignInBtn">Sign In</button>';
+            if (authNav) authNav.innerHTML = '<button type="button" class="auth-nav-btn" id="navSignInBtn" onclick="window.openAuthModal && window.openAuthModal(); return false;">Sign In</button>';
             if (mobileAuth) mobileAuth.innerHTML = '';
             
             const signInBtn = document.getElementById('navSignInBtn');
@@ -1111,53 +1174,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const forgotPasswordLink = document.getElementById('forgotPasswordLink');
     const backToLoginLink = document.getElementById('backToLoginLink');
 
-    var _authModalOpening = false;
-    function openAuthModal() {
-        if (_authModalOpening) return;
-        _authModalOpening = true;
-        try {
-            var m = document.getElementById('authModalOverlay') || modal;
-            if (!m) {
-                console.error('[SixersAuth] auth modal not found in DOM');
-                return;
-            }
-            m.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            // Show login form without synthetic .click() (avoids handler loops)
-            document.querySelectorAll('.auth-modal-tab').forEach(function (t) {
-                t.classList.toggle('active', t.getAttribute('data-tab') === 'login');
-                t.style.display = 'block';
-            });
-            var lf = document.getElementById('navLoginForm');
-            var rf = document.getElementById('navRegisterForm');
-            var ff = document.getElementById('navForgotForm');
-            var pf = document.getElementById('navProfileForm');
-            if (lf) lf.style.display = 'block';
-            if (rf) rf.style.display = 'none';
-            if (ff) ff.style.display = 'none';
-            if (pf) pf.style.display = 'none';
-            var title = document.querySelector('.auth-modal-title');
-            if (title) title.textContent = 'Sixers Hoops';
-        } catch (err) {
-            console.error('[SixersAuth] openAuthModal error', err);
-        } finally {
-            setTimeout(function () { _authModalOpening = false; }, 150);
-        }
-    }
-    window.openAuthModal = openAuthModal;
+    // Sign-in wired above via window.openAuthModal (defined at start of DOMContentLoaded)
 
-    // Single delegated handler (bubble phase only) for Sign In buttons
-    if (!window.__shSignInDelegated) {
-        window.__shSignInDelegated = true;
-        document.addEventListener('click', function (e) {
-            var t = e.target;
-            if (!t || !t.closest) return;
-            var btn = t.closest('#navSignInBtn, #mobileSignInBtn');
+    (function wireSignInNow() {
+        function bind(btn) {
             if (!btn) return;
-            e.preventDefault();
-            openAuthModal();
-        });
-    }
+            btn.onclick = function (e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                if (typeof window.openAuthModal === 'function') window.openAuthModal();
+            };
+        }
+        bind(document.getElementById('navSignInBtn'));
+        bind(document.getElementById('mobileSignInBtn'));
+        if (!window.__shSignInClickBound) {
+            window.__shSignInClickBound = true;
+            document.addEventListener('click', function (e) {
+                var t = e.target && e.target.closest && e.target.closest('#navSignInBtn, #mobileSignInBtn');
+                if (!t) return;
+                e.preventDefault();
+                if (typeof window.openAuthModal === 'function') window.openAuthModal();
+            });
+        }
+    })();
 
     initFirebase();
 

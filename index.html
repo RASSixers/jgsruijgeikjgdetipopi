@@ -828,6 +828,12 @@
     color: #94a3b8;
     margin-top: 0.15rem;
   }
+  .home-inj-comment {
+    font-size: 0.8rem;
+    color: #475569;
+    line-height: 1.4;
+    margin-top: 0.3rem;
+  }
 
   @media (max-width: 720px) {
     .home-game { padding: 0 0.85rem 1.5rem; }
@@ -1256,6 +1262,7 @@ listenToUpdates();
   const SCHEDULE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/schedule";
   const SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard";
   const SUMMARY = "https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary";
+  const INJURIES_LEAGUE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
 
   let panel = "pbp";
   let lastSummary = null;
@@ -1514,6 +1521,52 @@ listenToUpdates();
     } catch (_) { return null; }
   }
 
+  // Full injury notes (shortComment / longComment) live on the league injuries feed
+  async function fetchLeagueInjuriesByAbbr(abbrs) {
+    const want = new Set((abbrs || []).map(function (a) { return String(a || "").toUpperCase(); }).filter(Boolean));
+    if (!want.size) return [];
+    try {
+      const res = await fetch(INJURIES_LEAGUE, { cache: "no-store" });
+      if (!res.ok) return [];
+      const data = await res.json();
+      const out = [];
+      (data.injuries || []).forEach(function (teamBlock) {
+        const sample = ((teamBlock.injuries || [])[0] || {}).athlete || {};
+        // teamBlock has displayName; map via first injury team links is messy — match by known abbr from athlete team? 
+        // League payload uses team id + displayName at top level
+        const name = String(teamBlock.displayName || "").toLowerCase();
+        let abbr = "";
+        if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
+        else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
+        else {
+          // try parse from links href /name/phi/
+          const links = teamBlock.links || [];
+          for (let i = 0; i < links.length; i++) {
+            const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
+            if (m) { abbr = m[1].toUpperCase(); break; }
+          }
+        }
+        // Fallback: id map common NBA
+        if (!abbr && teamBlock.id) {
+          const ID_ABBR = { "20": "PHI", "2": "BOS", "1": "ATL", "17": "BKN", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN", "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL", "14": "MEM", "15": "MIA", "16": "MIL", "18": "MIN", "3": "NO", "19": "NY", "21": "OKC", "22": "ORL", "23": "PHX", "24": "POR", "25": "SAC", "26": "SA", "27": "TOR", "28": "UTAH", "29": "WSH", "30": "CHA" };
+          abbr = ID_ABBR[String(teamBlock.id)] || "";
+        }
+        if (!want.has(abbr)) return;
+        out.push({
+          team: { abbreviation: abbr, displayName: teamBlock.displayName || abbr },
+          injuries: teamBlock.injuries || []
+        });
+      });
+      return out;
+    } catch (_) { return []; }
+  }
+
+  function mergeInjuryGroups(summaryGroups, leagueGroups) {
+    // Prefer league feed (has shortComment). Fall back to summary.
+    if (leagueGroups && leagueGroups.length) return leagueGroups;
+    return summaryGroups || [];
+  }
+
   function isUpcoming(ev) {
     if (isLive(ev) || isFinal(ev)) return false;
     const state = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
@@ -1591,49 +1644,68 @@ listenToUpdates();
     function collectText(inj) {
       const parts = [
         inj.status,
+        inj.shortComment,
+        inj.longComment,
+        inj.comment,
+        inj.description,
         get(inj, "type.description", ""),
         get(inj, "type.abbreviation", ""),
         get(inj, "details.type", ""),
         get(inj, "details.detail", ""),
         get(inj, "details.fantasyStatus.description", ""),
         get(inj, "details.fantasyStatus.displayDescription", ""),
-        get(inj, "details.fantasyStatus.abbreviation", ""),
-        inj.longComment,
-        inj.shortComment,
-        inj.comment,
-        inj.description
+        get(inj, "details.fantasyStatus.abbreviation", "")
       ];
-      return parts.filter(Boolean).join(" ").toLowerCase();
+      // notes.items headlines
+      const notes = get(inj, "notes.items", null);
+      if (Array.isArray(notes)) {
+        notes.forEach(function (n) {
+          if (n && n.headline) parts.push(n.headline);
+          if (n && n.text) parts.push(n.text);
+        });
+      }
+      return parts.filter(Boolean).join(" ");
     }
 
-    // Official designation vs what we show (ESPN text can say "out" while status stays GTD)
     function displayStatus(inj) {
       const text = collectText(inj);
+      const lower = text.toLowerCase();
       const official = String(inj.status || get(inj, "type.description", "") || "").toLowerCase();
       const fantasy = String(get(inj, "details.fantasyStatus.abbreviation", "") || get(inj, "details.fantasyStatus.description", "") || "").toUpperCase();
 
-      // Strong OUT signals in any ESPN text
-      const outPhrase = /\b(out for (the )?season|out indefinitely|ruled out|will not play|won't play|will miss|is out\b|out vs\b|out against\b|out tonight|out today|out for tonight|out for today|out for this game|sidelined)\b/i.test(text)
-        || /\bout\b/.test(text) && /\b(game|tonight|today|friday|saturday|sunday|monday|tuesday|wednesday|thursday)\b/i.test(text);
+      // Comment/news text wins over official GTD when reporter says out / won't play
+      const outFromWriteup = (
+        /\bis out\b/i.test(text) ||
+        /\bremains out\b/i.test(text) ||
+        /\bwonn'?t play\b/i.test(text) ||
+        /\bwill not play\b/i.test(text) ||
+        /\bwon'?t be available\b/i.test(text) ||
+        /\bwill not be available\b/i.test(text) ||
+        /\bwon'?t suit up\b/i.test(text) ||
+        /\bwill not suit up\b/i.test(text) ||
+        /\bruled out\b/i.test(text) ||
+        /\bout for (the )?season\b/i.test(text) ||
+        /\bout indefinitely\b/i.test(text) ||
+        /\bmiss at least\b/i.test(text) ||
+        /\bseason-ending\b/i.test(text)
+      );
 
-      if (outPhrase || official.includes("out for season") || official === "out" || fantasy === "O" || fantasy === "OUT") {
+      if (outFromWriteup || official === "out" || official.includes("out for season") || fantasy === "O" || fantasy === "OUT") {
         return { label: "OUT", cls: "inj-out" };
       }
-      if (official.includes("doubtful") || fantasy === "D" || /\bdoubtful\b/.test(text)) {
+      if (official.includes("doubtful") || fantasy === "D" || /\bdoubtful\b/i.test(text)) {
         return { label: "Doubtful", cls: "inj-doubt" };
       }
-      if (official.includes("questionable") || fantasy === "Q" || /\bquestionable\b/.test(text)) {
+      if (official.includes("questionable") || fantasy === "Q" || /\bquestionable\b/i.test(text)) {
         return { label: "Questionable", cls: "inj-q" };
       }
-      if (official.includes("day-to-day") || official.includes("day to day") || fantasy === "GTD" || /\bgtd\b/.test(text)) {
+      if (official.includes("day-to-day") || official.includes("day to day") || fantasy === "GTD") {
         return { label: "GTD", cls: "inj-gtd" };
       }
       if (official.includes("probable") || fantasy === "P") {
         return { label: "Probable", cls: "inj-prob" };
       }
-      // Fallback to raw status
-      const raw = inj.status || get(inj, "type.description", "Listed") || "Listed";
-      return { label: raw, cls: "inj-other" };
+      return { label: inj.status || get(inj, "type.description", "Listed") || "Listed", cls: "inj-other" };
     }
 
     function formatInjDate(iso) {
@@ -1643,11 +1715,8 @@ listenToUpdates();
         if (isNaN(d.getTime())) return null;
         return d.toLocaleString("en-US", {
           timeZone: "America/New_York",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
+          month: "short", day: "numeric", year: "numeric",
+          hour: "numeric", minute: "2-digit"
         }) + " ET";
       } catch (_) { return null; }
     }
@@ -1668,28 +1737,25 @@ listenToUpdates();
 
     const body = groups.map(function (g) {
       const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-      const items = Array.isArray(g.injuries) ? g.injuries : [];
+      const items = Array.isArray(g.injuries) ? g.injuries.slice() : [];
       if (!items.length) return "";
+      // newest first
+      items.sort(function (a, b) {
+        return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
+      });
       const rows = items.map(function (inj) {
         const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
         const st = displayStatus(inj);
         const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
-        const ret = get(inj, "details.returnDate", "");
-        let retLabel = "";
-        if (ret) {
-          try {
-            const rd = new Date(ret + (String(ret).length <= 10 ? "T12:00:00" : ""));
-            retLabel = isNaN(rd.getTime()) ? ret : rd.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-          } catch (_) { retLabel = ret; }
-        }
+        const comment = inj.shortComment || inj.longComment || "";
         const playerUpdated = formatInjDate(inj.date);
-        const meta = [injuryType, retLabel ? ("Est. return " + retLabel) : ""].filter(Boolean).join(" · ");
         return '<li class="home-inj-row">' +
           '<div class="home-inj-main">' +
             '<span class="home-inj-name">' + name + '</span>' +
             '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
           '</div>' +
-          (meta ? '<div class="home-inj-meta">' + meta + '</div>' : '') +
+          (injuryType ? '<div class="home-inj-meta">' + injuryType + '</div>' : '') +
+          (comment ? '<div class="home-inj-comment">' + comment + '</div>' : '') +
           (playerUpdated ? '<div class="home-inj-player-updated">Updated ' + playerUpdated + '</div>' : '') +
           '</li>';
       }).join("");
@@ -1812,7 +1878,16 @@ listenToUpdates();
       let summary = await fetchSummary(featured.id);
       if (summary) lastSummary = summary;
       else if (chosen.mode !== "upcoming") summary = lastSummary;
-      renderBoard(featured, summary || {}, chosen.mode);
+      summary = summary || {};
+      // Enrich with league injury writeups (shortComment) for PHI + opponent
+      try {
+        const comps = get(featured, "competitions.0.competitors", []) || [];
+        const abbrs = comps.map(function (c) { return get(c, "team.abbreviation", ""); }).filter(Boolean);
+        if (!abbrs.includes("PHI")) abbrs.push("PHI");
+        const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
+        if (leagueInj && leagueInj.length) summary.injuries = leagueInj;
+      } catch (_) {}
+      renderBoard(featured, summary, chosen.mode);
 
       clearTimeout(timer);
       timer = setTimeout(refresh, chosen.mode === "live" ? 2000 : 60000);

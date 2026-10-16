@@ -755,6 +755,44 @@
       scroll-snap-align: center;
       white-space: nowrap;
     }
+
+    /* Week / month strip: prevent cut-off and layout thrash */
+    #weekly-lb .date-slider-controls,
+    #monthly-lb .date-slider-controls,
+    #daily-lb .date-slider-controls,
+    #picks .date-slider-controls {
+      display: grid !important;
+      grid-template-columns: 44px minmax(0, 1fr) 44px !important;
+      align-items: center !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+    }
+    #weekPickerContainer,
+    #monthPickerContainer,
+    #dailyDatePickerContainer,
+    #datePickerContainer {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      justify-content: flex-start !important;
+      align-items: stretch !important;
+      gap: 0.4rem !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: thin !important;
+      padding-bottom: 0.25rem !important;
+    }
+    #weekPickerContainer .date-picker-btn,
+    #monthPickerContainer .date-picker-btn {
+      flex: 0 0 auto !important;
+      min-width: 4.75rem !important;
+      padding: 0.5rem 0.55rem !important;
+    }
+
     /* Locked picks: gray out the slate, keep lock message readable */
     .questions-container.is-locked {
       opacity: 0.52;
@@ -5186,7 +5224,7 @@
         const lockDate = new Date(now);
         lockDate.setFullYear(y, m - 1, d);
         lockDate.setHours(hh, mm, 0, 0);
-        const openDate = new Date(lockDate.getTime() - 72 * 60 * 60 * 1000);
+        const openDate = new Date(lockDate.getTime() - 4 * 24 * 60 * 60 * 1000); // open 4 days before lock
         if (now < openDate) return { open: false, locked: false, openDate: openDate, lockDate: lockDate, reason: 'not-yet' };
         if (now >= lockDate) return { open: false, locked: true, openDate: openDate, lockDate: lockDate, reason: 'locked' };
         return { open: true, locked: false, openDate: openDate, lockDate: lockDate, reason: 'open' };
@@ -5198,6 +5236,29 @@
     async function loadQuestionsForDate(dateStr, weekNumber = null) {
       if (!currentUser) return;
       const container = document.getElementById('questionsContainer');
+
+      // Picks open only within 4 days of the slate date (and until lock)
+      try {
+        const todayStr = formatDateForComparison(new Date());
+        const [ty, tm, td] = todayStr.split('-').map(Number);
+        const [dy, dm, dd] = String(dateStr).split('-').map(Number);
+        const tUtc = Date.UTC(ty, tm - 1, td);
+        const dUtc = Date.UTC(dy, dm - 1, dd);
+        const daysAhead = Math.round((dUtc - tUtc) / 86400000);
+        if (daysAhead > 4) {
+          container.innerHTML = '<div class="empty-state" style="padding:2rem 1rem;text-align:center;">' +
+            '<p style="font-weight:700;margin:0 0 0.5rem;">Picks not open yet</p>' +
+            '<p style="color:var(--mid);margin:0;font-size:0.92rem;line-height:1.5;">You can submit picks starting 4 days before this slate. Check back closer to ' +
+            escapeHtml(dateStr) + '.</p></div>';
+          try {
+            document.getElementById('lockTimeStatus').style.display = 'none';
+            document.getElementById('countdownTimer').style.display = 'none';
+            document.getElementById('questionsContainer')?.classList.remove('is-locked');
+            document.querySelector('.submit-section')?.classList.remove('is-locked');
+          } catch (_) {}
+          return;
+        }
+      } catch (_) {}
       try {
         // Cancel prior date timers so they can't disable the new form
         clearAutoSubmitTimer();
@@ -6087,7 +6148,7 @@
     const _earliestPick = new Date(new Date().getFullYear(), 2, 1); // March 1
     const _pastFromEarliest = Math.ceil((Date.now() - _earliestPick.getTime()) / 86400000);
     const PAST_DAYS = Math.max(220, _pastFromEarliest + 5);
-    const FUTURE_DAYS = 280; // ~full season ahead so Oct–June are reachable
+    const FUTURE_DAYS = 4; // picks only available for today + next 4 days
 
     function formatDateLabel(date) {
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -6278,7 +6339,7 @@
     });
 
     // === Week and Month Sliders ===
-    let currentWeekOffset = 2;
+    let currentWeekOffset = 0;
     let currentMonthOffset = 0;
     const WEEKS_TO_SHOW = 5;
     const MONTHS_TO_SHOW = 4;
@@ -6290,75 +6351,98 @@
     document.getElementById('dailyLbDate').value = todayForDailyLb;
     currentDailyDateOffset = PAST_DAYS;
 
-    function renderWeekSlider() {
-      console.log(' renderWeekSlider called');
-      const container = document.getElementById('weekPickerContainer');
-      if (!container) {
-        console.error(' weekPickerContainer not found!');
-        return;
-      }
-      
-      // Prefer schedule from data/season-weeks.json (Week 1 = preseason start)
+    function getSeasonWeeksList() {
       const weeks = [];
-      const sched = (window.SixersSeason && SixersSeason.weeks) || [];
+      const sched = (window.SixersSeason && Array.isArray(SixersSeason.weeks) && SixersSeason.weeks.length)
+        ? SixersSeason.weeks
+        : [];
       if (sched.length) {
         sched.forEach(w => {
           weeks.push({
-            value: w.week,
-            label: 'Week ' + w.week,
-            start: w.start,
-            end: w.end
+            value: Number(w.week),
+            label: 'W' + w.week,
+            fullLabel: 'Week ' + w.week,
+            start: w.start || '',
+            end: w.end || ''
           });
         });
       } else {
-        for (let i = 1; i <= 28; i++) {
-          weeks.push({ value: i, label: 'Week ' + i });
-        }
+        for (let i = 1; i <= 26; i++) weeks.push({ value: i, label: 'W' + i, fullLabel: 'Week ' + i, start: '', end: '' });
+      }
+      return weeks;
+    }
+
+    function formatWeekRangeShort(start, end) {
+      if (!start) return '';
+      try {
+        const a = String(start).split('-');
+        const b = String(end || start).split('-');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const s = months[Number(a[1]) - 1] + ' ' + Number(a[2]);
+        if (!end || start === end) return s;
+        const e = months[Number(b[1]) - 1] + ' ' + Number(b[2]);
+        return s + '–' + e;
+      } catch (_) { return ''; }
+    }
+
+    function renderWeekSlider() {
+      const container = document.getElementById('weekPickerContainer');
+      if (!container) return;
+      const weeks = getSeasonWeeksList();
+      if (!weeks.length) {
+        container.innerHTML = '<span style="color:var(--mid);font-size:0.85rem;">No weeks loaded</span>';
+        return;
       }
 
-      if (selectedWeek === null && weeks.length > 0) {
-        // Prefer current week from schedule, else Week 1
-        let cur = 1;
-        if (window.SixersSeason && typeof SixersSeason.weekForDate === 'function') {
-          const today = formatDateForComparison(new Date());
-          const w = SixersSeason.weekForDate(today);
-          if (w) cur = w;
-        }
-        selectedWeek = weeks.find(x => x.value === cur) ? cur : weeks[0].value;
+      // Resolve current week once
+      if (selectedWeek == null) {
+        let cur = weeks[0].value;
+        try {
+          if (window.SixersSeason && typeof SixersSeason.weekForDate === 'function') {
+            const w = SixersSeason.weekForDate(formatDateForComparison(new Date()));
+            if (w) cur = w;
+          }
+        } catch (_) {}
+        selectedWeek = weeks.some(x => x.value === cur) ? cur : weeks[0].value;
+        // Center strip on selected week
+        const idx = Math.max(0, weeks.findIndex(x => x.value === selectedWeek));
+        currentWeekOffset = Math.max(0, Math.min(idx - Math.floor(WEEKS_TO_SHOW / 2), Math.max(0, weeks.length - WEEKS_TO_SHOW)));
       }
 
+      // Clamp offset only — never change selectedWeek while paging
+      const maxOff = Math.max(0, weeks.length - WEEKS_TO_SHOW);
+      currentWeekOffset = Math.max(0, Math.min(currentWeekOffset, maxOff));
       const visibleWeeks = weeks.slice(currentWeekOffset, currentWeekOffset + WEEKS_TO_SHOW);
 
-      if (visibleWeeks.length > 0 && !visibleWeeks.some(w => w.value === selectedWeek)) {
-        selectedWeek = visibleWeeks[0].value;
-        console.log(` Selected week not in visible range. Adjusted selectedWeek to ${selectedWeek}`);
-      }
-
       container.innerHTML = visibleWeeks.map(w => {
-        const isActive = selectedWeek === w.value;
-        return `
-          <button class="date-picker-btn ${isActive ? 'active' : ''}" data-week="${w.value}">
-            <div style="font-weight: 700; font-size: 12px;">${w.label}</div>
-          </button>
-        `;
+        const isActive = Number(selectedWeek) === Number(w.value);
+        const range = formatWeekRangeShort(w.start, w.end);
+        return '<button type="button" class="date-picker-btn' + (isActive ? ' active' : '') + '" data-week="' + w.value + '" title="' + (w.fullLabel || '') + (range ? ' · ' + range : '') + '">' +
+          '<div style="font-weight:800;font-size:12px;line-height:1.15;">' + (w.label || ('W' + w.value)) + '</div>' +
+          (range ? '<div class="date-picker-date">' + range + '</div>' : '') +
+          '</button>';
       }).join('');
 
-      document.getElementById('prevWeekBtn').style.display = currentWeekOffset > 0 ? 'flex' : 'none';
-      document.getElementById('nextWeekBtn').style.display = currentWeekOffset < weeks.length - WEEKS_TO_SHOW ? 'flex' : 'none';
+      const prev = document.getElementById('prevWeekBtn');
+      const next = document.getElementById('nextWeekBtn');
+      if (prev) {
+        prev.style.display = 'flex';
+        prev.disabled = currentWeekOffset <= 0;
+      }
+      if (next) {
+        next.style.display = 'flex';
+        next.disabled = currentWeekOffset >= maxOff;
+      }
 
       container.querySelectorAll('.date-picker-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          selectedWeek = parseInt(btn.dataset.week);
+          selectedWeek = parseInt(btn.getAttribute('data-week'), 10);
           renderWeekSlider();
           loadLeaderboard('weekly', selectedWeek);
         });
       });
-
-      if (selectedWeek !== null) {
-        console.log(` Auto-loading weekly leaderboard for Week ${selectedWeek}`);
-        loadLeaderboard('weekly', selectedWeek);
-      }
     }
+
 
     let currentPickWeekOffset = 0;
     
@@ -6424,7 +6508,7 @@
     const nextPickWeekBtn = document.getElementById('nextPickWeekBtn');
     if (nextPickWeekBtn) {
       nextPickWeekBtn.addEventListener('click', () => {
-        if (currentPickWeekOffset < 20 - WEEKS_TO_SHOW) {
+        if (currentPickWeekOffset < Math.max(0, getSeasonWeeksList().length - WEEKS_TO_SHOW)) {
           currentPickWeekOffset++;
           renderPickWeekPicker();
         }
@@ -6439,7 +6523,7 @@
     });
 
     document.getElementById('nextWeekBtn').addEventListener('click', () => {
-      if (currentWeekOffset < 20 - WEEKS_TO_SHOW) {
+      if (currentWeekOffset < Math.max(0, getSeasonWeeksList().length - WEEKS_TO_SHOW)) {
         currentWeekOffset++;
         renderWeekSlider();
       }
@@ -10772,7 +10856,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             const [y, mo, d] = dateStr.split('-').map(Number);
             const [hh, mm] = tip24.split(':').map(Number);
             const lockLocal = new Date(y, mo - 1, d, hh, mm, 0, 0);
-            const openLocal = new Date(lockLocal.getTime() - 72 * 60 * 60 * 1000);
+            const openLocal = new Date(lockLocal.getTime() - 4 * 24 * 60 * 60 * 1000);
             const schedSnap = await db.collection('questionSchedules').where('questionsDate', '==', dateStr).get();
             const schedPayload = sanitizeForFirestore({
               questionsDate: dateStr,

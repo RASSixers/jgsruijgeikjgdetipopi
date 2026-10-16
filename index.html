@@ -766,7 +766,7 @@
   .home-game-meta { padding: 0 1.15rem 0.85rem; color: var(--mid); font-size: 0.82rem; }
 
   .home-inj {
-    padding: 0.35rem 1.15rem 0.75rem;
+    padding: 0.45rem 1.15rem 0.9rem;
     border-top: 1px solid var(--border-light);
   }
   .home-inj-title {
@@ -775,26 +775,59 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--mid);
-    margin: 0.55rem 0 0.5rem;
+    margin: 0.55rem 0 0.25rem;
   }
-  .home-inj-team { margin-bottom: 0.55rem; }
+  .home-inj-updated {
+    font-size: 0.75rem;
+    color: var(--mid);
+    margin: 0 0 0.75rem;
+  }
+  .home-inj-updated strong { color: var(--ink); font-weight: 700; }
+  .home-inj-team { margin-bottom: 0.75rem; }
   .home-inj-team-name {
     font-size: 0.8rem;
     font-weight: 800;
     color: var(--ink);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
   }
   .home-inj-list { list-style: none; margin: 0; padding: 0; }
-  .home-inj-list li {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.75rem;
-    font-size: 0.82rem;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid rgba(15,23,42,0.05);
+  .home-inj-row {
+    padding: 0.45rem 0;
+    border-bottom: 1px solid rgba(15,23,42,0.06);
   }
-  .home-inj-name { font-weight: 600; color: var(--ink); }
-  .home-inj-status { color: var(--mid); font-weight: 500; text-align: right; }
+  .home-inj-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+  }
+  .home-inj-name { font-weight: 700; color: var(--ink); font-size: 0.88rem; }
+  .home-inj-badge {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+  }
+  .home-inj-badge.inj-out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+  .home-inj-badge.inj-doubt { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  .home-inj-badge.inj-q { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+  .home-inj-badge.inj-gtd { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .home-inj-badge.inj-prob { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+  .home-inj-badge.inj-other { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+  .home-inj-meta {
+    font-size: 0.78rem;
+    color: var(--mid);
+    margin-top: 0.2rem;
+  }
+  .home-inj-player-updated {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 0.15rem;
+  }
 
   @media (max-width: 720px) {
     .home-game { padding: 0 0.85rem 1.5rem; }
@@ -1554,21 +1587,116 @@ listenToUpdates();
     if (!groups.length) {
       return '<div class="home-inj"><div class="home-inj-title">Injury report</div><p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed yet.</p></div>';
     }
-    return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
-      groups.map(function (g) {
-        const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-        const items = Array.isArray(g.injuries) ? g.injuries : [];
-        if (!items.length) return "";
-        const rows = items.map(function (inj) {
-          const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
-          const status = inj.status || get(inj, "type.description", "") || "";
-          const detail = get(inj, "details.type", "") || get(inj, "details.fantasyStatus.displayDescription", "") || "";
-          const extra = [status, detail].filter(Boolean).join(" · ");
-          return '<li><span class="home-inj-name">' + name + '</span>' +
-            (extra ? '<span class="home-inj-status">' + extra + '</span>' : '') + '</li>';
-        }).join("");
-        return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
-      }).join("") + '</div>';
+
+    function collectText(inj) {
+      const parts = [
+        inj.status,
+        get(inj, "type.description", ""),
+        get(inj, "type.abbreviation", ""),
+        get(inj, "details.type", ""),
+        get(inj, "details.detail", ""),
+        get(inj, "details.fantasyStatus.description", ""),
+        get(inj, "details.fantasyStatus.displayDescription", ""),
+        get(inj, "details.fantasyStatus.abbreviation", ""),
+        inj.longComment,
+        inj.shortComment,
+        inj.comment,
+        inj.description
+      ];
+      return parts.filter(Boolean).join(" ").toLowerCase();
+    }
+
+    // Official designation vs what we show (ESPN text can say "out" while status stays GTD)
+    function displayStatus(inj) {
+      const text = collectText(inj);
+      const official = String(inj.status || get(inj, "type.description", "") || "").toLowerCase();
+      const fantasy = String(get(inj, "details.fantasyStatus.abbreviation", "") || get(inj, "details.fantasyStatus.description", "") || "").toUpperCase();
+
+      // Strong OUT signals in any ESPN text
+      const outPhrase = /\b(out for (the )?season|out indefinitely|ruled out|will not play|won't play|will miss|is out\b|out vs\b|out against\b|out tonight|out today|out for tonight|out for today|out for this game|sidelined)\b/i.test(text)
+        || /\bout\b/.test(text) && /\b(game|tonight|today|friday|saturday|sunday|monday|tuesday|wednesday|thursday)\b/i.test(text);
+
+      if (outPhrase || official.includes("out for season") || official === "out" || fantasy === "O" || fantasy === "OUT") {
+        return { label: "OUT", cls: "inj-out" };
+      }
+      if (official.includes("doubtful") || fantasy === "D" || /\bdoubtful\b/.test(text)) {
+        return { label: "Doubtful", cls: "inj-doubt" };
+      }
+      if (official.includes("questionable") || fantasy === "Q" || /\bquestionable\b/.test(text)) {
+        return { label: "Questionable", cls: "inj-q" };
+      }
+      if (official.includes("day-to-day") || official.includes("day to day") || fantasy === "GTD" || /\bgtd\b/.test(text)) {
+        return { label: "GTD", cls: "inj-gtd" };
+      }
+      if (official.includes("probable") || fantasy === "P") {
+        return { label: "Probable", cls: "inj-prob" };
+      }
+      // Fallback to raw status
+      const raw = inj.status || get(inj, "type.description", "Listed") || "Listed";
+      return { label: raw, cls: "inj-other" };
+    }
+
+    function formatInjDate(iso) {
+      if (!iso) return null;
+      try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return null;
+        return d.toLocaleString("en-US", {
+          timeZone: "America/New_York",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }) + " ET";
+      } catch (_) { return null; }
+    }
+
+    let latestMs = 0;
+    groups.forEach(function (g) {
+      (g.injuries || []).forEach(function (inj) {
+        const ms = inj.date ? new Date(inj.date).getTime() : 0;
+        if (ms && ms > latestMs) latestMs = ms;
+      });
+    });
+    const updatedLabel = latestMs ? formatInjDate(new Date(latestMs).toISOString()) : null;
+
+    const head = '<div class="home-inj-title">Injury report</div>' +
+      (updatedLabel
+        ? '<div class="home-inj-updated">Last ESPN update: <strong>' + updatedLabel + '</strong></div>'
+        : '<div class="home-inj-updated">Last ESPN update: not available</div>');
+
+    const body = groups.map(function (g) {
+      const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
+      const items = Array.isArray(g.injuries) ? g.injuries : [];
+      if (!items.length) return "";
+      const rows = items.map(function (inj) {
+        const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
+        const st = displayStatus(inj);
+        const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
+        const ret = get(inj, "details.returnDate", "");
+        let retLabel = "";
+        if (ret) {
+          try {
+            const rd = new Date(ret + (String(ret).length <= 10 ? "T12:00:00" : ""));
+            retLabel = isNaN(rd.getTime()) ? ret : rd.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          } catch (_) { retLabel = ret; }
+        }
+        const playerUpdated = formatInjDate(inj.date);
+        const meta = [injuryType, retLabel ? ("Est. return " + retLabel) : ""].filter(Boolean).join(" · ");
+        return '<li class="home-inj-row">' +
+          '<div class="home-inj-main">' +
+            '<span class="home-inj-name">' + name + '</span>' +
+            '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
+          '</div>' +
+          (meta ? '<div class="home-inj-meta">' + meta + '</div>' : '') +
+          (playerUpdated ? '<div class="home-inj-player-updated">Updated ' + playerUpdated + '</div>' : '') +
+          '</li>';
+      }).join("");
+      return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
+    }).join("");
+
+    return '<div class="home-inj">' + head + body + '</div>';
   }
 
   function renderBoard(event, summary, mode) {

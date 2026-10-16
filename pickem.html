@@ -728,21 +728,49 @@
       grid-template-columns: 42px minmax(0, 1fr) 42px;
       align-items: center;
       justify-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
       width: 100%;
-      max-width: 720px;
-      margin: 0 auto;
+      max-width: 100%;
+      margin: 0 auto 0.75rem;
+      box-sizing: border-box;
+      padding: 0 0.15rem;
     }
     .date-picker-container {
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.4rem;
       width: 100%;
       min-width: 0;
+      max-width: 100%;
       overflow-x: auto;
+      overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
+      padding: 0.15rem 0.1rem 0.35rem;
+      scroll-snap-type: x proximity;
+    }
+    .date-picker-container .date-picker-btn {
+      flex: 0 0 auto;
+      scroll-snap-align: center;
+      white-space: nowrap;
+    }
+    /* Locked picks: gray out the slate, keep lock message readable */
+    .questions-container.is-locked {
+      opacity: 0.52;
+      filter: grayscale(0.45);
+      pointer-events: none;
+      user-select: none;
+    }
+    .submit-section.is-locked #submitBtn,
+    .submit-section.is-locked #clearBtn {
+      opacity: 0.55;
+      pointer-events: none;
+      filter: grayscale(0.25);
+    }
+    .pickem-lock-footer {
+      margin-top: 1.25rem;
+      margin-bottom: 0.75rem;
     }
     .date-nav-btn {
       background: var(--card-bg); border: 1px solid var(--border-light);
@@ -1923,27 +1951,25 @@
           <button type="button" class="btn btn-secondary" id="sharePicksBtn">Share my picks</button>
           <button type="button" class="btn btn-secondary" id="shareResultsBtn">Share my results</button>
         </div>
-<!-- Lock Time Status Display -->
-        <div id="lockTimeStatus" style="display: none; margin-bottom: 1.25rem; padding: 1.1rem 1.2rem; border-radius: 14px; border: 2px solid #dc2626; background: #fef2f2; box-shadow: 0 4px 18px rgba(220,38,38,0.12);">
-          <div style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;margin-bottom:0.35rem;">
-            <span style="display:inline-flex;align-items:center;justify-content:center;padding:0.25rem 0.65rem;border-radius:999px;background:#dc2626;color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">Locked</span>
-            <p style="margin:0;font-weight:800;color:#991b1b;font-size:1.05rem;">Submissions closed</p>
-          </div>
-          <p id="lockTimeStatusMessage" style="margin:0;color:#7f1d1d;font-size:0.95rem;line-height:1.45;font-weight:600;"></p>
-        </div>
-
-        <!-- Countdown Timer Display -->
-        <div id="countdownTimer" style="display: none; margin-bottom: 1.25rem; padding: 1.1rem 1.2rem; border-radius: 14px; border: 2px solid #006BB6; background: #eff6ff;">
-          <p style="margin: 0 0 0.35rem 0; font-weight: 800; color: #006BB6; font-size: 0.95rem;">Time until lock</p>
-          <p id="countdownText" style="margin: 0; color: var(--ink); font-size: 1.05rem; font-weight: 700;"></p>
-        </div>
-        
 
         <div id="questionsContainer" class="questions-container"></div>
-        
-                <div class="submit-section">
-          <button type="button" class="btn btn-primary" id="submitBtn">Submit Picks</button>
 
+        <div class="pickem-lock-footer">
+          <div id="lockTimeStatus" style="display: none; margin-bottom: 0.85rem; padding: 1.1rem 1.2rem; border-radius: 14px; border: 2px solid #dc2626; background: #fef2f2; box-shadow: 0 4px 18px rgba(220,38,38,0.12);">
+            <div style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;margin-bottom:0.35rem;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;padding:0.25rem 0.65rem;border-radius:999px;background:#dc2626;color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">Locked</span>
+              <p style="margin:0;font-weight:800;color:#991b1b;font-size:1.05rem;">Submissions closed</p>
+            </div>
+            <p id="lockTimeStatusMessage" style="margin:0;color:#7f1d1d;font-size:0.95rem;line-height:1.45;font-weight:600;"></p>
+          </div>
+          <div id="countdownTimer" style="display: none; margin-bottom: 0.85rem; padding: 1.1rem 1.2rem; border-radius: 14px; border: 2px solid #006BB6; background: #eff6ff;">
+            <p style="margin: 0 0 0.35rem 0; font-weight: 800; color: #006BB6; font-size: 0.95rem;">Time until lock</p>
+            <p id="countdownText" style="margin: 0; color: var(--ink); font-size: 1.05rem; font-weight: 700;"></p>
+          </div>
+        </div>
+
+        <div class="submit-section">
+          <button type="button" class="btn btn-primary" id="submitBtn">Submit Picks</button>
           <button type="button" class="btn btn-secondary" id="clearBtn">Clear All</button>
         </div>
       </div>
@@ -4431,6 +4457,7 @@
         
         if (snapshot.empty) {
           document.getElementById('lockTimeStatus').style.display = 'none';
+          try { document.getElementById('questionsContainer')?.classList.remove('is-locked'); document.querySelector('.submit-section')?.classList.remove('is-locked'); } catch(_){}
           document.getElementById('countdownTimer').style.display = 'none';
           document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = false; });
           const cb = document.getElementById('clearBtn');
@@ -4461,6 +4488,7 @@
 
         if (isLocked) {
           document.getElementById('lockTimeStatus').style.display = 'block';
+          try { document.getElementById('questionsContainer')?.classList.add('is-locked'); document.querySelector('.submit-section')?.classList.add('is-locked'); } catch(_){}
           document.getElementById('countdownTimer').style.display = 'none';
           let lockReason;
           if (isImmediatelyLocked) {
@@ -4501,6 +4529,7 @@
           const timeUntil = getTimeUntilLock(date, lockTime);
           if (timeUntil && timeUntil.diff > 0) {
             document.getElementById('lockTimeStatus').style.display = 'none';
+          try { document.getElementById('questionsContainer')?.classList.remove('is-locked'); document.querySelector('.submit-section')?.classList.remove('is-locked'); } catch(_){}
             document.getElementById('countdownTimer').style.display = 'block';
 
             const isFutureDate = timeUntil.days > 0;
@@ -4535,6 +4564,7 @@
             if (cb) cb.disabled = false;
           } else {
             document.getElementById('lockTimeStatus').style.display = 'none';
+          try { document.getElementById('questionsContainer')?.classList.remove('is-locked'); document.querySelector('.submit-section')?.classList.remove('is-locked'); } catch(_){}
             document.getElementById('countdownTimer').style.display = 'none';
             // Open with no countdown — ensure inputs usable
             document.querySelectorAll('#questionsContainer input').forEach(el => { el.disabled = false; });
@@ -4551,6 +4581,7 @@
       } catch (err) {
         console.error('Error checking lock status:', err);
         document.getElementById('lockTimeStatus').style.display = 'none';
+          try { document.getElementById('questionsContainer')?.classList.remove('is-locked'); document.querySelector('.submit-section')?.classList.remove('is-locked'); } catch(_){}
         document.getElementById('countdownTimer').style.display = 'none';
       }
     }
@@ -9938,31 +9969,70 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         }
       }
 
+      function tipMinutes(tip) {
+        const m = String(tip || '').match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return 9999;
+        return Number(m[1]) * 60 + Number(m[2]);
+      }
+      function applyLockFromGame(g, dateStr) {
+        if (!g) return;
+        const tip = g.tipET || '19:30';
+        const tipEl = document.getElementById('autoTipTime');
+        if (tipEl) tipEl.value = tip;
+        const lockDateEl = document.getElementById('autoLockDateOverride') || document.getElementById('lockDateOverride');
+        const lockTimeEl = document.getElementById('autoLockTimeOverride') || document.getElementById('lockTimeOverride') || document.getElementById('autoLockTime');
+        if (lockDateEl && dateStr) lockDateEl.value = dateStr;
+        if (lockTimeEl) {
+          // prefer 24h if input type=time, else keep tip string
+          if (lockTimeEl.type === 'time') lockTimeEl.value = tip.length === 5 ? tip : tip;
+          else lockTimeEl.value = tip;
+        }
+        msg('Lock set to earliest tip: ' + (g.name || '') + ' at ' + tip + ' ET on ' + (dateStr || 'this date'), 'success');
+      }
       function renderGames(games) {
         const el = document.getElementById('autoGamesList');
         if (!el) return;
         if (!games.length) {
-          el.innerHTML = '<div style="color:var(--mid);">No games found. Enter opponent & tip time manually, or add the game to <code>/data/schedule.json</code>.</div>';
+          el.innerHTML = '<div style="color:var(--mid);">No games found. Enter tip time manually, or add the game to schedule data.</div>';
           return;
         }
-        el.innerHTML = '<div style="margin-bottom:0.4rem;font-weight:600;">Games</div>' +
-          games.map((g, i) => {
-            const isPhi = (g.home === 'PHI' || g.away === 'PHI' ||
-              /76ers|philadelphia/i.test(g.homeName || '') || /76ers|philadelphia/i.test(g.awayName || ''));
-            return '<button type="button" class="btn btn-secondary auto-game-pick" data-idx="' + i + '" style="margin:0.25rem 0.25rem 0.25rem 0; font-size:0.8rem;' +
-              (isPhi ? 'border-color:#006BB6;background:rgba(0,107,182,0.1);' : '') + '">' +
-              (isPhi ? '★ ' : '') + (g.name || '') + ' · tip ' + (g.tipET || '?') +
-              ' <span style="opacity:0.65;">(' + g.source + ')</span></button>';
-          }).join('');
+        // Sort earliest tip first so lock default is obvious
+        const sorted = games.slice().sort((a, b) => tipMinutes(a.tipET) - tipMinutes(b.tipET));
+        foundGames = sorted;
+        const dateStr = document.getElementById('autoSlateDate')?.value || '';
+        const earliest = sorted[0];
+        let html = '';
+        if (earliest) {
+          html += '<div style="margin-bottom:0.75rem;padding:0.85rem 1rem;border:1px solid rgba(0,107,182,0.25);background:rgba(0,107,182,0.06);border-radius:12px;">' +
+            '<div style="font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#006BB6;margin-bottom:0.35rem;">Earliest tip (default lock)</div>' +
+            '<div style="font-weight:700;margin-bottom:0.5rem;">' + (earliest.name || '') + ' · ' + (earliest.tipET || '?') + ' ET</div>' +
+            '<button type="button" class="btn btn-primary" id="autoUseEarliestLockBtn" style="font-size:0.85rem;">Use earliest tip as lock time</button>' +
+            '</div>';
+        }
+        html += '<div style="margin-bottom:0.4rem;font-weight:600;">All games (click to set tip / lock)</div>';
+        html += sorted.map((g, i) => {
+          const isPhi = (g.home === 'PHI' || g.away === 'PHI' ||
+            /76ers|philadelphia/i.test(g.homeName || '') || /76ers|philadelphia/i.test(g.awayName || ''));
+          const isFirst = i === 0;
+          return '<button type="button" class="btn btn-secondary auto-game-pick" data-idx="' + i + '" style="margin:0.25rem 0.25rem 0.25rem 0; font-size:0.8rem;' +
+            (isFirst ? 'border-color:#059669;background:rgba(5,150,105,0.1);' : (isPhi ? 'border-color:#006BB6;background:rgba(0,107,182,0.1);' : '')) + '">' +
+            (isFirst ? '1st · ' : '') + (isPhi ? '★ ' : '') + (g.name || '') + ' · tip ' + (g.tipET || '?') +
+            ' ET</button>';
+        }).join('');
+        el.innerHTML = html;
+        document.getElementById('autoUseEarliestLockBtn')?.addEventListener('click', () => applyLockFromGame(earliest, dateStr));
+        // Auto-select earliest tip into tip field (does not force publish)
+        if (earliest) {
+          const tipEl = document.getElementById('autoTipTime');
+          if (tipEl && !tipEl.dataset.userSet) tipEl.value = earliest.tipET || '19:30';
+        }
         el.querySelectorAll('.auto-game-pick').forEach(btn => {
           btn.addEventListener('click', () => {
             const g = foundGames[Number(btn.getAttribute('data-idx'))];
             if (!g) return;
-            const phiHome = g.home === 'PHI' || /76ers|philadelphia/i.test(g.homeName || '');
-            const opp = phiHome ? (g.awayName || g.away) : (g.homeName || g.home);
             const tipEl = document.getElementById('autoTipTime');
-            if (tipEl) tipEl.value = g.tipET || '19:30';
-            msg('Selected: ' + g.name, 'success');
+            if (tipEl) { tipEl.value = g.tipET || '19:30'; tipEl.dataset.userSet = '1'; }
+            applyLockFromGame(g, dateStr);
           });
         });
       }

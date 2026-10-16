@@ -1,18 +1,5 @@
 // Navbar Injection Script
 
-// Google AdSense (sitewide — every page that loads nav.js)
-(function () {
-    try {
-        if (document.getElementById('sixers-adsbygoogle')) return;
-        var s = document.createElement('script');
-        s.id = 'sixers-adsbygoogle';
-        s.async = true;
-        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287';
-        s.crossOrigin = 'anonymous';
-        (document.head || document.documentElement).appendChild(s);
-    } catch (e) {}
-})();
-
 
 // === DARK MODE ANTI-FLASH ===
 // Run immediately (outside DOMContentLoaded) so theme applies before first paint.
@@ -677,6 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="footer-col">
                         <h3 class="footer-title">Support</h3>
                         <ul class="footer-links">
+                            <li><a href="/about">About</a></li>
                             <li><a href="/contact">Contact</a></li>
                             <li><a href="mailto:info@sixershoops.com">info@sixershoops.com</a></li>
                         </ul>

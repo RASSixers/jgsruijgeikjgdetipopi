@@ -452,6 +452,14 @@
     .news-feature-title { font-size: 1.28rem; line-height: 1.22; }
     .news-feature-excerpt { font-size: 0.88rem; margin-bottom: 0.85rem; }
     .news-stack {
+      padding: 1rem 1.05rem 0.7rem;
+      border-radius: 14px;
+    }
+    .news-stack-label {
+      font-size: 0.68rem;
+      padding-bottom: 0.7rem;
+    }
+    .news-stack {
       padding: 1rem 0 0.35rem;
       border-radius: 14px;
     }
@@ -483,9 +491,12 @@
     border-bottom: 1px solid var(--border-light);
   }
   .hg-panel-team .team-stats-table th:first-child,
-  .hg-panel-team .team-stats-table td:first-child {
+  .hg-panel-team .team-stats-table td.ts-label {
     text-align: left;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--mid);
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
   }
   .hg-panel-team .team-stats-table th {
     font-size: 0.72rem;
@@ -499,16 +510,16 @@
   }
 
   @media (min-width: 768px) {
-  }
+}
   @media (max-width: 767px) {
-  }
+}
 
   @media (min-width: 768px) {
     .hero-inner { padding: 2.5rem 2rem 2.25rem; }
     .hero-sub { margin-top: 1rem; }
     .hero-cta-row { margin-top: 1.6rem; gap: 0.75rem; }
     .feature-cards-inner { padding: 1.35rem 2rem 0; gap: 0.65rem; }
-  }
+}
   @media (max-width: 767px) {
     body { margin-top: 56px; }
     .hero-inner { padding: 1.1rem 1rem 1.25rem; }
@@ -535,11 +546,12 @@
     }
     .feature-card { padding: 0.75rem 0.7rem; }
     .feature-card-desc { display: none; }
-  }
+}
   @media (max-width: 480px) {
     .hero-title-top,
     .hero-title-bottom { font-size: clamp(1.9rem, 11vw, 2.4rem); }
   }
+
 
   /* Fan poll */
   .poll-section {
@@ -893,7 +905,7 @@
       <div class="news-heading">
         <div>
           <span class="news-eyebrow">Latest</span>
-          <h2 class="news-title">News & Analysis</h2>
+          <h2 class="news-title">News &amp; Analysis</h2>
         </div>
       </div>
       <div class="news-grid" id="news-grid">
@@ -934,6 +946,7 @@ const NEWS_COLLECTION = 'editorial_articles';
 const UPDATES_COLLECTION = 'social_posts';
 const POLLS_COLLECTION = 'fan_polls';
 function updatesPerPage() {
+  // 3 tweets per page on all screen sizes
   return 3;
 }
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
@@ -951,7 +964,7 @@ function waitForDb(cb, tries) {
   setTimeout(function () { waitForDb(cb, tries + 1); }, 250);
 }
 function escapeHtml(str) {
-  return String(str || '').replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function timeAgo(date) {
   if (!date) return '';
@@ -990,6 +1003,7 @@ function renderNews(articles) {
     return;
   }
 
+  // Text-only (no article photos — copyright-safe). Layout mirrors a featured + sidebar list.
   const featured = articles[0];
   const rest = articles.slice(1, 8);
 
@@ -1196,6 +1210,7 @@ function renderUpdatesPage() {
 
   if (hasTweet) {
     loadTweetWidgets(feed);
+    // Retry once after widgets settle
     setTimeout(function () { loadTweetWidgets(feed); }, 1200);
   }
 }
@@ -1430,6 +1445,7 @@ listenToUpdates();
       head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
   }
 
+
   function logo(team) {
     return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
   }
@@ -1454,6 +1470,7 @@ listenToUpdates();
         if (e && e.id) byId.set(String(e.id), e);
       });
     }
+    // Team schedule (season slate)
     try {
       const res = await fetch(SCHEDULE + "?seasontype=2", { cache: "no-store" });
       if (res.ok) {
@@ -1468,6 +1485,7 @@ listenToUpdates();
         addAll(data.events || []);
       }
     } catch (_) {}
+    // Scoreboard for today / nearby days (catches preseason & tip-soon games)
     try {
       const res = await fetch(SCOREBOARD + "?limit=100", { cache: "no-store" });
       if (res.ok) {
@@ -1503,6 +1521,7 @@ listenToUpdates();
     } catch (_) { return null; }
   }
 
+  // Full injury notes (shortComment / longComment) live on the league injuries feed
   async function fetchLeagueInjuriesByAbbr(abbrs) {
     const want = new Set((abbrs || []).map(function (a) { return String(a || "").toUpperCase(); }).filter(Boolean));
     if (!want.size) return [];
@@ -1512,17 +1531,22 @@ listenToUpdates();
       const data = await res.json();
       const out = [];
       (data.injuries || []).forEach(function (teamBlock) {
+        const sample = ((teamBlock.injuries || [])[0] || {}).athlete || {};
+        // teamBlock has displayName; map via first injury team links is messy — match by known abbr from athlete team? 
+        // League payload uses team id + displayName at top level
         const name = String(teamBlock.displayName || "").toLowerCase();
         let abbr = "";
         if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
         else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
         else {
+          // try parse from links href /name/phi/
           const links = teamBlock.links || [];
           for (let i = 0; i < links.length; i++) {
             const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
             if (m) { abbr = m[1].toUpperCase(); break; }
           }
         }
+        // Fallback: id map common NBA
         if (!abbr && teamBlock.id) {
           const ID_ABBR = { "20": "PHI", "2": "BOS", "1": "ATL", "17": "BKN", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN", "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL", "14": "MEM", "15": "MIA", "16": "MIL", "18": "MIN", "3": "NO", "19": "NY", "21": "OKC", "22": "ORL", "23": "PHX", "24": "POR", "25": "SAC", "26": "SA", "27": "TOR", "28": "UTAH", "29": "WSH", "30": "CHA" };
           abbr = ID_ABBR[String(teamBlock.id)] || "";
@@ -1538,6 +1562,7 @@ listenToUpdates();
   }
 
   function mergeInjuryGroups(summaryGroups, leagueGroups) {
+    // Prefer league feed (has shortComment). Fall back to summary.
     if (leagueGroups && leagueGroups.length) return leagueGroups;
     return summaryGroups || [];
   }
@@ -1548,10 +1573,12 @@ listenToUpdates();
     if (state === "pre") return true;
     const tip = new Date(ev.date).getTime();
     if (isNaN(tip)) return false;
+    // Not started yet (or tip within last 30 min and not marked final)
     return tip > Date.now() - 30 * 60 * 1000;
   }
 
   function pickFeatured(events) {
+    // Priority: live → upcoming if within 12h of tip → previous final until then → next upcoming
     const live = events.find(isLive);
     if (live) return { event: live, mode: "live" };
 
@@ -1567,10 +1594,12 @@ listenToUpdates();
     const finals = events.filter(isFinal).sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
     const latestFinal = finals[0] || null;
 
+    // Next tip is within 12 hours → always show that game
     if (next && untilNext != null && untilNext <= TWELVE_H) {
       return { event: next, mode: "upcoming" };
     }
 
+    // Otherwise keep showing the last final while we are still more than 12h from tip
     if (latestFinal) {
       if (untilNext == null || untilNext > TWELVE_H) {
         return { event: latestFinal, mode: "final" };
@@ -1606,8 +1635,124 @@ listenToUpdates();
     }).join("");
   }
 
+
   function filterInjuriesForEvent(groups, event) {
     const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+    function resolveGameDate(ev) {
+      if (!ev) return null;
+      const candidates = [
+        ev.date,
+        get(ev, "competitions.0.date", null),
+        get(ev, "competitions.0.startDate", null)
+      ];
+      for (let i = 0; i < candidates.length; i++) {
+        const raw = candidates[i];
+        if (!raw) continue;
+        // Avoid date-only strings parsing as UTC midnight (wrong ET day)
+        let s = String(raw);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s = s + "T17:00:00-04:00";
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
+    }
+
+    function resolveGameWeekday(ev) {
+      // 1) From status detail text ESPN already localized (most reliable)
+      const detail = [
+        get(ev, "competitions.0.status.type.detail", ""),
+        get(ev, "competitions.0.status.type.shortDetail", ""),
+        get(ev, "status.type.detail", ""),
+        get(ev, "status.type.shortDetail", "")
+      ].join(" ").toLowerCase();
+      for (let i = 0; i < WEEKDAYS.length; i++) {
+        if (detail.indexOf(WEEKDAYS[i]) !== -1 || detail.indexOf(WEEKDAYS[i].slice(0, 3)) !== -1) {
+          // prefer full day if present; short "fri" / "sat" from "Fri,"
+          if (detail.indexOf(WEEKDAYS[i]) !== -1) return WEEKDAYS[i];
+        }
+      }
+      // short forms: fri, sat, mon...
+      const shortMap = { sun: "sunday", mon: "monday", tue: "tuesday", wed: "wednesday", thu: "thursday", fri: "friday", sat: "saturday" };
+      for (const k in shortMap) {
+        if (new RegExp("\\b" + k + "\\b", "i").test(detail)) return shortMap[k];
+      }
+
+      // 2) From Date in America/New_York
+      const d = resolveGameDate(ev);
+      if (d) {
+        try {
+          return d.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase();
+        } catch (_) {}
+      }
+      return "";
+    }
+
+    const gameWeekday = resolveGameWeekday(event);
+    if (!gameWeekday) {
+      // If we cannot tell the tip day, only show season-long absences
+      return (groups || []).map(function (g) {
+        const items = (g.injuries || []).filter(function (inj) {
+          const text = [inj.shortComment, inj.longComment].filter(Boolean).join(" ").toLowerCase();
+          return /season-ending|out for (the )?season|out indefinitely/.test(text) ||
+            (/achilles/.test(text) && /rupture/.test(text));
+        });
+        return { team: g.team, injuries: items };
+      }).filter(function (g) { return g.injuries.length; });
+    }
+
+    function textOf(inj) {
+      return [inj.shortComment, inj.longComment, inj.comment, inj.description]
+        .filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function isSeasonLong(text) {
+      return /out for (the )?season/.test(text) ||
+        /season-ending/.test(text) ||
+        /out indefinitely/.test(text) ||
+        (/achilles/.test(text) && /rupture/.test(text));
+    }
+
+    function keep(inj) {
+      const text = textOf(inj);
+      if (isSeasonLong(text)) return true;
+      if (!text || text.length < 8) return false;
+
+      // Drop notes about a *different* weekday
+      for (let i = 0; i < WEEKDAYS.length; i++) {
+        const d = WEEKDAYS[i];
+        if (d === gameWeekday) continue;
+        if (text.indexOf(d) !== -1) return false;
+      }
+
+      // Keep if note names this tip's weekday
+      if (text.indexOf(gameWeekday) !== -1) return true;
+
+      // Same-day language when we know the tip day
+      if (/\b(tonight|today|this game|tip-?off)\b/.test(text)) return true;
+
+      return false;
+    }
+
+    return (groups || []).map(function (g) {
+      return {
+        team: g.team,
+        injuries: (Array.isArray(g.injuries) ? g.injuries : []).filter(keep)
+      };
+    }).filter(function (g) { return g.injuries && g.injuries.length; });
+  }
+
+  function renderInjuriesBlock(summary, event) {
+    // Always apply the same filter again so only this tip's notes show
+    let groups = filterInjuriesForEvent(
+      (summary && Array.isArray(summary.injuries)) ? summary.injuries : [],
+      event
+    );
+    if (!groups.length) {
+      return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
+        '<p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed for this game.</p></div>';
+    }
+
     function resolveGameDate(ev) {
       if (!ev) return null;
       const candidates = [ev.date, get(ev, "competitions.0.date", null), get(ev, "competitions.0.startDate", null)];
@@ -1619,102 +1764,14 @@ listenToUpdates();
       return null;
     }
     const gameDate = resolveGameDate(event);
-    if (!gameDate) return [];
-    const gameWeekday = gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase();
-
-    function textOf(inj) {
-      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
-        get(inj, "details.type", ""), get(inj, "type.description", "")]
-        .filter(Boolean).join(" ").toLowerCase();
-    }
-    function keep(inj) {
-      const text = textOf(inj);
-      if (/out for (the )?season/.test(text) || /season-ending/.test(text) || /out indefinitely/.test(text)) return true;
-      if (/achilles/.test(text) && /rupture/.test(text)) return true;
-      const days = WEEKDAYS.filter(function (d) { return text.indexOf(d) !== -1; });
-      const hasThis = days.indexOf(gameWeekday) !== -1;
-      const hasOther = days.some(function (d) { return d !== gameWeekday; });
-      if (hasOther && !hasThis) return false;
-      return hasThis;
-    }
-    return (groups || []).map(function (g) {
-      return {
-        team: g.team,
-        injuries: (g.injuries || []).filter(keep)
-      };
-    }).filter(function (g) { return g.injuries && g.injuries.length; });
-  }
-
-  function renderInjuriesBlock(summary, event) {
-    let groups = (summary && Array.isArray(summary.injuries)) ? summary.injuries : [];
-    if (!groups.length) {
-      return '<div class="home-inj"><div class="home-inj-title">Injury report</div><p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed yet.</p></div>';
-    }
-
-    function resolveGameDate(ev) {
-      if (!ev) return null;
-      const candidates = [
-        ev.date,
-        get(ev, "competitions.0.date", null),
-        get(ev, "competitions.0.startDate", null)
-      ];
-      for (let i = 0; i < candidates.length; i++) {
-        if (!candidates[i]) continue;
-        const d = new Date(candidates[i]);
-        if (!isNaN(d.getTime())) return d;
-      }
-      return null;
-    }
-
-    const gameDate = resolveGameDate(event);
-    const gameValid = !!(gameDate && !isNaN(gameDate.getTime()));
-    const gameWeekday = gameValid
+    const gameWeekday = gameDate
       ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase()
       : "";
 
-    const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-
     function collectText(inj) {
-      return [
-        inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
-        get(inj, "type.description", ""), get(inj, "details.type", ""), get(inj, "details.detail", "")
-      ].filter(Boolean).join(" ");
-    }
-
-    function weekdaysInText(text) {
-      const lower = String(text || "").toLowerCase();
-      return WEEKDAYS.filter(function (d) { return lower.indexOf(d) !== -1; });
-    }
-
-    function isSeasonLong(inj, text) {
-      const lower = String(text || "").toLowerCase();
-      return /out for (the )?season/.test(lower) ||
-        /season-ending/.test(lower) ||
-        /out indefinitely/.test(lower) ||
-        (/achilles/.test(lower) && /rupture/.test(lower));
-    }
-
-    function isRelevantToGame(inj) {
-      const text = collectText(inj);
-      const lower = String(text || "").toLowerCase();
-
-      // Always keep true season-long / indefinite injuries
-      if (isSeasonLong(inj, text)) return true;
-
-      if (!gameValid || !gameWeekday) return false;
-
-      const daysFound = weekdaysInText(text);
-      const hasThis = daysFound.indexOf(gameWeekday) !== -1;
-      const hasOther = daysFound.some(function (d) { return d !== gameWeekday; });
-
-      // Drop any note that only mentions a different weekday
-      // (e.g. "out Saturday" when the upcoming game is not Saturday)
-      if (hasOther && !hasThis) return false;
-
-      // Must explicitly name this game's weekday to be shown on an upcoming card
-      if (hasThis) return true;
-
-      return false;
+      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
+        get(inj, "type.description", ""), get(inj, "details.type", ""), get(inj, "details.detail", "")]
+        .filter(Boolean).join(" ");
     }
 
     function displayStatus(inj) {
@@ -1753,16 +1810,6 @@ listenToUpdates();
           hour: "numeric", minute: "2-digit"
         }) + " ET";
       } catch (_) { return null; }
-    }
-
-    groups = groups.map(function (g) {
-      const items = (Array.isArray(g.injuries) ? g.injuries : []).filter(isRelevantToGame);
-      return { team: g.team, injuries: items };
-    }).filter(function (g) { return g.injuries && g.injuries.length; });
-
-    if (!groups.length) {
-      return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
-        '<p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed for this game.</p></div>';
     }
 
     let latestMs = 0;
@@ -1809,6 +1856,7 @@ listenToUpdates();
   }
 
   function renderBoard(event, summary, mode) {
+
     const card = document.getElementById("home-game-card");
     const body = document.getElementById("home-game-body");
     const kicker = document.getElementById("home-game-kicker");
@@ -1921,17 +1969,23 @@ listenToUpdates();
       if (summary) lastSummary = summary;
       else if (chosen.mode !== "upcoming") summary = lastSummary;
       summary = summary || {};
+      // Enrich with league injury writeups (shortComment) for PHI + opponent
+      // Injury report: ONLY ESPN league write-ups (have shortComment), filtered to this tip
       try {
-        const comps = get(featured, "competitions.0.competitors", []) || [];
-        const abbrs = comps.map(function (c) { return get(c, "team.abbreviation", ""); }).filter(Boolean);
-        if (!abbrs.includes("PHI")) abbrs.push("PHI");
+        const comps = get(featured, "competitions.0.competitors", []) ||
+          get(summary, "header.competitions.0.competitors", []) || [];
+        let abbrs = comps.map(function (c) { return get(c, "team.abbreviation", ""); }).filter(Boolean);
+        if (!abbrs.length) abbrs = ["PHI"];
+        if (abbrs.indexOf("PHI") === -1) abbrs.push("PHI");
         const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
-        if (leagueInj && leagueInj.length) summary.injuries = leagueInj;
-      } catch (_) {}
-      try {
-        summary.injuries = filterInjuriesForEvent(summary.injuries || [], featured);
-      } catch (_) {}
+        // Never use summary.injuries fallback — those lack shortComment and list every GTD
+        summary.injuries = filterInjuriesForEvent(leagueInj || [], featured);
+      } catch (injErr) {
+        console.warn("injuries", injErr);
+        summary.injuries = [];
+      }
       renderBoard(featured, summary, chosen.mode);
+
 
       clearTimeout(timer);
       timer = setTimeout(refresh, chosen.mode === "live" ? 2000 : 60000);
@@ -1958,6 +2012,7 @@ listenToUpdates();
   else refresh();
 })();
 </script>
+
 
 <footer class="footer" id="site-footer">
   <div class="footer-inner">
@@ -1991,18 +2046,23 @@ listenToUpdates();
         <div class="footer-col">
           <h3 class="footer-title">Legal</h3>
           <ul class="footer-links">
-            <li><a href="/privacy-policy">Privacy Policy</a></li>
             <li><a href="/terms-of-service">Terms of Service</a></li>
+            <li><a href="/privacy-policy">Privacy Policy</a></li>
             <li><a href="/cookie-policy">Cookie Policy</a></li>
-            <li><a href="/disclaimer">Disclaimer</a></li>
           </ul>
         </div>
       </div>
     </div>
+    <div class="footer-disclaimer">
+      <p>SixersHoops is an independent fan site and is not affiliated with, endorsed by, or sponsored by the National Basketball Association (NBA), the Philadelphia 76ers, or any related entity. All trademarks and team names belong to their respective owners.</p>
+      <p>User-generated content (including chat, comments, trades, picks, and posts) is provided by users. SixersHoops does not control, verify, or guarantee that content and is not responsible for it. Use of this site is at your own risk.</p>
+    </div>
     <div class="footer-bottom">
-      <p class="footer-copy">© 2025 SixersHoops. All rights reserved. Not affiliated with the NBA or the Philadelphia 76ers.</p>
+      <span>&copy; 2026 SixersHoops. All rights reserved.</span>
+      <span class="footer-bottom-meta">For entertainment and informational purposes only</span>
     </div>
   </div>
 </footer>
+
 </body>
 </html>

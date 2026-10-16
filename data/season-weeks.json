@@ -10,44 +10,172 @@
     "2026-27": {
       "label": "2026-27",
       "archived": false,
-      "start": "2026-10-03",
-      "end": "2027-06-20",
+      "start": "2026-10-20",
+      "end": "2027-04-19",
       "preseasonStart": "2026-10-03",
-      "regularSeasonStart": "2026-10-21",
-      "note": "Week 1 begins NBA preseason (Oct 3). Adjust regularSeasonStart if the league calendar shifts."
+      "regularSeasonStart": "2026-10-20",
+      "week1Start": "2026-10-20",
+      "note": "Week 1 begins 2026-10-20. Preseason games before that are outside Week 1+ scoring unless assigned manually."
     }
   },
   "weeks": {
     "2026-27": [
-      { "week": 1, "start": "2026-10-03", "end": "2026-10-09", "phase": "preseason" },
-      { "week": 2, "start": "2026-10-10", "end": "2026-10-16", "phase": "preseason" },
-      { "week": 3, "start": "2026-10-17", "end": "2026-10-23", "phase": "preseason_to_regular" },
-      { "week": 4, "start": "2026-10-24", "end": "2026-10-30", "phase": "regular" },
-      { "week": 5, "start": "2026-10-31", "end": "2026-11-06", "phase": "regular" },
-      { "week": 6, "start": "2026-11-07", "end": "2026-11-13", "phase": "regular" },
-      { "week": 7, "start": "2026-11-14", "end": "2026-11-20", "phase": "regular" },
-      { "week": 8, "start": "2026-11-21", "end": "2026-11-27", "phase": "regular" },
-      { "week": 9, "start": "2026-11-28", "end": "2026-12-04", "phase": "regular" },
-      { "week": 10, "start": "2026-12-05", "end": "2026-12-11", "phase": "regular" },
-      { "week": 11, "start": "2026-12-12", "end": "2026-12-18", "phase": "regular" },
-      { "week": 12, "start": "2026-12-19", "end": "2026-12-25", "phase": "regular" },
-      { "week": 13, "start": "2026-12-26", "end": "2027-01-01", "phase": "regular" },
-      { "week": 14, "start": "2027-01-02", "end": "2027-01-08", "phase": "regular" },
-      { "week": 15, "start": "2027-01-09", "end": "2027-01-15", "phase": "regular" },
-      { "week": 16, "start": "2027-01-16", "end": "2027-01-22", "phase": "regular" },
-      { "week": 17, "start": "2027-01-23", "end": "2027-01-29", "phase": "regular" },
-      { "week": 18, "start": "2027-01-30", "end": "2027-02-05", "phase": "regular" },
-      { "week": 19, "start": "2027-02-06", "end": "2027-02-12", "phase": "regular" },
-      { "week": 20, "start": "2027-02-13", "end": "2027-02-19", "phase": "regular" },
-      { "week": 21, "start": "2027-02-20", "end": "2027-02-26", "phase": "regular" },
-      { "week": 22, "start": "2027-02-27", "end": "2027-03-05", "phase": "regular" },
-      { "week": 23, "start": "2027-03-06", "end": "2027-03-12", "phase": "regular" },
-      { "week": 24, "start": "2027-03-13", "end": "2027-03-19", "phase": "regular" },
-      { "week": 25, "start": "2027-03-20", "end": "2027-03-26", "phase": "regular" },
-      { "week": 26, "start": "2027-03-27", "end": "2027-04-02", "phase": "regular" },
-      { "week": 27, "start": "2027-04-03", "end": "2027-04-09", "phase": "regular" },
-      { "week": 28, "start": "2027-04-10", "end": "2027-04-16", "phase": "regular" }
-    ],
-    "2025-26": []
+      {
+        "week": 1,
+        "start": "2026-10-20",
+        "end": "2026-10-26",
+        "phase": "regular"
+      },
+      {
+        "week": 2,
+        "start": "2026-10-27",
+        "end": "2026-11-02",
+        "phase": "regular"
+      },
+      {
+        "week": 3,
+        "start": "2026-11-03",
+        "end": "2026-11-09",
+        "phase": "regular"
+      },
+      {
+        "week": 4,
+        "start": "2026-11-10",
+        "end": "2026-11-16",
+        "phase": "regular"
+      },
+      {
+        "week": 5,
+        "start": "2026-11-17",
+        "end": "2026-11-23",
+        "phase": "regular"
+      },
+      {
+        "week": 6,
+        "start": "2026-11-24",
+        "end": "2026-11-30",
+        "phase": "regular"
+      },
+      {
+        "week": 7,
+        "start": "2026-12-01",
+        "end": "2026-12-07",
+        "phase": "regular"
+      },
+      {
+        "week": 8,
+        "start": "2026-12-08",
+        "end": "2026-12-14",
+        "phase": "regular"
+      },
+      {
+        "week": 9,
+        "start": "2026-12-15",
+        "end": "2026-12-21",
+        "phase": "regular"
+      },
+      {
+        "week": 10,
+        "start": "2026-12-22",
+        "end": "2026-12-28",
+        "phase": "regular"
+      },
+      {
+        "week": 11,
+        "start": "2026-12-29",
+        "end": "2027-01-04",
+        "phase": "regular"
+      },
+      {
+        "week": 12,
+        "start": "2027-01-05",
+        "end": "2027-01-11",
+        "phase": "regular"
+      },
+      {
+        "week": 13,
+        "start": "2027-01-12",
+        "end": "2027-01-18",
+        "phase": "regular"
+      },
+      {
+        "week": 14,
+        "start": "2027-01-19",
+        "end": "2027-01-25",
+        "phase": "regular"
+      },
+      {
+        "week": 15,
+        "start": "2027-01-26",
+        "end": "2027-02-01",
+        "phase": "regular"
+      },
+      {
+        "week": 16,
+        "start": "2027-02-02",
+        "end": "2027-02-08",
+        "phase": "regular"
+      },
+      {
+        "week": 17,
+        "start": "2027-02-09",
+        "end": "2027-02-15",
+        "phase": "regular"
+      },
+      {
+        "week": 18,
+        "start": "2027-02-16",
+        "end": "2027-02-22",
+        "phase": "regular"
+      },
+      {
+        "week": 19,
+        "start": "2027-02-23",
+        "end": "2027-03-01",
+        "phase": "regular"
+      },
+      {
+        "week": 20,
+        "start": "2027-03-02",
+        "end": "2027-03-08",
+        "phase": "regular"
+      },
+      {
+        "week": 21,
+        "start": "2027-03-09",
+        "end": "2027-03-15",
+        "phase": "regular"
+      },
+      {
+        "week": 22,
+        "start": "2027-03-16",
+        "end": "2027-03-22",
+        "phase": "regular"
+      },
+      {
+        "week": 23,
+        "start": "2027-03-23",
+        "end": "2027-03-29",
+        "phase": "regular"
+      },
+      {
+        "week": 24,
+        "start": "2027-03-30",
+        "end": "2027-04-05",
+        "phase": "regular"
+      },
+      {
+        "week": 25,
+        "start": "2027-04-06",
+        "end": "2027-04-12",
+        "phase": "regular"
+      },
+      {
+        "week": 26,
+        "start": "2027-04-13",
+        "end": "2027-04-19",
+        "phase": "regular"
+      }
+    ]
   }
 }

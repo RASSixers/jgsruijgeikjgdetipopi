@@ -148,6 +148,9 @@ body, html {
   z-index: 40;
 }
 .admin-tab {
+  pointer-events: auto;
+  cursor: pointer;
+
   font-family: 'Barlow', sans-serif;
   font-size: 0.86rem;
   font-weight: 600;
@@ -174,8 +177,9 @@ body, html {
   border-color: var(--sixers-blue);
   box-shadow: 0 4px 12px rgba(0, 107, 182, 0.25);
 }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
+.tab-panel { display: none !important; }
+.tab-panel.active { display: block !important; }
+
 
 /* —— List toolbar —— */
 .list-toolbar {
@@ -973,7 +977,10 @@ body, html {
   .admin-header h1 { font-size: 1.3rem; }
   .admin-header-inner { padding-bottom: 0.85rem; }
   .admin-tabs { padding: 0 0.5rem; top: 56px; }
-  .admin-tab { padding: 0.85rem 0.85rem; font-size: 0.84rem; }
+  .admin-tab {
+  pointer-events: auto;
+  cursor: pointer;
+ padding: 0.85rem 0.85rem; font-size: 0.84rem; }
   .list-filters { flex-direction: column; }
   .list-filters .form-input,
   .list-filters .form-select { min-width: 0; width: 100%; }
@@ -1398,25 +1405,40 @@ function articleVisibility(a) {
   return 'public';
 }
 
-document.querySelectorAll('.admin-tab').forEach(tab => {
-  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+document.querySelectorAll('.admin-tab').forEach(function (tab) {
+  tab.addEventListener('click', function (e) {
+    e.preventDefault();
+    switchTab(tab.getAttribute('data-tab'));
+  });
 });
 function switchTab(name) {
   name = String(name || 'list');
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  var panel = document.getElementById('tab-' + name);
-  if (panel) panel.classList.add('active');
-  else {
-    var fallback = document.getElementById('tab-list');
-    if (fallback) fallback.classList.add('active');
-  }
-  if (name === 'updates') {
-    try { renderUpdatesAdminList(); } catch (e) {}
-    try {
-      var url = document.getElementById('u-tweet-url');
-      if (url) setTimeout(function () { url.focus(); }, 50);
-    } catch (e) {}
+  try {
+    document.querySelectorAll('.admin-tab').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(function (p) {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
+    var panel = document.getElementById('tab-' + name);
+    if (!panel) panel = document.getElementById('tab-list');
+    if (panel) {
+      panel.classList.add('active');
+      panel.style.display = 'block';
+    }
+    if (name === 'updates') {
+      try { if (typeof renderUpdatesAdminList === 'function') renderUpdatesAdminList(); } catch (e) {}
+    }
+    if (name === 'polls') {
+      try { if (typeof renderPollsAdmin === 'function') renderPollsAdmin(); } catch (e) {}
+    }
+    if (name === 'list') {
+      try { if (typeof renderArticleList === 'function') renderArticleList(); } catch (e) {}
+    }
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
+  } catch (err) {
+    console.warn('switchTab', err);
   }
 }
 
@@ -1606,22 +1628,26 @@ function openPanel(id) {
 (function setupEditorTools() {
   var body = getBodyEl();
   if (!body) return;
+  function on(id, ev, fn) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+  }
 
-  document.getElementById('btn-insert-tweet').addEventListener('click', function () {
+  on('btn-insert-tweet', 'click', function () {
     openPanel('panel-tweet');
     var inp = document.getElementById('insert-tweet-url');
-    inp.value = '';
-    document.getElementById('insert-tweet-status').textContent = '';
-    document.getElementById('insert-tweet-status').className = 'convert-result';
-    setTimeout(function () { inp.focus(); }, 50);
+    var st = document.getElementById('insert-tweet-status');
+    if (inp) inp.value = '';
+    if (st) { st.textContent = ''; st.className = 'convert-result'; }
+    if (inp) setTimeout(function () { inp.focus(); }, 50);
   });
-  document.getElementById('btn-insert-image').addEventListener('click', function () {
+  (document.getElementById('btn-insert-image')||{addEventListener:function(){}}).addEventListener('click', function () {
     openPanel('panel-image');
     document.getElementById('insert-image-url').value = '';
     document.getElementById('insert-image-caption').value = '';
     setTimeout(function () { document.getElementById('insert-image-url').focus(); }, 50);
   });
-  document.getElementById('btn-convert-tweet').addEventListener('click', function () {
+  (document.getElementById('btn-convert-tweet')||{addEventListener:function(){}}).addEventListener('click', function () {
     openPanel('panel-convert');
     document.getElementById('convert-tweet-input').value = '';
     document.getElementById('convert-tweet-status').textContent = '';
@@ -1631,11 +1657,11 @@ function openPanel(id) {
     setTimeout(function () { document.getElementById('convert-tweet-input').focus(); }, 50);
   });
 
-  document.getElementById('insert-tweet-cancel').addEventListener('click', closeInsertPanels);
-  document.getElementById('insert-image-cancel').addEventListener('click', closeInsertPanels);
-  document.getElementById('convert-tweet-cancel').addEventListener('click', closeInsertPanels);
+  (document.getElementById('insert-tweet-cancel')||{addEventListener:function(){}}).addEventListener('click', closeInsertPanels);
+  (document.getElementById('insert-image-cancel')||{addEventListener:function(){}}).addEventListener('click', closeInsertPanels);
+  (document.getElementById('convert-tweet-cancel')||{addEventListener:function(){}}).addEventListener('click', closeInsertPanels);
 
-  document.getElementById('insert-tweet-confirm').addEventListener('click', function () {
+  (document.getElementById('insert-tweet-confirm')||{addEventListener:function(){}}).addEventListener('click', function () {
     var raw = document.getElementById('insert-tweet-url').value;
     var url = normalizeTweetUrl(raw);
     var status = document.getElementById('insert-tweet-status');
@@ -1862,13 +1888,15 @@ function renderArticleList() {
       (function(){ var isOwnerAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === MOD_EMAIL.toLowerCase(); var isAuthor = currentUser && (a.authorUid === currentUser.uid || (a.authorEmail && a.authorEmail.toLowerCase() === (currentUser.email || '').toLowerCase())); return (isOwnerAdmin || isAuthor) ? ('<button class="btn-delete" onclick="deleteArticle(\'' + a.id + '\')">Delete</button>') : ''; })() + '</div></div>';
   }).join('');
 }
-['article-search','article-filter-category','article-filter-status'].forEach(id => {
-  document.getElementById(id).addEventListener('input', renderArticleList);
-  document.getElementById(id).addEventListener('change', renderArticleList);
+['article-search','article-filter-category','article-filter-status'].forEach(function (id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', renderArticleList);
+  el.addEventListener('change', renderArticleList);
 });
 
-document.getElementById('new-article-btn').addEventListener('click', () => { clearEditor(); switchTab('editor'); });
-document.getElementById('cancel-editor-btn').addEventListener('click', () => switchTab('list'));
+var _newArtBtn = document.getElementById('new-article-btn'); if (_newArtBtn) _newArtBtn.addEventListener('click', function () { clearEditor(); switchTab('editor'); });
+var _cancelEd = document.getElementById('cancel-editor-btn'); if (_cancelEd) _cancelEd.addEventListener('click', function () { switchTab('list'); });
 
 function todayInputValue() {
   const d = new Date();
@@ -2205,11 +2233,18 @@ function initAdmin() {
     window.auth.onAuthStateChanged(user => {
       currentUser = user || null;
       function showAdminUI() {
-        document.getElementById('auth-gate').style.display = 'none';
-        document.getElementById('admin-ui').style.display = 'block';
-        listenToArticles();
-        listenToUpdates();
-        listenToPolls();
+        var gate = document.getElementById('auth-gate');
+        var ui = document.getElementById('admin-ui');
+        if (gate) gate.style.display = 'none';
+        if (ui) ui.style.display = 'block';
+        // Only attach listeners once
+        if (!window.__articlesAdminListening) {
+          window.__articlesAdminListening = true;
+          try { listenToArticles(); } catch (e) { console.warn(e); }
+          try { listenToUpdates(); } catch (e) { console.warn(e); }
+          try { listenToPolls(); } catch (e) { console.warn(e); }
+        }
+        try { switchTab(document.querySelector('.admin-tab.active')?.getAttribute('data-tab') || 'list'); } catch (e) {}
       }
       function showDeniedUI(signedIn) {
         document.getElementById('auth-gate').style.display = 'flex';
@@ -2343,7 +2378,7 @@ function listenToPolls() {
   }, e => toast('Could not load polls: ' + e.message, 'error'));
 }
 
-document.getElementById('auth-gate').style.display = 'flex';
+// Don't flash the gate before auth resolves — initAdmin will show the right UI
 document.addEventListener('DOMContentLoaded', initAdmin);
 </script>
 </body>

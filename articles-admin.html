@@ -1797,59 +1797,113 @@ function parseMinutes(minStr) {
 }
 
 async function findPhiEventForDate(dateStr) {
-  // dateStr YYYY-MM-DD optional — prefer exact day, else latest final
-  const events = [];
-  try {
-    const res = await fetch(ESPN_SCHEDULE + '?seasontype=2', { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      (data.events || []).forEach(function (e) { events.push(e); });
+  // dateStr: YYYY-MM-DD (ET calendar day). Pull preseason + regular season + that day's scoreboard.
+  const byId = {};
+  function addEvents(list) {
+    (list || []).forEach(function (e) {
+      if (e && e.id) byId[String(e.id)] = e;
+    });
+  }
+  function isPhiEvent(e) {
+    const comps = (((e.competitions || [])[0] || {}).competitors) || [];
+    if (!comps.length) {
+      // team schedule events are already PHI-only
+      return true;
     }
-  } catch (e) {}
-  try {
-    const res = await fetch(ESPN_SCHEDULE, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      (data.events || []).forEach(function (e) {
-        if (!events.some(function (x) { return String(x.id) === String(e.id); })) events.push(e);
-      });
-    }
-  } catch (e) {}
+    return comps.some(function (c) {
+      return ((c.team || {}).abbreviation || '') === 'PHI' ||
+        /76ers|philadelphia/i.test((c.team || {}).displayName || '');
+    });
+  }
+
+  // Preseason (1), regular (2), and default team schedule
+  const scheduleUrls = [
+    ESPN_SCHEDULE + '?seasontype=1',
+    ESPN_SCHEDULE + '?seasontype=2',
+    ESPN_SCHEDULE
+  ];
+  for (var i = 0; i < scheduleUrls.length; i++) {
+    try {
+      const res = await fetch(scheduleUrls[i], { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        addEvents(data.events || []);
+      }
+    } catch (e) {}
+  }
+
+  // Scoreboard for the exact calendar day (YYYYMMDD) — most reliable for that date
+  if (dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const ymd = dateStr.replace(/-/g, '');
+    try {
+      const res = await fetch(ESPN_SCOREBOARD + '?dates=' + ymd + '&limit=100', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        (data.events || []).forEach(function (e) {
+          if (isPhiEvent(e)) addEvents([e]);
+        });
+      }
+    } catch (e) {}
+  }
+  // Also today's scoreboard as a fallback
   try {
     const res = await fetch(ESPN_SCOREBOARD + '?limit=100', { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       (data.events || []).forEach(function (e) {
-        const comps = (((e.competitions || [])[0] || {}).competitors) || [];
-        const isPhi = comps.some(function (c) {
-          return ((c.team || {}).abbreviation || '') === 'PHI';
-        });
-        if (isPhi && !events.some(function (x) { return String(x.id) === String(e.id); })) events.push(e);
+        if (isPhiEvent(e)) addEvents([e]);
       });
     }
   } catch (e) {}
 
-  function eventDay(ev) {
+  const events = Object.keys(byId).map(function (k) { return byId[k]; });
+
+  function eventDayET(ev) {
+    if (!ev || !ev.date) return '';
     try {
-      return new Date(ev.date).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
-    } catch (e) { return ''; }
+      const d = new Date(ev.date);
+      if (isNaN(d.getTime())) return '';
+      // America/New_York calendar day as YYYY-MM-DD
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(d);
+      const y = parts.find(function (p) { return p.type === 'year'; }).value;
+      const m = parts.find(function (p) { return p.type === 'month'; }).value;
+      const day = parts.find(function (p) { return p.type === 'day'; }).value;
+      return y + '-' + m + '-' + day;
+    } catch (e) {
+      try {
+        return new Date(ev.date).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      } catch (e2) { return ''; }
+    }
   }
   function isFinal(ev) {
-    const st = ((((ev.competitions || [])[0] || {}).status) || {}).type || {};
+    const st = ((((ev.competitions || [])[0] || {}).status) || {}).type || (ev.status || {}).type || {};
     const state = String(st.state || '').toLowerCase();
     const name = String(st.name || '').toUpperCase();
-    return state === 'post' || name.indexOf('FINAL') >= 0;
+    return state === 'post' || name.indexOf('FINAL') >= 0 || st.completed === true;
   }
 
   if (dateStr) {
-    const match = events.filter(function (e) { return eventDay(e) === dateStr; });
+    const match = events.filter(function (e) { return eventDayET(e) === dateStr; });
     if (match.length) {
-      // prefer final
       const fin = match.find(isFinal);
       return fin || match[0];
     }
+    // Soft match: UTC date string starts with dateStr (rare edge cases)
+    const soft = events.filter(function (e) {
+      return String(e.date || '').slice(0, 10) === dateStr;
+    });
+    if (soft.length) {
+      const fin = soft.find(isFinal);
+      return fin || soft[0];
+    }
+    return null;
   }
-  // latest completed Sixers game
+  // No date: latest completed Sixers game
   const finals = events.filter(isFinal).sort(function (a, b) {
     return new Date(b.date) - new Date(a.date);
   });
@@ -1867,7 +1921,11 @@ async function loadEspnBoxScoreIntoGrades(dateStr) {
   try {
     const event = await findPhiEventForDate(dateStr || '');
     if (!event) {
-      setStatus('No Sixers game found for that date.', true);
+      if (dateStr) {
+        setStatus('No Sixers game on ' + dateStr + ' (ET). Try the tip-off calendar date — e.g. BOS game was 2026-10-16. Leave date blank for latest final.', true);
+      } else {
+        setStatus('No completed Sixers game found on ESPN yet.', true);
+      }
       return;
     }
     const res = await fetch(ESPN_SUMMARY + '?event=' + encodeURIComponent(event.id), { cache: 'no-store' });

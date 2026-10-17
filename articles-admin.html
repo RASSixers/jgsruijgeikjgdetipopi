@@ -1196,10 +1196,16 @@ Next paragraph…"></textarea>
             <div class="editor-card" id="grades-section" style="margin-top:1rem;">
             <h3>Player grades</h3>
             <p class="section-note">Only used when category is Player Grades. Load roster, set each grade, add stats and a short note.</p>
-            <div class="grade-toolbar">
+            <div class="grade-toolbar" style="flex-wrap:wrap;gap:0.5rem;align-items:center;">
               <button type="button" class="btn-ghost" id="load-roster-btn">Load roster</button>
               <button type="button" class="btn-ghost" id="clear-grades-btn">Clear grades</button>
+              <span style="width:1px;height:1.25rem;background:var(--border-light);margin:0 0.15rem;"></span>
+              <label class="form-label" style="margin:0;font-size:0.72rem;">Game date</label>
+              <input type="date" class="form-input" id="espn-grade-date" style="width:auto;min-width:9.5rem;padding:0.4rem 0.55rem;">
+              <button type="button" class="btn-primary" id="load-espn-grades-btn" style="padding:0.45rem 0.85rem;font-size:0.82rem;">Load ESPN box score</button>
+              <span id="espn-grade-status" style="font-size:0.75rem;color:var(--mid);"></span>
             </div>
+            <p class="section-note" style="margin-top:0.35rem;">Load ESPN box score fills each Sixers player with a stats line like <em>23 min, 11 pts (3-6 FG, 0-2 3P, 5-6 FT), 5 reb, 1 ast, 1 TO, 1 blk, -3</em>. You add the grade and write-up.</p>
             <div id="grade-entries"></div>
             <button class="add-player-btn" id="add-player-btn">+ Add Player</button>
           </div>
@@ -1734,8 +1740,221 @@ document.getElementById('f-category').addEventListener('change', () => {
   updatePreview();
 });
 
+
+const ESPN_SCHEDULE = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/schedule';
+const ESPN_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard';
+const ESPN_SUMMARY = 'https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary';
+
+function formatGradeStatsLine(keys, statsArr) {
+  function get(k) {
+    const i = keys.indexOf(k);
+    if (i < 0 || statsArr[i] == null || statsArr[i] === '') return null;
+    return String(statsArr[i]);
+  }
+  const min = get('minutes');
+  const pts = get('points');
+  const fg = get('fieldGoalsMade-fieldGoalsAttempted');
+  const tp = get('threePointFieldGoalsMade-threePointFieldGoalsAttempted');
+  const ft = get('freeThrowsMade-freeThrowsAttempted');
+  const reb = get('rebounds');
+  const ast = get('assists');
+  const to = get('turnovers');
+  const stl = get('steals');
+  const blk = get('blocks');
+  let pm = get('plusMinus');
+  const parts = [];
+  if (min != null) parts.push(min + ' min');
+  if (pts != null) {
+    const shoot = [];
+    if (fg) shoot.push(fg + ' FG');
+    if (tp) shoot.push(tp + ' 3P');
+    if (ft) shoot.push(ft + ' FT');
+    parts.push(pts + ' pts' + (shoot.length ? ' (' + shoot.join(', ') + ')' : ''));
+  }
+  if (reb != null) parts.push(reb + ' reb');
+  if (ast != null) parts.push(ast + ' ast');
+  if (to != null) parts.push(to + ' TO');
+  if (stl != null && stl !== '0') parts.push(stl + ' stl');
+  if (blk != null && blk !== '0') parts.push(blk + ' blk');
+  if (pm != null) {
+    if (pm.charAt(0) !== '+' && pm.charAt(0) !== '-' && pm !== '0') {
+      const n = Number(pm);
+      if (!isNaN(n) && n > 0) pm = '+' + pm;
+    }
+    parts.push(pm);
+  }
+  return parts.join(', ');
+}
+
+function parseMinutes(minStr) {
+  if (!minStr) return 0;
+  const s = String(minStr);
+  if (s.indexOf(':') >= 0) {
+    const bits = s.split(':');
+    return (parseInt(bits[0], 10) || 0) + (parseInt(bits[1], 10) || 0) / 60;
+  }
+  return parseFloat(s) || 0;
+}
+
+async function findPhiEventForDate(dateStr) {
+  // dateStr YYYY-MM-DD optional — prefer exact day, else latest final
+  const events = [];
+  try {
+    const res = await fetch(ESPN_SCHEDULE + '?seasontype=2', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      (data.events || []).forEach(function (e) { events.push(e); });
+    }
+  } catch (e) {}
+  try {
+    const res = await fetch(ESPN_SCHEDULE, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      (data.events || []).forEach(function (e) {
+        if (!events.some(function (x) { return String(x.id) === String(e.id); })) events.push(e);
+      });
+    }
+  } catch (e) {}
+  try {
+    const res = await fetch(ESPN_SCOREBOARD + '?limit=100', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      (data.events || []).forEach(function (e) {
+        const comps = (((e.competitions || [])[0] || {}).competitors) || [];
+        const isPhi = comps.some(function (c) {
+          return ((c.team || {}).abbreviation || '') === 'PHI';
+        });
+        if (isPhi && !events.some(function (x) { return String(x.id) === String(e.id); })) events.push(e);
+      });
+    }
+  } catch (e) {}
+
+  function eventDay(ev) {
+    try {
+      return new Date(ev.date).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
+    } catch (e) { return ''; }
+  }
+  function isFinal(ev) {
+    const st = ((((ev.competitions || [])[0] || {}).status) || {}).type || {};
+    const state = String(st.state || '').toLowerCase();
+    const name = String(st.name || '').toUpperCase();
+    return state === 'post' || name.indexOf('FINAL') >= 0;
+  }
+
+  if (dateStr) {
+    const match = events.filter(function (e) { return eventDay(e) === dateStr; });
+    if (match.length) {
+      // prefer final
+      const fin = match.find(isFinal);
+      return fin || match[0];
+    }
+  }
+  // latest completed Sixers game
+  const finals = events.filter(isFinal).sort(function (a, b) {
+    return new Date(b.date) - new Date(a.date);
+  });
+  return finals[0] || null;
+}
+
+async function loadEspnBoxScoreIntoGrades(dateStr) {
+  const statusEl = document.getElementById('espn-grade-status');
+  function setStatus(msg, isErr) {
+    if (!statusEl) return;
+    statusEl.textContent = msg || '';
+    statusEl.style.color = isErr ? '#b91c1c' : 'var(--mid)';
+  }
+  setStatus('Loading ESPN…');
+  try {
+    const event = await findPhiEventForDate(dateStr || '');
+    if (!event) {
+      setStatus('No Sixers game found for that date.', true);
+      return;
+    }
+    const res = await fetch(ESPN_SUMMARY + '?event=' + encodeURIComponent(event.id), { cache: 'no-store' });
+    if (!res.ok) throw new Error('ESPN summary HTTP ' + res.status);
+    const summary = await res.json();
+    const groups = ((summary.boxscore || {}).players) || [];
+    let phiGroup = null;
+    let oppAbbr = '';
+    groups.forEach(function (g) {
+      const ab = ((g.team || {}).abbreviation) || '';
+      if (ab === 'PHI') phiGroup = g;
+      else if (ab) oppAbbr = ab;
+    });
+    if (!phiGroup) {
+      setStatus('Box score has no Sixers players yet (game may not be final).', true);
+      return;
+    }
+    const st = (phiGroup.statistics || [])[0] || {};
+    const keys = st.keys || [];
+    const athletes = st.athletes || [];
+    if (!athletes.length) {
+      setStatus('No player rows in box score yet.', true);
+      return;
+    }
+
+    const rows = athletes.map(function (a) {
+      const name = ((a.athlete || {}).displayName) || ((a.athlete || {}).shortName) || 'Player';
+      const statsArr = a.stats || [];
+      const dnp = !!(a.didNotPlay || a.reason);
+      const played = !dnp && statsArr.length && parseMinutes(statsArr[keys.indexOf('minutes')] || '0') > 0;
+      return {
+        name: name,
+        grade: played ? 'B' : 'DNP',
+        stats: played ? formatGradeStatsLine(keys, statsArr) : (a.reason || 'DNP'),
+        analysis: '',
+        _min: played ? parseMinutes(statsArr[keys.indexOf('minutes')] || '0') : -1
+      };
+    });
+    // played first by minutes desc, then DNPs
+    rows.sort(function (a, b) { return (b._min - a._min); });
+
+    if (document.querySelector('.grade-entry') && !confirm('Replace current grade rows with ESPN box score?')) {
+      setStatus('Cancelled.');
+      return;
+    }
+    const container = document.getElementById('grade-entries');
+    if (container) container.innerHTML = '';
+    gradeCount = 0;
+    rows.forEach(function (r) {
+      addGradeEntry({ name: r.name, grade: r.grade, stats: r.stats, analysis: r.analysis });
+    });
+
+    // Helpful title/slug defaults if empty
+    const titleEl = document.getElementById('f-title');
+    const slugEl = document.getElementById('f-slug');
+    const catEl = document.getElementById('f-category');
+    if (catEl) {
+      catEl.value = 'Player Grades';
+      try { catEl.dispatchEvent(new Event('change')); } catch (e) {}
+    }
+    try {
+      const tip = new Date(event.date);
+      const dayLabel = tip.toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'long', day: 'numeric', year: 'numeric' });
+      const shortDay = tip.toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'long', day: 'numeric' });
+      if (titleEl && !titleEl.value.trim()) {
+        titleEl.value = 'Sixers Player Grades: ' + shortDay + (oppAbbr ? (' vs ' + oppAbbr) : '');
+        if (!slugManual) {
+          try { handleSlugInput(titleEl.value, false); } catch (e) {}
+        }
+      }
+      const pd = document.getElementById('f-publish-date');
+      if (pd && !pd.value) {
+        pd.value = tip.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      }
+    } catch (e) {}
+
+    setStatus('Loaded ' + rows.length + ' players from ESPN' + (oppAbbr ? (' vs ' + oppAbbr) : '') + '. Set grades and write notes.');
+    try { updatePreview(); } catch (e) {}
+  } catch (err) {
+    console.error(err);
+    setStatus('ESPN load failed: ' + (err.message || err), true);
+  }
+}
+
 let gradeCount = 0;
 function addGradeEntry(data) {
+
   data = data || {};
   gradeCount++;
   const id = gradeCount;
@@ -1808,6 +2027,21 @@ document.getElementById('clear-grades-btn').addEventListener('click', () => {
   document.getElementById('grade-entries').innerHTML = '';
   gradeCount = 0;
 });
+
+document.getElementById('load-espn-grades-btn') && document.getElementById('load-espn-grades-btn').addEventListener('click', function () {
+  var d = (document.getElementById('espn-grade-date') || {}).value || '';
+  loadEspnBoxScoreIntoGrades(d);
+});
+// Default ESPN date to today
+(function () {
+  var el = document.getElementById('espn-grade-date');
+  if (el && !el.value) {
+    try {
+      el.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    } catch (e) {}
+  }
+})();
+
 function collectGrades() {
   const entries = [];
   document.querySelectorAll('.grade-entry').forEach(el => {

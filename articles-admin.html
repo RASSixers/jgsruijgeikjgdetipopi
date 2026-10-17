@@ -1926,50 +1926,84 @@ function defaultAuthor() {
 }
 function clearEditor(opts) {
   opts = opts || {};
-  document.getElementById('editing-doc-id').value = '';
-  ['f-title','f-slug','f-excerpt','f-intro','f-closing'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-author').value = defaultAuthor();
-  const pd = document.getElementById('f-publish-date');
-  if (pd) pd.value = todayInputValue();
-  const vis = document.getElementById('f-visibility');
-  if (vis) vis.value = 'public';
-  document.getElementById('f-category').value = opts.category || 'News';
-  document.getElementById('grade-entries').innerHTML = '';
-  document.getElementById('tweet-preview-box').classList.remove('visible');
+  function setVal(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.value = val;
+  }
+  setVal('editing-doc-id', '');
+  ['f-title','f-slug','f-excerpt','f-intro','f-closing'].forEach(function (id) { setVal(id, ''); });
+  setVal('f-author', defaultAuthor());
+  setVal('f-publish-date', todayInputValue());
+  setVal('f-visibility', 'public');
+  setVal('f-category', opts.category || 'News');
+  var grades = document.getElementById('grade-entries');
+  if (grades) grades.innerHTML = '';
+  var tweetBox = document.getElementById('tweet-preview-box');
+  if (tweetBox) tweetBox.classList.remove('visible');
   slugManual = false;
-  handleSlugInput('');
-  clearArticleImage();
+  try { handleSlugInput(''); } catch (e) {}
+  try { clearArticleImage(); } catch (e) {}
   gradeCount = 0;
   if ((opts.category || 'News') === 'Player Grades') {
-    ROSTER.forEach(p => addGradeEntry({ name: p.name, grade: 'DNP' }));
+    try {
+      (ROSTER || []).forEach(function (p) { addGradeEntry({ name: p.name, grade: 'DNP' }); });
+    } catch (e) {}
   }
-  updatePreview();
+  try { updatePreview(); } catch (e) {}
+  var pubBtn = document.getElementById('publish-btn');
+  if (pubBtn) pubBtn.textContent = 'Publish Article';
+  var draftBtn = document.getElementById('draft-btn');
+  if (draftBtn) draftBtn.textContent = 'Save Draft';
 }
+
 function editArticle(id) {
-  const a = articles.find(x => x.id === id);
-  if (!a) return;
-  clearEditor({ category: a.category || 'News' });
-  document.getElementById('editing-doc-id').value = id;
-  document.getElementById('f-title').value = a.title || '';
-  document.getElementById('f-author').value = a.author || defaultAuthor();
-  const pdEdit = document.getElementById('f-publish-date');
-  if (pdEdit) pdEdit.value = dateToInputValue(a.createdAt) || todayInputValue();
-  const visE = document.getElementById('f-visibility');
-  if (visE) visE.value = articleVisibility(a);
-  slugManual = !!(a.slug);
-  document.getElementById('f-slug').value = a.slug || '';
-  handleSlugInput(a.slug || '', false);
-  populateArticleImage(a.imageUrl || '');
-  document.getElementById('f-category').value = a.category || 'Analysis';
-  document.getElementById('f-excerpt').value = a.excerpt || '';
-  document.getElementById('f-intro').value = a.intro || '';
-  document.getElementById('f-closing').value = a.closing || '';
-  document.getElementById('grade-entries').innerHTML = '';
-  gradeCount = 0;
-  (a.grades || []).forEach(g => addGradeEntry(g));
-  updatePreview();
-  switchTab('editor');
+  try {
+    const a = (articles || []).find(function (x) { return x.id === id; });
+    if (!a) {
+      toast('Article not found in list. Refresh and try again.', 'error');
+      return;
+    }
+    clearEditor({ category: a.category || 'News' });
+    setTimeout(function () {
+      function setVal(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.value = val == null ? '' : val;
+      }
+      setVal('editing-doc-id', id);
+      setVal('f-title', a.title || '');
+      setVal('f-author', a.author || defaultAuthor());
+      setVal('f-publish-date', dateToInputValue(a.createdAt) || todayInputValue());
+      setVal('f-visibility', articleVisibility(a));
+      slugManual = !!(a.slug);
+      setVal('f-slug', a.slug || '');
+      try { handleSlugInput(a.slug || '', false); } catch (e) {}
+      try { populateArticleImage(a.imageUrl || ''); } catch (e) {}
+      setVal('f-category', a.category || 'News');
+      setVal('f-excerpt', a.excerpt || '');
+      setVal('f-intro', a.intro || a.body || '');
+      setVal('f-closing', a.closing || '');
+      // grades
+      try {
+        var ge = document.getElementById('grade-entries');
+        if (ge) ge.innerHTML = '';
+        gradeCount = 0;
+        if (a.category === 'Player Grades' && Array.isArray(a.grades)) {
+          a.grades.forEach(function (g) { addGradeEntry(g); });
+        } else if (a.category === 'Player Grades') {
+          (ROSTER || []).forEach(function (p) { addGradeEntry({ name: p.name, grade: 'DNP' }); });
+        }
+      } catch (e) {}
+      var pubBtn = document.getElementById('publish-btn');
+      if (pubBtn) pubBtn.textContent = 'Update & Publish';
+      try { updatePreview(); } catch (e) {}
+      switchTab('editor');
+    }, 0);
+  } catch (err) {
+    console.error('editArticle', err);
+    toast('Could not open editor: ' + (err.message || err), 'error');
+  }
 }
+
 async function deleteArticle(id) {
   const a = articles.find(x => x.id === id);
   const label = a && a.title ? a.title : 'this article';
@@ -2028,15 +2062,37 @@ function validateArticle(data, allowEmptyTitle) {
   return true;
 }
 async function saveArticle(status) {
-  const data = collectArticleData(status);
+  if (!window.db) {
+    toast('Database not ready. Refresh and try again.', 'error');
+    return;
+  }
+  if (!currentUser) {
+    toast('Sign in required to save articles.', 'error');
+    return;
+  }
+  let data;
+  try {
+    data = collectArticleData(status);
+  } catch (e) {
+    toast('Could not read form: ' + (e.message || e), 'error');
+    return;
+  }
   if (!validateArticle(data, status === 'draft')) return;
   if (status === 'draft' && !data.title) data.title = 'Untitled draft';
+
+  // Required for Firestore delete rules and author checks
+  data.authorUid = currentUser.uid || '';
+  data.authorEmail = (currentUser.email || '').toLowerCase();
+  data.updatedAt = window.firebase.firestore.FieldValue.serverTimestamp();
+
   const btn = status === 'draft' ? document.getElementById('draft-btn') : document.getElementById('publish-btn');
-  const prev = btn.textContent;
-  btn.textContent = status === 'draft' ? 'Saving…' : 'Publishing…';
-  btn.disabled = true;
+  const prev = btn ? btn.textContent : '';
+  if (btn) {
+    btn.textContent = status === 'draft' ? 'Saving…' : 'Publishing…';
+    btn.disabled = true;
+  }
   try {
-    const existingDocId = document.getElementById('editing-doc-id').value;
+    const existingDocId = (document.getElementById('editing-doc-id') || {}).value || '';
     const overrideDate = inputValueToDate((document.getElementById('f-publish-date') || {}).value);
     if (existingDocId) {
       if (overrideDate) {
@@ -2048,26 +2104,33 @@ async function saveArticle(status) {
       data.createdAt = overrideDate
         ? window.firebase.firestore.Timestamp.fromDate(overrideDate)
         : window.firebase.firestore.FieldValue.serverTimestamp();
-
-      data.createdBy = currentUser ? (currentUser.email || '') : '';
+      data.createdBy = currentUser.email || '';
       const ref = await window.db.collection(COLLECTION).add(data);
-      document.getElementById('editing-doc-id').value = ref.id;
+      const idEl = document.getElementById('editing-doc-id');
+      if (idEl) idEl.value = ref.id;
       toast(status === 'draft' ? 'Draft saved' : 'Article published');
     }
-    updatePreview();
+    try { updatePreview(); } catch (e) {}
     if (status === 'published') {
       clearEditor();
       switchTab('list');
     }
   } catch (e) {
-    toast('Error: ' + e.message, 'error');
+    console.error('saveArticle', e);
+    toast('Error: ' + (e.message || e), 'error');
   } finally {
-    btn.textContent = prev;
-    btn.disabled = false;
+    if (btn) {
+      btn.textContent = prev;
+      btn.disabled = false;
+    }
   }
 }
-document.getElementById('publish-btn').addEventListener('click', () => saveArticle('published'));
-document.getElementById('draft-btn').addEventListener('click', () => saveArticle('draft'));
+(function () {
+  var pub = document.getElementById('publish-btn');
+  var dr = document.getElementById('draft-btn');
+  if (pub) pub.addEventListener('click', function () { saveArticle('published'); });
+  if (dr) dr.addEventListener('click', function () { saveArticle('draft'); });
+})();
 
 const drop = document.getElementById('img-drop');
 ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('dragover'); }));

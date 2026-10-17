@@ -989,6 +989,67 @@ body, html {
     bottom: 0.5rem;
   }
 }
+
+.grade-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  backdrop-filter: blur(4px);
+}
+.grade-confirm-modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+  padding: 1.35rem 1.4rem 1.2rem;
+  color: var(--ink, #0f172a);
+}
+.grade-confirm-modal h3 {
+  margin: 0 0 0.4rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.grade-confirm-modal p {
+  margin: 0 0 1.15rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--mid, #64748b);
+}
+.grade-confirm-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.grade-confirm-actions button {
+  border-radius: 10px;
+  padding: 0.6rem 1.05rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.grade-confirm-cancel {
+  background: transparent;
+  border-color: var(--border-light, #e5e7eb) !important;
+  color: var(--ink, #0f172a);
+}
+.grade-confirm-cancel:hover { background: var(--soft, #f8fafc); }
+.grade-confirm-ok {
+  background: var(--sixers-blue, #006BB6);
+  color: #fff;
+}
+.grade-confirm-ok:hover { filter: brightness(1.05); }
+
 </style>
 </head>
 <body>
@@ -1358,7 +1419,7 @@ const REST_ROSTER = [
   { name: 'Jameer Nelson Jr.', number: 14 },
 ];
 const ROSTER = [...PINNED_ROSTER, ...REST_ROSTER];
-const GRADES = ['DNP','INC','A+','A','A-','B+','B','B-','C+','C','D+','D','F'];
+const GRADES = ['','DNP','INC','A+','A','A-','B+','B','B-','C+','C','D+','D','F'];
 const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
 const CATEGORY_GRADIENTS = {'Player Grades':'#ED174C','Analysis':'#006BB6','Opinion':'#000000','Preview':'#ED174C','Recap':'#001a57','News':'#006BB6'};
 
@@ -1910,6 +1971,48 @@ async function findPhiEventForDate(dateStr) {
   return finals[0] || null;
 }
 
+
+function confirmReplaceGradesModal(title, message) {
+  return new Promise(function (resolve) {
+    var existing = document.getElementById('grade-confirm-overlay');
+    if (existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'grade-confirm-overlay';
+    overlay.className = 'grade-confirm-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML =
+      '<div class="grade-confirm-modal">' +
+        '<h3>' + (title || 'Replace grades?') + '</h3>' +
+        '<p>' + (message || 'This will replace the current grade rows.') + '</p>' +
+        '<div class="grade-confirm-actions">' +
+          '<button type="button" class="grade-confirm-cancel" id="grade-confirm-cancel">Cancel</button>' +
+          '<button type="button" class="grade-confirm-ok" id="grade-confirm-ok">Replace with ESPN</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function finish(val) {
+      overlay.remove();
+      document.removeEventListener('keydown', onKey);
+      resolve(val);
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') finish(false);
+      if (e.key === 'Enter') finish(true);
+    }
+    document.addEventListener('keydown', onKey);
+    overlay.querySelector('#grade-confirm-cancel').addEventListener('click', function () { finish(false); });
+    overlay.querySelector('#grade-confirm-ok').addEventListener('click', function () { finish(true); });
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) finish(false);
+    });
+    setTimeout(function () {
+      var ok = overlay.querySelector('#grade-confirm-ok');
+      if (ok) ok.focus();
+    }, 30);
+  });
+}
+
 async function loadEspnBoxScoreIntoGrades(dateStr) {
   const statusEl = document.getElementById('espn-grade-status');
   function setStatus(msg, isErr) {
@@ -1954,22 +2057,32 @@ async function loadEspnBoxScoreIntoGrades(dateStr) {
     const rows = athletes.map(function (a) {
       const name = ((a.athlete || {}).displayName) || ((a.athlete || {}).shortName) || 'Player';
       const statsArr = a.stats || [];
-      const dnp = !!(a.didNotPlay || a.reason);
-      const played = !dnp && statsArr.length && parseMinutes(statsArr[keys.indexOf('minutes')] || '0') > 0;
+      const minIdx = keys.indexOf('minutes');
+      const minRaw = minIdx >= 0 ? (statsArr[minIdx] || '0') : '0';
+      const mins = parseMinutes(minRaw);
+      // ESPN often sets reason="COACH'S DECISION" even for players who played — trust minutes/stats
+      const played = statsArr.length > 0 && mins > 0;
+      const trueDnp = !!(a.didNotPlay) || !played;
       return {
         name: name,
-        grade: played ? 'B' : 'DNP',
+        grade: trueDnp ? 'DNP' : '',
         stats: played ? formatGradeStatsLine(keys, statsArr) : (a.reason || 'DNP'),
         analysis: '',
-        _min: played ? parseMinutes(statsArr[keys.indexOf('minutes')] || '0') : -1
+        _min: played ? mins : -1
       };
     });
     // played first by minutes desc, then DNPs
     rows.sort(function (a, b) { return (b._min - a._min); });
 
-    if (document.querySelector('.grade-entry') && !confirm('Replace current grade rows with ESPN box score?')) {
-      setStatus('Cancelled.');
-      return;
+    if (document.querySelector('.grade-entry')) {
+      const ok = await confirmReplaceGradesModal(
+        'Replace current grades?',
+        'This will clear the grade rows below and refill them from the ESPN box score. Stats lines will be filled; grades stay for you to set.'
+      );
+      if (!ok) {
+        setStatus('Cancelled.');
+        return;
+      }
     }
     const container = document.getElementById('grade-entries');
     if (container) container.innerHTML = '';
@@ -2021,8 +2134,8 @@ function addGradeEntry(data) {
   div.className = 'grade-entry';
   div.id = 'grade-entry-' + id;
   const selectedGrade = data.grade || 'DNP';
-  const gradeOptions = GRADES.map(g => '<option value="' + g + '"' + (selectedGrade === g ? ' selected' : '') + '>' + g + '</option>').join('');
-  const isDnp = selectedGrade === 'DNP' || selectedGrade === 'INC';
+  const gradeOptions = GRADES.map(function (g) { var label = g ? g : 'Select grade'; return '<option value="' + g + '"' + (selectedGrade === g ? ' selected' : '') + '>' + label + '</option>'; }).join('');
+  const isDnp = false; // always show stats + analysis so ESPN lines stay visible
   const tweetVal = escapeHtml(data.tweetUrl || '');
   div.innerHTML =
     '<div class="grade-entry-header">' +
@@ -2057,9 +2170,9 @@ function addGradeEntry(data) {
   container.appendChild(div);
 }
 function toggleDnpFields(select) {
-  const fields = select.closest('.grade-entry').querySelector('.ge-fields');
-  const hide = select.value === 'DNP' || select.value === 'INC';
-  if (fields) fields.style.display = hide ? 'none' : '';
+  // Keep stats + analysis visible for every grade (including DNP / blank)
+  const fields = select && select.closest('.grade-entry') && select.closest('.grade-entry').querySelector('.ge-fields');
+  if (fields) fields.style.display = '';
 }
 function validatePlayerTweet(input) {
   const hint = input.closest('.ge-tweet-section').querySelector('.ge-tweet-hint');

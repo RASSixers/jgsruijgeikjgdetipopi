@@ -4121,7 +4121,36 @@
         return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
             .toLowerCase().replace(/[''`]/g,'').replace(/\./g,'').replace(/[^a-z0-9]+/g,'');
     }
-    function playerHeadshotHtml(name, abbr, playerObj){
+    
+    window.__tmHsErr = function (img) {
+        try {
+            var sec = img.getAttribute('data-hs2');
+            if (sec && img.getAttribute('data-hs-tried') !== '1') {
+                img.setAttribute('data-hs-tried', '1');
+                img.src = sec;
+                return;
+            }
+            var bg = img.getAttribute('data-hs-bg') || '#64748b';
+            var ini = img.getAttribute('data-hs-ini') || '?';
+            var title = img.getAttribute('alt') || '';
+            var div = document.createElement('div');
+            div.className = 'player-headshot fallback';
+            div.style.background = bg;
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'center';
+            div.title = title;
+            var span = document.createElement('span');
+            span.style.color = '#fff';
+            span.style.fontWeight = '800';
+            span.style.fontSize = '0.72rem';
+            span.style.letterSpacing = '0.04em';
+            span.textContent = ini;
+            div.appendChild(span);
+            if (img.parentNode) img.parentNode.replaceChild(div, img);
+        } catch (e) {}
+    };
+function playerHeadshotHtml(name, abbr, playerObj){
         var nbaId = null;
         var espnId = null;
         if (playerObj && playerObj.noHeadshot) {
@@ -4130,31 +4159,34 @@
             nbaId = playerObj.nbaId || playerObj.headshotId;
         }
         var key = _normName(name);
-        if (!nbaId && !(playerObj && playerObj.noHeadshot)) nbaId = NBA_PLAYER_IDS[key] || null;
+        if (!nbaId && !(playerObj && playerObj.noHeadshot)) {
+            nbaId = (typeof NBA_PLAYER_IDS !== 'undefined' && NBA_PLAYER_IDS[key]) || null;
+        }
         if (typeof ESPN_PLAYER_IDS !== 'undefined') {
             espnId = (playerObj && playerObj.espnId) || ESPN_PLAYER_IDS[key] || null;
         }
-        var parts = String(name||'').split(/\s+/).filter(Boolean);
-        var initials = parts.slice(0,2).map(function(s){ return s.charAt(0); }).join('').toUpperCase() || '?';
-        var teamColor = (abbr && NBA_TEAMS[abbr] && NBA_TEAMS[abbr].color) || '#64748b';
-        var safeName = String(name||'').replace(/"/g,'&quot;').replace(/'/g,'');
-        var fallback = '<div class="player-headshot fallback" style="background:' + teamColor + ';display:flex;align-items:center;justify-content:center;" title="' + safeName + '">' +
-            '<span style="color:#fff;font-weight:800;font-size:0.72rem;letter-spacing:0.04em;">' + initials + '</span></div>';
-        if (!nbaId && !espnId) return fallback;
+        var parts = String(name || '').split(/\s+/).filter(Boolean);
+        var initials = parts.slice(0, 2).map(function (s) { return s.charAt(0); }).join('').toUpperCase() || '?';
+        var teamColor = (abbr && typeof NBA_TEAMS !== 'undefined' && NBA_TEAMS[abbr] && NBA_TEAMS[abbr].color) || '#64748b';
+        var safeName = String(name || '').replace(/"/g, '&quot;').replace(/</g, '').replace(/>/g, '');
+        if (!nbaId && !espnId) {
+            return '<div class="player-headshot fallback" style="background:' + teamColor +
+                ';display:flex;align-items:center;justify-content:center;" title="' + safeName + '">' +
+                '<span style="color:#fff;font-weight:800;font-size:0.72rem;letter-spacing:0.04em;">' +
+                initials + '</span></div>';
+        }
         var primary = nbaId
             ? ('https://cdn.nba.com/headshots/nba/latest/260x190/' + nbaId + '.png')
             : ('https://a.espncdn.com/i/headshots/nba/players/full/' + espnId + '.png');
         var secondary = (nbaId && espnId)
             ? ('https://a.espncdn.com/i/headshots/nba/players/full/' + espnId + '.png')
             : '';
-        var fbEsc = fallback.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        var onerr;
-        if (secondary) {
-            onerr = "this.onerror=function(){this.onerror=null;this.outerHTML='"+fbEsc+"';};this.src='"+secondary+"';";
-        } else {
-            onerr = "this.onerror=null;this.outerHTML='"+fbEsc+"';";
-        }
-        return '<img class="player-headshot" src="' + primary + '" alt="' + safeName + '" loading="lazy" decoding="async" onerror="' + onerr + '">';
+        return '<img class="player-headshot" src="' + primary + '" alt="' + safeName +
+            '" loading="lazy" decoding="async"' +
+            ' data-hs-bg="' + teamColor + '"' +
+            ' data-hs-ini="' + initials + '"' +
+            (secondary ? (' data-hs2="' + secondary + '"') : '') +
+            ' onerror="window.__tmHsErr&&window.__tmHsErr(this)">';
     }
 
     // ─── TEAM DATA 2026-27 ──────────────────────────────────────────────────

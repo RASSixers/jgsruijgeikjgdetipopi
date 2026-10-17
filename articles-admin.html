@@ -1050,6 +1050,22 @@ body, html {
 }
 .grade-confirm-ok:hover { filter: brightness(1.05); }
 
+
+.grade-group-label {
+  margin: 1rem 0 0.45rem;
+  padding: 0.35rem 0.55rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sixers-blue, #006BB6);
+  background: rgba(0, 107, 182, 0.06);
+  border-left: 3px solid var(--sixers-blue, #006BB6);
+  border-radius: 0 8px 8px 0;
+}
+.grade-group-label:first-child { margin-top: 0.25rem; }
+
 </style>
 </head>
 <body>
@@ -2063,18 +2079,31 @@ async function loadEspnBoxScoreIntoGrades(dateStr) {
       // ESPN often sets reason="COACH'S DECISION" even for players who played — trust minutes/stats
       const played = statsArr.length > 0 && mins > 0;
       const trueDnp = !!(a.didNotPlay) || !played;
+      const isStarter = !!a.starter && played;
+      let group = 'dnp';
+      if (played && isStarter) group = 'starter';
+      else if (played) group = 'bench';
       return {
         name: name,
         grade: trueDnp ? 'DNP' : '',
         stats: played ? formatGradeStatsLine(keys, statsArr) : (a.reason || 'DNP'),
         analysis: '',
-        _min: played ? mins : -1
+        group: group,
+        _min: played ? mins : -1,
+        _starter: isStarter ? 1 : 0
       };
     });
-    // played first by minutes desc, then DNPs
-    rows.sort(function (a, b) { return (b._min - a._min); });
+    // Starters (by minutes), then bench (by minutes), then DNPs (name)
+    rows.sort(function (a, b) {
+      const order = { starter: 0, bench: 1, dnp: 2 };
+      const ga = order[a.group] != null ? order[a.group] : 9;
+      const gb = order[b.group] != null ? order[b.group] : 9;
+      if (ga !== gb) return ga - gb;
+      if (a.group === 'dnp') return String(a.name).localeCompare(String(b.name));
+      return (b._min - a._min);
+    });
 
-    if (document.querySelector('.grade-entry')) {
+    if (document.querySelector('.grade-entry') || document.querySelector('.grade-group-label')) {
       const ok = await confirmReplaceGradesModal(
         'Replace current grades?',
         'This will clear the grade rows below and refill them from the ESPN box score. Stats lines will be filled; grades stay for you to set.'
@@ -2087,7 +2116,20 @@ async function loadEspnBoxScoreIntoGrades(dateStr) {
     const container = document.getElementById('grade-entries');
     if (container) container.innerHTML = '';
     gradeCount = 0;
+    function appendGroupLabel(label) {
+      if (!container) return;
+      var el = document.createElement('div');
+      el.className = 'grade-group-label';
+      el.textContent = label;
+      container.appendChild(el);
+    }
+    var lastGroup = null;
+    var groupTitles = { starter: 'Starters', bench: 'Bench', dnp: 'Did not play' };
     rows.forEach(function (r) {
+      if (r.group !== lastGroup) {
+        appendGroupLabel(groupTitles[r.group] || r.group);
+        lastGroup = r.group;
+      }
       addGradeEntry({ name: r.name, grade: r.grade, stats: r.stats, analysis: r.analysis });
     });
 
@@ -2115,7 +2157,7 @@ async function loadEspnBoxScoreIntoGrades(dateStr) {
       }
     } catch (e) {}
 
-    setStatus('Loaded ' + rows.length + ' players from ESPN' + (oppAbbr ? (' vs ' + oppAbbr) : '') + '. Set grades and write notes.');
+    var nS = rows.filter(function(r){return r.group==='starter';}).length;var nB = rows.filter(function(r){return r.group==='bench';}).length;var nD = rows.filter(function(r){return r.group==='dnp';}).length;setStatus('Loaded ' + rows.length + ' players from ESPN' + (oppAbbr ? (' vs ' + oppAbbr) : '') + (' · ' + nS + ' starters, ' + nB + ' bench, ' + nD + ' DNP') + '. Set grades and write notes.');
     try { updatePreview(); } catch (e) {}
   } catch (err) {
     console.error(err);

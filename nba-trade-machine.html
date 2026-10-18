@@ -3731,8 +3731,22 @@
             var ct = String(p.contractType || '');
             if (years[0].status === 'GTD') {
                 if (p.partialGuarantee || /partial/i.test(ct)) years[0].status = 'PARTIAL';
-                else if (/^non-?guaranteed$/i.test(ct) || /non-?guaranteed/i.test(ct)) years[0].status = 'NG';
+                else if (/non-?guaranteed/i.test(ct)) years[0].status = 'NG';
             }
+        }
+
+        // Explicit futureOption / notes win when details mislabel option type
+        var fo = String(p.futureOption || '');
+        var notesJoin = (Array.isArray(p.contractNotes) ? p.contractNotes : []).join(' ');
+        if (/team\s*option|club\s*option/i.test(fo) || /team\s*option|club\s*option/i.test(notesJoin)) {
+            years.forEach(function (y) {
+                if (y.status === 'PO') y.status = 'TO';
+            });
+        } else if (/player\s*option/i.test(fo) && !/team\s*option/i.test(fo)) {
+            // keep PO tags from lines; if soft years were NG only, upgrade final soft year to PO
+            years.forEach(function (y) {
+                if (y.status === 'NG' && /option/i.test(y.display || '')) y.status = 'PO';
+            });
         }
 
         // Counts from parsed years (trust the lines)
@@ -9517,10 +9531,38 @@ function playerHeadshotHtml(name, abbr, playerObj){
         tradeSummary.forEach(t => {
             if (!t.abbr || !t.data) return;
             const name = t.teamInfo ? t.teamInfo.name : t.abbr;
-            const postCount = t.data.players.length - t.selectedPlayers.length + (t.incomingCount || 0);
-            if (postCount < 8) {
-                violations.push({ type: 'error', msg: `${name}: This trade would leave the team with only ${postCount} players on its roster  -  teams must carry at least 8 active players.` });
-            }
+            // Rebuild remaining roster for this team and count standard vs two-way correctly
+            (function () {
+                if (!t.data || !Array.isArray(t.data.players)) return;
+                const outgoing = new Set(t.selectedPlayers || []);
+                const waived = new Set((t.waivedPlayers || []).map(function (w) { return w.id || w; }));
+                let remaining = t.data.players.filter(function (p) {
+                    return p && !outgoing.has(p.id) && !waived.has(p.id);
+                });
+                const isTwoTeam = teams.filter(function (x) { return x.abbr; }).length === 2;
+                teams.forEach(function (other) {
+                    if (other.id === t.id || !other.abbr || !TEAM_DATA[other.abbr]) return;
+                    (other.selectedPlayers || []).forEach(function (pid) {
+                        const p = TEAM_DATA[other.abbr].players.find(function (x) { return x.id === pid; });
+                        if (!p) return;
+                        let dest = null;
+                        if (other.playerDestinations && other.playerDestinations[pid] != null) dest = Number(other.playerDestinations[pid]);
+                        if (isTwoTeam || dest === t.id) remaining.push(p);
+                    });
+                });
+                const slots = countRosterSlots(remaining);
+                // Two-ways do NOT count toward the 15 standard roster spots
+                if (slots.standard > CBA.standardRosterMax) {
+                    violations.push({ type: 'error', msg: name + ': FAIL: standard roster would be ' + slots.standard + '/' + CBA.standardRosterMax + ' (two-way contracts do not count toward the 15).' });
+                }
+                if (slots.twoWay > CBA.twoWayMax) {
+                    violations.push({ type: 'error', msg: name + ': FAIL: two-way slots would be ' + slots.twoWay + '/' + CBA.twoWayMax + '.' });
+                }
+                // Soft floor: at least 8 bodies on the roster (standard + two-way, dead money excluded)
+                if (slots.standard + slots.twoWay < 8) {
+                    violations.push({ type: 'error', msg: name + ': This trade would leave the team with only ' + (slots.standard + slots.twoWay) + ' players on its roster — teams must carry at least 8 active players.' });
+                }
+            })();
             if (postCount > 15) {
                 violations.push({ type: 'error', msg: `${name}: This trade would leave the team with ${postCount} standard roster players  -  the regular-season limit is 15 (two-way slots are separate and are not modeled here).` });
             }

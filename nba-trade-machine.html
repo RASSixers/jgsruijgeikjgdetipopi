@@ -3669,193 +3669,135 @@
 
     /** Parse year-by-year schedule from contractDetails + flags → Spotrac-style structure. */
     function parseContractSchedule(p) {
-        if (!p) return { years: [], guaranteedYears: 0, optionYears: 0, optionType: null, label: '', totalYears: 0 };
+        if (!p) return { years: [], guaranteedYears: 0, optionYears: 0, optionType: null, label: '', totalYears: 0, thisYearStatus: 'GTD', thisYearGtd: true };
         if (typeof isTwoWay === 'function' && isTwoWay(p)) {
-            return { years: [{ label: '2026-27', amount: 0, status: 'TW', display: 'Two-Way · $0' }], guaranteedYears: 0, optionYears: 0, optionType: null, label: 'Two-Way · $0', totalYears: 1 };
+            return { years: [{ label: '2026-27', amount: 0, status: 'TW', display: 'Two-Way · $0' }], guaranteedYears: 0, optionYears: 0, optionType: null, label: 'Two-Way · $0', totalYears: 1, thisYearStatus: 'TW', thisYearGtd: false };
         }
         if (typeof isDeadMoney === 'function' && isDeadMoney(p)) {
-            return { years: [{ label: '2026-27', amount: Number(p.salary) || 0, status: 'DEAD', display: 'Dead money' }], guaranteedYears: 0, optionYears: 0, optionType: null, label: 'Dead money', totalYears: 1 };
+            return { years: [{ label: '2026-27', amount: Number(p.salary) || 0, status: 'DEAD', display: 'Dead money' }], guaranteedYears: 0, optionYears: 0, optionType: null, label: 'Dead money', totalYears: 1, thisYearStatus: 'DEAD', thisYearGtd: false };
         }
+
         var details = Array.isArray(p.contractDetails) ? p.contractDetails : [];
         var years = [];
+
         details.forEach(function (line) {
-            line = String(line || '');
+            line = String(line || '').trim();
+            if (!line) return;
             var m = line.match(/^(20\d{2}-\d{2}):\s*(.+)$/);
             if (!m) return;
             var label = m[1];
-            var rest = m[2];
-            var amtMatch = rest.replace(/,/g, '').match(/\$?\s*([\d.]+)\s*([KkMm])?/);
+            var rest = m[2].trim();
+
+            // Dollar amount
             var amount = 0;
-            if (amtMatch) {
-                amount = parseFloat(amtMatch[1]);
-                if (/m/i.test(amtMatch[2] || '')) amount *= 1e6;
-                else if (/k/i.test(amtMatch[2] || '')) amount *= 1e3;
-                // if already full dollars (no k/m and large), keep
-                if (!amtMatch[2] && amount < 1000 && /\$[\d,]+/.test(rest)) {
-                    var full = rest.replace(/,/g, '').match(/\$?\s*([\d]+)/);
-                    if (full) amount = parseInt(full[1], 10);
-                }
-                if (!amtMatch[2] && /\$[\d,]+/.test(rest)) {
-                    var full2 = rest.replace(/,/g, '').match(/\$\s*([\d]+)/);
-                    if (full2) amount = parseInt(full2[1], 10);
+            var full = rest.replace(/,/g, '').match(/\$\s*([\d]+)/);
+            if (full) amount = parseInt(full[1], 10);
+            else {
+                var amtMatch = rest.replace(/,/g, '').match(/([\d.]+)\s*([KkMm])\b/);
+                if (amtMatch) {
+                    amount = parseFloat(amtMatch[1]);
+                    if (/m/i.test(amtMatch[2])) amount *= 1e6;
+                    else if (/k/i.test(amtMatch[2])) amount *= 1e3;
                 }
             }
+
+            // Status from the line text only (do not rewrite later)
+            // Order matters: PO/TO before generic "option", partial before non-guaranteed
             var status = 'GTD';
-            if (/player\s*option|\(PO\)/i.test(rest)) status = 'PO';
-            else if (/team\s*option|\(TO\)/i.test(rest)) status = 'TO';
-            else if (/non-?guaranteed/i.test(rest)) status = 'NG';
-            else if (/partial/i.test(rest)) status = 'PARTIAL';
+            if (/\bplayer\s*option\b|\(PO\)|\bPO\b/i.test(rest)) status = 'PO';
+            else if (/\bteam\s*option\b|\bclub\s*option\b|\(TO\)|\bTO\b/i.test(rest)) status = 'TO';
+            else if (/\bpartial(?:ly)?(?:\s+guaranteed)?\b|\(partial\)/i.test(rest)) status = 'PARTIAL';
+            else if (/\bnon-?guaranteed\b|\bnot guaranteed\b|\(NG\)|\bNG\b/i.test(rest)) status = 'NG';
+
             years.push({ label: label, amount: amount, status: status, display: rest });
         });
-        // Prefer explicit fields
-        var gY = (p.guaranteedYears != null && !isNaN(Number(p.guaranteedYears))) ? Number(p.guaranteedYears) : null;
-        var oY = (p.optionYears != null && !isNaN(Number(p.optionYears))) ? Number(p.optionYears) : null;
-        var fo = String(p.futureOption || '');
-        var ct = String(p.contractType || '');
-        // Infer from year statuses if not explicit
-        if (gY == null) {
-            gY = 0;
-            years.forEach(function (y) {
-                if (y.status === 'GTD') gY++;
+
+        // If no detail lines, fall back to single current year from salary field
+        if (!years.length && p.salary != null) {
+            var st0 = 'GTD';
+            var ct0 = String(p.contractType || '');
+            if (/partial/i.test(ct0) || p.partialGuarantee) st0 = 'PARTIAL';
+            else if (/non-?guaranteed/i.test(ct0)) st0 = 'NG';
+            years.push({
+                label: '2026-27',
+                amount: Number(p.salary) || 0,
+                status: st0,
+                display: '$' + Number(p.salary).toLocaleString('en-US')
             });
         }
-        if (oY == null) {
-            oY = 0;
-            years.forEach(function (y) {
-                if (y.status === 'PO' || y.status === 'TO' || y.status === 'NG' || y.status === 'PARTIAL') oY++;
-            });
+
+        // Apply top-level contractType only when THIS YEAR has no explicit tag in the line
+        if (years.length) {
+            var ct = String(p.contractType || '');
+            if (years[0].status === 'GTD') {
+                if (p.partialGuarantee || /partial/i.test(ct)) years[0].status = 'PARTIAL';
+                else if (/^non-?guaranteed$/i.test(ct) || /non-?guaranteed/i.test(ct)) years[0].status = 'NG';
+            }
         }
-        var detJoin = years.map(function (y) { return (y.display || '') + ' ' + (y.label || ''); }).join(' ');
-        var notesJoin = (Array.isArray(p.contractNotes) ? p.contractNotes : []).join(' ');
+
+        // Counts from parsed years (trust the lines)
+        var gY = 0, oY = 0, poY = 0, toY = 0, ngY = 0, partY = 0;
+        years.forEach(function (y) {
+            if (y.status === 'GTD') gY++;
+            else if (y.status === 'PO') { poY++; oY++; }
+            else if (y.status === 'TO') { toY++; oY++; }
+            else if (y.status === 'NG') { ngY++; oY++; }
+            else if (y.status === 'PARTIAL') { partY++; oY++; }
+        });
+
+        // Explicit fields only as fallbacks when details had no option tags
+        if (oY === 0 && p.optionYears != null && !isNaN(Number(p.optionYears)) && Number(p.optionYears) > 0) {
+            oY = Number(p.optionYears);
+            var fo = String(p.futureOption || p.contractType || '');
+            if (/team|club|\bTO\b/i.test(fo)) toY = oY;
+            else if (/player|\bPO\b/i.test(fo)) poY = oY;
+            else poY = oY;
+        }
+        if (gY === 0 && p.guaranteedYears != null && !isNaN(Number(p.guaranteedYears))) {
+            // only if we had no GTD lines but field says guaranteed years
+            var gField = Number(p.guaranteedYears);
+            if (gField > 0 && years.every(function (y) { return y.status !== 'GTD'; })) {
+                // leave gY as 0 from lines — field may be stale
+            }
+        }
+
         var optionType = null;
-        if (/player option|\(PO\)/i.test(fo) || /player option|\(PO\)/i.test(ct) || /player option|\(PO\)/i.test(detJoin) || /player option/i.test(notesJoin)) optionType = 'PO';
-        else if (/team option|club option|\(TO\)/i.test(fo) || /team option|club option|\(TO\)/i.test(ct) || /team option|club option|\(TO\)/i.test(detJoin)) optionType = 'TO';
-        else {
-            for (var i = years.length - 1; i >= 0; i--) {
-                if (years[i].status === 'PO') { optionType = 'PO'; break; }
-                if (years[i].status === 'TO') { optionType = 'TO'; break; }
-            }
-        }
-        // BRef italic / lower remain_gtd often marks PLAYER OPTION years, not true non-guarantees.
-        // Rookie-scale soft years → Team Option; veteran multi-year soft final year → Player Option.
-        if (!optionType && years.length > 1) {
-            var hasSoft = years.some(function (y) { return y.status === 'NG' || y.status === 'PARTIAL'; });
-            if (hasSoft || /option/i.test(fo)) {
-                if (/rookie/i.test(ct)) optionType = 'TO';
-                else optionType = 'PO';
-            }
-        }
-        if (!optionType && /^non-?guaranteed$/i.test(ct) && !p.partialGuarantee) optionType = 'NG';
+        if (poY > 0) optionType = 'PO';
+        else if (toY > 0) optionType = 'TO';
+        else if (ngY > 0) optionType = 'NG';
+        else if (partY > 0) optionType = 'PARTIAL';
 
-        // Align year statuses with optionType so sheet shows +PO / +TO (not +NG)
-        if (optionType === 'PO' || optionType === 'TO') {
-            var gtdLeft = Number(p.partialAmount || p.guaranteedRemaining) || 0;
-            if (gtdLeft > 0) {
-                var run = 0;
-                years.forEach(function (y) {
-                    if (run + (y.amount || 0) <= gtdLeft + 50) y.status = 'GTD';
-                    else y.status = optionType;
-                    run += (y.amount || 0);
-                });
-            } else {
-                years.forEach(function (y, idx) {
-                    if (y.status === 'NG' || y.status === 'PARTIAL') y.status = optionType;
-                    if (idx === years.length - 1 && (y.status === 'GTD' || !y.status) && optionType) {
-                        // keep GTD on early years only if all were GTD — leave as-is unless soft
-                    }
-                });
-            }
-            // recount gY / oY
-            gY = 0; oY = 0;
-            years.forEach(function (y) {
-                if (y.status === 'GTD') gY++;
-                else if (y.status === 'PO' || y.status === 'TO' || y.status === 'NG' || y.status === 'PARTIAL') oY++;
-            });
-        }
-        // If partial guarantee by $ amount but all years marked GTD, estimate guaranteed seasons
-        if ((p.partialGuarantee || /partial/i.test(ct)) && p.partialAmount && years.length) {
-            var gtdLeft = Number(p.partialAmount) || 0;
-            var run = 0;
-            gY = 0; oY = 0;
-            years.forEach(function (y, idx) {
-                if (run >= gtdLeft) {
-                    if (y.status === 'GTD') y.status = optionType === 'PO' ? 'PO' : (optionType === 'TO' ? 'TO' : 'NG');
-                    oY++;
-                } else if (run + y.amount > gtdLeft) {
-                    y.status = 'PARTIAL';
-                    gY++; // counts as partial year toward structure; treat as guaranteed portion year
-                    oY++; // also optional remainder
-                    // Prefer cleaner: count as guaranteed year for label, mark display
-                } else {
-                    y.status = 'GTD';
-                    gY++;
-                }
-                run += y.amount;
-            });
-            // recount cleanly: full GTD years only
-            gY = 0; oY = 0;
-            run = 0;
-            years.forEach(function (y) {
-                if (run + y.amount <= gtdLeft + 1) {
-                    y.status = 'GTD';
-                    gY++;
-                } else if (run < gtdLeft) {
-                    y.status = 'PARTIAL';
-                    gY++; // include partial year in guaranteed count for "3+1" style sometimes; user wants 2+1 PO
-                    // For label: guaranteed full years only
-                } else {
-                    if (y.status === 'GTD') y.status = optionType === 'PO' ? 'PO' : (optionType === 'TO' ? 'TO' : 'NG');
-                    oY++;
-                }
-                run += y.amount;
-            });
-            // recount again for accurate gY = seasons fully covered by guarantee
-            gY = 0; oY = 0; run = 0;
-            years.forEach(function (y) {
-                if (run + y.amount <= gtdLeft + 50) {
-                    y.status = 'GTD';
-                    gY++;
-                } else {
-                    if (y.status !== 'PO' && y.status !== 'TO') {
-                        y.status = optionType === 'PO' ? 'PO' : (optionType === 'TO' ? 'TO' : 'NG');
-                    }
-                    oY++;
-                }
-                run += y.amount;
-            });
-        }
-        var totalYears = years.length || Number(p.contractYears) || 0;
-        if (!totalYears) totalYears = gY + oY;
-        // Respect explicit fields when present
-        if (p.guaranteedYears != null && !isNaN(Number(p.guaranteedYears))) gY = Number(p.guaranteedYears);
-        if (p.optionYears != null && !isNaN(Number(p.optionYears))) oY = Number(p.optionYears);
-        if (/player option/i.test(fo)) optionType = 'PO';
-        else if (/team option|club option/i.test(fo)) optionType = 'TO';
-
+        var totalYears = years.length;
         var thisYearStatus = years.length ? years[0].status : 'GTD';
-        var thisYearGtd = (thisYearStatus === 'GTD' || thisYearStatus === 'PARTIAL');
+        var thisYearGtd = thisYearStatus === 'GTD' || thisYearStatus === 'PARTIAL';
 
-        // Classic labels: 2+1 (PO), 3yr Guaranteed, 1yr NG — never "0+1" / "0+2"
+        // Spotrac-style label: "3 + 1 PO", "2 GTD", "1 PARTIAL", "1 NG", "2 + 1 TO"
         var label = '';
-        var optN = (oY > 0) ? oY : 1;
-        if (gY <= 0) {
-            // No guaranteed years: just NG (or PO/TO if that's the only status)
-            if (optionType === 'PO') label = (totalYears || optN) + 'yr PO';
-            else if (optionType === 'TO') label = (totalYears || optN) + 'yr TO';
-            else label = (totalYears || optN || 1) + 'yr NG';
-        } else if (optionType === 'PO' && (oY > 0 || years.some(function(y){return y.status==='PO';}))) {
-            label = gY + '+' + optN + ' (PO)';
-        } else if (optionType === 'TO' && (oY > 0 || years.some(function(y){return y.status==='TO';}))) {
-            label = gY + '+' + optN + ' (TO)';
-        } else if (optionType === 'NG' || (/non-?guaranteed/i.test(ct))) {
-            label = (totalYears || 1) + 'yr NG';
-        } else if (gY > 0) {
-            label = gY + 'yr Guaranteed';
-        } else if (totalYears > 0) {
-            label = totalYears + 'yr Guaranteed';
+        if (totalYears === 0) {
+            label = String(p.contractType || '—');
+        } else if (poY > 0 && (gY + partY) > 0) {
+            label = (gY + partY) + ' + ' + poY + ' PO';
+        } else if (toY > 0 && (gY + partY) > 0) {
+            label = (gY + partY) + ' + ' + toY + ' TO';
+        } else if (ngY > 0 && gY > 0) {
+            label = gY + ' + ' + ngY + ' NG';
+        } else if (poY > 0 && gY === 0 && partY === 0) {
+            label = poY === totalYears ? (totalYears === 1 ? '1 PO' : totalYears + ' PO') : (totalYears + 'yr · ' + poY + ' PO');
+        } else if (toY > 0 && gY === 0) {
+            label = toY === 1 ? '1 TO' : toY + ' TO';
+        } else if (thisYearStatus === 'PARTIAL' && totalYears === 1) {
+            label = 'Partial GTD';
+        } else if (thisYearStatus === 'NG' && totalYears === 1) {
+            label = 'Non-Guaranteed';
+        } else if (gY === totalYears) {
+            label = totalYears + (totalYears === 1 ? 'yr Guaranteed' : 'yr Guaranteed');
+        } else if (partY > 0 && poY === 0 && toY === 0 && ngY === 0) {
+            label = totalYears + 'yr · Partial';
         } else {
-            label = ct || '—';
+            label = totalYears + 'yr';
+            if (optionType) label += ' · ' + optionType;
         }
+
         return {
             years: years,
             guaranteedYears: gY,
@@ -8448,16 +8390,22 @@ function playerHeadshotHtml(name, abbr, playerObj){
                 return sch.label || '—';
             };
             const statusSuffix = (st, yearIndex) => {
-                // This year: green GTD if guaranteed (future NG does not change this)
-                if (yearIndex === 0 && st === 'GTD') return ' <span style="font-size:.48rem;font-weight:800;color:#15803d;">GTD</span>';
-                if (yearIndex === 0 && st === 'PARTIAL') return ' <span style="font-size:.48rem;font-weight:800;color:#15803d;">GTD</span>';
-                // Future years: only tag non-standard guarantee status
+                // Current season — show real guarantee status
+                if (yearIndex === 0) {
+                    if (st === 'GTD') return ' <span style="font-size:.48rem;font-weight:800;color:#15803d;">GTD</span>';
+                    if (st === 'PARTIAL') return ' <span style="font-size:.48rem;font-weight:800;color:#ea580c;">PARTIAL</span>';
+                    if (st === 'NG') return ' <span style="font-size:.48rem;font-weight:800;color:#c2410c;">NG</span>';
+                    if (st === 'PO') return ' <span style="font-size:.48rem;font-weight:800;color:#1d4ed8;">PO</span>';
+                    if (st === 'TO') return ' <span style="font-size:.48rem;font-weight:800;color:#7e22ce;">TO</span>';
+                    if (st === 'TW') return ' <span style="font-size:.48rem;font-weight:800;color:#7c3aed;">TW</span>';
+                }
+                // Future seasons
                 if (st === 'PO') return ' <span style="font-size:.48rem;font-weight:800;color:#1d4ed8;">+PO</span>';
                 if (st === 'TO') return ' <span style="font-size:.48rem;font-weight:800;color:#7e22ce;">+TO</span>';
                 if (st === 'NG') return ' <span style="font-size:.48rem;font-weight:800;color:#c2410c;">+NG</span>';
-                if (st === 'PARTIAL' && yearIndex > 0) return ' <span style="font-size:.48rem;font-weight:800;color:#ea580c;">+PART</span>';
+                if (st === 'PARTIAL') return ' <span style="font-size:.48rem;font-weight:800;color:#ea580c;">+PART</span>';
                 if (st === 'TW') return ' <span style="font-size:.48rem;font-weight:800;color:#7c3aed;">TW</span>';
-                return ''; // future GTD years: amount only (no extra tag clutter)
+                return ''; // future fully guaranteed years: amount only
             };
             const yearCellsHtml = (p, leaving, accent) => {
                 const sch = parseContractSchedule(p);
@@ -8470,10 +8418,11 @@ function playerHeadshotHtml(name, abbr, playerObj){
                     const val = y.amount || 0;
                     if (!leaving && i < totals.length) totals[i] += (typeof isTwoWay === 'function' && isTwoWay(p)) ? 0 : val;
                     let tone = accent || '';
-                    if (i === 0 && (y.status === 'GTD' || y.status === 'PARTIAL')) tone = 'color:#15803d;';
+                    if (y.status === 'GTD') tone = 'color:#15803d;';
                     else if (y.status === 'PO') tone = 'color:#1d4ed8;';
                     else if (y.status === 'TO') tone = 'color:#7e22ce;';
-                    else if (y.status === 'NG' || y.status === 'PARTIAL') tone = 'color:#c2410c;';
+                    else if (y.status === 'PARTIAL') tone = 'color:#ea580c;';
+                    else if (y.status === 'NG') tone = 'color:#c2410c;';
                     return `<td style="padding:5px 3px;text-align:right;font-weight:700;font-size:.65rem;${tone}">${fmtM(val)}${statusSuffix(y.status, i)}</td>`;
                 }).join('');
             };

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Account — SixersHoops</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="/favicon.ico" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #001a57;
+    --sixers-blue: #006BB6;
+    --sixers-red: #ED174C;
+    --cream: #f7f8fc;
+    --ink: #0d0f1a;
+    --mid: #64748b;
+    --border: #e4e8f0;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Lexend', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+    padding: 1.75rem 1.6rem 1.5rem;
+  }
+  .brand {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 0.45rem;
+  }
+  h1 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.35rem;
+  }
+  .sub {
+    font-size: 0.9rem;
+    color: var(--mid);
+    line-height: 1.45;
+    margin-bottom: 1.35rem;
+  }
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.35rem;
+  }
+  input[type="password"],
+  input[type="email"] {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.72rem 0.85rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    margin-bottom: 0.9rem;
+    background: #fff;
+    color: var(--ink);
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--sixers-blue);
+    box-shadow: 0 0 0 3px rgba(0, 107, 182, 0.15);
+  }
+  .btn {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    padding: 0.78rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--sixers-blue);
+    color: #fff;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--border);
+    margin-top: 0.55rem;
+  }
+  .msg {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    border-radius: 10px;
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 1rem;
+  }
+  .msg.error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+  .msg.ok {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+  }
+  .msg.info {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+  }
+  .hidden { display: none !important; }
+  .foot {
+    margin-top: 1.15rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--mid);
+  }
+  .foot a {
+    color: var(--sixers-blue);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .foot a:hover { text-decoration: underline; }
+  .spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 0.4rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="brand">SixersHoops</div>
+    <h1 id="title">Loading…</h1>
+    <p class="sub" id="subtitle">Please wait.</p>
+    <div id="message" class="msg hidden" role="status"></div>
+
+    <div id="panel-loading">
+      <p class="msg info">Checking your link…</p>
+    </div>
+
+    <div id="panel-reset" class="hidden">
+      <form id="reset-form" autocomplete="on">
+        <label for="pw1">New password</label>
+        <input id="pw1" type="password" name="password" autocomplete="new-password" minlength="6" required />
+        <label for="pw2">Confirm password</label>
+        <input id="pw2" type="password" name="password2" autocomplete="new-password" minlength="6" required />
+        <button type="submit" class="btn" id="reset-btn">Save new password</button>
+      </form>
+    </div>
+
+    <div id="panel-done" class="hidden">
+      <p class="msg ok" id="done-text">Your password was updated.</p>
+      <a class="btn" href="/" style="display:block;text-align:center;text-decoration:none;">Sign in</a>
+    </div>
+
+    <div id="panel-error" class="hidden">
+      <p class="msg error" id="error-text">This link is invalid or has expired.</p>
+      <a class="btn btn-ghost" href="/" style="display:block;text-align:center;text-decoration:none;">Back to home</a>
+    </div>
+
+    <div id="panel-verify" class="hidden">
+      <p class="msg ok">Your email is verified.</p>
+      <a class="btn" href="/" style="display:block;text-align:center;text-decoration:none;">Continue</a>
+    </div>
+
+    <div class="foot">
+      <a href="/">sixershoops.com</a>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script>
+  (function () {
+    var FB_CONFIG = {
+      apiKey: "AIzaSyBzMlBV5gbZZlg_eTwNWrRDrhx-_ATIPS0",
+      authDomain: "auth.sixershoops.com",
+      projectId: "pickem-1e12b",
+      storageBucket: "pickem-1e12b.appspot.com",
+      messagingSenderId: "715626120695",
+      appId: "1:715626120695:web:4942646cf3d6ca7e181af2"
+    };
+
+    firebase.initializeApp(FB_CONFIG);
+    var auth = firebase.auth();
+
+    var params = new URLSearchParams(window.location.search);
+    var mode = params.get('mode') || '';
+    var oobCode = params.get('oobCode') || '';
+    var continueUrl = params.get('continueUrl') || '';
+
+    var el = {
+      title: document.getElementById('title'),
+      subtitle: document.getElementById('subtitle'),
+      message: document.getElementById('message'),
+      loading: document.getElementById('panel-loading'),
+      reset: document.getElementById('panel-reset'),
+      done: document.getElementById('panel-done'),
+      error: document.getElementById('panel-error'),
+      verify: document.getElementById('panel-verify'),
+      errorText: document.getElementById('error-text'),
+      doneText: document.getElementById('done-text'),
+      form: document.getElementById('reset-form'),
+      btn: document.getElementById('reset-btn'),
+      pw1: document.getElementById('pw1'),
+      pw2: document.getElementById('pw2')
+    };
+
+    function show(panel) {
+      ['loading', 'reset', 'done', 'error', 'verify'].forEach(function (k) {
+        el[k].classList.toggle('hidden', k !== panel);
+      });
+    }
+
+    function setMsg(text, type) {
+      if (!text) {
+        el.message.classList.add('hidden');
+        el.message.textContent = '';
+        return;
+      }
+      el.message.className = 'msg ' + (type || 'info');
+      el.message.textContent = text;
+      el.message.classList.remove('hidden');
+    }
+
+    function friendlyAuthError(err) {
+      var code = (err && err.code) || '';
+      if (code === 'auth/expired-action-code') return 'This link has expired. Request a new password reset.';
+      if (code === 'auth/invalid-action-code') return 'This link is invalid or was already used.';
+      if (code === 'auth/user-disabled') return 'This account is disabled.';
+      if (code === 'auth/user-not-found') return 'No account found for this link.';
+      if (code === 'auth/weak-password') return 'Password should be at least 6 characters.';
+      return (err && err.message) ? String(err.message).replace(/^Firebase:\s*/i, '').replace(/\s*\(.*\)\s*$/, '') : 'Something went wrong.';
+    }
+
+    if (!oobCode) {
+      el.title.textContent = 'Invalid link';
+      el.subtitle.textContent = 'This page is used from an email link.';
+      el.errorText.textContent = 'No reset code was found in the link.';
+      show('error');
+      return;
+    }
+
+    if (mode === 'resetPassword') {
+      el.title.textContent = 'Reset password';
+      el.subtitle.textContent = 'Choose a new password for your SixersHoops account.';
+      auth.verifyPasswordResetCode(oobCode).then(function (email) {
+        if (email) {
+          el.subtitle.textContent = 'New password for ' + email;
+        }
+        show('reset');
+        el.pw1.focus();
+      }).catch(function (err) {
+        el.title.textContent = 'Link not valid';
+        el.subtitle.textContent = 'Request a new password reset from the sign-in page.';
+        el.errorText.textContent = friendlyAuthError(err);
+        show('error');
+      });
+
+      el.form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        setMsg('');
+        var p1 = el.pw1.value || '';
+        var p2 = el.pw2.value || '';
+        if (p1.length < 6) {
+          setMsg('Password should be at least 6 characters.', 'error');
+          return;
+        }
+        if (p1 !== p2) {
+          setMsg('Passwords do not match.', 'error');
+          return;
+        }
+        el.btn.disabled = true;
+        el.btn.innerHTML = '<span class="spinner"></span>Saving…';
+        auth.confirmPasswordReset(oobCode, p1).then(function () {
+          el.doneText.textContent = 'Your password was updated. You can sign in now.';
+          show('done');
+          if (continueUrl && /^https:\/\/(www\.)?sixershoops\.com\//i.test(continueUrl)) {
+            setTimeout(function () { window.location.href = continueUrl; }, 1800);
+          }
+        }).catch(function (err) {
+          setMsg(friendlyAuthError(err), 'error');
+          el.btn.disabled = false;
+          el.btn.textContent = 'Save new password';
+        });
+      });
+      return;
+    }
+
+    if (mode === 'verifyEmail') {
+      el.title.textContent = 'Verify email';
+      el.subtitle.textContent = 'Confirming your email address…';
+      auth.applyActionCode(oobCode).then(function () {
+        el.title.textContent = 'Email verified';
+        el.subtitle.textContent = 'Thanks. Your email is confirmed.';
+        show('verify');
+      }).catch(function (err) {
+        el.title.textContent = 'Could not verify';
+        el.subtitle.textContent = 'This link may be expired or already used.';
+        el.errorText.textContent = friendlyAuthError(err);
+        show('error');
+      });
+      return;
+    }
+
+    if (mode === 'recoverEmail') {
+      el.title.textContent = 'Restore email';
+      el.subtitle.textContent = 'Restoring your previous email…';
+      auth.checkActionCode(oobCode).then(function (info) {
+        return auth.applyActionCode(oobCode).then(function () {
+          el.title.textContent = 'Email restored';
+          el.subtitle.textContent = (info && info.data && info.data.email)
+            ? ('Restored to ' + info.data.email)
+            : 'Your email was restored.';
+          show('verify');
+        });
+      }).catch(function (err) {
+        el.title.textContent = 'Could not restore';
+        el.subtitle.textContent = 'This link may be expired or already used.';
+        el.errorText.textContent = friendlyAuthError(err);
+        show('error');
+      });
+      return;
+    }
+
+    el.title.textContent = 'Unsupported action';
+    el.subtitle.textContent = 'This link type is not handled here.';
+    el.errorText.textContent = 'Unknown mode: ' + (mode || '(none)');
+    show('error');
+  })();
+  </script>
+</body>
+</html>

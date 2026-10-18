@@ -8792,8 +8792,8 @@ function playerHeadshotHtml(name, abbr, playerObj){
 
     function analyzeTrade() {
         const panel = document.getElementById('resultPanel');
-        panel.classList.add('visible');
-
+        if (panel) panel.classList.add('visible');
+        try {
         const violations = [];
         const warnings = [];
         const infos = [];
@@ -9563,9 +9563,6 @@ function playerHeadshotHtml(name, abbr, playerObj){
                     violations.push({ type: 'error', msg: name + ': This trade would leave the team with only ' + (slots.standard + slots.twoWay) + ' players on its roster — teams must carry at least 8 active players.' });
                 }
             })();
-            if (postCount > 15) {
-                violations.push({ type: 'error', msg: `${name}: This trade would leave the team with ${postCount} standard roster players  -  the regular-season limit is 15 (two-way slots are separate and are not modeled here).` });
-            }
         });
 
         // ── Limited NTC destination checks + non-guaranteed notes ──────────
@@ -9702,7 +9699,16 @@ function playerHeadshotHtml(name, abbr, playerObj){
             } catch (e) { console.warn(e); }
         }
         showResult(isValid, title, sub, allMessages, tradeSummary, allTimedOnly ? earliestUntil : null);
+        } catch (err) {
+            console.error('analyzeTrade error', err);
+            try {
+                showResult(false, 'Analysis error', (err && err.message) ? err.message : String(err), [{ type:'error', msg: 'Trade analysis failed: ' + ((err && err.message) || String(err)) }], []);
+            } catch (e2) {
+                alert('Trade analysis failed: ' + ((err && err.message) || String(err)));
+            }
+        }
     }
+
 
 
 

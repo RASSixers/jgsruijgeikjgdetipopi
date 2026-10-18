@@ -3177,6 +3177,56 @@
             overflow: auto;
         }
 
+
+.tpe-confirm-overlay {
+  position: fixed; inset: 0; z-index: 10050;
+  background: rgba(15, 23, 42, 0.48);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  backdrop-filter: blur(5px);
+}
+.tpe-confirm-modal {
+  width: 100%; max-width: 380px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
+  padding: 1.4rem 1.45rem 1.25rem;
+  text-align: left;
+}
+.tpe-confirm-kicker {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: #64748b; margin-bottom: 0.35rem;
+}
+.tpe-confirm-amount {
+  font-family: 'Lexend', sans-serif;
+  font-size: 1.65rem; font-weight: 800;
+  color: #0f172a; letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+.tpe-confirm-meta {
+  font-size: 0.88rem; color: #64748b; line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+.tpe-confirm-actions {
+  display: flex; gap: 0.55rem; justify-content: flex-end;
+}
+.tpe-confirm-actions button {
+  border-radius: 10px; padding: 0.58rem 1.05rem;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  border: 1px solid transparent;
+}
+.tpe-confirm-cancel {
+  background: transparent; border-color: #e2e8f0 !important; color: #0f172a;
+}
+.tpe-confirm-cancel:hover { background: #f8fafc; }
+.tpe-confirm-ok {
+  background: #006BB6; color: #fff;
+}
+.tpe-confirm-ok:hover { filter: brightness(1.05); }
+
 </style>
 </head>
 <body>
@@ -8790,9 +8840,45 @@ function playerHeadshotHtml(name, abbr, playerObj){
     }
 
 
+    
+    function showTpeApplyModal(opts) {
+        opts = opts || {};
+        var existing = document.getElementById('tpe-confirm-overlay');
+        if (existing) existing.remove();
+        var amt = typeof fmtM === 'function' ? fmtM(opts.amount || 0) : String(opts.amount || '');
+        var meta = String(opts.source || 'Trade exception');
+        if (opts.expires) meta += ' · Exp ' + opts.expires;
+        var overlay = document.createElement('div');
+        overlay.id = 'tpe-confirm-overlay';
+        overlay.className = 'tpe-confirm-overlay';
+        overlay.innerHTML =
+            '<div class="tpe-confirm-modal" role="dialog" aria-modal="true">' +
+              '<div class="tpe-confirm-kicker">Trade exception</div>' +
+              '<div class="tpe-confirm-amount">' + amt + '</div>' +
+              '<div class="tpe-confirm-meta">' + meta.replace(/</g, '') + '</div>' +
+              '<div class="tpe-confirm-actions">' +
+                '<button type="button" class="tpe-confirm-cancel" id="tpe-confirm-cancel">Cancel</button>' +
+                '<button type="button" class="tpe-confirm-ok" id="tpe-confirm-ok">Apply</button>' +
+              '</div>' +
+            '</div>';
+        document.body.appendChild(overlay);
+        function close() { try { overlay.remove(); } catch (e) {} }
+        overlay.querySelector('#tpe-confirm-cancel').addEventListener('click', close);
+        overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+        overlay.querySelector('#tpe-confirm-ok').addEventListener('click', function () {
+            close();
+            if (typeof opts.onApply === 'function') opts.onApply();
+        });
+        setTimeout(function () {
+            var ok = document.getElementById('tpe-confirm-ok');
+            if (ok) ok.focus();
+        }, 30);
+    }
+
     function analyzeTrade() {
         const panel = document.getElementById('resultPanel');
         if (panel) panel.classList.add('visible');
+        window.__tpePromptShown = false;
         try {
         const violations = [];
         const warnings = [];
@@ -9637,14 +9723,14 @@ function playerHeadshotHtml(name, abbr, playerObj){
         const teamAbbrList = tradeSummary.filter(t => t.abbr).map(t => t.abbr).join(' / ');
         let title, sub;
         if (isValid) {
-            title = teamAbbrList || 'Trade Appears Valid';
-            sub = hasWarnings ? 'No hard CBA violations in this model  -  review warnings. Verify salaries near apron lines.' : 'No hard CBA violations detected in this model. Treat as an estimate and verify critical numbers.';
+            title = teamAbbrList || 'Trade';
+            sub = hasWarnings ? 'Review the notes below.' : 'Looks good.';
         } else if (allTimedOnly && earliestUntil) {
-            title = `Trade fails until ${earliestUntil}`;
-            sub = `Structure is otherwise legal  -  becomes successful after ${earliestUntil}.`;
+            title = teamAbbrList || 'Trade';
+            sub = 'Restricted until ' + earliestUntil + '.';
         } else {
-            title = teamAbbrList ? (teamAbbrList + '  -  Error') : 'Trade Error';
-            sub = `${violations.length} violation${violations.length > 1 ? 's' : ''} found  -  trade cannot proceed as structured.`;
+            title = teamAbbrList || 'Trade';
+            sub = 'Error';
         }
 
         window.__lastTradeMessages = allMessages.slice();
@@ -9669,32 +9755,36 @@ function playerHeadshotHtml(name, abbr, playerObj){
                     if (!candidates.length) return;
                     var need = Number(ts.matchableReceivingSalary || 0) - Number(ts.sendingSalary || 0);
                     if (need <= 0) return;
-                    // Only prompt if matching error present for this team
+                    // Only when matching is the problem for this team
+                    var teamLabel = (ts.teamInfo && ts.teamInfo.name) || ts.abbr || '';
                     var hasMatchErr = (allMessages || []).some(function (m) {
-                        return m && m.type === 'error' && String(m.msg || '').indexOf((ts.teamInfo && ts.teamInfo.name) || ts.abbr) >= 0 && /match|Incoming salary/i.test(m.msg || '');
+                        return m && m.type === 'error' && String(m.msg || '').indexOf(teamLabel) >= 0 && /match|Incoming salary/i.test(m.msg || '');
                     });
                     if (!hasMatchErr) return;
-                    var best = candidates.find(function (c) { return Number(c.amount) >= need * 0.5; }) || candidates[0];
+                    // Only a TPE that fully covers the matching gap
+                    var best = candidates.find(function (c) { return Number(c.amount) >= need; });
                     if (!best) return;
-                    var teamName = (ts.teamInfo && ts.teamInfo.name) || ts.abbr;
                     var already = (ts.selectedTPEs || []).indexOf(best.id) >= 0;
                     if (already) return;
-                    var ok = window.confirm(
-                        'Trade is invalid for ' + teamName + '.\n\n' +
-                        'A trade exception is available:\n' +
-                        fmtM(best.amount) + ' TPE from ' + (best.source || 'prior trade') +
-                        (best.expires ? (' (expires ' + best.expires + ')') : '') + '.\n\n' +
-                        'Would you like to apply this TPE and re-check the trade?'
-                    );
-                    if (ok) {
-                        var live = teams.find(function (x) { return x.id === ts.id; });
-                        if (live) {
-                            if (!live.selectedTPEs) live.selectedTPEs = [];
-                            if (live.selectedTPEs.indexOf(best.id) < 0) live.selectedTPEs.push(best.id);
-                            try { renderAll(); } catch (_) {}
-                            setTimeout(function () { try { analyzeTrade(); } catch (e) { console.warn(e); } }, 50);
+                    // One prompt per analysis pass
+                    if (window.__tpePromptShown) return;
+                    window.__tpePromptShown = true;
+                    showTpeApplyModal({
+                        teamName: teamLabel,
+                        amount: best.amount,
+                        source: best.source || 'Prior trade',
+                        expires: best.expires || '',
+                        onApply: function () {
+                            var live = teams.find(function (x) { return x.id === ts.id; });
+                            if (live) {
+                                if (!live.selectedTPEs) live.selectedTPEs = [];
+                                if (live.selectedTPEs.indexOf(best.id) < 0) live.selectedTPEs.push(best.id);
+                                try { renderAll(); } catch (_) {}
+                                setTimeout(function () { try { analyzeTrade(); } catch (e) { console.warn(e); } }, 50);
+                            }
                         }
-                    }
+                    });
+
                 });
             } catch (e) { console.warn(e); }
         }
@@ -10520,7 +10610,7 @@ function playerHeadshotHtml(name, abbr, playerObj){
         } else {
             header.className = 'modal-header ' + (isValid ? 'valid' : 'invalid');
             badge.className  = 'modal-badge '  + (isValid ? 'valid' : 'invalid');
-            badge.textContent = isValid ? 'Appears Legal' : 'Error';
+            badge.textContent = isValid ? 'OK' : 'Error';
         }
         titleEl.textContent = title;
         subEl.textContent   = sub;
@@ -10528,7 +10618,6 @@ function playerHeadshotHtml(name, abbr, playerObj){
         // Messages  -  errors & warnings only (no info tips)
         const msgList = messages.slice().filter(function(m){ return m && m.type !== 'info'; });
         const failBlock = msgList.length ? (
-            (!isValid ? '<div class="section-label" style="margin:0 0 .65rem;color:#b91c1c;">Why this trade failed</div>' : '') +
             msgList.map(m => `
             <div class="violation-item ${m.type}">
                 <span style="font-family:'Lexend',sans-serif;font-weight:800;font-size:.75rem;flex-shrink:0">${

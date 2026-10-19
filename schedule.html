@@ -535,7 +535,47 @@
       }
       .pbp-head { padding-left: 0.85rem; padding-right: 0.85rem; }
     }
-  </style>
+  
+  .inj-share-row { margin: 0.65rem 0 0.35rem; }
+  .inj-share-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.4rem 0.85rem; border-radius: 999px;
+    border: 1px solid var(--border-light, #e2e8f0);
+    background: var(--card-bg, #fff); color: var(--ink, #0d0f1a);
+    font-size: 0.72rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .inj-share-btn:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
+  .inj-share-overlay {
+    position: fixed; inset: 0; background: rgba(13,15,26,0.55);
+    display: none; align-items: center; justify-content: center;
+    padding: 1rem; z-index: 2000; backdrop-filter: blur(2px);
+  }
+  .inj-share-overlay.active { display: flex; }
+  .inj-share-modal {
+    background: #fff; border-radius: 16px; max-width: min(420px, 100%);
+    width: 100%; max-height: 92vh; overflow: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+  }
+  .inj-share-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.1rem; border-bottom: 1px solid #e2e8f0;
+  }
+  .inj-share-modal-head h3 { margin: 0; font-size: 0.95rem; font-weight: 800; }
+  .inj-share-close {
+    border: 0; background: #f1f5f9; width: 32px; height: 32px;
+    border-radius: 999px; cursor: pointer; font-size: 1.1rem;
+  }
+  .inj-share-preview { padding: 0.85rem 1rem; background: #f6f8fc; }
+  .inj-share-preview img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid #e2e8f0; }
+  .inj-share-actions { display: flex; gap: 0.55rem; padding: 0.85rem 1rem 1.1rem; flex-wrap: wrap; }
+  .inj-share-actions button {
+    flex: 1; min-width: 120px; padding: 0.65rem 1rem; border-radius: 999px;
+    font-weight: 700; font-size: 0.8rem; font-family: inherit; cursor: pointer;
+  }
+  .inj-share-download { background: #006BB6; color: #fff; border: 0; }
+  .inj-share-copy { background: #fff; color: #0d0f1a; border: 1px solid #e2e8f0; }
+
+</style>
 </head>
 <body>
   <script src="nav.js"></script>
@@ -603,6 +643,21 @@
       </noscript>
     </main>
   </div>
-  <script src="schedule.js"></script>
+  
+<div class="inj-share-overlay" id="injShareOverlay" aria-hidden="true">
+  <div class="inj-share-modal" role="dialog">
+    <div class="inj-share-modal-head">
+      <h3>Injury report graphic</h3>
+      <button type="button" class="inj-share-close" id="injShareClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="inj-share-preview"><img id="injShareImg" alt="Injury report"/></div>
+    <div class="inj-share-actions">
+      <button type="button" class="inj-share-download" id="injShareDownload">Download PNG</button>
+      <button type="button" class="inj-share-copy" id="injShareCopy">Copy image</button>
+    </div>
+  </div>
+</div>
+
+<script src="schedule.js"></script>
 </body>
 </html>

@@ -1,0 +1,77 @@
+/* Improved injury list + share modal (closer to salary page polish) */
+.inj-list li {
+  display: grid;
+  grid-template-columns: minmax(8rem,1fr) 7.5rem minmax(8rem,1.2fr);
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.82rem;
+  align-items: start;
+}
+.inj-comment {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: var(--mid);
+  line-height: 1.35;
+  margin-top: 0.2rem;
+  padding-left: 0.15rem;
+}
+.inj-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  background: var(--card-bg, #fff);
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: all 0.15s;
+}
+.inj-share-btn:hover {
+  border-color: var(--sixers-blue);
+  color: var(--sixers-blue);
+  transform: translateY(-1px);
+}
+.inj-share-overlay {
+  position: fixed; inset: 0; background: rgba(13,15,26,0.55);
+  display: none; align-items: center; justify-content: center;
+  padding: 1.25rem; z-index: 2000; backdrop-filter: blur(3px);
+}
+.inj-share-overlay.active { display: flex; }
+.inj-share-modal {
+  background: #fff; border-radius: 16px; max-width: min(440px, 100%);
+  width: 100%; max-height: 92vh; overflow: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+  animation: modal-pop 0.18s ease;
+}
+@keyframes modal-pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.inj-share-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.2rem; border-bottom: 1px solid var(--border-light);
+}
+.inj-share-modal-head h3 { margin: 0; font-size: 0.95rem; font-weight: 700; }
+.inj-share-close {
+  border: 0; background: var(--surface-soft, #f6f8fc); width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer; font-size: 1rem; color: var(--mid);
+}
+.inj-share-close:hover { background: #eef2f7; color: var(--ink); }
+.inj-share-preview { padding: 1rem; background: var(--surface-soft, #f6f8fc); }
+.inj-share-preview img {
+  width: 100%; height: auto; display: block;
+  border-radius: 10px; border: 1px solid var(--border-light);
+}
+.inj-share-actions { display: flex; gap: 0.6rem; padding: 0.9rem 1.1rem 1.15rem; }
+.inj-share-actions button {
+  flex: 1; padding: 0.7rem 1rem; border-radius: 10px;
+  font-weight: 600; font-size: 0.82rem; font-family: inherit; cursor: pointer;
+  border: 1px solid var(--border-light); transition: all 0.15s;
+}
+.inj-share-download { background: var(--sixers-blue); color: #fff; border-color: var(--sixers-blue); }
+.inj-share-download:hover { background: #0057a0; }
+.inj-share-copy { background: #fff; color: var(--ink); }
+.inj-share-copy:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }

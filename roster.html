@@ -747,7 +747,6 @@
 const ROSTER_EXCLUDE = new Set([
   "Dillon Jones",
   "Saint Thomas",
-  "Tacko Fall",
   "Duke Miles",
   "Jameer Nelson Jr."
 ]);
@@ -756,6 +755,7 @@ const INJURY_NOTES = {
 };
 
 const ROSTER_EXTRAS = {
+  "Tacko Fall": { salary: 0, isTwoWay: true, awards: [], careerHighs: { points: 0, rebounds: 0, assists: 0 } },
   "Joel Embiid": { salary: 57985752, awards: ["NBA MVP (2023)","7× NBA All-Star","NBA Scoring Champion (2022, 2023)"], careerHighs:{points:70,rebounds:22,assists:11} },
   "Jaylen Brown": { salary: 57736350, awards: ["NBA Champion (2024)","Finals MVP (2024)","5× NBA All-Star","2× All-NBA"], careerHighs:{points:50,rebounds:15,assists:9} },
   "Tyrese Maxey": { salary: 40770520, awards: ["NBA All-Star (2024)","Most Improved Player (2024)"], careerHighs:{points:52,rebounds:11,assists:11} },
@@ -774,6 +774,7 @@ const ROSTER_RANK = [
   "Anfernee Simons", "Kentavious Caldwell-Pope", "Dean Wade", "Justin Edwards",
   "Adem Bona", "Labaron Philon Jr.", "Jabari Walker", "Dominick Barlow",
   "Ariel Hukporti", "Rayan Rupert", "Caleb Love",
+  "Tacko Fall",
   "Jameer Nelson Jr."
 ];
 function rosterRank(name) {
@@ -887,6 +888,7 @@ function mapEspnPlayer(a) {
     awards: extra.awards || [],
     careerHighs: extra.careerHighs || { points: 0, rebounds: 0, assists: 0 },
     headshot,
+    isTwoWay: !!(extra.isTwoWay),
     status: (a.status && a.status.type) || "active"
   };
 }
@@ -903,6 +905,34 @@ async function loadRosterFromEspn() {
         if (INJURY_NOTES[p.name]) p.injuryNote = INJURY_NOTES[p.name];
         return p;
       });
+    Object.keys(ROSTER_EXTRAS).forEach(name => {
+      if (ROSTER_EXCLUDE.has(name)) return;
+      if (ROSTER.some(p => p.name === name)) return;
+      const e = ROSTER_EXTRAS[name];
+      const nbaId = NBA_PERSON_IDS[name] || null;
+      ROSTER.push({
+        name,
+        id: String(nbaId || name),
+        nbaId,
+        espnId: "",
+        pos: e.isTwoWay ? "C" : "F",
+        cat: e.isTwoWay ? "centers" : "forwards",
+        jersey: "—",
+        age: "—",
+        ht: e.isTwoWay && name === "Tacko Fall" ? "7'6\"" : "—",
+        heightInches: name === "Tacko Fall" ? 90 : 0,
+        wt: name === "Tacko Fall" ? "311 lbs" : "—",
+        college: name === "Tacko Fall" ? "UCF" : "—",
+        drafted: "—",
+        exp: "—",
+        salary: e.salary != null ? e.salary : 0,
+        awards: e.awards || [],
+        careerHighs: e.careerHighs || { points: 0, rebounds: 0, assists: 0 },
+        headshot: nbaId ? ("https://cdn.nba.com/headshots/nba/latest/1040x760/" + nbaId + ".png") : "",
+        isTwoWay: !!e.isTwoWay,
+        status: "active"
+      });
+    });
     ROSTER.sort((a, b) => rosterRank(a.name) - rosterRank(b.name) || a.name.localeCompare(b.name));
   } catch (err) {
     console.warn("ESPN roster failed", err);

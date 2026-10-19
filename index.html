@@ -765,6 +765,93 @@
   .home-game-empty { padding: 1.25rem; color: var(--mid); font-size: 0.9rem; margin: 0; }
   .home-game-meta { padding: 0 1.15rem 0.85rem; color: var(--mid); font-size: 0.82rem; }
 
+
+  .home-inj-head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.15rem;
+  }
+  .home-inj-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-light, #e2e8f0);
+    background: var(--card-bg, #fff);
+    color: var(--ink, #0d0f1a);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .home-inj-share-btn:hover {
+    border-color: var(--sixers-blue, #006BB6);
+    color: var(--sixers-blue, #006BB6);
+  }
+  .inj-share-overlay {
+    position: fixed; inset: 0;
+    background: rgba(13,15,26,0.55);
+    display: none; align-items: center; justify-content: center;
+    padding: 1rem; z-index: 2000;
+    backdrop-filter: blur(2px);
+  }
+  .inj-share-overlay.active { display: flex; }
+  .inj-share-modal {
+    background: #fff;
+    border-radius: 16px;
+    max-width: min(420px, 100%);
+    width: 100%;
+    max-height: 92vh;
+    overflow: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+  }
+  .inj-share-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .inj-share-modal-head h3 {
+    margin: 0; font-size: 0.95rem; font-weight: 800; color: #0d0f1a;
+  }
+  .inj-share-close {
+    border: 0; background: #f1f5f9; width: 32px; height: 32px;
+    border-radius: 999px; cursor: pointer; font-size: 1.1rem; line-height: 1;
+    color: #0d0f1a;
+  }
+  .inj-share-preview {
+    padding: 0.85rem 1rem;
+    background: #f6f8fc;
+  }
+  .inj-share-preview img {
+    width: 100%; height: auto; display: block;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  .inj-share-actions {
+    display: flex; gap: 0.55rem; padding: 0.85rem 1rem 1.1rem;
+    flex-wrap: wrap;
+  }
+  .inj-share-actions button {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .inj-share-download {
+    background: #006BB6; color: #fff; border: 0;
+  }
+  .inj-share-copy {
+    background: #fff; color: #0d0f1a; border: 1px solid #e2e8f0;
+  }
   .home-inj {
     padding: 0.45rem 1.15rem 0.9rem;
     border-top: 1px solid var(--border-light);
@@ -842,17 +929,6 @@
     .home-game-pbp .sc { grid-column: 2; justify-self: start; font-size: 0.7rem; }
   }
 
-
-    .inj-title { font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); font-weight: 600; margin: .35rem 0 .45rem; }
-    .inj-list { margin: 0 0 .8rem; padding: 0; list-style: none; }
-    .inj-list li { display: grid; grid-template-columns: minmax(8rem,1fr) 7.5rem minmax(8rem,1.2fr); gap: .75rem; padding: .4rem 0; border-bottom: 1px solid var(--border-light); font-size: .82rem; }
-    .inj-list li:last-child { border-bottom: 0; }
-    .inj-name { font-weight: 600; }
-    .inj-status { font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
-    .inj-status.out { color: var(--sixers-red); }
-    .inj-status.questionable, .inj-status.doubtful { color: #b45309; }
-    .inj-status.probable { color: var(--green); }
-    .inj-empty { color: var(--mid); font-size: .82rem; margin: 0 0 .75rem; }
 </style>
 </head>
 <body>
@@ -1755,36 +1831,148 @@ listenToUpdates();
   }
 
   function renderInjuriesBlock(summary, event) {
-    // Match schedule page: simple list, all injuries, no game-day filter
-    const groups = (summary && Array.isArray(summary.injuries)) ? summary.injuries : [];
+    // Always apply the same filter again so only this tip's notes show
+    let groups = filterInjuriesForEvent(
+      (summary && Array.isArray(summary.injuries)) ? summary.injuries : [],
+      event
+    );
     if (!groups.length) {
-      return '<p class="inj-empty">No injuries listed.</p>';
+      return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
+        '<p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed for this game.</p></div>';
     }
-    function statusClass(s) {
-      const t = String(s || "").toLowerCase();
-      if (t.includes("out")) return "out";
-      if (t.includes("doubt") || t.includes("question")) return "questionable";
-      if (t.includes("prob")) return "probable";
-      return "";
+
+    function resolveGameDate(ev) {
+      if (!ev) return null;
+      const candidates = [ev.date, get(ev, "competitions.0.date", null), get(ev, "competitions.0.startDate", null)];
+      for (let i = 0; i < candidates.length; i++) {
+        if (!candidates[i]) continue;
+        const d = new Date(candidates[i]);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
     }
-    return groups.map(function (g) {
+    const gameDate = resolveGameDate(event);
+    const gameWeekday = gameDate
+      ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase()
+      : "";
+
+    function collectText(inj) {
+      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
+        get(inj, "type.description", ""), get(inj, "details.type", ""), get(inj, "details.detail", "")]
+        .filter(Boolean).join(" ");
+    }
+
+    function displayStatus(inj) {
+      const text = collectText(inj);
+      const official = String(inj.status || "").toLowerCase();
+      const outFromWriteup = (
+        /\bis out\b/i.test(text) ||
+        /\bremains out\b/i.test(text) ||
+        /\bwonn'?t play\b/i.test(text) ||
+        /\bwill not play\b/i.test(text) ||
+        /\bwon'?t be available\b/i.test(text) ||
+        /\bwon'?t suit up\b/i.test(text) ||
+        /\bruled out\b/i.test(text) ||
+        /\bout for (the )?season\b/i.test(text) ||
+        /\bseason-ending\b/i.test(text)
+      );
+      if (outFromWriteup || official === "out" || official.includes("out for season")) {
+        return { label: "OUT", cls: "inj-out" };
+      }
+      if (/\bdoubtful\b/i.test(text) || official.includes("doubtful")) return { label: "Doubtful", cls: "inj-doubt" };
+      if (/\bquestionable\b/i.test(text) || official.includes("questionable")) return { label: "Questionable", cls: "inj-q" };
+      if (official.includes("day-to-day") || official.includes("day to day") || /\bgtd\b/i.test(text)) {
+        return { label: "GTD", cls: "inj-gtd" };
+      }
+      return { label: inj.status || "Listed", cls: "inj-other" };
+    }
+
+    function formatInjDate(iso) {
+      if (!iso) return null;
+      try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return null;
+        return d.toLocaleString("en-US", {
+          timeZone: "America/New_York",
+          month: "short", day: "numeric", year: "numeric",
+          hour: "numeric", minute: "2-digit"
+        }) + " ET";
+      } catch (_) { return null; }
+    }
+
+    let latestMs = 0;
+    groups.forEach(function (g) {
+      (g.injuries || []).forEach(function (inj) {
+        const ms = inj.date ? new Date(inj.date).getTime() : 0;
+        if (ms && ms > latestMs) latestMs = ms;
+      });
+    });
+    const updatedLabel = latestMs ? formatInjDate(new Date(latestMs).toISOString()) : null;
+    const dayNote = gameWeekday ? (gameWeekday.charAt(0).toUpperCase() + gameWeekday.slice(1)) : "this game";
+
+    const sharePayload = {
+      updatedLabel: updatedLabel,
+      dayNote: dayNote,
+      gameDate: gameDate ? gameDate.toISOString() : null,
+      matchup: (function () {
+        try {
+          const comps = get(event, "competitions.0.competitors", []) || [];
+          const home = comps.find(function (c) { return c && c.homeAway === "home"; }) || comps[0];
+          const away = comps.find(function (c) { return c && c.homeAway === "away"; }) || comps[1];
+          const h = get(home, "team.abbreviation", "") || get(home, "team.shortDisplayName", "HOME");
+          const a = get(away, "team.abbreviation", "") || get(away, "team.shortDisplayName", "AWAY");
+          return a + " @ " + h;
+        } catch (e) { return "Injury Report"; }
+      })(),
+      teams: groups.map(function (g) {
+        const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
+        const items = (g.injuries || []).map(function (inj) {
+          const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
+          const st = displayStatus(inj);
+          const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
+          const comment = inj.shortComment || inj.longComment || "";
+          return { name: name, label: st.label, cls: st.cls, injuryType: injuryType, comment: comment };
+        });
+        return { team: team, items: items };
+      })
+    };
+    try { window.__injurySharePayload = sharePayload; } catch (e) {}
+
+    const head = '<div class="home-inj-head-row">' +
+        '<div class="home-inj-title" style="margin:0;">Injury report</div>' +
+        '<button type="button" class="home-inj-share-btn" id="homeInjShareBtn">Share graphic</button>' +
+      '</div>' +
+      '<div class="home-inj-updated">' +
+        (updatedLabel ? ('Last ESPN update: <strong>' + updatedLabel + '</strong> · ') : '') +
+        'Only <strong>' + dayNote + '</strong> game notes' +
+      '</div>';
+
+    const body = groups.map(function (g) {
       const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-      const items = g.injuries || [];
-      if (!items.length) return "";
+      const items = (g.injuries || []).slice().sort(function (a, b) {
+        return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
+      });
       const rows = items.map(function (inj) {
         const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
-        const status = inj.status || get(inj, "type.description", "—");
-        const detail = get(inj, "details.type", "") || get(inj, "details.detail", "") || "—";
-        return '<li>' +
-          '<span class="inj-name">' + name + '</span>' +
-          '<span class="inj-status ' + statusClass(status) + '">' + status + '</span>' +
-          '<span>' + detail + '</span>' +
-        '</li>';
+        const st = displayStatus(inj);
+        const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
+        const comment = inj.shortComment || inj.longComment || "";
+        const playerUpdated = formatInjDate(inj.date);
+        return '<li class="home-inj-row">' +
+          '<div class="home-inj-main">' +
+            '<span class="home-inj-name">' + name + '</span>' +
+            '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
+          '</div>' +
+          (injuryType ? '<div class="home-inj-meta">' + injuryType + '</div>' : '') +
+          (comment ? '<div class="home-inj-comment">' + comment + '</div>' : '') +
+          (playerUpdated ? '<div class="home-inj-player-updated">Updated ' + playerUpdated + '</div>' : '') +
+          '</li>';
       }).join("");
-      return '<p class="inj-title">' + team + ' injuries</p><ul class="inj-list">' + rows + '</ul>';
+      return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
     }).join("");
-  }
 
+    return '<div class="home-inj">' + head + body + '</div>';
+  }
 
   function renderBoard(event, summary, mode) {
 
@@ -1909,7 +2097,8 @@ listenToUpdates();
         if (!abbrs.length) abbrs = ["PHI"];
         if (abbrs.indexOf("PHI") === -1) abbrs.push("PHI");
         const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
-        summary.injuries = leagueInj || [];
+        // Never use summary.injuries fallback — those lack shortComment and list every GTD
+        summary.injuries = filterInjuriesForEvent(leagueInj || [], featured);
       } catch (injErr) {
         console.warn("injuries", injErr);
         summary.injuries = [];
@@ -1941,6 +2130,187 @@ listenToUpdates();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh);
   else refresh();
 })();
+
+  function buildInjuryShareCanvas(payload) {
+    if (!payload) return null;
+    const W = 1080;
+    const PAD = 48;
+    const NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
+    const WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
+    const MID = "#64748b", BORDER = "#e4e8f0";
+    const BADGE = {
+      "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+      "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
+      "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
+      "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
+    };
+
+    const teams = payload.teams || [];
+    let rows = 0;
+    teams.forEach(function (t) { rows += Math.max((t.items || []).length, 1); });
+    const headerH = 168;
+    const rowH = 72;
+    const teamHeadH = 40;
+    const H = headerH + teams.length * teamHeadH + rows * rowH + 90;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+
+    function rr(x, y, w, h, r, fill) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    }
+    function text(str, x, y, font, color, align) {
+      ctx.font = font;
+      ctx.fillStyle = color;
+      ctx.textAlign = align || "left";
+      ctx.fillText(str, x, y);
+    }
+    function wrapText(str, maxW, font) {
+      ctx.font = font;
+      const words = String(str || "").split(/\s+/);
+      const lines = [];
+      let line = "";
+      words.forEach(function (w) {
+        const test = line ? line + " " + w : w;
+        if (ctx.measureText(test).width > maxW && line) {
+          lines.push(line);
+          line = w;
+        } else line = test;
+      });
+      if (line) lines.push(line);
+      return lines.slice(0, 2);
+    }
+
+    ctx.fillStyle = CREAM;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = NAVY;
+    ctx.fillRect(0, 0, W, 132);
+    ctx.fillStyle = RED;
+    ctx.fillRect(0, 132, W, 4);
+
+    text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
+    text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
+    text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
+    if (payload.updatedLabel) {
+      text("Updated " + payload.updatedLabel, W - PAD, 116, "500 14px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.65)", "right");
+    }
+
+    let y = headerH;
+    teams.forEach(function (team) {
+      rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
+      text(String(team.team || "Team").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
+      y += teamHeadH;
+      const items = team.items || [];
+      if (!items.length) {
+        text("No injuries listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
+        y += rowH;
+        return;
+      }
+      items.forEach(function (item) {
+        rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+        ctx.strokeStyle = BORDER;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        text(item.name, PAD + 20, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
+        const badge = BADGE[item.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+        const label = String(item.label || "Listed").toUpperCase();
+        ctx.font = "800 12px Lexend, system-ui, sans-serif";
+        const bw = ctx.measureText(label).width + 22;
+        const bx = W - PAD - 20 - bw;
+        rr(bx, y + 12, bw, 26, 13, badge.bg);
+        ctx.strokeStyle = badge.border;
+        ctx.stroke();
+        text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
+        const sub = item.injuryType || item.comment || "";
+        if (sub) {
+          const lines = wrapText(sub, W - PAD * 2 - 40, "500 13px Lexend, system-ui, sans-serif");
+          lines.forEach(function (ln, i) {
+            text(ln, PAD + 20, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
+          });
+        }
+        y += rowH;
+      });
+    });
+
+    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+    return canvas;
+  }
+
+  function openInjuryShareModal() {
+    const payload = window.__injurySharePayload;
+    if (!payload || !(payload.teams || []).length) return;
+    const canvas = buildInjuryShareCanvas(payload);
+    if (!canvas) return;
+    const overlay = document.getElementById("injShareOverlay");
+    const img = document.getElementById("injShareImg");
+    if (!overlay || !img) return;
+    img.src = canvas.toDataURL("image/png");
+    overlay.dataset.png = img.src;
+    overlay.classList.add("active");
+    overlay.setAttribute("aria-hidden", "false");
+  }
+
+  function closeInjuryShareModal() {
+    const overlay = document.getElementById("injShareOverlay");
+    if (!overlay) return;
+    overlay.classList.remove("active");
+    overlay.setAttribute("aria-hidden", "true");
+  }
+
+  document.addEventListener("click", function (e) {
+    if (e.target && e.target.id === "homeInjShareBtn") {
+      e.preventDefault();
+      openInjuryShareModal();
+    }
+    if (e.target && (e.target.id === "injShareClose" || e.target.id === "injShareOverlay")) {
+      if (e.target.id === "injShareOverlay" && e.target !== e.currentTarget) return;
+      closeInjuryShareModal();
+    }
+  });
+  const injOverlay = document.getElementById("injShareOverlay");
+  if (injOverlay) {
+    injOverlay.addEventListener("click", function (e) {
+      if (e.target === injOverlay) closeInjuryShareModal();
+    });
+  }
+  const injDl = document.getElementById("injShareDownload");
+  if (injDl) {
+    injDl.addEventListener("click", function () {
+      const overlay = document.getElementById("injShareOverlay");
+      const href = overlay && overlay.dataset.png;
+      if (!href) return;
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = "sixershoops-injury-report.png";
+      a.click();
+    });
+  }
+  const injCopy = document.getElementById("injShareCopy");
+  if (injCopy) {
+    injCopy.addEventListener("click", async function () {
+      try {
+        const overlay = document.getElementById("injShareOverlay");
+        const href = overlay && overlay.dataset.png;
+        if (!href || !navigator.clipboard || !window.ClipboardItem) return;
+        const res = await fetch(href);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        injCopy.textContent = "Copied";
+        setTimeout(function () { injCopy.textContent = "Copy image"; }, 1600);
+      } catch (err) {}
+    });
+  }
+
 </script>
 
 
@@ -1993,6 +2363,23 @@ listenToUpdates();
     </div>
   </div>
 </footer>
+
+
+<div class="inj-share-overlay" id="injShareOverlay" aria-hidden="true">
+  <div class="inj-share-modal" role="dialog" aria-labelledby="injShareTitle">
+    <div class="inj-share-modal-head">
+      <h3 id="injShareTitle">Injury report graphic</h3>
+      <button type="button" class="inj-share-close" id="injShareClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="inj-share-preview">
+      <img id="injShareImg" alt="Injury report share graphic"/>
+    </div>
+    <div class="inj-share-actions">
+      <button type="button" class="inj-share-download" id="injShareDownload">Download PNG</button>
+      <button type="button" class="inj-share-copy" id="injShareCopy">Copy image</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

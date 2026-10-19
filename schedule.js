@@ -132,11 +132,59 @@ function statusClass(status) {
   if (s.includes("prob")) return "probable";
   return "";
 }
+function filterInjuriesForGame(items, event) {
+  if (!items || !items.length || !event) return items || [];
+  const WEEKDAYS = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+  function resolveGameWeekday(ev) {
+    const detail = [
+      get(ev, "competitions.0.status.type.detail", ""),
+      get(ev, "competitions.0.status.type.shortDetail", ""),
+      get(ev, "status.type.detail", ""),
+      get(ev, "status.type.shortDetail", "")
+    ].join(" ").toLowerCase();
+    for (const d of WEEKDAYS) {
+      if (detail.includes(d)) return d;
+    }
+    const shortMap = {sun:"sunday",mon:"monday",tue:"tuesday",wed:"wednesday",thu:"thursday",fri:"friday",sat:"saturday"};
+    for (const [k, v] of Object.entries(shortMap)) {
+      if (new RegExp("\\b" + k + "\\b", "i").test(detail)) return v;
+    }
+    const date = new Date(ev.date);
+    if (!isNaN(date.getTime())) {
+      try {
+        return date.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase();
+      } catch (e) {}
+    }
+    return "";
+  }
+  const gameWeekday = resolveGameWeekday(event);
+  function textOf(item) {
+    return [item.comment || "", item.detail || ""].join(" ").toLowerCase();
+  }
+  function isSeasonLong(text) {
+    return /out for (the )?season|season-ending|out indefinitely|achilles.*rupture/.test(text);
+  }
+  return items.filter(item => {
+    const text = textOf(item);
+    if (isSeasonLong(text)) return true;
+    if (!text || text.length < 6) return true; // keep bare status entries
+    for (const d of WEEKDAYS) {
+      if (d === gameWeekday) continue;
+      if (text.includes(d)) return false;
+    }
+    if (gameWeekday && text.includes(gameWeekday)) return true;
+    if (/\b(tonight|today|this game|tip-?off)\b/.test(text)) return true;
+    return true; // keep by default so the schedule list still shows current report
+  });
+}
+
 function parseTeamInjuries(teamBlock) {
   return (get(teamBlock, "injuries", []) || []).map(inj => ({
     name: get(inj, "athlete.displayName", "Player"),
     status: inj.status || get(inj, "type.description", "—"),
-    detail: get(inj, "details.type", "") || get(inj, "details.detail", "") || "—"
+    detail: get(inj, "details.type", "") || get(inj, "details.detail", "") || "—",
+    comment: (inj.shortComment || inj.longComment || "").trim(),
+    date: inj.date || null
   }));
 }
 async function fetchEvents(url) {
@@ -982,12 +1030,15 @@ function injuryBlock(title, items) {
     return `<p class="inj-title">${title}</p><p class="inj-empty">No injuries listed.</p>`;
   }
   return `<p class="inj-title">${title}</p>
-    <ul class="inj-list">${items.map(item => `
-      <li>
+    <ul class="inj-list">${items.map(item => {
+      const comment = item.comment ? `<div class="inj-comment">${item.comment}</div>` : "";
+      return `<li>
         <span class="inj-name">${item.name}</span>
         <span class="inj-status ${statusClass(item.status)}">${item.status}</span>
         <span>${item.detail}</span>
-      </li>`).join("")}</ul>`;
+        ${comment}
+      </li>`;
+    }).join("")}</ul>`;
 }
 function renderGameRow(event, allEvents) {
   const date = new Date(event.date);
@@ -1042,8 +1093,8 @@ function renderGameRow(event, allEvents) {
       <td colspan="6">
         <div class="game-detail">
           <p class="series-inline">${seriesLine(allEvents, event)}${event._b2b ? " · Back-to-back set." : ""}</p>
-          ${injuryBlock("76ers injuries", injuryByAbbr.PHI || [])}
-          ${injuryBlock(`${opponentName} injuries`, injuryByAbbr[oppAbbr] || [])}
+          ${injuryBlock("76ers injuries", filterInjuriesForGame(injuryByAbbr.PHI || [], event))}
+          ${injuryBlock(`${opponentName} injuries`, filterInjuriesForGame(injuryByAbbr[oppAbbr] || [], event))}
           <div class="inj-share-row">
             <button type="button" class="inj-share-btn" data-inj-share="${event.id}">Share injury graphic</button>
           </div>
@@ -1238,11 +1289,13 @@ function buildInjurySharePayload(event, injuryByAbbr) {
   const opp = oppOf(event);
   const oppName = get(opp, "team.shortDisplayName", "") || get(opp, "team.displayName", "Opponent");
   const oppAbbr = get(opp, "team.abbreviation", "") || "";
-  const phiItems = (injuryByAbbr.PHI || []).map(function (it) {
-    return { name: it.name, label: normalizeInjStatus(it.status), injuryType: it.detail === "—" ? "" : it.detail, comment: "" };
+  const phiRaw = filterInjuriesForGame(injuryByAbbr.PHI || [], event);
+  const oppRaw = filterInjuriesForGame(injuryByAbbr[oppAbbr] || [], event);
+  const phiItems = phiRaw.map(function (it) {
+    return { name: it.name, label: normalizeInjStatus(it.status), injuryType: it.detail === "—" ? "" : it.detail, comment: it.comment || "" };
   });
-  const oppItems = (injuryByAbbr[oppAbbr] || []).map(function (it) {
-    return { name: it.name, label: normalizeInjStatus(it.status), injuryType: it.detail === "—" ? "" : it.detail, comment: "" };
+  const oppItems = oppRaw.map(function (it) {
+    return { name: it.name, label: normalizeInjStatus(it.status), injuryType: it.detail === "—" ? "" : it.detail, comment: it.comment || "" };
   });
   const date = new Date(event.date);
   const dateStr = isNaN(date) ? "" : date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
@@ -1318,6 +1371,9 @@ function buildInjuryShareCanvas(payload) {
   ctx.fillRect(0, 132, W, 4);
   text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
   text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
+  // Accent bar matching site branding
+  ctx.fillStyle = "#ED174C";
+  ctx.fillRect(PAD, 100, 72, 4);
   text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
   let y = headerH;
   teams.forEach(function (team) {

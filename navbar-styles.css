@@ -315,7 +315,7 @@ body {
 
 .user-dropdown-header span {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #a3a3a3;
 }
 
 .user-dropdown-divider {
@@ -811,7 +811,7 @@ body {
 }
 
 :root.dark-mode .auth-modal {
-  background: #1a1a1a;
+  background: #000000;
   color: white;
 }
 
@@ -833,7 +833,7 @@ body {
 }
 
 :root.dark-mode .user-dropdown {
-  background: #1a1a1a;
+  background: #000000;
   border-color: #333;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
@@ -1225,7 +1225,7 @@ html.dark-mode .navbar.scrolled {
 :root.dark-mode,
 :root.dark-mode body,
 :root.dark-mode html {
-  background-color: #1a1a1a;
+  background-color: #000000;
   color: #e0e0e0;
   color-scheme: dark;
 }
@@ -1252,11 +1252,11 @@ html.dark-mode .navbar.scrolled {
 }
 
 :root.dark-mode .blog-meta {
-  color: #888888;
+  color: #b0b0b0;
 }
 
 :root.dark-mode .category-badge {
-  background: #1a1a1a;
+  background: #000000;
   color: #e0e0e0;
   border: 1px solid #404040;
 }
@@ -1279,7 +1279,7 @@ html.dark-mode .navbar.scrolled {
 
 :root.dark-mode .pagination button:disabled {
   opacity: 0.5;
-  color: #888888;
+  color: #b0b0b0;
 }
 
 :root.dark-mode h1,
@@ -1313,7 +1313,7 @@ html.dark-mode .navbar.scrolled {
 
 :root.dark-mode input::placeholder,
 :root.dark-mode textarea::placeholder {
-  color: #888888;
+  color: #b0b0b0;
 }
 
 :root.dark-mode hr {
@@ -1388,7 +1388,7 @@ html.dark-mode .navbar.scrolled {
 
 .footer-tagline {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: #a3a3a3;
   line-height: 1.5;
   margin-bottom: 0;
 }
@@ -1412,7 +1412,7 @@ html.dark-mode .navbar.scrolled {
 }
 
 .footer-links a {
-  color: #6b7280;
+  color: #a3a3a3;
   text-decoration: none;
   font-size: 0.85rem;
   transition: color 0.2s ease;
@@ -1433,7 +1433,7 @@ html.dark-mode .navbar.scrolled {
 }
 
 :root.dark-mode .footer {
-  background: #1a1a1a;
+  background: #000000;
   border-top-color: #404040;
 }
 
@@ -1459,7 +1459,7 @@ html.dark-mode .navbar.scrolled {
 
 :root.dark-mode .footer-bottom {
   border-top-color: #404040;
-  color: #6b7280;
+  color: #a3a3a3;
 }
 
 @media (max-width: 768px) {
@@ -1517,7 +1517,7 @@ html.dark-mode .navbar.scrolled {
 
 /* —— Modern footer —— */
 .footer {
-  background: #0b0f1a;
+  background: #000000;
   color: #e2e8f0;
   margin-top: 3.5rem;
   border-top: none;
@@ -1619,5 +1619,5 @@ html.dark-mode .navbar.scrolled {
 /* Override old dark-mode footer rules that assumed light footer */
 :root.dark-mode .footer,
 html.dark-mode .footer {
-  background: #070a12;
+  background: #000000;
 }

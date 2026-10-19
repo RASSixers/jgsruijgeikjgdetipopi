@@ -3228,6 +3228,56 @@
 .tpe-confirm-ok:hover { filter: brightness(1.05); }
 
 </style>
+
+<style id="tm-dark-mode-polish">
+html.dark-mode, html.navy-mode {
+  --cream: #000000 !important;
+  --card-bg: #0f0f0f !important;
+  --ink: #f4f4f5 !important;
+  --mid: #b4b4b8 !important;
+  --border-light: rgba(255,255,255,0.12) !important;
+  --navy: #000000 !important;
+  --navy-deep: #000000 !important;
+}
+html.dark-mode body, html.navy-mode body {
+  background: #000 !important;
+  color: #f4f4f5 !important;
+}
+html.dark-mode .page-hero,
+html.dark-mode .team-column,
+html.dark-mode .panel,
+html.dark-mode .card,
+html.dark-mode .modal-backdrop .modal,
+html.dark-mode .result-box,
+html.dark-mode .cap-box {
+  background: #0f0f0f !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+html.dark-mode button:not(.btn-primary),
+html.dark-mode .btn-ghost {
+  background: #1a1a1a !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+html.dark-mode input, html.dark-mode select {
+  background: #141414 !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(255,255,255,0.18) !important;
+}
+html.dark-mode .player-item, html.dark-mode .pick-item {
+  background: #141414 !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+html.dark-mode .player-item:hover {
+  background: #1c1c1c !important;
+}
+html.dark-mode h1, html.dark-mode h2, html.dark-mode h3 {
+  color: #fff !important;
+}
+</style>
+
 </head>
 <body>
 <div id="tm-admin-gate" style="display:none;position:fixed;inset:0;z-index:9999;background:#f4f6f9;align-items:center;justify-content:center;padding:1.5rem;font-family:Lexend,system-ui,sans-serif;">

@@ -1,4 +1,164 @@
+# SixersHoops robots.txt
+# https://sixershoops.com/robots.txt
+
+# ---------------------------------------------------------------------------
+# Default: allow public site content
+# ---------------------------------------------------------------------------
 User-agent: *
 Allow: /
+Allow: /index.html
+Allow: /about
+Allow: /about.html
+Allow: /contact
+Allow: /contact.html
+Allow: /pickem
+Allow: /pickem.html
+Allow: /schedule
+Allow: /schedule.html
+Allow: /roster
+Allow: /roster.html
+Allow: /salary
+Allow: /salary.html
+Allow: /future-draft-picks
+Allow: /future-draft-picks.html
+Allow: /nba-trade-machine
+Allow: /nba-trade-machine.html
+Allow: /sixers-depth-chart
+Allow: /sixers-depth-chart.html
+Allow: /article/
+Allow: /articles/
+Allow: /user/
+Allow: /privacy-policy
+Allow: /privacy-policy.html
+Allow: /terms-of-service
+Allow: /terms-of-service.html
+Allow: /cookie-policy
+Allow: /cookie-policy.html
+Allow: /favicon.ico
+Allow: /ads.txt
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.webp$
+Allow: /*.svg$
+Allow: /*.gif$
+Allow: /*.woff
+Allow: /*.woff2
+Allow: /*.ttf
 
+# Private / staff / admin (no public indexing value)
+Disallow: /articles-admin
+Disallow: /articles-admin.html
+Disallow: /staff-admin
+Disallow: /staff-admin.html
+Disallow: /moderation
+Disallow: /moderation.html
+Disallow: /auth/action
+Disallow: /auth/
+
+# ---------------------------------------------------------------------------
+# Google Search
+# ---------------------------------------------------------------------------
+User-agent: Googlebot
+Allow: /
+Allow: /*.css$
+Allow: /*.js$
+Disallow: /articles-admin
+Disallow: /articles-admin.html
+Disallow: /staff-admin
+Disallow: /staff-admin.html
+Disallow: /moderation
+Disallow: /moderation.html
+Disallow: /auth/
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Googlebot-Video
+Allow: /
+
+# ---------------------------------------------------------------------------
+# Google AdSense crawler (required for ad review / quality)
+# ---------------------------------------------------------------------------
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+# ---------------------------------------------------------------------------
+# Other major search / AI crawlers (public content only)
+# ---------------------------------------------------------------------------
+User-agent: Bingbot
+Allow: /
+Disallow: /articles-admin
+Disallow: /staff-admin
+Disallow: /moderation
+Disallow: /auth/
+
+User-agent: Slurp
+Allow: /
+Disallow: /articles-admin
+Disallow: /staff-admin
+Disallow: /moderation
+Disallow: /auth/
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /articles-admin
+Disallow: /staff-admin
+Disallow: /moderation
+Disallow: /auth/
+
+User-agent: Applebot
+Allow: /
+Disallow: /articles-admin
+Disallow: /staff-admin
+Disallow: /moderation
+Disallow: /auth/
+
+User-agent: Yandex
+Allow: /
+Disallow: /articles-admin
+Disallow: /staff-admin
+Disallow: /moderation
+Disallow: /auth/
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /articles-admin
+Disallow: /staff-admin
+Disallow: /moderation
+Disallow: /auth/
+
+User-agent: FacebookExternalHit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# ---------------------------------------------------------------------------
+# Sitemaps
+# ---------------------------------------------------------------------------
 Sitemap: https://sixershoops.com/sitemap.xml
+Sitemap: https://www.sixershoops.com/sitemap.xml

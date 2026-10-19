@@ -998,6 +998,12 @@ function renderGameRow(event, allEvents) {
   const isHome = get(sixers, "homeAway", "") === "home";
   const opponentName = get(opponent, "team.shortDisplayName", "") || get(opponent, "team.displayName", "TBD");
   const oppAbbr = get(opponent, "team.abbreviation", "");
+  try {
+    if (typeof buildInjurySharePayload === "function") {
+      window.__injuryShareByEvent = window.__injuryShareByEvent || {};
+      window.__injuryShareByEvent[String(event.id)] = buildInjurySharePayload(event, injuryByAbbr || {});
+    }
+  } catch (e) {}
   const opponentLogo = get(opponent, "team.logos.0.href", "");
   const venueName = get(event, "competitions.0.venue.fullName", "");
   const venueCity = get(event, "competitions.0.venue.address.city", "");
@@ -1038,6 +1044,9 @@ function renderGameRow(event, allEvents) {
           <p class="series-inline">${seriesLine(allEvents, event)}${event._b2b ? " · Back-to-back set." : ""}</p>
           ${injuryBlock("76ers injuries", injuryByAbbr.PHI || [])}
           ${injuryBlock(`${opponentName} injuries`, injuryByAbbr[oppAbbr] || [])}
+          <div class="inj-share-row">
+            <button type="button" class="inj-share-btn" data-inj-share="${event.id}">Share injury graphic</button>
+          </div>
         </div>
       </td>
     </tr>`;
@@ -1211,4 +1220,196 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   getSixersSchedule();
+});
+
+
+function normalizeInjStatus(status) {
+  const s = String(status || "").toLowerCase();
+  if (s.includes("out")) return "OUT";
+  if (s.includes("doubt")) return "Doubtful";
+  if (s.includes("question")) return "Questionable";
+  if (s.includes("gtd") || s.includes("day")) return "GTD";
+  if (s.includes("prob")) return "Probable";
+  return status || "Listed";
+}
+
+function buildInjurySharePayload(event, injuryByAbbr) {
+  const sixers = sixersOf(event);
+  const opp = oppOf(event);
+  const oppName = get(opp, "team.shortDisplayName", "") || get(opp, "team.displayName", "Opponent");
+  const oppAbbr = get(opp, "team.abbreviation", "") || "";
+  const phiItems = (injuryByAbbr.PHI || []).map(function (it) {
+    return { name: it.name, label: normalizeInjStatus(it.status), injuryType: it.detail === "—" ? "" : it.detail, comment: "" };
+  });
+  const oppItems = (injuryByAbbr[oppAbbr] || []).map(function (it) {
+    return { name: it.name, label: normalizeInjStatus(it.status), injuryType: it.detail === "—" ? "" : it.detail, comment: "" };
+  });
+  const date = new Date(event.date);
+  const dateStr = isNaN(date) ? "" : date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
+  return {
+    matchup: (get(opp, "team.abbreviation", oppName) || oppName) + " vs PHI · " + dateStr,
+    updatedLabel: null,
+    teams: [
+      { team: "PHI", items: phiItems },
+      { team: oppAbbr || oppName, items: oppItems }
+    ]
+  };
+}
+
+function buildInjuryShareCanvas(payload) {
+  if (!payload) return null;
+  const W = 1080;
+  const PAD = 48;
+  const NAVY = "#001a57", RED = "#ED174C";
+  const WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
+  const MID = "#64748b", BORDER = "#e4e8f0";
+  const BADGE = {
+    "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+    "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
+    "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
+    "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+    "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
+  };
+  const teams = payload.teams || [];
+  let rows = 0;
+  teams.forEach(function (t) { rows += Math.max((t.items || []).length, 1); });
+  const headerH = 168;
+  const rowH = 72;
+  const teamHeadH = 40;
+  const H = Math.max(headerH + teams.length * teamHeadH + rows * rowH + 90, 520);
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  function rr(x, y, w, h, r, fill) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  }
+  function text(str, x, y, font, color, align) {
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = align || "left";
+    ctx.fillText(str, x, y);
+  }
+  function wrapText(str, maxW, font) {
+    ctx.font = font;
+    const words = String(str || "").split(/\s+/);
+    const lines = [];
+    let line = "";
+    words.forEach(function (w) {
+      const test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+      else line = test;
+    });
+    if (line) lines.push(line);
+    return lines.slice(0, 2);
+  }
+  ctx.fillStyle = CREAM;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = NAVY;
+  ctx.fillRect(0, 0, W, 132);
+  ctx.fillStyle = RED;
+  ctx.fillRect(0, 132, W, 4);
+  text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
+  text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
+  text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
+  let y = headerH;
+  teams.forEach(function (team) {
+    rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
+    text(String(team.team || "Team").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
+    y += teamHeadH;
+    const items = team.items || [];
+    if (!items.length) {
+      text("No injuries listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
+      y += rowH;
+      return;
+    }
+    items.forEach(function (item) {
+      rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+      ctx.strokeStyle = BORDER;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      text(item.name, PAD + 20, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
+      const badge = BADGE[item.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+      const label = String(item.label || "Listed").toUpperCase();
+      ctx.font = "800 12px Lexend, system-ui, sans-serif";
+      const bw = ctx.measureText(label).width + 22;
+      const bx = W - PAD - 20 - bw;
+      rr(bx, y + 12, bw, 26, 13, badge.bg);
+      ctx.strokeStyle = badge.border;
+      ctx.stroke();
+      text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
+      const sub = item.injuryType || item.comment || "";
+      if (sub) {
+        const lines = wrapText(sub, W - PAD * 2 - 40, "500 13px Lexend, system-ui, sans-serif");
+        lines.forEach(function (ln, i) {
+          text(ln, PAD + 20, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
+        });
+      }
+      y += rowH;
+    });
+  });
+  text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+  return canvas;
+}
+
+window.__injuryShareByEvent = window.__injuryShareByEvent || {};
+
+function openInjuryShareFromEvent(eventId) {
+  const payload = window.__injuryShareByEvent[String(eventId)];
+  if (!payload) return;
+  const canvas = buildInjuryShareCanvas(payload);
+  if (!canvas) return;
+  const overlay = document.getElementById("injShareOverlay");
+  const img = document.getElementById("injShareImg");
+  if (!overlay || !img) return;
+  img.src = canvas.toDataURL("image/png");
+  overlay.dataset.png = img.src;
+  overlay.classList.add("active");
+}
+
+function closeInjuryShareModal() {
+  const overlay = document.getElementById("injShareOverlay");
+  if (!overlay) return;
+  overlay.classList.remove("active");
+}
+
+document.addEventListener("click", function (e) {
+  const btn = e.target && e.target.closest && e.target.closest("[data-inj-share]");
+  if (btn) {
+    e.preventDefault();
+    openInjuryShareFromEvent(btn.getAttribute("data-inj-share"));
+    return;
+  }
+  if (e.target && e.target.id === "injShareClose") closeInjuryShareModal();
+  if (e.target && e.target.id === "injShareOverlay") closeInjuryShareModal();
+  if (e.target && e.target.id === "injShareDownload") {
+    const overlay = document.getElementById("injShareOverlay");
+    const href = overlay && overlay.dataset.png;
+    if (!href) return;
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "sixershoops-injury-report.png";
+    a.click();
+  }
+  if (e.target && e.target.id === "injShareCopy") {
+    (async function () {
+      try {
+        const overlay = document.getElementById("injShareOverlay");
+        const href = overlay && overlay.dataset.png;
+        if (!href || !navigator.clipboard || !window.ClipboardItem) return;
+        const res = await fetch(href);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        e.target.textContent = "Copied";
+        setTimeout(function () { e.target.textContent = "Copy image"; }, 1600);
+      } catch (err) {}
+    })();
+  }
 });

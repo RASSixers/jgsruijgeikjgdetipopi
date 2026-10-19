@@ -4267,11 +4267,12 @@ function playerHeadshotHtml(name, abbr, playerObj){
                 { id:'atl-15', name:"Henri Veesaar", position:'C', salary:1357763, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $1,357,763", "2027-28: $2,294,370", "2028-29: $2,694,363 (Player Option)", "2029-30: $2,918,152 (Player Option)"] , futureOption:'Player Option', guaranteedYears:2, optionYears:2, guaranteedRemaining:3652133, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $3,652,133"]},
                 
                 { id:'atl-17', name:"RayJ Dennis", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
-                { id:'atl-18', name:"Keshon Gilbert", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
-                
-                { id:'atl-16', name:"Devin Carter", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["2026-27: $5,158,080"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:5158080, contractNotes:["Guaranteed remaining: $5,158,080"]}
+                { id:'atl-18', name:"Keshon Gilbert", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Devin Carter", salary: 5158080, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'atl-pk01', name:'2027 Lesser of MIL/NOP 1st (Top-4 Protected)', round:1, protections:'Top-4 Protected', owner:'ATL', year:2027, tradeEligible:true },
                 { id:'atl-pk02', name:'2028 Favorable of Own/CLE 1st', round:1, protections:'Favorable', owner:'ATL', year:2028, tradeEligible:true },
                 { id:'atl-pk03', name:'2029 Own 1st', round:1, protections:'Unprotected', owner:'ATL', year:2029, tradeEligible:true },
@@ -4418,13 +4419,17 @@ function playerHeadshotHtml(name, abbr, playerObj){
                 { id:'cha-14', name:"Moussa Diabaté", position:'C', salary:2461462, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,461,462 (Player Option)"] , futureOption:'Player Option', guaranteedYears:0, optionYears:1, contractNotes:["Player option year(s) marked from guarantee schedule"]},
                 { id:'cha-15', name:"Sion James", position:'G', salary:2411090, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $2,411,090", "2027-28: $2,525,901 (Player Option)", "2028-29: $2,735,698 (Player Option)"] , futureOption:'Player Option', guaranteedYears:1, optionYears:2, guaranteedRemaining:2411090, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,411,090"]},
                 { id:'cha-16', name:"Ryan Kalkbrenner", position:'C', salary:2411090, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,411,090"] },
-                { id:'cha-17', name:"Rob Dillingham", position:'G', salary:6889320, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $6,889,320"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:6889320, contractNotes:["Guaranteed remaining: $6,889,320"]},
-                { id:'cha-18', name:"Ryan Nembhard", position:'G', salary:2150917, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,150,917"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2150917, contractNotes:["Guaranteed remaining: $2,150,917"]},
+                
+                
                 { id:'cha-19', name:"Michael Ajayi", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'cha-20', name:"Kylan Boswell", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'cha-21', name:"PJ Hall", position:'C', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Rob Dillingham", salary: 6890000, note: "Dead money · counts against cap only" },
+                { name: "Ryan Nembhard", salary: 2150000, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'cha-pk01', name:'2027 Own 1st', round:1, protections:'Unprotected', owner:'CHA', year:2027, tradeEligible:true },
                 { id:'cha-pk02', name:'2027 DAL 1st (Top-2)', round:1, protections:'Top-2', owner:'CHA', year:2027, tradeEligible:true },
                 { id:'cha-pk03', name:'2027 MIA 1st (Top-4 thru 2028)', round:1, protections:'Top-4', owner:'CHA', year:2027, tradeEligible:true },
@@ -4480,11 +4485,14 @@ function playerHeadshotHtml(name, abbr, playerObj){
                 { id:'chi-12', name:"Noa Essengue", position:'F', salary:5701200, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $5,701,200", "2027-28: $5,972,760 (Player Option)", "2028-29: $8,230,464 (Player Option)"] , guaranteedYears:1, optionYears:2, guaranteedRemaining:5701200, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $5,701,200"], futureOption:'Player Option'},
                 { id:'chi-13', name:"Dailyn Swain", position:'G', salary:4965480, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $4,965,480", "2027-28: $5,213,760", "2028-29: $5,461,920 (Player Option)", "2029-30: $8,373,124 (Player Option)"] , guaranteedYears:2, optionYears:2, guaranteedRemaining:10179240, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $10,179,240"], futureOption:'Player Option'},
                 { id:'chi-14', name:"Leonard Miller", position:'F', salary:2406205, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,406,205"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2406205, contractNotes:["Guaranteed remaining: $2,406,205"]},
-                { id:'chi-15', name:"Kam Jones", position:'G', salary:1075459, contractType:'Partial Guarantee', optionYears:1, futureOption:'Player Option', partialGuarantee:true, partialAmount:8000000, contractYears:2, contractDetails:["2026-27: $8,000,000", "2027-28: $8,000,000 (Player Option)"] , contractNotes:["Guaranteed remaining: $8,000,000 of $16,000,000 total future value", "Later seasons may include team/player options or non-guaranteed portions", "2027-28: option year or non-guaranteed (confirm PO vs TO on Capsheets/Spotrac)"], guaranteedRemaining:8000000},
+                
                 { id:'chi-16', name:"Tobe Akawa", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'chi-17', name:"Jaylin Sellers", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Kam Jones", salary: 1075459, note: "Dead money · counts against cap only · not a roster spot" }
+            ],
+picks: [
                 { id:'chi-pk01', name:'2027 Own 1st', round:1, protections:'Unprotected', owner:'CHI', year:2027, tradeEligible:true },
                 { id:'chi-pk02', name:'2028 Own 1st', round:1, protections:'Unprotected', owner:'CHI', year:2028, tradeEligible:true },
                 { id:'chi-pk03', name:'2029 Own 1st', round:1, protections:'Unprotected', owner:'CHI', year:2029, tradeEligible:true },
@@ -4526,13 +4534,17 @@ function playerHeadshotHtml(name, abbr, playerObj){
                 { id:'cle-12', name:"Tyrese Proctor", position:'G', salary:2150917, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $2,150,917", "2027-28: $2,525,901 (Player Option)", "2028-29: $2,735,698 (Player Option)"] , futureOption:'Player Option', guaranteedYears:1, optionYears:2, guaranteedRemaining:2150917, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,150,917"]},
                 { id:'cle-13', name:"Khalifa Diop", position:'C', salary:1357763, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $1,357,763", "2027-28: $2,294,370 (Player Option)", "2028-29: $2,694,363 (Player Option)", "2029-30: $2,918,152 (Player Option)"] , futureOption:'Player Option', guaranteedYears:1, optionYears:3, guaranteedRemaining:1357763, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $1,357,763"]},
                 { id:'cle-14', name:"Meleek Thomas", position:'G', salary:1357763, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $1,357,763", "2027-28: $2,294,370", "2028-29: $2,694,363", "2029-30: $2,918,152 (Player Option)"] , guaranteedYears:3, optionYears:1, guaranteedRemaining:6346496, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $6,346,496"], futureOption:'Player Option'},
-                { id:'cle-15', name:"Cam Whitmore", position:'SF', salary:1819437, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $1,819,437", "2027-28: $1,819,437", "2028-29: $1,819,437"] , guaranteedYears:3, optionYears:0, guaranteedRemaining:5458311, contractNotes:["Guaranteed remaining: $5,458,311"]},
-                { id:'cle-16', name:"Ricky Rubio", position:'PG', salary:424672, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $424,672"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:424672, contractNotes:["Guaranteed remaining: $424,672"]},
+                
+                
                 { id:'cle-17', name:"Tristan Enaruna", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'cle-18', name:"Riley Minix", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'cle-19', name:"Ernest Udeh", position:'C', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Cam Whitmore", salary: 5460000, note: "Dead money · counts against cap only" },
+                { name: "Ricky Rubio", salary: 424672, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'cle-pk01', name:'2028 Lesser Own/ATL 1st', round:1, protections:'Lesser', owner:'CLE', year:2028, tradeEligible:false },
                 { id:'cle-pk02', name:'2030 Own 1st', round:1, protections:'Unprotected', owner:'CLE', year:2030, tradeEligible:false },
                 { id:'cle-pk03', name:'2032 Own 1st', round:1, protections:'Unprotected', owner:'CLE', year:2032, tradeEligible:false },
@@ -4573,11 +4585,11 @@ function playerHeadshotHtml(name, abbr, playerObj){
                 { id:'dal-21', name:"John Poulakidas", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'dal-22', name:"Tobi Lawal", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-                        deadMoney: [
-                { name: "Klay Thompson", salary: 7660317, note: "Waived / stretch" },
-                { name: "JaVale McGee", salary: 2208856, note: "Waived" },
-                { name: "Olivier-Maxence Prosper", salary: 1002360, note: "Waived" },
-                { name: "Dwight Powell", salary: 1000000, note: "Waived" }
+            deadMoney: [
+                { name: "Klay Thompson", salary: 7660317, note: "Dead money · counts against cap only" },
+                { name: "JaVale McGee", salary: 2208856, note: "Dead money · counts against cap only" },
+                { name: "Olivier-Maxence Prosper", salary: 1002360, note: "Dead money · counts against cap only" },
+                { name: "Dwight Powell", salary: 1000000, note: "Dead money · counts against cap only" }
             ],
 picks: [
                 { id:'dal-pk01', name:'2028 Lesser Own/OKC 1st', round:1, protections:'Lesser', owner:'DAL', year:2028, tradeEligible:false },
@@ -4618,7 +4630,10 @@ picks: [
                 { id:'den-17', name:"Ryan Nembhard", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'den-18', name:"Cam Whitmore", position:'SF', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Jonas Valan\u010di\u016bnas", salary: 666667, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'den-pk01', name:'2028 Own 1st', round:1, protections:'Unprotected', owner:'DEN', year:2028, tradeEligible:false },
                 { id:'den-pk02', name:'2030 Own 1st', round:1, protections:'Unprotected', owner:'DEN', year:2030, tradeEligible:false },
                 { id:'den-pk03', name:'2031 Own 1st', round:1, protections:'Unprotected', owner:'DEN', year:2031, tradeEligible:true },
@@ -4653,12 +4668,15 @@ picks: [
                 { id:'det-13', name:"Taurean Prince", position:'SF', salary:3815861, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $3,815,861"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:3815861, contractNotes:["Guaranteed remaining: $3,815,861"]},
                 { id:'det-14', name:"Tolu Smith III", position:'F', salary:2411090, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,411,090 (Non-Guaranteed until Jan 10, 2027)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:0, contractNotes:["Non-guaranteed until January 10, 2027"], guaranteeDate:'2027-01-10' },
                 { id:'det-15', name:"Chaz Lanier", position:'G', salary:2150917, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $2,150,917", "2027-28: $2,525,901 (Player Option)", "2028-29: $2,735,698 (Player Option)"] , futureOption:'Player Option', guaranteedYears:1, optionYears:2, guaranteedRemaining:2150917, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,150,917"]},
-                { id:'det-16', name:"Gary Harris", position:'SG', salary:3815861, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $3,815,861"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:3815861, contractNotes:["Guaranteed remaining: $3,815,861"]},
+                
                 { id:'det-17', name:"Elijah Harkless", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'det-18', name:"Isaac Jones", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'det-19', name:"Ugonna Onyenso", position:'C', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Gary Harris", salary: 3815861, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'det-pk01', name:'2027 Own 1st', round:1, protections:'Unprotected', owner:'DET', year:2027, tradeEligible:true },
                 { id:'det-pk02', name:'2028 Own 1st', round:1, protections:'Unprotected', owner:'DET', year:2028, tradeEligible:true },
                 { id:'det-pk03', name:'2029 Own 1st', round:1, protections:'Unprotected', owner:'DET', year:2029, tradeEligible:true },
@@ -4776,12 +4794,16 @@ picks: [
                 { id:'mil-15', name:"Jericho Sims", position:'C', salary:2801346, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,801,346"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2801346, contractNotes:["Guaranteed remaining: $2,801,346"]},
                 { id:'mil-16', name:"Pete Nance", position:'F', salary:2537526, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $2,537,526", "2027-28: $2,756,912 (Player Option)"] , guaranteedYears:1, optionYears:1, guaranteedRemaining:2537526, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,537,526"], futureOption:'Player Option'},
                 { id:'mil-17', name:"Bogoljub Markovic", position:'F', salary:1357763, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $1,357,763", "2027-28: $2,294,370", "2028-29: $2,694,363", "2029-30: $2,918,152 (Player Option)"] , guaranteedYears:3, optionYears:1, guaranteedRemaining:6346496, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $6,346,496"], futureOption:'Player Option'},
-                { id:'mil-18', name:"Damian Lillard", position:'PG', salary:21311053, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $22,516,603", "2027-28: $22,516,603", "2028-29: $22,516,603", "2029-30: $22,516,603"] , guaranteedYears:4, optionYears:0, guaranteedRemaining:90066412, contractNotes:["Guaranteed remaining: $90,066,412"]},
-                { id:'mil-19', name:"Vasilije Micic", position:'PG', salary:666667, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $666,667", "2027-28: $666,667"] , guaranteedYears:2, optionYears:0, guaranteedRemaining:1333334, contractNotes:["Guaranteed remaining: $1,333,334"]},
+                
+                
                 { id:'mil-20', name:"Kam Jones", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'mil-21', name:"Cormac Ryan", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Damian Lillard", salary: 21310000, note: "Dead money · counts against cap only" },
+                { name: "Vasilije Micic", salary: 666667, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'mil-pk01', name:'2028 Least fav Own/WAS/BKN/POR/PHI/PHO 1st', round:1, protections:'Complex', owner:'MIL', year:2028, tradeEligible:false },
                 { id:'mil-pk02', name:'2030 Fav MIA / least Own/POR 1st', round:1, protections:'Complex', owner:'MIL', year:2030, tradeEligible:false },
                 { id:'mil-pk03', name:'2031 Own 1st', round:1, protections:'Unprotected', owner:'MIL', year:2031, tradeEligible:true },
@@ -4816,12 +4838,15 @@ picks: [
                 { id:'min-12', name:"Bones Hyland", position:'PG', salary:2449421, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,845,883"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2845883, contractNotes:["Guaranteed remaining: $2,845,883"]},
                 { id:'min-13', name:"Trey Lyles", position:'PF', salary:2449421, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,449,421 (Non-Guaranteed · $1,500,000 partial until Jan 10, 2027)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:1500000, contractNotes:["$1,500,000 partially guaranteed", "Non-guaranteed remainder until January 10, 2027"], partialGuarantee:true, partialAmount:1500000, guaranteeDate:'2027-01-10' },
                 { id:'min-14', name:"Isaiah Evans", position:'G', salary:1357763, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $1,357,763", "2027-28: $2,294,370", "2028-29: $2,694,363", "2029-30: $2,918,152 (Player Option)"] , guaranteedYears:3, optionYears:1, guaranteedRemaining:6346496, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $6,346,496"], futureOption:'Player Option'},
-                { id:'min-15', name:"John Konchar", position:'G', salary:2055000, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $2,055,000", "2027-28: $2,055,000", "2028-29: $2,055,000"] , guaranteedYears:3, optionYears:0, guaranteedRemaining:6165000, contractNotes:["Guaranteed remaining: $6,165,000"]},
+                
                 { id:'min-16', name:"Enrique Freeman", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'min-17', name:"Zyon Pullin", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'min-18', name:"Rocco Zikarsky", position:'C', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "John Konchar", salary: 2060000, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'min-pk01', name:'2028 Lesser Own/CHA 1st', round:1, protections:'Lesser', owner:'MIN', year:2028, tradeEligible:false },
                 { id:'min-pk02', name:'2030 Least fav Own/CHA / fav DAL/SAS 1st', round:1, protections:'Complex', owner:'MIN', year:2030, tradeEligible:false },
                 { id:'min-pk03', name:'2032 Own 1st (Frozen)', round:1, protections:'Frozen', owner:'MIN', year:2032, tradeEligible:false },
@@ -4850,12 +4875,15 @@ picks: [
                 { id:'nop-13', name:"Bryce McGowens", position:'SG', salary:2584539, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $2,584,539", "2027-28: $2,934,742 (Player Option)"] , guaranteedYears:1, optionYears:1, guaranteedRemaining:2584539, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,584,539"], futureOption:'Player Option'},
                 { id:'nop-14', name:"Trendon Watford", position:'PF', salary:2449421, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,449,421 (Non-Guaranteed · $250,000 initial · $500,000 if on roster opening night · fully guaranteed Dec 30, 2026)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:250000, contractNotes:["Initial guarantee $250,000", "Increases to $500,000 if not waived before opening night", "Fully guaranteed December 30, 2026"], partialGuarantee:true, partialAmount:250000, guaranteeDate:'2026-12-30' },
                 { id:'nop-15', name:"Karlo Matkovic", position:'C', salary:2296271, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,296,271"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2296271, contractNotes:["Guaranteed remaining: $2,296,271"]},
-                { id:'nop-16', name:"Taj Gibson", position:'C', salary:148828, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $148,828"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:148828, contractNotes:["Guaranteed remaining: $148,828"]},
+                
                 { id:'nop-17', name:"Malik Dia", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'nop-18', name:"Jaron Pierre Jr.", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'nop-19', name:"Julian Reese", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Taj Gibson", salary: 148828, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'nop-pk01', name:'2027 Fav Own/MIL 1st', round:1, protections:'Unprotected', owner:'NOP', year:2027, tradeEligible:true },
                 { id:'nop-pk02', name:'2028 Own 1st', round:1, protections:'Unprotected', owner:'NOP', year:2028, tradeEligible:true },
                 { id:'nop-pk03', name:'2029 Own 1st', round:1, protections:'Unprotected', owner:'NOP', year:2029, tradeEligible:true },
@@ -4896,7 +4924,10 @@ picks: [
                 { id:'nyk-16', name:"Tyler Nickel", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'nyk-wiseman', name:"James Wiseman", position:'C', salary:2449421, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,449,421 (Non-Guaranteed)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:0, contractNotes:["Non-guaranteed"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Drew Eubanks", salary: 15000, note: "Dead money · counts against cap only · not a roster spot" }
+            ],
+picks: [
                 { id:'nyk-pk01', name:'2028 Lesser Own/BKN/PHO 1st', round:1, protections:'Lesser', owner:'NYK', year:2028, tradeEligible:false },
                 { id:'nyk-pk02', name:'2030 Own 1st', round:1, protections:'Unprotected', owner:'NYK', year:2030, tradeEligible:false },
                 { id:'nyk-pk03', name:'2032 Own 1st', round:1, protections:'Unprotected', owner:'NYK', year:2032, tradeEligible:false },
@@ -4939,7 +4970,10 @@ picks: [
                 { id:'sac-16', name:"Adam Flagler", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'sac-17', name:"Jonathan Mogbo", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "DeMar DeRozan", salary: 3333333, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'sac-pk01', name:'2027 Own 1st', round:1, protections:'Unprotected', owner:'SAC', year:2027, tradeEligible:true },
                 { id:'sac-pk02', name:'2028 Own 1st', round:1, protections:'Unprotected', owner:'SAC', year:2028, tradeEligible:true },
                 { id:'sac-pk03', name:'2029 Own 1st', round:1, protections:'Unprotected', owner:'SAC', year:2029, tradeEligible:true },
@@ -5196,11 +5230,14 @@ picks: [
                 { id:'lac-14', name:"Kobe Sanders", position:'G', salary:2622139, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $2,622,139", "2027-28: $2,753,246", "2028-29: $2,884,353 (Player Option)", "2029-30: $3,019,474 (Player Option)"] , futureOption:'Player Option', guaranteedYears:2, optionYears:2, guaranteedRemaining:5375385, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $5,375,385"]},
                 { id:'lac-15', name:"Cam Christie", position:'G', salary:2296271, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $2,296,271 (Player Option)", "2027-28: $2,486,995 (Non-Guaranteed)"] , futureOption:'Player Option', guaranteedYears:0, optionYears:2, contractNotes:["Player option year(s) marked from guarantee schedule"]},
                 { id:'lac-16', name:"Baba Miller", position:'F', salary:1705630, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $1,705,630", "2027-28: $2,294,370", "2028-29: $2,694,363 (Player Option)", "2029-30: $2,918,152 (Player Option)"] , futureOption:'Player Option', guaranteedYears:2, optionYears:2, guaranteedRemaining:4000000, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $4,000,000"]},
-                { id:'lac-17', name:"Johni Broome", position:'F', salary:2150917, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,150,917"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2150917, contractNotes:["Guaranteed remaining: $2,150,917"]},
+                
                 { id:'lac-18', name:"Nick Martinelli", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'lac-19', name:"Jalen Pickett", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Johni Broome", salary: 2150917, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'lac-pk01', name:'2027 2nd fav Own/TOR/OKC 1st', round:1, protections:'Complex', owner:'LAC', year:2027, tradeEligible:false },
                 { id:'lac-pk02', name:'2029 Least fav Own/PHI (1-3 prot) 1st', round:1, protections:'Protected', owner:'LAC', year:2029, tradeEligible:false },
                 { id:'lac-pk03', name:'2031 TOR 1st', round:1, protections:'Unprotected', owner:'LAC', year:2031, tradeEligible:false },
@@ -5279,15 +5316,22 @@ picks: [
                 { id:'mem-16', name:"Jaylen Wells", position:'SF', salary:2296271, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,296,271 (Non-Guaranteed · $100,000 partial until Oct 20, 2026)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:100000, contractNotes:["$100,000 partially guaranteed", "Non-guaranteed until October 20, 2026"], partialGuarantee:true, partialAmount:100000, guaranteeDate:'2026-10-20' },
                 { id:'mem-17', name:"Micah Peavy", position:'G', salary:2150917, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $2,150,917", "2027-28: $2,525,901 (Player Option)", "2028-29: $2,735,698 (Player Option)"] , futureOption:'Player Option', guaranteedYears:1, optionYears:2, guaranteedRemaining:2150917, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,150,917"]},
                 
-                { id:'mem-19', name:"Jordan Hawkins", position:'SG', salary:6343013, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $7,021,895"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:7021895, contractNotes:["Guaranteed remaining: $7,021,895"]},
-                { id:'mem-20', name:"D'Angelo Russell", position:'PG', salary:5969250, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $5,969,250"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:5969250, contractNotes:["Guaranteed remaining: $5,969,250"]},
-                { id:'mem-21', name:"Cole Anthony", position:'PG', salary:3700000, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $3,700,000", "2027-28: $3,700,000"] , guaranteedYears:2, optionYears:0, guaranteedRemaining:7400000, contractNotes:["Guaranteed remaining: $7,400,000"]},
-                { id:'mem-22', name:"Mamadi Diakite", position:'F', salary:464050, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $464,050"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:464050, contractNotes:["Guaranteed remaining: $464,050"]},
+                
+                
+                
+                
                 { id:'mem-23', name:"Carson Cooper", position:'C', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'mem-24', name:"Jahmai Mashack", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'mem-25', name:"Javon Small", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Kentavious Caldwell-Pope", salary: 17740000, note: "Dead money · counts against cap only" },
+                { name: "Jordan Hawkins", salary: 6340000, note: "Dead money · counts against cap only" },
+                { name: "D'Angelo Russell", salary: 5970000, note: "Dead money · counts against cap only" },
+                { name: "Cole Anthony", salary: 3700000, note: "Dead money · counts against cap only" },
+                { name: "Mamadi Diakite", salary: 464050, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'mem-pk01', name:'2027 Own 1st', round:1, protections:'Unprotected', owner:'MEM', year:2027, tradeEligible:true },
                 { id:'mem-pk02', name:'2027 Fav UTA/CLE/MIN 1st', round:1, protections:'Unprotected', owner:'MEM', year:2027, tradeEligible:true },
                 { id:'mem-pk03', name:'2027 LAL 1st (top-4)', round:1, protections:'Top-4', owner:'MEM', year:2027, tradeEligible:true },
@@ -5391,7 +5435,7 @@ picks: [
                 { id:'orl-09', name:"Jase Richardson", position:'G', salary:3132360, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $3,132,360", "2027-28: $3,282,000 (Player Option)", "2028-29: $5,910,882 (Player Option)"] , guaranteedYears:1, optionYears:2, guaranteedRemaining:3132360, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $3,132,360"], futureOption:'Player Option'},
                 { id:'orl-10', name:"Jamal Cain", position:'SF', salary:2584539, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,584,539 (Non-Guaranteed · fully guaranteed Jan 10, 2027)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:0, contractNotes:["Non-guaranteed until January 10, 2027, then fully guaranteed"], guaranteeDate:'2027-01-10' },
                 { id:'orl-11', name:"Jevon Carter", position:'PG', salary:2449421, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,449,421"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2449421, contractNotes:["Guaranteed remaining: $2,449,421"]},
-                { id:'orl-12', name:"Jonathan Isaac", position:'PF', salary:2449421, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $10,449,421"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:10449421, contractNotes:["Guaranteed remaining: $10,449,421"]},
+                
                 { id:'orl-13', name:"Nikola Vučević", position:'C', salary:2449421, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,449,421"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:2449421, contractNotes:["Guaranteed remaining: $2,449,421"]},
                 { id:'orl-14', name:"Noah Penda", position:'F', salary:2150917, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $2,150,917", "2027-28: $2,525,901 (Player Option)", "2028-29: $2,735,698 (Player Option)"] , futureOption:'Player Option', guaranteedYears:1, optionYears:2, guaranteedRemaining:2150917, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,150,917"]},
                 
@@ -5399,7 +5443,10 @@ picks: [
                 { id:'orl-17', name:"Alex Morales", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'orl-18', name:"Izaiyah Nelson", position:'C', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Jonathan Isaac", salary: 8000000, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'orl-pk01', name:'2027 Own 1st', round:1, protections:'Unprotected', owner:'ORL', year:2027, tradeEligible:false },
                 { id:'orl-pk02', name:'2029 Lesser Own/MEM (top-2) 1st', round:1, protections:'Top-2', owner:'ORL', year:2029, tradeEligible:false },
                 { id:'orl-pk03', name:'2031 Own 1st', round:1, protections:'Unprotected', owner:'ORL', year:2031, tradeEligible:false },
@@ -5487,13 +5534,18 @@ picks: [
                 { id:'phx-14', name:"Oso Ighodaro", position:'C', salary:2296271, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $2,296,271 (Player Option)", "2027-28: $2,486,995 (Non-Guaranteed)"] , futureOption:'Player Option', guaranteedYears:0, optionYears:2, contractNotes:["Player option year(s) marked from guarantee schedule"]},
                 { id:'phx-15', name:"Rasheer Fleming", position:'F', salary:2150917, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $2,150,917", "2027-28: $2,525,901", "2028-29: $2,735,698 (Player Option)"] , guaranteedYears:2, optionYears:1, guaranteedRemaining:4676818, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $4,676,818"], futureOption:'Player Option'},
                 
-                { id:'phx-17', name:"Nassir Little", position:'SF', salary:3107143, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $3,107,143", "2027-28: $3,107,143", "2028-29: $3,107,143"] , guaranteedYears:3, optionYears:0, guaranteedRemaining:9321429, contractNotes:["Guaranteed remaining: $9,321,429"]},
-                { id:'phx-18', name:"E.J. Liddell", position:'F', salary:706898, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $706,898"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:706898, contractNotes:["Guaranteed remaining: $706,898"]},
+                
+                
                 { id:'phx-19', name:"Koby Brea", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'phx-20', name:"CJ Huntley", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'phx-21', name:"Pat Spencer", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Bradley Beal", salary: 19380000, note: "Dead money · counts against cap only" },
+                { name: "Nassir Little", salary: 3110000, note: "Dead money · counts against cap only" },
+                { name: "E.J. Liddell", salary: 706898, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'phx-pk01', name:'2027 Lesser CLE/MIN/UTA 1st', round:1, protections:'Unprotected', owner:'PHX', year:2027, tradeEligible:true },
                 { id:'phx-pk02', name:'2028 Lesser BKN/NYK/WAS 1st', round:1, protections:'Unprotected', owner:'PHX', year:2028, tradeEligible:true },
                 { id:'phx-pk03', name:'2029 Lesser UTA/CLE/MIN (top-5) 1st', round:1, protections:'Top-5', owner:'PHX', year:2029, tradeEligible:true },
@@ -5524,12 +5576,15 @@ picks: [
                 { id:'por-12', name:"Vít Krejčí", position:'SG', salary:2667944, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,667,944 (Non-Guaranteed · $250,000 partial · fully guaranteed opening night 2026-27)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:250000, contractNotes:["$250,000 partially guaranteed as of August 1, 2026", "Fully guaranteed on opening night of the 2026-27 regular season"], partialGuarantee:true, partialAmount:250000 },
                 { id:'por-13', name:"Sidy Cissoko", position:'SF', salary:2497812, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,497,812 (Player Option)"] , futureOption:'Player Option', guaranteedYears:0, optionYears:1, contractNotes:["Player option year(s) marked from guarantee schedule"]},
                 { id:'por-14', name:"Branden Carlsen", position:'C', salary:2449421, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $2,449,421"] },
-                { id:'por-15', name:"Didi Louzada", position:'SF', salary:268032, contractType:'Guaranteed', contractYears:3, contractDetails:["2026-27: $268,032", "2027-28: $268,032", "2028-29: $268,032"] , guaranteedYears:3, optionYears:0, guaranteedRemaining:804096, contractNotes:["Guaranteed remaining: $804,096"]},
+                
                 { id:'por-16', name:"Jayson Kent", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'por-17', name:"John Tonje", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'por-18', name:"Chris Youngblood", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Didi Louzada", salary: 268032, note: "Dead money · counts against cap only" }
+            ],
+picks: [
                 { id:'por-pk01', name:'2027 Own 1st', round:1, protections:'Unprotected', owner:'POR', year:2027, tradeEligible:true },
                 { id:'por-pk02', name:'2028 Fav Own/MIL 1st', round:1, protections:'Unprotected', owner:'POR', year:2028, tradeEligible:true },
                 { id:'por-pk03', name:'2028 ORL 1st', round:1, protections:'Unprotected', owner:'POR', year:2028, tradeEligible:true },

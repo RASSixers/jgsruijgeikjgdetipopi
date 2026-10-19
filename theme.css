@@ -17,53 +17,59 @@
 }
 
 html.dark-mode {
-  --sh-bg: #0b0f1a;
-  --sh-bg2: #121826;
-  --sh-card: #161b27;
-  --sh-ink: #e8eaf0;
-  --sh-mid: #94a3b8;
-  --sh-border: rgba(255, 255, 255, 0.1);
-  --sh-muted: #64748b;
-  --sh-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --sh-input-bg: #1a2030;
-  --sh-hover: rgba(255, 255, 255, 0.06);
+  /* True black dark mode (not navy) */
+  --sh-bg: #000000;
+  --sh-bg2: #0a0a0a;
+  --sh-card: #111111;
+  --sh-ink: #f5f5f5;
+  --sh-mid: #c4c4c4;
+  --sh-border: rgba(255, 255, 255, 0.14);
+  --sh-muted: #a3a3a3;
+  --sh-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --sh-input-bg: #141414;
+  --sh-hover: rgba(255, 255, 255, 0.08);
   color-scheme: dark;
 
   /* Remap common page variables so dark works site-wide */
-  --cream: #0b0f1a;
-  --ink: #e8eaf0;
-  --mid: #94a3b8;
-  --border-light: rgba(255, 255, 255, 0.1);
-  --card-bg: #161b27;
-  --navy: #0b0f1a;
-  --navy-deep: #070b14;
-  --sixers-blue: #3b9be8;
-  --bg: #0b0f1a;
-  --bg2: #121826;
-  --text: #e8eaf0;
-  --muted: #94a3b8;
-  --border: rgba(255, 255, 255, 0.1);
-  --surface: #161b27;
-  --surface-2: #1a2030;
+  --cream: #000000;
+  --ink: #f5f5f5;
+  --mid: #c4c4c4;
+  --border-light: rgba(255, 255, 255, 0.14);
+  --card-bg: #111111;
+  --navy: #000000;
+  --navy-deep: #000000;
+  --sixers-blue: #4aa3ef;
+  --bg: #000000;
+  --bg2: #0a0a0a;
+  --text: #f5f5f5;
+  --muted: #c4c4c4;
+  --border: rgba(255, 255, 255, 0.14);
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --surface-soft: #141414;
 }
 
 /* Legacy navy-mode → treat as dark (for cached HTML) */
 html.navy-mode {
-  --sh-bg: #0b0f1a;
-  --sh-bg2: #121826;
-  --sh-card: #161b27;
-  --sh-ink: #e8eaf0;
-  --sh-mid: #94a3b8;
-  --sh-border: rgba(255, 255, 255, 0.1);
-  --sh-muted: #64748b;
-  --sh-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --sh-input-bg: #1a2030;
-  --sh-hover: rgba(255, 255, 255, 0.06);
-  --cream: #0b0f1a;
-  --ink: #e8eaf0;
-  --mid: #94a3b8;
-  --border-light: rgba(255, 255, 255, 0.1);
-  --card-bg: #161b27;
+  /* Legacy class maps to black dark mode */
+  --sh-bg: #000000;
+  --sh-bg2: #0a0a0a;
+  --sh-card: #111111;
+  --sh-ink: #f5f5f5;
+  --sh-mid: #c4c4c4;
+  --sh-border: rgba(255, 255, 255, 0.14);
+  --sh-muted: #a3a3a3;
+  --sh-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --sh-input-bg: #141414;
+  --sh-hover: rgba(255, 255, 255, 0.08);
+  --cream: #000000;
+  --ink: #f5f5f5;
+  --mid: #c4c4c4;
+  --border-light: rgba(255, 255, 255, 0.14);
+  --card-bg: #111111;
+  --navy: #000000;
+  --bg: #000000;
+  --text: #f5f5f5;
   color-scheme: dark;
 }
 
@@ -421,3 +427,202 @@ html.dark-mode .feature-card {
 html.dark-mode .feature-card-title { color: #f1f5f9 !important; }
 html.dark-mode .feature-card-desc { color: #94a3b8 !important; }
 html.dark-mode .feature-card-arrow { color: #5eb0f0 !important; }
+
+
+/* ========== Black dark mode: force readable text site-wide ========== */
+html.dark-mode,
+:root.dark-mode,
+html.navy-mode {
+  background-color: #000000 !important;
+  color: #f5f5f5 !important;
+}
+
+html.dark-mode body,
+:root.dark-mode body,
+html.navy-mode body {
+  background: #000000 !important;
+  color: #f5f5f5 !important;
+}
+
+html.dark-mode h1, html.dark-mode h2, html.dark-mode h3,
+html.dark-mode h4, html.dark-mode h5, html.dark-mode h6,
+:root.dark-mode h1, :root.dark-mode h2, :root.dark-mode h3,
+:root.dark-mode h4, :root.dark-mode h5, :root.dark-mode h6 {
+  color: #ffffff !important;
+}
+
+html.dark-mode p,
+html.dark-mode li,
+html.dark-mode span,
+html.dark-mode label,
+html.dark-mode td,
+html.dark-mode th,
+html.dark-mode dd,
+html.dark-mode dt,
+:root.dark-mode p,
+:root.dark-mode li,
+:root.dark-mode span,
+:root.dark-mode label,
+:root.dark-mode td,
+:root.dark-mode th {
+  color: inherit;
+}
+
+/* Primary body copy */
+html.dark-mode p,
+:root.dark-mode p {
+  color: #f0f0f0 !important;
+}
+
+/* Muted / secondary text still readable (not washed out) */
+html.dark-mode .mid,
+html.dark-mode .muted,
+html.dark-mode .text-muted,
+html.dark-mode .sub,
+html.dark-mode .meta,
+html.dark-mode .eyebrow,
+html.dark-mode .kicker,
+html.dark-mode .tagline,
+html.dark-mode .footer-tagline,
+html.dark-mode .footer-links a,
+html.dark-mode .text-muted-foreground,
+:root.dark-mode .mid,
+:root.dark-mode .muted,
+:root.dark-mode .text-muted,
+:root.dark-mode .sub,
+:root.dark-mode .meta,
+:root.dark-mode .eyebrow {
+  color: #c4c4c4 !important;
+}
+
+html.dark-mode a:not(.btn):not(.button):not([class*="btn-"]),
+:root.dark-mode a:not(.btn):not(.button):not([class*="btn-"]) {
+  color: #6cb6ff;
+}
+
+html.dark-mode a:not(.btn):not(.button):hover,
+:root.dark-mode a:not(.btn):not(.button):hover {
+  color: #9fd0ff;
+}
+
+/* Cards / surfaces: near-black, not navy */
+html.dark-mode .card,
+html.dark-mode .mbox,
+html.dark-mode .panel,
+html.dark-mode .box,
+html.dark-mode .table-card,
+html.dark-mode .s-table,
+html.dark-mode .auth-card,
+html.dark-mode .feature-card,
+html.dark-mode .tweet-card,
+html.dark-mode .update-card,
+html.dark-mode .home-game-card,
+html.dark-mode .news-feature,
+html.dark-mode .news-stack,
+html.dark-mode .news-row,
+html.dark-mode .article-item,
+html.dark-mode .editor-card,
+html.dark-mode .grade-card,
+html.dark-mode .empty-state,
+html.dark-mode .compose-bar,
+html.dark-mode .tabs,
+html.dark-mode .list-filters,
+html.dark-mode .modal,
+html.dark-mode .modal-card,
+html.dark-mode .dropdown,
+html.dark-mode .menu,
+:root.dark-mode .card,
+:root.dark-mode .table-card,
+:root.dark-mode .auth-card {
+  background: #111111 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #f5f5f5 !important;
+}
+
+html.dark-mode input,
+html.dark-mode textarea,
+html.dark-mode select,
+:root.dark-mode input,
+:root.dark-mode textarea,
+:root.dark-mode select {
+  background: #141414 !important;
+  color: #f5f5f5 !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html.dark-mode input::placeholder,
+html.dark-mode textarea::placeholder,
+:root.dark-mode input::placeholder,
+:root.dark-mode textarea::placeholder {
+  color: #9a9a9a !important;
+  opacity: 1;
+}
+
+html.dark-mode table,
+html.dark-mode .s-table,
+:root.dark-mode table {
+  color: #f0f0f0 !important;
+}
+
+html.dark-mode th,
+:root.dark-mode th {
+  color: #ffffff !important;
+}
+
+html.dark-mode td,
+:root.dark-mode td {
+  color: #ececec !important;
+}
+
+/* Navbar matches pure black page bg */
+html.dark-mode nav,
+html.dark-mode .navbar,
+html.dark-mode header.site-header,
+html.dark-mode .site-nav,
+:root.dark-mode nav,
+:root.dark-mode .navbar {
+  background: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f5f5f5 !important;
+}
+
+html.dark-mode .nav-link,
+html.dark-mode .navbar a,
+:root.dark-mode .nav-link,
+:root.dark-mode .navbar a {
+  color: #f0f0f0 !important;
+}
+
+html.dark-mode .footer,
+:root.dark-mode .footer {
+  background: #000000 !important;
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+  color: #c4c4c4 !important;
+}
+
+html.dark-mode .footer-brand-name,
+html.dark-mode .footer-title,
+:root.dark-mode .footer-brand-name,
+:root.dark-mode .footer-title {
+  color: #ffffff !important;
+}
+
+html.dark-mode .footer-bottom,
+:root.dark-mode .footer-bottom {
+  color: #a3a3a3 !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Buttons with dark text on light bg in light mode stay readable */
+html.dark-mode .btn-ghost,
+:root.dark-mode .btn-ghost {
+  color: #f5f5f5 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Avoid invisible navy-on-navy leftovers */
+html.dark-mode [style*="color: #001a57"],
+html.dark-mode [style*="color:#001a57"],
+html.dark-mode [style*="color: #001A57"] {
+  color: #f5f5f5 !important;
+}

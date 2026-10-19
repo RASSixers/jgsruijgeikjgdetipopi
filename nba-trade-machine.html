@@ -4564,16 +4564,22 @@ function playerHeadshotHtml(name, abbr, playerObj){
                 { id:'dal-12', name:"Marcus Sasser", position:'PG', salary:5198983, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $5,198,983"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:5198983, contractNotes:["Guaranteed remaining: $5,198,983"]},
                 { id:'dal-13', name:"Sergio De Larrea", position:'G', salary:3182280, contractType:'Guaranteed', contractYears:4, contractDetails:["2026-27: $3,182,280", "2027-28: $3,341,280", "2028-29: $3,500,880 (Player Option)", "2029-30: $6,305,086 (Player Option)"] , guaranteedYears:2, optionYears:2, guaranteedRemaining:6523560, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $6,523,560"], futureOption:'Player Option'},
                 { id:'dal-14', name:"Tarik Biberović", position:'F', salary:3000000, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $3,000,000", "2027-28: $3,000,000 (Player Option)"] , guaranteedYears:1, optionYears:1, guaranteedRemaining:3000000, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $3,000,000"], futureOption:'Player Option'},
-                { id:'dal-15', name:"Dwight Powell", position:'C', salary:2449421, contractType:'Non-Guaranteed', contractYears:1, contractDetails:["2026-27: $2,449,421 (Non-Guaranteed · $1,000,000 partial · +$500,000 if makes opening roster)"], guaranteedYears:0, optionYears:0, guaranteedRemaining:1000000, contractNotes:["$1,000,000 partially guaranteed", "+$500,000 if makes opening night roster"], partialGuarantee:true, partialAmount:1000000 },
+                
                 { id:'dal-16', name:"Moussa Cissé", position:'C', salary:2185116, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $2,185,116", "2027-28: $2,571,895 (Player Option)"] , guaranteedYears:1, optionYears:1, guaranteedRemaining:2185116, contractNotes:["Player option year(s) marked from guarantee schedule", "Guaranteed remaining: $2,185,116"], futureOption:'Player Option'},
-                { id:'dal-17', name:"Klay Thompson", position:'SG', salary:5600000, contractType:'Guaranteed', contractYears:1, contractDetails:["2026-27: $17,460,317"] , guaranteedYears:1, optionYears:0, guaranteedRemaining:17460317, contractNotes:["Guaranteed remaining: $17,460,317"]},
-                { id:'dal-18', name:"JaVale McGee", position:'C', salary:2208856, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $2,208,856", "2027-28: $2,208,856"] , guaranteedYears:2, optionYears:0, guaranteedRemaining:4417712, contractNotes:["Guaranteed remaining: $4,417,712"]},
-                { id:'dal-19', name:"Olivier-Maxence Prosper", position:'F', salary:1002360, contractType:'Guaranteed', contractYears:2, contractDetails:["2026-27: $1,002,360", "2027-28: $1,002,360"] , guaranteedYears:2, optionYears:0, guaranteedRemaining:2004720, contractNotes:["Guaranteed remaining: $2,004,720"]},
+                
+                
+                
                 { id:'dal-20', name:"Jett Howard", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'dal-21', name:"John Poulakidas", position:'G', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] },
                 { id:'dal-22', name:"Tobi Lawal", position:'F', salary:0, contractType:'Two-Way', contractYears:1, contractDetails:["Two-Way · $0 cap hit"] }
             ],
-            picks: [
+                        deadMoney: [
+                { name: "Klay Thompson", salary: 7660317, note: "Waived / stretch" },
+                { name: "JaVale McGee", salary: 2208856, note: "Waived" },
+                { name: "Olivier-Maxence Prosper", salary: 1002360, note: "Waived" },
+                { name: "Dwight Powell", salary: 1000000, note: "Waived" }
+            ],
+picks: [
                 { id:'dal-pk01', name:'2028 Lesser Own/OKC 1st', round:1, protections:'Lesser', owner:'DAL', year:2028, tradeEligible:false },
                 { id:'dal-pk02', name:'2029 LAL 1st', round:1, protections:'Unprotected', owner:'DAL', year:2029, tradeEligible:true },
                 { id:'dal-pk03', name:'2030 Lesser Own/SAS 1st', round:1, protections:'Unprotected', owner:'DAL', year:2030, tradeEligible:true },
@@ -6136,7 +6142,12 @@ function playerHeadshotHtml(name, abbr, playerObj){
                     var n = Number(p && p.salary);
                     if (isFinite(n)) fromPlayers += n;
                 });
-                // Prefer explicit teamSalary when present; otherwise roster sum
+                (d.deadMoney || []).forEach(function (p) {
+                    var n = Number(p && p.salary);
+                    if (isFinite(n)) fromPlayers += n;
+                });
+                // Prefer explicit teamSalary when present (should already include dead money);
+                // otherwise active roster + dead money
                 if (isFinite(fromField) && fromField > 0) return Math.round(fromField);
                 return Math.round(fromPlayers);
             }
@@ -8135,7 +8146,18 @@ function playerHeadshotHtml(name, abbr, playerObj){
                         style="font-family:'Lexend',sans-serif;font-size:.55rem;font-weight:800;padding:4px 8px;border-radius:5px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;">UNDO</button>
                 </div>`;
             });
-            const deadPlayers = data.players.filter(p => isDeadMoney(p) && !waivedSet.has(p.id) && !selectedSet.has(p.id));
+            const deadPlayers = (data.players || []).filter(p => isDeadMoney(p) && !waivedSet.has(p.id) && !selectedSet.has(p.id));
+            // Also include dedicated deadMoney[] entries (cap hits that are not roster players)
+            (data.deadMoney || []).forEach(function (dm, idx) {
+                deadPlayers.push({
+                    id: (t.abbr || 'tm') + '-dead-' + idx,
+                    name: dm.name,
+                    salary: Number(dm.salary) || 0,
+                    position: dm.pos || '—',
+                    contractType: 'Dead Money',
+                    contractDetails: [dm.note || 'Dead money · counts against cap only']
+                });
+            });
             if (deadPlayers.length) {
                 rosterContent += `<div class="roster-section-label" style="color:#b91c1c;margin-top:.35rem;">DEAD MONEY <span style="font-weight:500;color:#94a3b8;font-size:.65rem;">cap only · not a roster spot</span></div>`;
                 deadPlayers.forEach(p => {

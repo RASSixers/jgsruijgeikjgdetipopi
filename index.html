@@ -649,9 +649,9 @@
     font-weight: 700;
     padding: 0.5rem 1rem;
     border-radius: 999px;
-    border: 1px solid var(--border-light);
-    background: #fff;
-    color: var(--ink);
+    border: 1px solid var(--border-light, #e4e8f0);
+    background: var(--card-bg, #fff);
+    color: var(--ink, #0d0f1a);
     cursor: pointer;
   }
   .updates-page-btn:hover:not(:disabled) {
@@ -1136,7 +1136,8 @@ function extractTweetUrl(p) {
 }
 function tweetCardEmbed(url) {
   const safe = escapeHtml(url);
-  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true" data-theme="light"><a href="' + safe + '">Loading post…</a></blockquote></div>';
+  const theme = document.documentElement.classList.contains('dark-mode') || document.documentElement.classList.contains('navy-mode') ? 'dark' : 'light';
+  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true" data-theme="' + theme + '"><a href="' + safe + '">Loading post…</a></blockquote></div>';
 }
 function loadTweetWidgets(container) {
   function doLoad() {

@@ -2018,7 +2018,7 @@
           <div class="info-content" id="scheduleContent">
             <h2 class="info-desktop-title">Schedule</h2>
             <ul>
-              <li>Picks open 72 hours before that day's lock time</li>
+              <li>Each week's picks open together when the week starts (next week opens when it begins)</li>
               <li>Lock time is the earliest tip-off for that date</li>
               <li>You can update your picks anytime before lock</li>
               <li>Check back for upcoming pick dates</li>
@@ -2977,6 +2977,7 @@
       const picksTab = document.getElementById('picks');
       if (picksTab) picksTab.classList.add('active');
 
+      await ensureSeasonLoaded();
       const currentDate = formatDateForComparison(new Date());
       console.log(` User authenticated. Reloading questions for ${currentDate} to check submissions`);
       selectedPickDate = currentDate;
@@ -5291,6 +5292,56 @@
 
     // === Questions & Picks ===
 
+    // ===== WEEKLY PICK WINDOW =====
+    // Every slate in a week opens together when that week starts; later weeks stay closed.
+    // Week 1 slates open at the start of week 1, week 2 at the start of week 2, etc.
+    // Returns null if week data is unavailable (callers then fall back to the old 4-day rule).
+    async function ensureSeasonLoaded() {
+      try { if (window.SixersSeason && !SixersSeason.config) await SixersSeason.load(); } catch (_) {}
+    }
+    function getWeeklyPickWindow(dateStr) {
+      try {
+        if (!window.SixersSeason || typeof SixersSeason.weekForDate !== 'function' || !SixersSeason.config) return null;
+        const slateWeek = SixersSeason.weekForDate(dateStr);
+        const curWeek = SixersSeason.weekForDate(formatDateForComparison(getESTNow()));
+        if (slateWeek == null || curWeek == null) return null;
+        // When the slate's week begins (for the "opens on" message)
+        let opensOn = null;
+        const w = (SixersSeason.weeks || []).find(x => Number(x.week) === Number(slateWeek));
+        if (w && w.start) {
+          opensOn = w.start;
+        } else {
+          const season = SixersSeason.config.seasons && SixersSeason.config.seasons[SixersSeason.currentSeasonId];
+          if (season && season.start) {
+            const d = new Date(season.start + 'T12:00:00');
+            d.setDate(d.getDate() + (Number(slateWeek) - 1) * 7);
+            opensOn = formatDateForComparison(d);
+          }
+        }
+        return { open: Number(slateWeek) <= Number(curWeek), slateWeek: Number(slateWeek), curWeek: Number(curWeek), opensOn };
+      } catch (_) { return null; }
+    }
+    function renderPicksNotOpenYet(container, weekly) {
+      let when = '';
+      if (weekly && weekly.opensOn) {
+        try {
+          const d = new Date(weekly.opensOn + 'T12:00:00');
+          when = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+        } catch (_) { when = weekly.opensOn; }
+      }
+      container.innerHTML = '<div class="empty-state" style="padding:2rem 1rem;text-align:center;">' +
+        '<p style="font-weight:700;margin:0 0 0.5rem;">Picks not open yet</p>' +
+        '<p style="color:var(--mid);margin:0;font-size:0.92rem;line-height:1.5;">' +
+        (weekly ? 'Week ' + weekly.slateWeek + ' picks open when the week starts' + (when ? ' (' + escapeHtml(when) + ')' : '') + '. ' : '') +
+        'Check back then to make all of that week\'s picks.</p></div>';
+      try {
+        document.getElementById('lockTimeStatus').style.display = 'none';
+        document.getElementById('countdownTimer').style.display = 'none';
+        document.getElementById('questionsContainer')?.classList.remove('is-locked');
+        document.querySelector('.submit-section')?.classList.remove('is-locked');
+      } catch (_) {}
+    }
+
     function getPickWindowStatus(dateStr, lockTime12) {
       if (!lockTime12) return { open: true, locked: false, reason: 'no-lock' };
       try {
@@ -5314,8 +5365,20 @@
       // Guests can view questions; picking prompts sign-in (see guest interceptor at bottom)
       const container = document.getElementById('questionsContainer');
 
-      // Picks open only within 4 days of the slate date (and until lock)
-      try {
+      // Picks open a full week at a time (falls back to the old 4-day rule if week data is missing)
+      await ensureSeasonLoaded();
+      const weekly = getWeeklyPickWindow(dateStr);
+      if (weekly && !weekly.open) {
+        selectedPickDate = dateStr;
+        todayQuestions = [];
+        clearAutoSubmitTimer();
+        try { clearInterval(window.countdownInterval); } catch (_) {}
+        renderPicksNotOpenYet(container, weekly);
+        const sbw = document.getElementById('submitBtn');
+        if (sbw) sbw.disabled = true;
+        return;
+      }
+      if (!weekly) try {
         const todayStr = formatDateForComparison(new Date());
         const [ty, tm, td] = todayStr.split('-').map(Number);
         const [dy, dm, dd] = String(dateStr).split('-').map(Number);
@@ -5399,7 +5462,10 @@
             const scheduleSnapshot = await db.collection('questionSchedules').where('questionsDate', '==', dateStr).get();
             if (!scheduleSnapshot.empty) {
               const scheduleData = scheduleSnapshot.docs[0].data() || {};
-              if (scheduleData.goLiveDateTime) {
+              // Auto-slate schedules were the old 4-day rule; ignore them under weekly opening.
+              // Manually-set go-live times (Manage tab) still apply.
+              const autoSched = !!weekly && String(scheduleData.source || '').indexOf('auto-slate') === 0;
+              if (scheduleData.goLiveDateTime && !autoSched) {
                 const goLiveDateTime = new Date(scheduleData.goLiveDateTime);
                 const now = new Date();
                 if (!isNaN(goLiveDateTime.getTime()) && now < goLiveDateTime) {
@@ -5419,7 +5485,7 @@
             if (!lockSnap.empty) {
               const lt = lockSnap.docs[0].data().lockTime;
               const win = getPickWindowStatus(dateStr, lt);
-              if (win && win.reason === 'not-yet' && win.openDate) {
+              if (!weekly && win && win.reason === 'not-yet' && win.openDate) {
                 const est = win.openDate.toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
                 if (container) {
                   container.innerHTML = '<div class="empty-state"><p style="font-weight:700;">Questions open 72 hours before lock</p><p style="color:var(--muted);">Opens ' + est + ' ET</p></div>';
@@ -6282,9 +6348,10 @@
       container.innerHTML = visibleDates.map(d => {
         const isActive = document.getElementById('pickDate').value === d.value;
         const ahead = daysFromToday(d.value);
-        const soon = ahead > 4;
+        const wk = getWeeklyPickWindow(d.value);
+        const soon = wk ? !wk.open : ahead > 4;
         return `
-          <button type="button" class="date-picker-btn ${isActive ? 'active' : ''}${soon ? ' date-soon' : ''}" data-date="${d.value}" title="${soon ? 'Picks open within 4 days of this slate' : ''}">
+          <button type="button" class="date-picker-btn ${isActive ? 'active' : ''}${soon ? ' date-soon' : ''}" data-date="${d.value}" title="${soon ? 'Picks open when this slate\'s week starts' : ''}">
             <div style="font-weight: 700; font-size: 12px;">${d.label.day}</div>
             <div class="date-picker-date">${d.label.date}</div>
             ${soon ? '<div class="date-picker-soon">Soon</div>' : ''}

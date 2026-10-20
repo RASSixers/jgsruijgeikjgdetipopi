@@ -285,6 +285,63 @@
     .type-opt span{font-size:.72rem;color:var(--mid)}
     .err{display:none;color:#dc2626;font-size:.8rem;font-weight:600;margin-bottom:.75rem}
     .hint{font-size:.75rem;color:var(--mid);margin:.35rem 0 0}
+  
+    /* Community tools */
+    .mode-tabs{display:flex;gap:.45rem;flex-wrap:wrap;margin:0 0 1.1rem}
+    .mode-tab{
+      border:1px solid var(--border);background:var(--card);color:var(--ink);
+      border-radius:999px;padding:.5rem 1rem;font:700 .78rem Lexend,sans-serif;cursor:pointer;
+    }
+    .mode-tab:hover{border-color:var(--sixers-blue);color:var(--sixers-blue)}
+    .mode-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .tools-wrap{display:none}
+    .tools-wrap.active{display:block}
+    .feed-wrap.hidden-mode{display:none !important}
+    .tool-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1rem}
+    .tool-tab{
+      border:1px solid var(--border);background:var(--card);color:var(--ink);
+      border-radius:999px;padding:.45rem .9rem;font:700 .74rem Lexend,sans-serif;cursor:pointer;
+    }
+    .tool-tab.active{background:var(--sixers-blue);color:#fff;border-color:var(--sixers-blue)}
+    .tool-panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.15rem 1.25rem}
+    .tool-panel.active{display:block}
+    .tool-panel h2{margin:0 0 .3rem;font-size:1.05rem;font-weight:800}
+    .tool-panel .sub{margin:0 0 .9rem;color:var(--mid);font-size:.84rem;line-height:1.45}
+    .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    @media(max-width:720px){.tool-grid{grid-template-columns:1fr}}
+    .tool-panel table{width:100%;border-collapse:collapse;font-size:.85rem}
+    .tool-panel th,.tool-panel td{padding:.5rem .45rem;border-bottom:1px solid var(--border);text-align:left}
+    .tool-panel th{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mid)}
+    .tool-panel .rank{font-weight:800;color:var(--navy);width:1.6rem}
+    .tool-panel .pct{font-weight:700;font-variant-numeric:tabular-nums}
+    .tool-bar{height:8px;border-radius:999px;background:#eef2f7;overflow:hidden;min-width:70px}
+    .tool-bar>i{display:block;height:100%;background:var(--sixers-blue);border-radius:999px}
+    .tool-btn{
+      display:inline-flex;align-items:center;border:0;border-radius:999px;padding:.6rem 1.05rem;
+      font:700 .8rem Lexend,sans-serif;cursor:pointer;background:var(--sixers-blue);color:#fff;
+    }
+    .tool-btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--border)}
+    .tool-btn-row{display:flex;flex-wrap:wrap;gap:.45rem;margin:.35rem 0 0}
+    .tool-note{margin-top:.9rem;padding:.7rem .85rem;border-radius:10px;background:rgba(100,116,139,.08);color:var(--mid);font-size:.8rem;line-height:1.45}
+    .tool-game{
+      border:1px solid var(--border);border-radius:12px;padding:.8rem 1rem;margin-bottom:.55rem;
+      display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;
+    }
+    .tool-game .prob{font-size:1.1rem;font-weight:800;color:var(--navy)}
+    .chip{
+      display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:999px;
+      padding:.32rem .62rem;font-size:.76rem;font-weight:600;background:var(--card);cursor:grab;margin:.2rem;user-select:none;
+    }
+    .zone{min-height:110px;border:2px dashed var(--border);border-radius:12px;padding:.6rem;background:rgba(100,116,139,.04)}
+    .zone h3{margin:0 0 .45rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mid)}
+    .zone.start{border-color:rgba(22,163,74,.35)}
+    .zone.bench{border-color:rgba(0,107,182,.3)}
+    .zone.cut{border-color:rgba(237,23,76,.3)}
+    .tier-row{display:flex;gap:.55rem;margin-bottom:.5rem}
+    .tier-label{width:44px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+    .tier-drop{flex:1;min-height:52px;border:1px solid var(--border);border-radius:10px;padding:.35rem;background:var(--card);display:flex;flex-wrap:wrap}
+    .tool-field{width:100%;border:1px solid var(--border);border-radius:10px;padding:.55rem .7rem;font:500 .9rem Lexend,sans-serif;background:var(--card);color:var(--ink);margin-bottom:.75rem}
+
   </style>
 
 </head>
@@ -298,7 +355,99 @@
       <div class="top-actions"><a class="btn btn-ghost" href="/nba-trade-machine.html">Trade Machine</a></div>
     </div>
 
-    <div id="tradeOfDay" class="totd-as-card" style="display:none" aria-label="Trade of the Day"></div>
+    
+    <div class="mode-tabs" id="communityModeTabs">
+      <button type="button" class="mode-tab active" data-mode="feed">Community feed</button>
+      <button type="button" class="mode-tab" data-mode="tools">Fan tools</button>
+    </div>
+
+    <div class="tools-wrap" id="toolsWrap">
+      <div class="tool-tabs" id="toolTabs">
+        <button type="button" class="tool-tab active" data-tool="standings">Standings predictor</button>
+        <button type="button" class="tool-tab" data-tool="games">Game predictor</button>
+        <button type="button" class="tool-tab" data-tool="playoffs">Playoff predictor</button>
+        <button type="button" class="tool-tab" data-tool="sbc">Start / Bench / Cut</button>
+        <button type="button" class="tool-tab" data-tool="tiers">Tier list</button>
+      </div>
+
+      <div class="tool-panel active" id="tool-standings">
+        <h2>Standings predictor</h2>
+        <p class="sub">Projects final records from current ESPN standings with rest-of-season simulations.</p>
+        <div class="tool-btn-row">
+          <button type="button" class="tool-btn" id="runStandings">Run simulation</button>
+          <button type="button" class="tool-btn ghost" id="resetStandings">Reset</button>
+        </div>
+        <div class="tool-grid" style="margin-top:1rem">
+          <div>
+            <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">East</div>
+            <div style="overflow:auto"><table id="eastTable"><thead><tr><th>#</th><th>Team</th><th>W</th><th>L</th><th>Pct</th><th></th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">West</div>
+            <div style="overflow:auto"><table id="westTable"><thead><tr><th>#</th><th>Team</th><th>W</th><th>L</th><th>Pct</th><th></th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+        <p class="tool-note" id="standingsNote">Click Run simulation to project final records.</p>
+      </div>
+
+      <div class="tool-panel" id="tool-games">
+        <h2>Game predictor</h2>
+        <p class="sub">Win probabilities for today’s NBA slate (or the next available day). Sixers games are highlighted.</p>
+        <div class="tool-btn-row">
+          <button type="button" class="tool-btn" id="runGames">Load slate</button>
+        </div>
+        <div id="gamesList" style="margin-top:1rem"></div>
+        <p class="tool-note">Simple model for entertainment only. Not betting advice.</p>
+      </div>
+
+      <div class="tool-panel" id="tool-playoffs">
+        <h2>Playoff predictor</h2>
+        <p class="sub">Playoff, Play-In, and top-6 odds from the same simulation engine.</p>
+        <div class="tool-btn-row">
+          <button type="button" class="tool-btn" id="runPlayoffs">Simulate playoff odds</button>
+        </div>
+        <div class="tool-grid" style="margin-top:1rem">
+          <div style="overflow:auto"><table id="eastPo"><thead><tr><th>Team</th><th>Playoff %</th><th>Play-In %</th><th>Top 6 %</th></tr></thead><tbody></tbody></table></div>
+          <div style="overflow:auto"><table id="westPo"><thead><tr><th>Team</th><th>Playoff %</th><th>Play-In %</th><th>Top 6 %</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="tool-panel" id="tool-sbc">
+        <h2>Start / Bench / Cut</h2>
+        <p class="sub">Drag Sixers players into Start (max 5), Bench, or Cut. Saves in this browser.</p>
+        <div class="tool-grid">
+          <div class="zone start" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'start')"><h3>Start (5)</h3><div id="zone-start"></div></div>
+          <div class="zone bench" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'bench')"><h3>Bench</h3><div id="zone-bench"></div></div>
+        </div>
+        <div class="zone cut" style="margin-top:.75rem" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'cut')"><h3>Cut</h3><div id="zone-cut"></div></div>
+        <div style="margin-top:.75rem">
+          <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">Player pool</div>
+          <div id="zone-pool" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'pool')"></div>
+        </div>
+        <div class="tool-btn-row">
+          <button type="button" class="tool-btn" id="saveSbc">Save board</button>
+          <button type="button" class="tool-btn ghost" id="resetSbc">Reset</button>
+        </div>
+      </div>
+
+      <div class="tool-panel" id="tool-tiers">
+        <h2>Tier list</h2>
+        <p class="sub">Drag players into tiers. Title and board save locally.</p>
+        <input class="tool-field" id="tierTitle" maxlength="80" placeholder="Tier list title" value="Sixers roster tiers"/>
+        <div id="tierBoard"></div>
+        <div style="margin-top:.75rem">
+          <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">Unranked</div>
+          <div id="tierPool" class="tier-drop" ondragover="window.shAllowDrop(event)" ondrop="window.shDropTier(event,'pool')"></div>
+        </div>
+        <div class="tool-btn-row">
+          <button type="button" class="tool-btn" id="saveTiers">Save tier list</button>
+          <button type="button" class="tool-btn ghost" id="resetTiers">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="feed-wrap" id="feedWrap">
+<div id="tradeOfDay" class="totd-as-card" style="display:none" aria-label="Trade of the Day"></div>
 <div class="toolbar">
       <div class="tabs">
         <button type="button" class="tab active" data-sort="hot">HOT</button>
@@ -330,6 +479,7 @@
     <div id="feed">
       <div class="skel"></div><div class="skel"></div><div class="skel"></div>
     </div>
+      </div><!-- /feed-wrap -->
   </main>
 
   <div class="overlay" id="createModal">
@@ -1008,6 +1158,216 @@
     });
   });
 })();
-  </script>
+  
+/* ── Fan tools (standings / games / playoffs / SBC / tiers) ── */
+(function(){
+  var EAST=["ATL","BOS","BKN","CHA","CHI","CLE","DET","IND","MIA","MIL","NYK","ORL","PHI","TOR","WAS"];
+  var WEST=["DAL","DEN","GSW","HOU","LAC","LAL","MEM","MIN","NOP","OKC","PHX","POR","SAC","SAS","UTA"];
+  var NAMES={ATL:"Hawks",BOS:"Celtics",BKN:"Nets",CHA:"Hornets",CHI:"Bulls",CLE:"Cavs",DET:"Pistons",IND:"Pacers",MIA:"Heat",MIL:"Bucks",NYK:"Knicks",ORL:"Magic",PHI:"76ers",TOR:"Raptors",WAS:"Wizards",DAL:"Mavs",DEN:"Nuggets",GSW:"Warriors",HOU:"Rockets",LAC:"Clippers",LAL:"Lakers",MEM:"Grizzlies",MIN:"Wolves",NOP:"Pelicans",OKC:"Thunder",PHX:"Suns",POR:"Blazers",SAC:"Kings",SAS:"Spurs",UTA:"Jazz"};
+  var SIXERS_POOL=["Tyrese Maxey","Jaylen Brown","Joel Embiid","LeBron James","VJ Edgecombe","Anfernee Simons","Kentavious Caldwell-Pope","Dean Wade","Justin Edwards","Adem Bona","Labaron Philon Jr.","Jabari Walker","Dominick Barlow","Ariel Hukporti","Caleb Love","Rayan Rupert","Tacko Fall"];
+  var TIER_COLORS=["#ED174C","#f97316","#eab308","#22c55e","#006BB6","#64748b"];
+  var TIER_LABELS=["S","A","B","C","D","F"];
+  var standingsBase=null;
+
+  function $(id){return document.getElementById(id);}
+  function teamStrength(t){var g=t.w+t.l;var pct=g>0?t.w/g:0.5;return 0.22+pct*0.56;}
+
+  document.querySelectorAll("#communityModeTabs .mode-tab").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      document.querySelectorAll("#communityModeTabs .mode-tab").forEach(function(b){b.classList.remove("active");});
+      btn.classList.add("active");
+      var mode=btn.getAttribute("data-mode");
+      var tools=$("toolsWrap"); var feed=$("feedWrap");
+      if(mode==="tools"){
+        if(tools) tools.classList.add("active");
+        if(feed) feed.classList.add("hidden-mode");
+      } else {
+        if(tools) tools.classList.remove("active");
+        if(feed) feed.classList.remove("hidden-mode");
+      }
+    });
+  });
+
+  document.querySelectorAll("#toolTabs .tool-tab").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      document.querySelectorAll("#toolTabs .tool-tab").forEach(function(b){b.classList.remove("active");});
+      document.querySelectorAll(".tool-panel").forEach(function(p){p.classList.remove("active");});
+      btn.classList.add("active");
+      var p=$("tool-"+btn.getAttribute("data-tool"));
+      if(p) p.classList.add("active");
+    });
+  });
+
+  async function fetchStandings(){
+    if(standingsBase) return standingsBase;
+    var teams={};
+    for(var g=5;g<=6;g++){
+      try{
+        var res=await fetch("https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?group="+g,{cache:"no-store"});
+        if(!res.ok) continue;
+        var data=await res.json();
+        var list=((((data||{}).children||[])[0]||{}).standings||{}).entries||[];
+        if(!list.length && data.standings) list=data.standings.entries||[];
+        (list||[]).forEach(function(e){
+          var t=e.team||{}; var abbr=t.abbreviation; if(!abbr) return;
+          var stats={}; (e.stats||[]).forEach(function(s){stats[s.name]=s.value;stats[s.abbreviation]=s.value;});
+          var w=Number(stats.wins!=null?stats.wins:stats.W)||0;
+          var l=Number(stats.losses!=null?stats.losses:stats.L)||0;
+          teams[abbr]={abbr:abbr,name:t.displayName||NAMES[abbr]||abbr,conf:EAST.indexOf(abbr)>=0?"East":"West",w:w,l:l,remaining:Math.max(0,82-w-l)};
+        });
+      }catch(err){}
+    }
+    if(!Object.keys(teams).length){
+      EAST.concat(WEST).forEach(function(a){teams[a]={abbr:a,name:NAMES[a]||a,conf:EAST.indexOf(a)>=0?"East":"West",w:0,l:0,remaining:82};});
+    }
+    standingsBase=teams; return teams;
+  }
+
+  function simRest(teams,noise){
+    var out={};
+    Object.keys(teams).forEach(function(a){
+      var t=teams[a],w=t.w,l=t.l,s=teamStrength(t);
+      for(var i=0;i<t.remaining;i++){
+        var p=Math.min(0.88,Math.max(0.12,s+(Math.random()-0.5)*(noise||0.12)));
+        if(Math.random()<p)w++; else l++;
+      }
+      out[a]={abbr:a,name:t.name,conf:t.conf,w:w,l:l,pct:(w+l)?w/(w+l):0};
+    });
+    return out;
+  }
+  function sortConf(map,conf){
+    return Object.keys(map).map(function(k){return map[k];}).filter(function(t){return t.conf===conf;})
+      .sort(function(a,b){return b.pct-a.pct||b.w-a.w;});
+  }
+  function fillTable(tbody,rows){
+    tbody.innerHTML=rows.map(function(t,i){
+      var pct=(t.pct*100).toFixed(1)+"%"; var w=Math.round(t.pct*100);
+      var hi=t.abbr==="PHI"?' style="background:rgba(0,107,182,.08)"':"";
+      return "<tr"+hi+"><td class='rank'>"+(i+1)+"</td><td><strong>"+t.abbr+"</strong></td><td>"+t.w+"</td><td>"+t.l+"</td><td class='pct'>"+pct+"</td><td><div class='tool-bar'><i style='width:"+w+"%'></i></div></td></tr>";
+    }).join("");
+  }
+
+  var rs=$("runStandings");
+  if(rs) rs.addEventListener("click",async function(){
+    $("standingsNote").textContent="Simulating…";
+    var base=await fetchStandings(); var sims=200; var sum={};
+    Object.keys(base).forEach(function(a){sum[a]={abbr:a,name:base[a].name,conf:base[a].conf,w:0,l:0};});
+    for(var i=0;i<sims;i++){
+      var fin=simRest(base,0.14);
+      Object.keys(fin).forEach(function(a){sum[a].w+=fin[a].w;sum[a].l+=fin[a].l;});
+    }
+    Object.keys(sum).forEach(function(a){
+      sum[a].w=Math.round(sum[a].w/sims); sum[a].l=Math.round(sum[a].l/sims);
+      sum[a].pct=sum[a].w/Math.max(1,sum[a].w+sum[a].l);
+    });
+    fillTable($("eastTable").querySelector("tbody"),sortConf(sum,"East"));
+    fillTable($("westTable").querySelector("tbody"),sortConf(sum,"West"));
+    $("standingsNote").textContent="Projected finals from "+sims+" simulations using current ESPN standings.";
+  });
+  var xss=$("resetStandings");
+  if(xss) xss.addEventListener("click",function(){
+    $("eastTable").querySelector("tbody").innerHTML="";
+    $("westTable").querySelector("tbody").innerHTML="";
+    $("standingsNote").textContent="Click Run simulation to project final records.";
+  });
+
+  function winProb(hs,as){var p=hs/(hs+as);p=p*0.92+0.08;return Math.min(0.9,Math.max(0.1,p));}
+  var rg=$("runGames");
+  if(rg) rg.addEventListener("click",async function(){
+    var list=$("gamesList"); list.innerHTML="<p class='sub'>Loading…</p>";
+    var base=await fetchStandings();
+    var now=new Date(); var events=[];
+    for(var d=0;d<3;d++){
+      var x=new Date(now.getTime()+d*86400000);
+      var ds=x.toISOString().slice(0,10).replace(/-/g,"");
+      try{
+        var res=await fetch("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates="+ds,{cache:"no-store"});
+        if(!res.ok) continue;
+        var data=await res.json(); var ev=data.events||[];
+        if(ev.length){events=ev;break;}
+      }catch(e){}
+    }
+    if(!events.length){list.innerHTML="<p class='sub'>No games found on the upcoming slate.</p>";return;}
+    list.innerHTML=events.map(function(ev){
+      var comps=(((ev.competitions||[])[0]||{}).competitors)||[];
+      var home=comps.find(function(c){return c.homeAway==="home";})||comps[0]||{};
+      var away=comps.find(function(c){return c.homeAway==="away";})||comps[1]||{};
+      var ha=(home.team||{}).abbreviation||"HOME"; var aa=(away.team||{}).abbreviation||"AWAY";
+      var pHome=winProb(teamStrength(base[ha]||{w:1,l:1}),teamStrength(base[aa]||{w:1,l:1}));
+      var phi=ha==="PHI"||aa==="PHI";
+      var tip=ev.date?new Date(ev.date).toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:"America/New_York"})+" ET":"";
+      var fav=pHome>=0.5?ha:aa; var favP=Math.round((pHome>=0.5?pHome:1-pHome)*100);
+      return '<div class="tool-game"'+(phi?' style="border-color:#006BB6"':'')+"><div><strong>"+aa+" @ "+ha+"</strong><div style='color:var(--mid);font-size:.8rem;margin-top:.2rem'>"+tip+(phi?" · Sixers":"")+"</div><div style='margin-top:.3rem;font-size:.82rem;color:var(--mid)'>"+aa+" "+Math.round((1-pHome)*100)+"% · "+ha+" "+Math.round(pHome*100)+"%</div></div><div class='prob'>"+fav+" "+favP+"%</div></div>";
+    }).join("");
+  });
+
+  var rp=$("runPlayoffs");
+  if(rp) rp.addEventListener("click",async function(){
+    var base=await fetchStandings(); var sims=400; var stats={};
+    Object.keys(base).forEach(function(a){stats[a]={abbr:a,name:base[a].name,conf:base[a].conf,playoff:0,playin:0,top6:0};});
+    for(var i=0;i<sims;i++){
+      var fin=simRest(base,0.14);
+      ["East","West"].forEach(function(conf){
+        sortConf(fin,conf).forEach(function(t,idx){
+          if(idx<6){stats[t.abbr].playoff++;stats[t.abbr].top6++;}
+          else if(idx<10){stats[t.abbr].playoff++;stats[t.abbr].playin++;}
+        });
+      });
+    }
+    function fillPo(id,conf){
+      var rows=Object.keys(stats).map(function(k){return stats[k];}).filter(function(t){return t.conf===conf;})
+        .sort(function(a,b){return b.playoff-a.playoff;});
+      $(id).querySelector("tbody").innerHTML=rows.map(function(t){
+        var hi=t.abbr==="PHI"?' style="background:rgba(0,107,182,.08)"':"";
+        return "<tr"+hi+"><td><strong>"+t.abbr+"</strong></td><td class='pct'>"+Math.round(t.playoff/sims*100)+"%</td><td class='pct'>"+Math.round(t.playin/sims*100)+"%</td><td class='pct'>"+Math.round(t.top6/sims*100)+"%</td></tr>";
+      }).join("");
+    }
+    fillPo("eastPo","East"); fillPo("westPo","West");
+  });
+
+  /* SBC */
+  var sbc={start:[],bench:[],cut:[],pool:SIXERS_POOL.slice()};
+  try{var sv=JSON.parse(localStorage.getItem("sh_sbc_v1")||"null"); if(sv&&Array.isArray(sv.pool)) sbc=sv;}catch(e){}
+  window.shAllowDrop=function(e){e.preventDefault();};
+  window.shDrag=function(e){e.dataTransfer.setData("text/plain",e.target.getAttribute("data-name"));};
+  function rmSbc(name){["start","bench","cut","pool"].forEach(function(z){sbc[z]=(sbc[z]||[]).filter(function(n){return n!==name;});});}
+  window.shDropSbc=function(e,zone){
+    e.preventDefault(); var name=e.dataTransfer.getData("text/plain"); if(!name) return;
+    if(zone==="start"&&sbc.start.length>=5&&sbc.start.indexOf(name)<0) return;
+    rmSbc(name); sbc[zone].push(name); renderSbc();
+  };
+  function chip(name){return '<span class="chip" draggable="true" data-name="'+String(name).replace(/"/g,"&quot;")+'" ondragstart="shDrag(event)">'+name+"</span>";}
+  function renderSbc(){["start","bench","cut","pool"].forEach(function(z){var el=$("zone-"+z); if(el) el.innerHTML=(sbc[z]||[]).map(chip).join("");});}
+  if($("saveSbc")) $("saveSbc").addEventListener("click",function(){localStorage.setItem("sh_sbc_v1",JSON.stringify(sbc)); this.textContent="Saved"; var b=this; setTimeout(function(){b.textContent="Save board";},1200);});
+  if($("resetSbc")) $("resetSbc").addEventListener("click",function(){sbc={start:[],bench:[],cut:[],pool:SIXERS_POOL.slice()}; renderSbc();});
+  renderSbc();
+
+  /* Tiers */
+  var tiers={title:"Sixers roster tiers",tiers:TIER_LABELS.map(function(){return [];}),pool:SIXERS_POOL.slice()};
+  try{var ts=JSON.parse(localStorage.getItem("sh_tiers_v1")||"null"); if(ts&&Array.isArray(ts.tiers)) tiers=ts;}catch(e){}
+  function rmTier(name){tiers.pool=(tiers.pool||[]).filter(function(n){return n!==name;}); tiers.tiers=(tiers.tiers||[]).map(function(a){return (a||[]).filter(function(n){return n!==name;});});}
+  window.shDropTier=function(e,key){
+    e.preventDefault(); var name=e.dataTransfer.getData("text/plain"); if(!name) return;
+    rmTier(name);
+    if(key==="pool") tiers.pool.push(name);
+    else {var idx=Number(key); if(!tiers.tiers[idx]) tiers.tiers[idx]=[]; tiers.tiers[idx].push(name);}
+    renderTiers();
+  };
+  function renderTiers(){
+    if($("tierTitle")) $("tierTitle").value=tiers.title||"";
+    var board=$("tierBoard"); if(!board) return;
+    board.innerHTML=TIER_LABELS.map(function(lab,i){
+      return '<div class="tier-row"><div class="tier-label" style="background:'+TIER_COLORS[i]+'">'+lab+"</div>"+
+        '<div class="tier-drop" ondragover="shAllowDrop(event)" ondrop="shDropTier(event,\''+i+'\')">'+(tiers.tiers[i]||[]).map(chip).join("")+"</div></div>";
+    }).join("");
+    if($("tierPool")) $("tierPool").innerHTML=(tiers.pool||[]).map(chip).join("");
+  }
+  if($("tierTitle")) $("tierTitle").addEventListener("input",function(){tiers.title=this.value;});
+  if($("saveTiers")) $("saveTiers").addEventListener("click",function(){tiers.title=($("tierTitle")||{}).value||tiers.title; localStorage.setItem("sh_tiers_v1",JSON.stringify(tiers)); this.textContent="Saved"; var b=this; setTimeout(function(){b.textContent="Save tier list";},1200);});
+  if($("resetTiers")) $("resetTiers").addEventListener("click",function(){tiers={title:"Sixers roster tiers",tiers:TIER_LABELS.map(function(){return [];}),pool:SIXERS_POOL.slice()}; renderTiers();});
+  renderTiers();
+})();
+
+</script>
 </body>
 </html>

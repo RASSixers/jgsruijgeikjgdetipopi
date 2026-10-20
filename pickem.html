@@ -1855,150 +1855,7 @@
     }
     .signup-prompt-btn:hover { background: #0057a0; }
     .signup-prompt-close { margin-top: .75rem; color: var(--mid); font-size: .8rem; cursor: pointer; background: none; border: 0; }
-
-    /* ═════════ SYMMETRY + DATE ARROWS + LEADERBOARD GRAPHIC (overrides) ═════════ */
-
-    /* Pick boxes: always equal columns, equal row heights, equal option boxes */
-    .questions-container {
-      display: grid !important;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      grid-auto-rows: 1fr;
-      align-items: stretch;
-      gap: 1rem;
-    }
-    @media (max-width: 900px) {
-      .questions-container { grid-template-columns: minmax(0, 1fr) !important; }
-    }
-    .question-card {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-    .question-card .question-text { min-height: calc(1.4em * 2); }
-    .question-card .options {
-      margin-top: auto;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      grid-auto-rows: 1fr;
-      gap: 8px;
-    }
-    .question-card .option {
-      width: 100%;
-      min-height: 46px;
-      box-sizing: border-box;
-    }
-    .question-card .text-input { min-height: 46px; }
-
-    /* Info cards: same size, three across until the accordion layout takes over */
-    .info-section { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; }
-    @media (min-width: 769px) and (max-width: 1024px) {
-      .info-section { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    }
-
-    /* Date strips: every box the same size */
-    .date-picker-container .date-picker-btn,
-    #weekPickerContainer .date-picker-btn,
-    #monthPickerContainer .date-picker-btn {
-      flex: 0 0 6.25rem !important;
-      width: 6.25rem !important;
-      min-width: 6.25rem !important;
-      min-height: 3.4rem;
-      display: flex !important;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      white-space: normal !important;
-      line-height: 1.25;
-      box-sizing: border-box;
-    }
-
-    /* Arrows sit directly beside the boxes (no stretching to the far edge) */
-    #picks .date-slider-controls,
-    #daily-lb .date-slider-controls,
-    #weekly-lb .date-slider-controls,
-    #monthly-lb .date-slider-controls {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 0.5rem !important;
-      grid-template-columns: none !important;
-      overflow: visible !important;
-    }
-    #picks .date-slider-controls > .date-picker-container,
-    #daily-lb .date-slider-controls > .date-picker-container,
-    #weekly-lb .date-slider-controls > .date-picker-container,
-    #monthly-lb .date-slider-controls > .date-picker-container {
-      flex: 0 1 auto !important;
-      width: auto !important;
-      max-width: calc(100% - 100px) !important;
-      justify-content: flex-start !important;
-      margin-bottom: 0 !important;
-    }
-    #picks .date-slider-controls > .date-nav-btn,
-    #daily-lb .date-slider-controls > .date-nav-btn,
-    #weekly-lb .date-slider-controls > .date-nav-btn,
-    #monthly-lb .date-slider-controls > .date-nav-btn {
-      flex: 0 0 auto !important;
-      align-self: center !important;
-    }
-
-    .lb-share-btn { margin-left: 0.5rem; flex: 0 0 auto; }
-    .lb-action-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 15px; }
-    .lb-action-row .lb-share-btn { margin-left: 0; }
-
-    /* ── Leaderboard share graphic (matches the picks / results card) ── */
-    #pickem-lb-export {
-      position: fixed; left: -10000px; top: 0; width: 900px;
-      background: #fff; color: #0d0f1a; font-family: 'Lexend', system-ui, sans-serif;
-      z-index: -1; pointer-events: none;
-    }
-    #pickem-lb-export .lbg-page { width: 900px; box-sizing: border-box; padding: 28px 32px 22px; background: #fff; }
-    #pickem-lb-export .lbg-wordmark { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.03em; text-align: center; }
-    #pickem-lb-export .lbg-subtitle {
-      margin: 6px 0 14px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
-      text-transform: uppercase; color: #64748b; text-align: center;
-    }
-    #pickem-lb-export .lbg-stats { display: flex; gap: 10px; margin-bottom: 14px; justify-content: center; }
-    #pickem-lb-export .lbg-stat {
-      flex: 1 1 0; max-width: 160px; text-align: center; box-sizing: border-box;
-      background: #f6f8fc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 8px 8px;
-    }
-    #pickem-lb-export .lbg-stat b {
-      display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; line-height: 1.1;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    #pickem-lb-export .lbg-stat span { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #64748b; }
-    #pickem-lb-export .lbg-list {
-      list-style: none; margin: 0; padding: 0; display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; gap: 8px;
-    }
-    #pickem-lb-export .lbg-list.lbg-one { grid-template-columns: minmax(0, 1fr); }
-    #pickem-lb-export .lbg-list li { margin: 0; padding: 0; }
-    #pickem-lb-export .lbg-row {
-      display: flex; align-items: center; gap: 12px; box-sizing: border-box; height: 58px;
-      border: 1px solid #e6eaf1; border-radius: 12px; padding: 0 14px; background: #fff;
-    }
-    #pickem-lb-export .lbg-row.lbg-you { border-color: #006BB6; background: #eef5fc; }
-    #pickem-lb-export .lbg-rank {
-      flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: #f1f5f9; color: #475569; font-size: 13px; font-weight: 800; padding-bottom: 3px; box-sizing: border-box;
-    }
-    #pickem-lb-export .lbg-rank.r1 { background: #c9a84c; color: #fff; }
-    #pickem-lb-export .lbg-rank.r2 { background: #94a3b8; color: #fff; }
-    #pickem-lb-export .lbg-rank.r3 { background: #b9784a; color: #fff; }
-    #pickem-lb-export .lbg-name { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-bottom: 3px; }
-    #pickem-lb-export .lbg-name i { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: .1em; color: #006BB6; margin-left: 6px; }
-    #pickem-lb-export .lbg-score { flex: 0 0 auto; text-align: right; line-height: 1.15; }
-    #pickem-lb-export .lbg-score b { display: block; font-size: 16px; font-weight: 800; color: #006BB6; letter-spacing: -.02em; }
-    #pickem-lb-export .lbg-score span { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #64748b; }
-    #pickem-lb-export .lbg-more { margin: 10px 0 0; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; }
-    #pickem-lb-export .lbg-empty { border: 1px solid #e6eaf1; border-radius: 12px; padding: 28px; text-align: center; color: #64748b; font-size: 15px; font-weight: 600; }
-    #pickem-lb-export .lbg-bottom { text-align: center; margin-top: 14px; }
-    #pickem-lb-export .lbg-bottom-rule { width: 36px; height: 2px; background: #dbe3ee; margin: 0 auto 12px; }
-    #pickem-lb-export .lbg-bottom-mark { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
-    #pickem-lb-export .lbg-bottom-url { margin: 6px 0 0; color: #64748b; font-size: 12px; font-weight: 500; }
-  </style>
+</style>
 </head>
 <body>
 
@@ -2233,7 +2090,6 @@
         <input type="hidden" id="dailyLbDate" />
         <div style="margin-bottom: 15px;">
           <button type="button" class="btn btn-secondary" id="refreshDailyBtn"> Refresh</button>
-          <button type="button" class="btn btn-primary lb-share-btn" data-lb="daily">Share leaderboard</button>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -2258,7 +2114,8 @@
         </div>
         <div style="margin-bottom: 15px; display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
           <button type="button" class="btn btn-secondary" id="refreshWeeklyBtn"> Refresh</button>
-          <button type="button" class="btn btn-primary lb-share-btn" data-lb="weekly">Share leaderboard</button>
+          <button type="button" class="btn btn-primary" id="shareWeeklyBtn"> Share card</button>
+          <span id="shareWeeklyStatus" style="font-size:0.8rem;color:var(--mid);"></span>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -2283,7 +2140,6 @@
         </div>
         <div style="margin-bottom: 15px;">
           <button type="button" class="btn btn-secondary" id="refreshMonthlyBtn"> Refresh</button>
-          <button type="button" class="btn btn-primary lb-share-btn" data-lb="monthly">Share leaderboard</button>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -2308,7 +2164,7 @@
             <h3 class="season-lb-title" id="currentSeasonLabel">Season</h3>
             <p class="season-lb-sub">Ranked by correct answers, then streak, then tiebreaker accuracy</p>
           </div>
-          <div class="lb-action-row" style="margin:0;"><button type="button" class="btn btn-secondary" id="refreshSeasonBtn">Refresh</button><button type="button" class="btn btn-primary lb-share-btn" data-lb="season">Share leaderboard</button></div>
+          <button type="button" class="btn btn-secondary" id="refreshSeasonBtn">Refresh</button>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -2351,7 +2207,6 @@
           <label class="form-label" style="margin:0;" id="archiveKeyLabel">Date / week</label>
           <select id="archiveKeySelect" class="form-input" style="max-width:200px;"></select>
           <button type="button" class="btn btn-secondary" id="refreshArchiveBtn">Refresh</button>
-          <button type="button" class="btn btn-primary lb-share-btn" data-lb="archive">Share leaderboard</button>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -2474,7 +2329,6 @@
             <button type="button" class="btn btn-primary" id="grpGateJoinBtn" style="margin-top:0.25rem;">Enter password</button>
           </div>
           <div id="grpStandingsArea">
-            <div class="lb-action-row"><button type="button" class="btn btn-primary lb-share-btn" data-lb="group">Share leaderboard</button></div>
             <div class="grp-standings-wrap">
               <table class="leaderboard-table">
                 <thead>
@@ -2949,21 +2803,6 @@
         <div class="sg-bottom-rule"></div>
         <p class="sg-bottom-mark">SixersHoops</p>
         <p class="sg-bottom-url">sixershoops.com/pickem</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="pickem-lb-export" aria-hidden="true">
-    <div class="lbg-page">
-      <p class="lbg-wordmark">SixersHoops</p>
-      <p class="lbg-subtitle" id="lbgSubtitle">LEADERBOARD</p>
-      <div class="lbg-stats" id="lbgStats"></div>
-      <ul class="lbg-list" id="lbgList"></ul>
-      <p class="lbg-more" id="lbgMore" style="display:none;"></p>
-      <div class="lbg-bottom">
-        <div class="lbg-bottom-rule"></div>
-        <p class="lbg-bottom-mark">SixersHoops</p>
-        <p class="lbg-bottom-url">sixershoops.com/pickem</p>
       </div>
     </div>
   </div>
@@ -11440,206 +11279,5 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
   </div>
 </div>
 
-
-  <script>
-  // ===== Leaderboard share graphic =====
-  (function () {
-    function clean(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }
-    function esc(s) {
-      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-      });
-    }
-    function activeText(sel) {
-      var el = document.querySelector(sel);
-      return el ? clean(el.textContent) : '';
-    }
-    function selText(id) {
-      var el = document.getElementById(id);
-      if (!el || !el.options || el.selectedIndex < 0) return '';
-      return clean(el.options[el.selectedIndex].textContent);
-    }
-
-    var BOARDS = {
-      daily:   { table: '#daily-lb .leaderboard-table',   title: 'Daily' },
-      weekly:  { table: '#weekly-lb .leaderboard-table',  title: 'Weekly' },
-      monthly: { table: '#monthly-lb .leaderboard-table', title: 'Monthly' },
-      season:  { table: '#season-lb .leaderboard-table',  title: 'Season' },
-      archive: { table: '#archive-lb .leaderboard-table', title: 'Archive' },
-      group:   { table: '#grpStandingsArea .leaderboard-table', title: 'Group' }
-    };
-
-    function subtitleFor(lb) {
-      var t;
-      if (lb === 'daily') {
-        t = activeText('#dailyDatePickerContainer .date-picker-btn.active') ||
-            (document.getElementById('dailyLbDate') || {}).value || '';
-        return 'DAILY LEADERBOARD' + (t ? ' · ' + t : '');
-      }
-      if (lb === 'weekly') {
-        t = activeText('#weekPickerContainer .date-picker-btn.active');
-        return 'WEEKLY LEADERBOARD' + (t ? ' · ' + t : '');
-      }
-      if (lb === 'monthly') {
-        t = activeText('#monthPickerContainer .date-picker-btn.active');
-        return 'MONTHLY LEADERBOARD' + (t ? ' · ' + t : '');
-      }
-      if (lb === 'season') {
-        t = activeText('#currentSeasonLabel');
-        return 'SEASON STANDINGS' + (t && t.toLowerCase() !== 'season' ? ' · ' + t : '');
-      }
-      if (lb === 'archive') {
-        var parts = ['ARCHIVE'];
-        var s = selText('archiveSeasonSelect'); if (s) parts.push(s);
-        var p = selText('archivePeriodSelect'); if (p) parts.push(p);
-        var pv = (document.getElementById('archivePeriodSelect') || {}).value;
-        if (pv && pv !== 'season') { var k = selText('archiveKeySelect'); if (k) parts.push(k); }
-        return parts.join(' · ');
-      }
-      if (lb === 'group') {
-        var g = activeText('#grpDetailName');
-        var gp = activeText('.grp-period-btn.active');
-        return 'GROUP' + (g ? ' · ' + g : '') + (gp ? ' · ' + gp : '');
-      }
-      return 'LEADERBOARD';
-    }
-
-    function readRows(tableSel) {
-      var table = document.querySelector(tableSel);
-      if (!table) return [];
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function (th) { return clean(th.textContent).toLowerCase(); });
-      function idx(re, fallback) { var i = heads.findIndex(function (h) { return re.test(h); }); return i >= 0 ? i : fallback; }
-      var iName = idx(/^player/, 1), iC = idx(/^correct/, 2), iT = idx(/^total/, 3), iA = idx(/^acc/, 4), iS = idx(/^streak/, -1);
-      var rows = [];
-      table.querySelectorAll('tbody tr').forEach(function (tr) {
-        var tds = tr.querySelectorAll('td');
-        if (tds.length < 4) return;
-        var name = clean(tds[iName] && tds[iName].textContent);
-        if (!name) return;
-        var acc = clean(tds[iA] && tds[iA].textContent).replace('%', '');
-        rows.push({
-          rank: rows.length + 1,
-          name: name,
-          correct: clean(tds[iC] && tds[iC].textContent),
-          total: clean(tds[iT] && tds[iT].textContent),
-          acc: acc,
-          streak: iS >= 0 && tds[iS] ? clean(tds[iS].textContent) : ''
-        });
-      });
-      return rows;
-    }
-
-    function myName() {
-      try {
-        var u = auth && auth.currentUser;
-        if (!u) return '';
-        return clean(u.displayName || (u.email || '').split('@')[0]).toLowerCase();
-      } catch (e) { return ''; }
-    }
-
-    var MAX_ROWS = 20;
-
-    function fillGraphic(lb) {
-      var cfg = BOARDS[lb];
-      var rows = readRows(cfg.table);
-      var me = myName();
-      var myIdx = me ? rows.findIndex(function (r) { return r.name.toLowerCase() === me; }) : -1;
-
-      document.getElementById('lbgSubtitle').textContent = subtitleFor(lb);
-
-      var top = rows[0];
-      var stats = document.getElementById('lbgStats');
-      stats.innerHTML =
-        '<div class="lbg-stat"><b>' + (myIdx >= 0 ? '#' + rows[myIdx].rank : '—') + '</b><span>Your rank</span></div>' +
-        '<div class="lbg-stat"><b>' + rows.length + '</b><span>Players</span></div>' +
-        '<div class="lbg-stat"><b>' + (top ? esc(top.correct + '/' + top.total) : '—') + '</b><span>Top score</span></div>';
-
-      var shown = rows.slice(0, MAX_ROWS);
-      var extraMine = null;
-      if (myIdx >= MAX_ROWS) extraMine = rows[myIdx];
-
-      var list = document.getElementById('lbgList');
-      var more = document.getElementById('lbgMore');
-
-      if (!rows.length) {
-        list.className = 'lbg-list lbg-one';
-        list.style.gridTemplateRows = '';
-        list.innerHTML = '<li><div class="lbg-empty">No entries yet for this period</div></li>';
-        more.style.display = 'none';
-        return rows;
-      }
-
-      var items = shown.slice();
-      if (extraMine) items = items.slice(0, MAX_ROWS - 1).concat([extraMine]);
-      // Keep the two columns symmetrical: pad to an even count
-      var pad = items.length % 2 === 1 && items.length > 1;
-      var twoCol = items.length > 1;
-      list.className = 'lbg-list' + (twoCol ? '' : ' lbg-one');
-      var perCol = twoCol ? Math.ceil(items.length / 2) : items.length;
-      list.style.gridTemplateRows = 'repeat(' + perCol + ', auto)';
-
-      var html = items.map(function (r) {
-        var you = me && r.name.toLowerCase() === me;
-        var rk = r.rank <= 3 ? ' r' + r.rank : '';
-        var sub = (r.acc ? r.acc + '%' : '') + (r.streak ? (r.acc ? ' · ' : '') + r.streak + ' streak' : '');
-        return '<li><div class="lbg-row' + (you ? ' lbg-you' : '') + '">' +
-          '<div class="lbg-rank' + rk + '">' + r.rank + '</div>' +
-          '<div class="lbg-name">' + esc(r.name) + (you ? '<i>YOU</i>' : '') + '</div>' +
-          '<div class="lbg-score"><b>' + esc(r.correct) + '/' + esc(r.total) + '</b><span>' + esc(sub || 'correct') + '</span></div>' +
-          '</div></li>';
-      });
-      if (pad) html.push('<li><div class="lbg-row" style="visibility:hidden;"></div></li>');
-      list.innerHTML = html.join('');
-
-      var hidden = rows.length - items.length;
-      if (hidden > 0) {
-        more.textContent = '+ ' + hidden + ' more player' + (hidden === 1 ? '' : 's');
-        more.style.display = '';
-      } else {
-        more.style.display = 'none';
-      }
-      return rows;
-    }
-
-    async function shareLeaderboard(lb, btn) {
-      if (typeof html2canvas !== 'function') { alert('Share library not loaded yet. Try again in a moment.'); return; }
-      var original = btn ? btn.textContent : '';
-      if (btn) { btn.disabled = true; btn.textContent = 'Building…'; }
-      try {
-        fillGraphic(lb);
-        var node = document.querySelector('#pickem-lb-export .lbg-page');
-        try {
-          await Promise.all([
-            document.fonts.load('700 13px Lexend'),
-            document.fonts.load('800 13px Lexend')
-          ]);
-          await document.fonts.ready;
-        } catch (e) {}
-        await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
-        var canvas = await html2canvas(node, {
-          backgroundColor: '#ffffff', scale: 2, useCORS: true,
-          width: 900, windowWidth: 900, scrollX: 0, scrollY: 0
-        });
-        var url = canvas.toDataURL('image/png');
-        showPickemExport(url, 'sixershoops-leaderboard-' + lb + '.png', BOARDS[lb].title + ' leaderboard ready');
-      } catch (err) {
-        console.error('Leaderboard graphic failed', err);
-        alert('Could not build the leaderboard graphic. Please try again.');
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = original; }
-      }
-    }
-
-    document.addEventListener('click', function (e) {
-      var b = e.target.closest && e.target.closest('.lb-share-btn');
-      if (!b) return;
-      e.preventDefault();
-      var lb = b.getAttribute('data-lb');
-      if (BOARDS[lb]) shareLeaderboard(lb, b);
-    });
-
-    window.shareLeaderboardGraphic = shareLeaderboard;
-  })();
-  </script>
 </body>
 </html>

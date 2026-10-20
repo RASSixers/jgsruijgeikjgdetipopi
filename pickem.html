@@ -5301,25 +5301,41 @@
     }
     function getWeeklyPickWindow(dateStr) {
       try {
-        if (!window.SixersSeason || typeof SixersSeason.weekForDate !== 'function' || !SixersSeason.config) return null;
-        const slateWeek = SixersSeason.weekForDate(dateStr);
-        const curWeek = SixersSeason.weekForDate(formatDateForComparison(getESTNow()));
-        if (slateWeek == null || curWeek == null) return null;
+        const SS = window.SixersSeason;
+        if (!SS || typeof SS.weekForDate !== 'function' || !SS.config) {
+          console.warn('[pickem weekly] season data not loaded; using 4-day fallback');
+          return null;
+        }
+        const weeks = SS.weeks || [];
+        const todayStr = formatDateForComparison(getESTNow());
+        const season = SS.config.seasons && SS.config.seasons[SS.currentSeasonId];
+        const seasonStart = (weeks[0] && weeks[0].start) || (season && season.start) || null;
+        if (!seasonStart) {
+          console.warn('[pickem weekly] no weeks / season start in /data/season-weeks.json for', SS.currentSeasonId, '- using 4-day fallback');
+          return null;
+        }
+        const slateWeek = SS.weekForDate(dateStr);
+        let curWeek = SS.weekForDate(todayStr);
+        // Before the season starts: nothing is open yet (week 0)
+        if (curWeek == null && todayStr < seasonStart) curWeek = 0;
+        if (slateWeek == null || curWeek == null) {
+          console.warn('[pickem weekly] could not place', dateStr, '(slate week', slateWeek, ', current week', curWeek, ') - using 4-day fallback');
+          return null;
+        }
         // When the slate's week begins (for the "opens on" message)
         let opensOn = null;
-        const w = (SixersSeason.weeks || []).find(x => Number(x.week) === Number(slateWeek));
+        const w = weeks.find(x => Number(x.week) === Number(slateWeek));
         if (w && w.start) {
           opensOn = w.start;
-        } else {
-          const season = SixersSeason.config.seasons && SixersSeason.config.seasons[SixersSeason.currentSeasonId];
-          if (season && season.start) {
-            const d = new Date(season.start + 'T12:00:00');
-            d.setDate(d.getDate() + (Number(slateWeek) - 1) * 7);
-            opensOn = formatDateForComparison(d);
-          }
+        } else if (season && season.start) {
+          const d = new Date(season.start + 'T12:00:00');
+          d.setDate(d.getDate() + (Number(slateWeek) - 1) * 7);
+          opensOn = formatDateForComparison(d);
         }
-        return { open: Number(slateWeek) <= Number(curWeek), slateWeek: Number(slateWeek), curWeek: Number(curWeek), opensOn };
-      } catch (_) { return null; }
+        const res = { open: Number(slateWeek) <= Number(curWeek), slateWeek: Number(slateWeek), curWeek: Number(curWeek), opensOn };
+        console.log('[pickem weekly]', dateStr, res);
+        return res;
+      } catch (e) { console.warn('[pickem weekly] error', e); return null; }
     }
     function renderPicksNotOpenYet(container, weekly) {
       let when = '';

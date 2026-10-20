@@ -287,75 +287,105 @@
     .hint{font-size:.75rem;color:var(--mid);margin:.35rem 0 0}
   
 
-    /* Fan creations hub */
-    .create-hub{margin:0 0 1.5rem}
-    .create-hub-head{margin:0 0 1rem}
-    .create-hub-head h2{margin:0 0 .35rem;font-size:1.2rem;font-weight:900;letter-spacing:-.02em;color:var(--navy)}
-    .create-hub-head p{margin:0;color:var(--mid);font-size:.9rem;line-height:1.5;max-width:40rem}
-    .create-grid{
-      display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin-bottom:1rem;
+
+    /* Create & share — clean hub */
+    .create-hub{margin:0 0 1.75rem;padding-bottom:1.35rem;border-bottom:1px solid var(--border)}
+    .create-hub-label{
+      font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--sixers-blue);margin:0 0 .4rem;
     }
-    .create-card{
-      border:1px solid var(--border);background:var(--card);border-radius:14px;padding:1rem .9rem;
-      cursor:pointer;text-align:left;transition:border-color .15s,box-shadow .15s,transform .15s;
-      font-family:inherit;color:inherit;
+    .create-hub h2{
+      margin:0 0 .35rem;font-size:clamp(1.25rem,3vw,1.55rem);font-weight:900;
+      letter-spacing:-.03em;color:var(--navy);line-height:1.15;
     }
-    .create-card:hover{border-color:var(--sixers-blue);box-shadow:0 8px 24px rgba(0,107,182,.1);transform:translateY(-1px)}
-    .create-card.active{border-color:var(--sixers-blue);box-shadow:0 0 0 2px rgba(0,107,182,.2)}
-    .create-card .cc-icon{
-      width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-      font-size:1.1rem;margin-bottom:.55rem;background:rgba(0,107,182,.1);color:var(--sixers-blue);font-weight:800;
+    .create-hub > p{margin:0 0 1rem;color:var(--mid);font-size:.9rem;line-height:1.5;max-width:38rem}
+    .create-pills{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1rem}
+    .create-pill{
+      border:1px solid var(--border);background:var(--card);color:var(--ink);
+      border-radius:999px;padding:.48rem .95rem;font:700 .78rem Lexend,sans-serif;
+      cursor:pointer;transition:background .15s,border-color .15s,color .15s;
     }
-    .create-card strong{display:block;font-size:.88rem;font-weight:800;margin-bottom:.2rem}
-    .create-card span{display:block;font-size:.75rem;color:var(--mid);line-height:1.35}
+    .create-pill:hover{border-color:var(--sixers-blue);color:var(--sixers-blue)}
+    .create-pill.active{background:var(--navy);border-color:var(--navy);color:#fff}
     .studio{
-      display:none;border:1px solid var(--border);background:var(--card);border-radius:16px;
-      padding:1.15rem 1.2rem 1.3rem;margin-bottom:1.25rem;
+      display:none;border:1px solid var(--border);background:var(--card);
+      border-radius:16px;overflow:hidden;
     }
     .studio.open{display:block}
-    .studio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem}
-    .studio-head h3{margin:0;font-size:1.05rem;font-weight:800}
-    .studio-head p{margin:.25rem 0 0;color:var(--mid);font-size:.84rem}
-    .studio-close{border:0;background:#f1f5f9;width:34px;height:34px;border-radius:999px;cursor:pointer;font-size:1.15rem;flex-shrink:0}
-    .studio-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:1.15rem}
-    @media(max-width:800px){.studio-grid{grid-template-columns:1fr}}
-    .field-label{display:block;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin:0 0 .35rem}
-    .studio select,.studio input[type=text],.studio textarea{
-      width:100%;border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;
-      font:500 .9rem Lexend,sans-serif;background:var(--bg2,#fff);color:var(--ink);margin-bottom:.75rem;
+    .studio-bar{
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      padding:.85rem 1.15rem;border-bottom:1px solid var(--border);background:rgba(0,26,87,.03);
     }
-    .studio textarea{min-height:72px;resize:vertical}
-    .pick-list{display:flex;flex-direction:column;gap:.45rem;max-height:320px;overflow:auto;padding-right:.25rem}
-    .pick-row{
-      display:flex;align-items:center;gap:.5rem;border:1px solid var(--border);border-radius:10px;
-      padding:.45rem .55rem;background:var(--bg2,#fff);
+    .studio-bar h3{margin:0;font-size:.95rem;font-weight:800}
+    .studio-bar p{margin:.15rem 0 0;font-size:.78rem;color:var(--mid)}
+    .studio-close{
+      border:1px solid var(--border);background:var(--card);width:34px;height:34px;
+      border-radius:999px;cursor:pointer;font-size:1.1rem;line-height:1;color:var(--ink);
     }
-    .pick-row select{margin:0;flex:1}
-    .pick-row .pr-num{font-weight:800;color:var(--navy);width:1.4rem;text-align:center}
-    .chip{
-      display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:999px;
-      padding:.32rem .62rem;font-size:.76rem;font-weight:600;background:var(--bg2,#fff);cursor:grab;margin:.2rem;user-select:none;
-    }
-    .zone{min-height:100px;border:2px dashed var(--border);border-radius:12px;padding:.55rem;margin-bottom:.55rem}
-    .zone h4{margin:0 0 .4rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mid)}
-    .zone.start{border-color:rgba(22,163,74,.4);background:rgba(22,163,74,.04)}
-    .zone.bench{border-color:rgba(0,107,182,.35);background:rgba(0,107,182,.04)}
-    .zone.cut{border-color:rgba(237,23,76,.35);background:rgba(237,23,76,.04)}
-    .tier-row{display:flex;gap:.5rem;margin-bottom:.45rem}
-    .tier-label{width:42px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
-    .tier-drop{flex:1;min-height:48px;border:1px solid var(--border);border-radius:10px;padding:.3rem;display:flex;flex-wrap:wrap;background:var(--bg2,#fff)}
-    .studio-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
-    .studio-btn{
-      border:0;border-radius:999px;padding:.65rem 1.15rem;font:700 .82rem Lexend,sans-serif;cursor:pointer;
-    }
-    .studio-btn.primary{background:var(--sixers-blue);color:#fff}
-    .studio-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--ink)}
+    .studio-body{display:grid;grid-template-columns:1.15fr .85fr;gap:0}
+    @media(max-width:860px){.studio-body{grid-template-columns:1fr}}
+    .studio-form{padding:1.1rem 1.15rem 1.25rem;border-right:1px solid var(--border)}
+    @media(max-width:860px){.studio-form{border-right:0;border-bottom:1px solid var(--border)}}
+    .studio-side{padding:1.1rem 1.15rem 1.25rem;background:#0b1220}
+    .studio-side .side-label{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin:0 0 .65rem}
     .studio-preview{
-      border:1px solid var(--border);border-radius:12px;background:#0b1220;padding:.75rem;min-height:200px;
-      display:flex;align-items:center;justify-content:center;
+      border-radius:12px;background:#05080f;min-height:220px;display:flex;align-items:center;justify-content:center;
+      border:1px solid rgba(255,255,255,.08);overflow:hidden;
     }
-    .studio-preview img{max-width:100%;height:auto;border-radius:8px;display:block}
-    .studio-preview .ph{color:rgba(255,255,255,.55);font-size:.85rem;text-align:center;padding:1rem}
+    .studio-preview img{width:100%;height:auto;display:block}
+    .studio-preview .ph{color:rgba(255,255,255,.4);font-size:.82rem;text-align:center;padding:1.25rem;line-height:1.45}
+    .studio-actions{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.85rem}
+    .studio-btn{
+      border:0;border-radius:999px;padding:.6rem 1.05rem;font:700 .78rem Lexend,sans-serif;cursor:pointer;
+    }
+    .studio-btn.primary{background:#006BB6;color:#fff}
+    .studio-btn.ghost{background:transparent;color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.2)}
+    .fl{display:block;font-size:.68rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mid);margin:0 0 .3rem}
+    .fi,.fs,.ft{
+      width:100%;border:1px solid var(--border);border-radius:10px;padding:.55rem .7rem;
+      font:500 .88rem Lexend,sans-serif;background:var(--bg2,#fff);color:var(--ink);margin-bottom:.7rem;
+    }
+    .ft{min-height:64px;resize:vertical}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+    @media(max-width:560px){.row2{grid-template-columns:1fr}}
+    .drag-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.35rem;max-height:340px;overflow:auto}
+    .drag-item{
+      display:flex;align-items:center;gap:.55rem;padding:.5rem .6rem;border:1px solid var(--border);
+      border-radius:10px;background:var(--bg2,#fff);cursor:grab;user-select:none;
+    }
+    .drag-item:active{cursor:grabbing}
+    .drag-item .h{color:var(--mid);font-size:.9rem;width:1rem;text-align:center}
+    .drag-item .n{font-weight:700;font-size:.86rem;flex:1}
+    .drag-item .meta{font-size:.75rem;color:var(--mid)}
+    .drag-item input.rec{
+      width:4.2rem;border:1px solid var(--border);border-radius:8px;padding:.25rem .35rem;
+      font:600 .78rem Lexend,sans-serif;text-align:center;
+    }
+    .zone{
+      min-height:88px;border:1px solid var(--border);border-radius:12px;padding:.5rem .55rem;margin-bottom:.5rem;
+      background:rgba(100,116,139,.04);
+    }
+    .zone h4{margin:0 0 .35rem;font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mid)}
+    .zone.start{border-color:rgba(22,163,74,.45);background:rgba(22,163,74,.05)}
+    .zone.bench{border-color:rgba(0,107,182,.4);background:rgba(0,107,182,.05)}
+    .zone.cut{border-color:rgba(237,23,76,.4);background:rgba(237,23,76,.05)}
+    .chip{
+      display:inline-flex;align-items:center;gap:.25rem;border:1px solid var(--border);border-radius:999px;
+      padding:.28rem .55rem;font-size:.74rem;font-weight:600;background:var(--card);cursor:grab;margin:.15rem;user-select:none;
+    }
+    .tier-row{display:flex;gap:.45rem;margin-bottom:.4rem}
+    .tier-label{width:40px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.9rem}
+    .tier-drop{flex:1;min-height:46px;border:1px solid var(--border);border-radius:10px;padding:.3rem;display:flex;flex-wrap:wrap;background:var(--bg2,#fff)}
+    .game-pick-list{display:flex;flex-direction:column;gap:.4rem;max-height:280px;overflow:auto;margin-bottom:.7rem}
+    .game-pick{
+      border:1px solid var(--border);border-radius:10px;padding:.55rem .65rem;cursor:pointer;background:var(--bg2,#fff);
+      display:flex;justify-content:space-between;align-items:center;gap:.5rem;font-size:.84rem;
+    }
+    .game-pick:hover,.game-pick.on{border-color:var(--sixers-blue);background:rgba(0,107,182,.06)}
+    .hint{font-size:.78rem;color:var(--mid);margin:0 0 .65rem;line-height:1.4}
+    .import-row{display:flex;gap:.4rem;margin-bottom:.65rem}
+    .import-row input{flex:1;margin:0}
+    .import-row button{margin:0;white-space:nowrap}
 
     /* Trade of the Day — redesigned */
     .totd-shell{margin:0 0 1.35rem}
@@ -396,36 +426,36 @@
 
     
     
+    
     <div class="create-hub" id="createHub">
-      <div class="create-hub-head">
-        <h2>Create &amp; share</h2>
-        <p>Build a ranking, game pick, playoff board, Start/Bench/Cut, or tier list for any NBA team. Preview a graphic, then post it to the community.</p>
+      <div class="create-hub-label">Community studio</div>
+      <h2>Build a board. Share it.</h2>
+      <p>Drag to rank. Pull real games. Post a graphic to the feed so others can reply — including with their own rankings on your list.</p>
+      <div class="create-pills" id="createPills">
+        <button type="button" class="create-pill" data-studio="standings">Standings</button>
+        <button type="button" class="create-pill" data-studio="game">Game pick</button>
+        <button type="button" class="create-pill" data-studio="playoffs">Playoff order</button>
+        <button type="button" class="create-pill" data-studio="sbc">Start / Bench / Cut</button>
+        <button type="button" class="create-pill" data-studio="tiers">Tier list</button>
+        <button type="button" class="create-pill" data-studio="wordle">Sports Wordle</button>
       </div>
-      <div class="create-grid" id="createGrid">
-        <button type="button" class="create-card" data-studio="standings"><div class="cc-icon">1–15</div><strong>Standings board</strong><span>Rank the East or West how you see it</span></button>
-        <button type="button" class="create-card" data-studio="game"><div class="cc-icon">VS</div><strong>Game pick</strong><span>Pick a winner for any slate game</span></button>
-        <button type="button" class="create-card" data-studio="playoffs"><div class="cc-icon">PO</div><strong>Playoff bracket pick</strong><span>Your top 10 by conference</span></button>
-        <button type="button" class="create-card" data-studio="sbc"><div class="cc-icon">S/B/C</div><strong>Start / Bench / Cut</strong><span>Any team’s roster, your calls</span></button>
-        <button type="button" class="create-card" data-studio="tiers"><div class="cc-icon">S–F</div><strong>Tier list</strong><span>Rank any team’s players by tier</span></button>
-      </div>
-
       <div class="studio" id="studio">
-        <div class="studio-head">
+        <div class="studio-bar">
           <div>
             <h3 id="studioTitle">Studio</h3>
-            <p id="studioSub">Make your picks, then post to the feed.</p>
+            <p id="studioSub">Drag items to reorder. Generate a graphic, then post.</p>
           </div>
           <button type="button" class="studio-close" id="studioClose" aria-label="Close">&times;</button>
         </div>
-        <div class="studio-grid">
-          <div id="studioForm"></div>
-          <div>
-            <div class="field-label">Graphic preview</div>
-            <div class="studio-preview" id="studioPreview"><div class="ph">Your share graphic will show here</div></div>
+        <div class="studio-body">
+          <div class="studio-form" id="studioForm"></div>
+          <div class="studio-side">
+            <div class="side-label">Share graphic</div>
+            <div class="studio-preview" id="studioPreview"><div class="ph">Your board graphic appears here — same style family as Pick’em cards.</div></div>
             <div class="studio-actions">
-              <button type="button" class="studio-btn primary" id="studioGraphic">Update graphic</button>
+              <button type="button" class="studio-btn primary" id="studioGraphic">Generate graphic</button>
               <button type="button" class="studio-btn primary" id="studioPost">Post to community</button>
-              <button type="button" class="studio-btn ghost" id="studioDownload">Download PNG</button>
+              <button type="button" class="studio-btn ghost" id="studioDownload">Download</button>
             </div>
           </div>
         </div>
@@ -433,6 +463,7 @@
     </div>
 
     <div class="feed-wrap" id="feedWrap">
+
 
 <div id="tradeOfDay" class="totd-as-card" style="display:none" aria-label="Trade of the Day"></div>
 <div class="toolbar">
@@ -1153,143 +1184,217 @@
 })();
   
 
-/* Create & share studios */
+
+/* Community studio */
 (function(){
   var EAST=["ATL","BOS","BKN","CHA","CHI","CLE","DET","IND","MIA","MIL","NYK","ORL","PHI","TOR","WAS"];
   var WEST=["DAL","DEN","GSW","HOU","LAC","LAL","MEM","MIN","NOP","OKC","PHX","POR","SAC","SAS","UTA"];
+  var ALL=EAST.concat(WEST);
   var NAMES={ATL:"Hawks",BOS:"Celtics",BKN:"Nets",CHA:"Hornets",CHI:"Bulls",CLE:"Cavaliers",DET:"Pistons",IND:"Pacers",MIA:"Heat",MIL:"Bucks",NYK:"Knicks",ORL:"Magic",PHI:"76ers",TOR:"Raptors",WAS:"Wizards",DAL:"Mavericks",DEN:"Nuggets",GSW:"Warriors",HOU:"Rockets",LAC:"Clippers",LAL:"Lakers",MEM:"Grizzlies",MIN:"Timberwolves",NOP:"Pelicans",OKC:"Thunder",PHX:"Suns",POR:"Trail Blazers",SAC:"Kings",SAS:"Spurs",UTA:"Jazz"};
-  var ROSTERS={
-    PHI:["Tyrese Maxey","Jaylen Brown","Joel Embiid","LeBron James","VJ Edgecombe","Anfernee Simons","Kentavious Caldwell-Pope","Dean Wade","Justin Edwards","Adem Bona","Labaron Philon Jr.","Jabari Walker","Dominick Barlow","Ariel Hukporti","Caleb Love","Rayan Rupert","Tacko Fall"],
-    BOS:["Jayson Tatum","Jaylen Brown","Derrick White","Jrue Holiday","Kristaps Porzingis","Al Horford","Payton Pritchard"],
-    NYK:["Jalen Brunson","Karl-Anthony Towns","Mikal Bridges","OG Anunoby","Josh Hart","Mitchell Robinson"],
-    MIL:["Giannis Antetokounmpo","Damian Lillard","Khris Middleton","Brook Lopez","Bobby Portis"],
-    DEN:["Nikola Jokic","Jamal Murray","Aaron Gordon","Michael Porter Jr.","Kentavious Caldwell-Pope"],
-    OKC:["Shai Gilgeous-Alexander","Jalen Williams","Chet Holmgren","Josh Giddey","Luguentz Dort"],
-    DAL:["Luka Doncic","Kyrie Irving","P.J. Washington","Dereck Lively II","Daniel Gafford"],
-    LAL:["LeBron James","Anthony Davis","Austin Reaves","D'Angelo Russell","Rui Hachimura"],
-    GSW:["Stephen Curry","Klay Thompson","Draymond Green","Andrew Wiggins","Jonathan Kuminga"],
-    MIA:["Bam Adebayo","Jimmy Butler","Tyler Herro","Terry Rozier","Jaime Jaquez Jr."]
-  };
-  // default pool for any team without a custom list
-  var DEFAULT_POOL=["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6","Player 7","Player 8","Player 9","Player 10","Player 11","Player 12","Player 13","Player 14","Player 15"];
-  var TIER_COLORS=["#ED174C","#f97316","#eab308","#22c55e","#006BB6","#64748b"];
+  var TIER_COLORS=["#ED174C","#ea580c","#ca8a04","#16a34a","#006BB6","#64748b"];
   var TIER_LABELS=["S","A","B","C","D","F"];
-  var currentStudio=null;
-  var lastPng=null;
-  var lastPayload=null;
+  var current=null, lastPng=null, lastPayload=null;
+  var dragState={listId:null, from:null};
 
   function $(id){return document.getElementById(id);}
-  function teamOptions(selected){
-    return EAST.concat(WEST).map(function(a){
-      return '<option value="'+a+'"'+(a===(selected||"PHI")?" selected":"")+">"+a+" — "+(NAMES[a]||a)+"</option>";
-    }).join("");
-  }
-  function confTeamOptions(conf, selected){
-    var list=conf==="West"?WEST:EAST;
-    return list.map(function(a,i){
-      return '<option value="'+a+'"'+(selected===a?" selected":"")+">"+a+" — "+(NAMES[a]||a)+"</option>";
-    }).join("");
-  }
-  function rosterFor(abbr){
-    return (ROSTERS[abbr]||DEFAULT_POOL).slice();
-  }
+  function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");}
 
-  document.querySelectorAll("#createGrid .create-card").forEach(function(btn){
-    btn.addEventListener("click",function(){
-      document.querySelectorAll("#createGrid .create-card").forEach(function(b){b.classList.remove("active");});
+  document.querySelectorAll("#createPills .create-pill").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll("#createPills .create-pill").forEach(function(b){b.classList.remove("active");});
       btn.classList.add("active");
       openStudio(btn.getAttribute("data-studio"));
     });
   });
-  if($("studioClose")) $("studioClose").addEventListener("click",function(){
+  if($("studioClose")) $("studioClose").onclick=function(){
     $("studio").classList.remove("open");
-    document.querySelectorAll("#createGrid .create-card").forEach(function(b){b.classList.remove("active");});
-  });
+    document.querySelectorAll("#createPills .create-pill").forEach(function(b){b.classList.remove("active");});
+  };
+
+  /* shared drag for ordered lists */
+  window.shListDragStart=function(e,listId,idx){
+    dragState={listId:listId,from:idx};
+    e.dataTransfer.effectAllowed="move";
+    e.dataTransfer.setData("text/plain", String(idx));
+  };
+  window.shListDrop=function(e,listId,toIdx){
+    e.preventDefault();
+    if(dragState.listId!==listId) return;
+    var arr=window._lists[listId];
+    if(!arr) return;
+    var from=dragState.from;
+    if(from===toIdx||from==null) return;
+    var item=arr.splice(from,1)[0];
+    arr.splice(toIdx,0,item);
+    renderList(listId);
+  };
+  window.shAllow=function(e){e.preventDefault();};
+  window._lists={};
+
+  function renderList(listId){
+    var el=$(listId); if(!el) return;
+    var arr=window._lists[listId]||[];
+    el.innerHTML=arr.map(function(item,i){
+      var label=typeof item==="string"?item:(item.label||item.abbr||item.name||"");
+      var meta=typeof item==="object"&&item.record!=null?item.record:"";
+      var recInput=typeof item==="object"&&item.allowRecord
+        ? '<input class="rec" data-i="'+i+'" value="'+esc(item.record||"") +'" placeholder="52-30" onclick="event.stopPropagation()" oninput="window._lists[\''+listId+'\']['+i+'].record=this.value"/>'
+        : (meta?'<span class="meta">'+esc(meta)+"</span>":"");
+      return '<li class="drag-item" draggable="true" ondragstart="shListDragStart(event,\''+listId+'\','+i+')" ondragover="shAllow(event)" ondrop="shListDrop(event,\''+listId+'\','+i+')">'
+        +'<span class="h">☰</span><span class="n">'+(i+1)+'. '+esc(label)+"</span>"+recInput+"</li>";
+    }).join("");
+  }
 
   function openStudio(kind){
-    currentStudio=kind;
+    current=kind; lastPng=null; lastPayload=null;
     $("studio").classList.add("open");
-    lastPng=null; lastPayload=null;
-    $("studioPreview").innerHTML='<div class="ph">Build your board, then hit Update graphic</div>';
-    var titles={
-      standings:["Standings board","Rank every team in a conference — your order, your take."],
-      game:["Game pick","Choose a game and pick the winner. Add a short note if you want."],
-      playoffs:["Playoff board","Set your 1–10 order for a conference."],
-      sbc:["Start / Bench / Cut","Any NBA roster. Drag players into Start (5), Bench, or Cut."],
-      tiers:["Tier list","Tier any team’s players from S to F."]
-    };
-    $("studioTitle").textContent=(titles[kind]||["Studio",""])[0];
-    $("studioSub").textContent=(titles[kind]||["",""])[1];
+    $("studioPreview").innerHTML='<div class="ph">Generate a graphic when your board is ready.</div>';
     var form=$("studioForm");
+    var copy={
+      standings:["Standings board","East, West, or full league. Drag to rank. Optional projected records."],
+      game:["Game pick","Load the league slate, pick a game, then call the winner and key stats."],
+      playoffs:["Playoff order","Drag your 1–10 for a conference."],
+      sbc:["Start / Bench / Cut","Import any players, then sort into Start (5), Bench, or Cut."],
+      tiers:["Tier list","Import players, teams, or anything. Drag into S–F tiers."],
+      wordle:["Sports Wordle","Set a secret answer. Others guess; the graphic shows progress without spoiling comments."]
+    };
+    $("studioTitle").textContent=(copy[kind]||["Studio",""])[0];
+    $("studioSub").textContent=(copy[kind]||["",""])[1];
+
     if(kind==="standings"){
-      form.innerHTML='<label class="field-label">Conference</label><select id="stConf"><option value="East">East</option><option value="West">West</option></select>'+
-        '<label class="field-label">Your order (1 = best)</label><div class="pick-list" id="stList"></div>'+
-        '<label class="field-label">Caption (optional)</label><textarea id="stNote" placeholder="Why this order?"></textarea>';
-      function fillSt(){
-        var conf=$("stConf").value; var list=conf==="West"?WEST:EAST;
-        $("stList").innerHTML=list.map(function(_,i){
-          return '<div class="pick-row"><span class="pr-num">'+(i+1)+'</span><select data-slot="'+i+'">'+confTeamOptions(conf,list[i])+'</select></div>';
-        }).join("");
+      form.innerHTML='<label class="fl">Scope</label><select class="fs" id="stScope"><option value="East">East</option><option value="West">West</option><option value="Overall">Overall (30)</option></select>'
+        +'<p class="hint">Drag teams up or down. Type a projected record on each row if you want.</p>'
+        +'<ul class="drag-list" id="stList"></ul>'
+        +'<label class="fl">Caption</label><textarea class="ft" id="stNote" placeholder="Optional note for the post"></textarea>';
+      function fill(){
+        var scope=$("stScope").value;
+        var list=scope==="West"?WEST.slice():scope==="Overall"?ALL.slice():EAST.slice();
+        window._lists.stList=list.map(function(a){return {label:a+" "+(NAMES[a]||""),abbr:a,record:"",allowRecord:true};});
+        renderList("stList");
       }
-      $("stConf").onchange=fillSt; fillSt();
-    } else if(kind==="game"){
-      form.innerHTML='<label class="field-label">Away team</label><select id="gmAway">'+teamOptions("NYK")+'</select>'+
-        '<label class="field-label">Home team</label><select id="gmHome">'+teamOptions("PHI")+'</select>'+
-        '<label class="field-label">Your pick</label><select id="gmPick"><option value="away">Away wins</option><option value="home" selected>Home wins</option></select>'+
-        '<label class="field-label">Confidence</label><select id="gmConf"><option>Lean</option><option selected>Likely</option><option>Lock</option></select>'+
-        '<label class="field-label">Note</label><textarea id="gmNote" placeholder="Key to the game…"></textarea>';
-    } else if(kind==="playoffs"){
-      form.innerHTML='<label class="field-label">Conference</label><select id="poConf"><option value="East">East</option><option value="West">West</option></select>'+
-        '<label class="field-label">Your 1–10</label><div class="pick-list" id="poList"></div>'+
-        '<label class="field-label">Caption</label><textarea id="poNote" placeholder="Seed notes…"></textarea>';
+      $("stScope").onchange=fill; fill();
+    }
+    else if(kind==="game"){
+      form.innerHTML='<button type="button" class="studio-btn primary" id="gmLoad" style="margin-bottom:.75rem">Load games from ESPN</button>'
+        +'<div class="game-pick-list" id="gmList"><p class="hint">Load the slate, then select a game.</p></div>'
+        +'<div class="row2"><div><label class="fl">Winner</label><select class="fs" id="gmWinner"><option value="">Select a game first</option></select></div>'
+        +'<div><label class="fl">Confidence</label><select class="fs" id="gmConf"><option>Lean</option><option selected>Likely</option><option>Lock</option></select></div></div>'
+        +'<div class="row2"><div><label class="fl">Predicted score (away)</label><input class="fi" id="gmScoreA" type="text" placeholder="108"/></div>'
+        +'<div><label class="fl">Predicted score (home)</label><input class="fi" id="gmScoreH" type="text" placeholder="112"/></div></div>'
+        +'<label class="fl">Key stat call (optional)</label><input class="fi" id="gmStat" placeholder="e.g. Maxey 28+ pts"/>'
+        +'<label class="fl">Note</label><textarea class="ft" id="gmNote"></textarea>';
+      window._gm=null;
+      $("gmLoad").onclick=loadGames;
+    }
+    else if(kind==="playoffs"){
+      form.innerHTML='<label class="fl">Conference</label><select class="fs" id="poConf"><option value="East">East</option><option value="West">West</option></select>'
+        +'<p class="hint">Drag to set seeds 1–10.</p><ul class="drag-list" id="poList"></ul>'
+        +'<label class="fl">Caption</label><textarea class="ft" id="poNote"></textarea>';
       function fillPo(){
-        var conf=$("poConf").value; var list=(conf==="West"?WEST:EAST).slice(0,10);
-        $("poList").innerHTML=list.map(function(a,i){
-          return '<div class="pick-row"><span class="pr-num">'+(i+1)+'</span><select data-slot="'+i+'">'+confTeamOptions(conf,a)+'</select></div>';
-        }).join("");
+        var list=($("poConf").value==="West"?WEST:EAST).slice(0,10);
+        window._lists.poList=list.map(function(a){return {label:a+" "+(NAMES[a]||""),abbr:a};});
+        renderList("poList");
       }
       $("poConf").onchange=fillPo; fillPo();
-    } else if(kind==="sbc"){
-      form.innerHTML='<label class="field-label">Team</label><select id="sbcTeam">'+teamOptions("PHI")+'</select>'+
-        '<div class="zone start" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'start\')"><h4>Start (5)</h4><div id="zone-start"></div></div>'+
-        '<div class="zone bench" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'bench\')"><h4>Bench</h4><div id="zone-bench"></div></div>'+
-        '<div class="zone cut" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'cut\')"><h4>Cut</h4><div id="zone-cut"></div></div>'+
-        '<div class="field-label">Pool</div><div id="zone-pool" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'pool\')"></div>';
-      window._sbc={start:[],bench:[],cut:[],pool:[]};
-      function loadSbc(){
-        var abbr=$("sbcTeam").value;
-        window._sbc={start:[],bench:[],cut:[],pool:rosterFor(abbr)};
-        renderSbc();
-      }
-      $("sbcTeam").onchange=loadSbc; loadSbc();
-    } else if(kind==="tiers"){
-      form.innerHTML='<label class="field-label">Team</label><select id="tierTeam">'+teamOptions("PHI")+'</select>'+
-        '<label class="field-label">Title</label><input type="text" id="tierTitle" value="Roster tiers"/>'+
-        '<div id="tierBoard"></div>'+
-        '<div class="field-label">Unranked</div><div id="tierPool" class="tier-drop" ondragover="shAllowDrop(event)" ondrop="shDropTier(event,\'pool\')"></div>';
-      window._tiers={title:"Roster tiers",tiers:TIER_LABELS.map(function(){return [];}),pool:[]};
-      function loadTier(){
-        var abbr=$("tierTeam").value;
-        window._tiers={title:($("tierTitle")&&$("tierTitle").value)||((NAMES[abbr]||abbr)+" tiers"),tiers:TIER_LABELS.map(function(){return [];}),pool:rosterFor(abbr)};
-        if($("tierTitle")) $("tierTitle").value=window._tiers.title;
+    }
+    else if(kind==="sbc"){
+      form.innerHTML='<p class="hint">Add any players (comma or new line). Then drag into Start (5), Bench, or Cut.</p>'
+        +'<div class="import-row"><input class="fi" id="sbcImport" placeholder="Player names…"/><button type="button" class="studio-btn primary" id="sbcAdd">Add</button></div>'
+        +'<div class="zone start" ondragover="shAllow(event)" ondrop="shDropBin(event,\'start\')"><h4>Start (5)</h4><div id="bin-start"></div></div>'
+        +'<div class="zone bench" ondragover="shAllow(event)" ondrop="shDropBin(event,\'bench\')"><h4>Bench</h4><div id="bin-bench"></div></div>'
+        +'<div class="zone cut" ondragover="shAllow(event)" ondrop="shDropBin(event,\'cut\')"><h4>Cut</h4><div id="bin-cut"></div></div>'
+        +'<div class="fl">Pool</div><div id="bin-pool" ondragover="shAllow(event)" ondrop="shDropBin(event,\'pool\')"></div>';
+      window._bins={start:[],bench:[],cut:[],pool:[]};
+      $("sbcAdd").onclick=function(){
+        var raw=($("sbcImport").value||"").split(/[\n,]+/).map(function(s){return s.trim();}).filter(Boolean);
+        raw.forEach(function(n){ if(window._bins.pool.indexOf(n)<0) window._bins.pool.push(n); });
+        $("sbcImport").value="";
+        renderBins();
+      };
+      renderBins();
+    }
+    else if(kind==="tiers"){
+      form.innerHTML='<label class="fl">Title</label><input class="fi" id="tierTitle" value="My tier list"/>'
+        +'<p class="hint">Import people, teams, or anything. Drag into tiers.</p>'
+        +'<div class="import-row"><input class="fi" id="tierImport" placeholder="Add items…"/><button type="button" class="studio-btn primary" id="tierAdd">Add</button></div>'
+        +'<div id="tierBoard"></div>'
+        +'<div class="fl">Unranked</div><div id="tierPool" class="tier-drop" ondragover="shAllow(event)" ondrop="shDropTier(event,\'pool\')"></div>';
+      window._tiers={title:"My tier list",tiers:TIER_LABELS.map(function(){return [];}),pool:[]};
+      $("tierAdd").onclick=function(){
+        var raw=($("tierImport").value||"").split(/[\n,]+/).map(function(s){return s.trim();}).filter(Boolean);
+        raw.forEach(function(n){ if(window._tiers.pool.indexOf(n)<0) window._tiers.pool.push(n); });
+        $("tierImport").value="";
         renderTiers();
-      }
-      $("tierTeam").onchange=loadTier; loadTier();
+      };
       if($("tierTitle")) $("tierTitle").oninput=function(){window._tiers.title=this.value;};
+      renderTiers();
+    }
+    else if(kind==="wordle"){
+      form.innerHTML='<label class="fl">Prompt shown to guessers</label><input class="fi" id="wdPrompt" placeholder="e.g. Sixers center, 5 letters"/>'
+        +'<label class="fl">Secret answer (hidden from posts/comments)</label><input class="fi" id="wdAnswer" placeholder="Answer" maxlength="24"/>'
+        +'<label class="fl">Max guesses</label><select class="fs" id="wdMax"><option>4</option><option selected>5</option><option>6</option></select>'
+        +'<p class="hint">The answer is stored only as a check hash on the post — not in the visible text. Ask people not to spoil it in comments.</p>'
+        +'<label class="fl">Your note</label><textarea class="ft" id="wdNote" placeholder="Optional flavor text"></textarea>';
     }
   }
 
-  window.shAllowDrop=function(e){e.preventDefault();};
-  window.shDrag=function(e){e.dataTransfer.setData("text/plain",e.target.getAttribute("data-name"));};
-  function chip(name){return '<span class="chip" draggable="true" data-name="'+String(name).replace(/"/g,"&quot;")+'" ondragstart="shDrag(event)">'+name+"</span>";}
-  function rmSbc(name){["start","bench","cut","pool"].forEach(function(z){window._sbc[z]=(window._sbc[z]||[]).filter(function(n){return n!==name;});});}
-  window.shDropSbc=function(e,zone){
+  async function loadGames(){
+    var box=$("gmList"); box.innerHTML="<p class='hint'>Loading…</p>";
+    var now=new Date(); var events=[];
+    for(var d=0;d<4;d++){
+      var x=new Date(now.getTime()+d*86400000);
+      var ds=x.toISOString().slice(0,10).replace(/-/g,"");
+      try{
+        var res=await fetch("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates="+ds,{cache:"no-store"});
+        if(!res.ok) continue;
+        var data=await res.json();
+        var ev=data.events||[];
+        if(ev.length){ events=events.concat(ev); }
+      }catch(e){}
+      if(events.length>=12) break;
+    }
+    if(!events.length){ box.innerHTML="<p class='hint'>No games found. Try again later.</p>"; return; }
+    box.innerHTML=events.map(function(ev,i){
+      var comps=(((ev.competitions||[])[0]||{}).competitors)||[];
+      var home=comps.find(function(c){return c.homeAway==="home";})||comps[0]||{};
+      var away=comps.find(function(c){return c.homeAway==="away";})||comps[1]||{};
+      var ha=(home.team||{}).abbreviation||"HOME";
+      var aa=(away.team||{}).abbreviation||"AWAY";
+      var tip=ev.date?new Date(ev.date).toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:"America/New_York"})+" ET":"";
+      return '<div class="game-pick" data-i="'+i+'" data-aa="'+aa+'" data-ha="'+ha+'"><span><strong>'+aa+' @ '+ha+'</strong> · '+tip+"</span><span>Select</span></div>";
+    }).join("");
+    window._gmEvents=events;
+    box.querySelectorAll(".game-pick").forEach(function(row){
+      row.onclick=function(){
+        box.querySelectorAll(".game-pick").forEach(function(r){r.classList.remove("on");});
+        row.classList.add("on");
+        var aa=row.getAttribute("data-aa"); var ha=row.getAttribute("data-ha");
+        window._gm={away:aa,home:ha,id:row.getAttribute("data-i")};
+        $("gmWinner").innerHTML = '<option value="' + aa + '">' + aa + ' wins</option><option value="' + ha + '" selected>' + ha + ' wins</option>';
+      };
+    });
+  }
+
+  function chip(name,bin){
+    return '<span class="chip" draggable="true" data-name="'+esc(name)+'" ondragstart="shChipDrag(event)">'+esc(name)+"</span>";
+  }
+  window.shChipDrag=function(e){e.dataTransfer.setData("text/plain",e.target.getAttribute("data-name"));};
+  function rmBin(name){["start","bench","cut","pool"].forEach(function(z){window._bins[z]=(window._bins[z]||[]).filter(function(n){return n!==name;});});}
+  window.shDropBin=function(e,zone){
     e.preventDefault(); var name=e.dataTransfer.getData("text/plain"); if(!name) return;
-    if(zone==="start"&&window._sbc.start.length>=5&&window._sbc.start.indexOf(name)<0) return;
-    rmSbc(name); window._sbc[zone].push(name); renderSbc();
+    if(zone==="start"&&window._bins.start.length>=5&&window._bins.start.indexOf(name)<0) return;
+    rmBin(name); window._bins[zone].push(name); renderBins();
   };
-  function renderSbc(){["start","bench","cut","pool"].forEach(function(z){var el=$("zone-"+z); if(el) el.innerHTML=(window._sbc[z]||[]).map(chip).join("");});}
-  function rmTier(name){window._tiers.pool=(window._tiers.pool||[]).filter(function(n){return n!==name;}); window._tiers.tiers=(window._tiers.tiers||[]).map(function(a){return (a||[]).filter(function(n){return n!==name;});});}
+  function renderBins(){
+    ["start","bench","cut","pool"].forEach(function(z){
+      var el=$("bin-"+z); if(!el) return;
+      el.innerHTML=(window._bins[z]||[]).map(function(n){return chip(n,z);}).join("");
+    });
+  }
+  function rmTier(name){
+    window._tiers.pool=(window._tiers.pool||[]).filter(function(n){return n!==name;});
+    window._tiers.tiers=(window._tiers.tiers||[]).map(function(a){return (a||[]).filter(function(n){return n!==name;});});
+  }
   window.shDropTier=function(e,key){
     e.preventDefault(); var name=e.dataTransfer.getData("text/plain"); if(!name) return;
     rmTier(name);
@@ -1300,114 +1405,148 @@
   function renderTiers(){
     var board=$("tierBoard"); if(!board) return;
     board.innerHTML=TIER_LABELS.map(function(lab,i){
-      return '<div class="tier-row"><div class="tier-label" style="background:'+TIER_COLORS[i]+'">'+lab+'</div><div class="tier-drop" ondragover="shAllowDrop(event)" ondrop="shDropTier(event,\''+i+'\')">'+(window._tiers.tiers[i]||[]).map(chip).join("")+"</div></div>";
+      return '<div class="tier-row"><div class="tier-label" style="background:'+TIER_COLORS[i]+'">'+lab+"</div>"
+        +'<div class="tier-drop" ondragover="shAllow(event)" ondrop="shDropTier(event,\''+i+'\')">'
+        +(window._tiers.tiers[i]||[]).map(function(n){return chip(n);}).join("")+"</div></div>";
     }).join("");
-    if($("tierPool")) $("tierPool").innerHTML=(window._tiers.pool||[]).map(chip).join("");
+    if($("tierPool")) $("tierPool").innerHTML=(window._tiers.pool||[]).map(function(n){return chip(n);}).join("");
   }
 
-  function collectPayload(){
-    if(currentStudio==="standings"){
-      var conf=$("stConf").value;
-      var order=[].map.call(document.querySelectorAll("#stList select"),function(s){return s.value;});
-      return {kind:"standings",conf:conf,order:order,note:($("stNote")||{}).value||"",title:conf+" standings — my board"};
+  function simpleHash(str){
+    var h=5381;
+    str=String(str||"").toLowerCase().replace(/\s+/g,"");
+    for(var i=0;i<str.length;i++) h=((h<<5)+h)+str.charCodeAt(i);
+    return String(h>>>0);
+  }
+
+  function collect(){
+    if(current==="standings"){
+      var arr=window._lists.stList||[];
+      return {kind:"standings",scope:($("stScope")||{}).value||"East",order:arr.map(function(x){return {abbr:x.abbr,label:x.label,record:x.record||""};}),note:($("stNote")||{}).value||"",title:(($("stScope")||{}).value||"East")+" standings"};
     }
-    if(currentStudio==="game"){
-      var away=$("gmAway").value, home=$("gmHome").value, pick=$("gmPick").value;
-      var winner=pick==="home"?home:away;
-      return {kind:"game",away:away,home:home,pick:pick,winner:winner,confidence:($("gmConf")||{}).value||"Likely",note:($("gmNote")||{}).value||"",title:away+" @ "+home+" — "+winner+" ("+(($("gmConf")||{}).value||"Likely")+")"};
+    if(current==="game"){
+      if(!window._gm) return null;
+      return {kind:"game",away:window._gm.away,home:window._gm.home,winner:($("gmWinner")||{}).value||"",confidence:($("gmConf")||{}).value||"Likely",scoreA:($("gmScoreA")||{}).value||"",scoreH:($("gmScoreH")||{}).value||"",stat:($("gmStat")||{}).value||"",note:($("gmNote")||{}).value||"",title:(window._gm.away||"?")+" @ "+(window._gm.home||"?")+" — pick"};
     }
-    if(currentStudio==="playoffs"){
-      var conf=$("poConf").value;
-      var order=[].map.call(document.querySelectorAll("#poList select"),function(s){return s.value;});
-      return {kind:"playoffs",conf:conf,order:order,note:($("poNote")||{}).value||"",title:conf+" playoff board"};
+    if(current==="playoffs"){
+      var arr=window._lists.poList||[];
+      return {kind:"playoffs",conf:($("poConf")||{}).value||"East",order:arr.map(function(x){return x.abbr;}),note:($("poNote")||{}).value||"",title:(($("poConf")||{}).value||"East")+" playoff order"};
     }
-    if(currentStudio==="sbc"){
-      var team=$("sbcTeam").value;
-      return {kind:"sbc",team:team,start:(window._sbc.start||[]).slice(),bench:(window._sbc.bench||[]).slice(),cut:(window._sbc.cut||[]).slice(),title:(NAMES[team]||team)+" Start / Bench / Cut"};
+    if(current==="sbc"){
+      return {kind:"sbc",start:(window._bins.start||[]).slice(),bench:(window._bins.bench||[]).slice(),cut:(window._bins.cut||[]).slice(),pool:(window._bins.pool||[]).slice(),interactive:true,title:"Start / Bench / Cut"};
     }
-    if(currentStudio==="tiers"){
-      var team=$("tierTeam").value;
-      return {kind:"tiers",team:team,title:(($("tierTitle")||{}).value)||((NAMES[team]||team)+" tiers"),tiers:(window._tiers.tiers||[]).map(function(a){return (a||[]).slice();})};
+    if(current==="tiers"){
+      return {kind:"tiers",title:(($("tierTitle")||{}).value)||"Tier list",tiers:(window._tiers.tiers||[]).map(function(a){return (a||[]).slice();}),pool:(window._tiers.pool||[]).slice(),interactive:true};
+    }
+    if(current==="wordle"){
+      var ans=(($("wdAnswer")||{}).value||"").trim();
+      if(!ans) return null;
+      return {kind:"wordle",prompt:(($("wdPrompt")||{}).value||"Guess the answer").trim(),answerHash:simpleHash(ans),answerLen:ans.replace(/\s+/g,"").length,maxGuesses:Number(($("wdMax")||{}).value||5),note:(($("wdNote")||{}).value||"").trim(),title:"Sports Wordle: "+(($("wdPrompt")||{}).value||"Challenge")};
     }
     return null;
   }
 
-  function buildGraphic(payload){
-    if(!payload) return null;
-    var W=1080, PAD=48;
-    var NAVY="#001a57", BLUE="#006BB6", RED="#ED174C", WHITE="#fff", CREAM="#f6f8fc", INK="#0d0f1a", MID="#64748b";
-    var lines=[];
-    if(payload.kind==="standings"||payload.kind==="playoffs"){
-      lines=(payload.order||[]).map(function(a,i){return (i+1)+". "+a+" "+(NAMES[a]||"");});
-    } else if(payload.kind==="game"){
-      lines=[payload.away+" @ "+payload.home,"Pick: "+payload.winner,"Confidence: "+payload.confidence];
-      if(payload.note) lines.push(payload.note);
-    } else if(payload.kind==="sbc"){
-      lines=["START: "+(payload.start||[]).join(", ")||"—","BENCH: "+(payload.bench||[]).join(", ")||"—","CUT: "+(payload.cut||[]).join(", ")||"—"];
-    } else if(payload.kind==="tiers"){
-      (payload.tiers||[]).forEach(function(arr,i){
-        if(arr&&arr.length) lines.push(TIER_LABELS[i]+": "+arr.join(", "));
-      });
+  function buildGraphic(p){
+    if(!p) return null;
+    var W=1080, PAD=52;
+    var NAVY="#001a57", RED="#ED174C", WHITE="#ffffff", CREAM="#f4f6f9", INK="#0d0f1a", MID="#64748b", BLUE="#006BB6";
+    var rows=[];
+    if(p.kind==="standings"){
+      rows=(p.order||[]).map(function(x,i){return {left:(i+1)+"", mid:x.abbr||x.label, right:x.record||""};});
+    } else if(p.kind==="playoffs"){
+      rows=(p.order||[]).map(function(a,i){return {left:(i+1)+"", mid:a+" "+(NAMES[a]||""), right:""};});
+    } else if(p.kind==="game"){
+      rows=[
+        {left:"", mid:p.away+" @ "+p.home, right:""},
+        {left:"", mid:"Pick "+p.winner+" · "+p.confidence, right:""}
+      ];
+      if(p.scoreA||p.scoreH) rows.push({left:"", mid:"Score "+(p.scoreA||"—")+" – "+(p.scoreH||"—"), right:""});
+      if(p.stat) rows.push({left:"", mid:p.stat, right:""});
+      if(p.note) rows.push({left:"", mid:p.note, right:""});
+    } else if(p.kind==="sbc"){
+      rows=[{left:"ST",mid:(p.start||[]).join(", ")||"—",right:""},{left:"BN",mid:(p.bench||[]).join(", ")||"—",right:""},{left:"CUT",mid:(p.cut||[]).join(", ")||"—",right:""}];
+    } else if(p.kind==="tiers"){
+      (p.tiers||[]).forEach(function(arr,i){ if(arr&&arr.length) rows.push({left:TIER_LABELS[i], mid:arr.join(", "), right:"", tier:i}); });
+    } else if(p.kind==="wordle"){
+      rows=[{left:"",mid:p.prompt||"Sports Wordle",right:""},{left:"",mid:p.answerLen+" letters · "+p.maxGuesses+" guesses",right:""},{left:"",mid:"Guess on SixersHoops — no spoilers",right:""}];
     }
-    var rowH=42;
-    var H=Math.max(520, 200+lines.length*rowH+80);
+    var rowH=56;
+    var H=Math.max(560, 190+rows.length*rowH+90);
     var c=document.createElement("canvas"); c.width=W; c.height=H;
     var ctx=c.getContext("2d");
     ctx.fillStyle=CREAM; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle=NAVY; ctx.fillRect(0,0,W,140);
-    ctx.fillStyle=RED; ctx.fillRect(0,140,W,5);
-    ctx.fillStyle="rgba(255,255,255,.7)"; ctx.font="800 16px Lexend,system-ui,sans-serif"; ctx.fillText("SIXERSHOOPS",PAD,42);
-    ctx.fillStyle=WHITE; ctx.font="800 34px Lexend,system-ui,sans-serif"; ctx.fillText(String(payload.title||"Community board").slice(0,42),PAD,92);
-    ctx.fillStyle="rgba(255,255,255,.85)"; ctx.font="600 16px Lexend,system-ui,sans-serif";
-    ctx.fillText(payload.kind==="game"?"Game pick":payload.kind==="sbc"?"Start / Bench / Cut":payload.kind==="tiers"?"Tier list":payload.conf?payload.conf+" · Fan board":"Fan board",PAD,122);
+    // pickem-like header bar
+    ctx.fillStyle=NAVY; ctx.fillRect(0,0,W,150);
+    ctx.fillStyle=RED; ctx.fillRect(0,150,W,6);
+    ctx.fillStyle="rgba(255,255,255,0.65)"; ctx.font="800 15px Lexend,system-ui,sans-serif";
+    ctx.fillText("SIXERSHOOPS  ·  COMMUNITY", PAD, 44);
+    ctx.fillStyle=WHITE; ctx.font="800 36px Lexend,system-ui,sans-serif";
+    ctx.fillText(String(p.title||"Board").slice(0,36), PAD, 92);
+    ctx.fillStyle="rgba(255,255,255,0.8)"; ctx.font="600 16px Lexend,system-ui,sans-serif";
+    var sub=p.kind==="standings"?((p.scope||"")+" · Fan standings"):p.kind==="game"?"Game pick":p.kind==="wordle"?"Sports Wordle":p.kind==="sbc"?"Start / Bench / Cut":p.kind==="tiers"?"Tier list":"Fan board";
+    ctx.fillText(sub, PAD, 126);
     var y=180;
-    lines.forEach(function(line,i){
+    rows.forEach(function(r,idx){
+      // white card row like pickem options
       ctx.fillStyle=WHITE;
-      roundRect(ctx,PAD,y,W-PAD*2,rowH-8,10,true);
-      ctx.strokeStyle="#e4e8f0"; ctx.stroke();
-      ctx.fillStyle=INK; ctx.font="600 18px Lexend,system-ui,sans-serif";
-      ctx.fillText(String(line).slice(0,70),PAD+18,y+26);
+      round(ctx,PAD,y,W-PAD*2,rowH-10,12);
+      ctx.fill();
+      ctx.strokeStyle="#e2e8f0"; ctx.lineWidth=1; ctx.stroke();
+      if(r.left){
+        var badgeCol=r.tier!=null?TIER_COLORS[r.tier]:BLUE;
+        ctx.fillStyle=badgeCol;
+        round(ctx,PAD+12,y+10,42,rowH-30,8); ctx.fill();
+        ctx.fillStyle=WHITE; ctx.font="800 14px Lexend,system-ui,sans-serif"; ctx.textAlign="center";
+        ctx.fillText(String(r.left).slice(0,3), PAD+33, y+32);
+        ctx.textAlign="left";
+        ctx.fillStyle="#0d0f1a"; ctx.font="700 18px Lexend,system-ui,sans-serif";
+        ctx.fillText(String(r.mid).slice(0,52), PAD+68, y+34);
+      } else {
+        ctx.fillStyle="#0d0f1a"; ctx.font="700 18px Lexend,system-ui,sans-serif";
+        ctx.fillText(String(r.mid).slice(0,58), PAD+22, y+34);
+      }
+      if(r.right){
+        ctx.fillStyle=MID; ctx.font="700 16px Lexend,system-ui,sans-serif"; ctx.textAlign="right";
+        ctx.fillText(String(r.right), W-PAD-22, y+34); ctx.textAlign="left";
+      }
       y+=rowH;
     });
     ctx.fillStyle=MID; ctx.font="600 14px Lexend,system-ui,sans-serif"; ctx.textAlign="center";
-    ctx.fillText("sixershoops.com/community",W/2,H-28);
+    ctx.fillText("sixershoops.com/community", W/2, H-30);
     ctx.textAlign="left";
     return c;
-    function roundRect(ctx,x,y,w,h,r,fill){
+    function round(ctx,x,y,w,h,r){
       ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
-      if(fill){ctx.fillStyle="#fff"; ctx.fill();}
     }
   }
 
   if($("studioGraphic")) $("studioGraphic").onclick=function(){
-    var p=collectPayload(); if(!p) return;
+    var p=collect(); if(!p){ alert("Finish the board first."); return; }
     lastPayload=p;
-    var canvas=buildGraphic(p);
-    if(!canvas) return;
+    var canvas=buildGraphic(p); if(!canvas) return;
     lastPng=canvas.toDataURL("image/png");
     $("studioPreview").innerHTML='<img alt="Preview" src="'+lastPng+'"/>';
   };
   if($("studioDownload")) $("studioDownload").onclick=function(){
-    if(!lastPng){ if($("studioGraphic")) $("studioGraphic").click(); }
+    if(!lastPng && $("studioGraphic")) $("studioGraphic").click();
     if(!lastPng) return;
-    var a=document.createElement("a"); a.href=lastPng; a.download="sixershoops-community.png"; a.click();
+    var a=document.createElement("a"); a.href=lastPng; a.download="sixershoops-board.png"; a.click();
   };
   if($("studioPost")) $("studioPost").onclick=async function(){
     var user=window.auth&&window.auth.currentUser;
     if(!user){ if(typeof triggerLogin==="function") triggerLogin(); else alert("Sign in to post."); return; }
-    if(!lastPayload){ if($("studioGraphic")) $("studioGraphic").click(); }
-    var p=lastPayload||collectPayload();
-    if(!p) return;
+    var p=lastPayload||collect(); if(!p){ alert("Finish the board first."); return; }
     if(!lastPng){ var canvas=buildGraphic(p); if(canvas) lastPng=canvas.toDataURL("image/png"); }
     if(!window.db){ alert("Could not connect."); return; }
     var authorName=user.displayName||(user.email?user.email.split("@")[0]:"fan");
-    var bodyLines=[];
-    if(p.kind==="standings"||p.kind==="playoffs") bodyLines=(p.order||[]).map(function(a,i){return (i+1)+". "+a;});
-    if(p.kind==="game") bodyLines=[p.away+" @ "+p.home,"Pick: "+p.winner+(p.confidence?" ("+p.confidence+")":""),p.note||""];
-    if(p.kind==="sbc") bodyLines=["Start: "+(p.start||[]).join(", "),"Bench: "+(p.bench||[]).join(", "),"Cut: "+(p.cut||[]).join(", ")];
-    if(p.kind==="tiers") (p.tiers||[]).forEach(function(arr,i){ if(arr&&arr.length) bodyLines.push(TIER_LABELS[i]+": "+arr.join(", ")); });
-    var notes=bodyLines.filter(Boolean).join("\n");
-    if(p.note) notes=(notes?notes+"\n\n":"")+p.note;
+    var notes="";
+    if(p.kind==="standings") notes=(p.order||[]).map(function(x,i){return (i+1)+". "+(x.abbr||x.label)+(x.record?" ("+x.record+")":"");}).join("\n");
+    if(p.kind==="playoffs") notes=(p.order||[]).map(function(a,i){return (i+1)+". "+a;}).join("\n");
+    if(p.kind==="game") notes=[p.away+" @ "+p.home,"Winner: "+p.winner+" ("+p.confidence+")", (p.scoreA||p.scoreH)?("Score "+p.scoreA+"-"+p.scoreH):"", p.stat||"", p.note||""].filter(Boolean).join("\n");
+    if(p.kind==="sbc") notes=["Start: "+(p.start||[]).join(", "),"Bench: "+(p.bench||[]).join(", "),"Cut: "+(p.cut||[]).join(", ""),"","Interactive list — reply with your own order."].join("\n");
+    if(p.kind==="tiers"){ notes=""; (p.tiers||[]).forEach(function(a,i){ if(a&&a.length) notes+=TIER_LABELS[i]+": "+a.join(", ")+"\n"; }); notes+=("\nInteractive tier list — reply with your ranking."); }
+    if(p.kind==="wordle") notes=[p.prompt, p.answerLen+" letters · "+p.maxGuesses+" guesses", "Reply with your guess. Please no spoilers.", p.note||""].filter(Boolean).join("\n");
+    if(p.note && p.kind!=="game" && p.kind!=="wordle") notes=(notes?notes+"\n\n":"")+p.note;
     var doc={
       postType:"discussion",
       title:String(p.title||"Community board").slice(0,120),
@@ -1417,29 +1556,21 @@
       authorId:user.uid,
       authorPhoto:localStorage.getItem("photoURL")||user.photoURL||"",
       image:lastPng||"",
-      votes:0,
-      voters:{},
-      comments:[],
-      poll:null,
-      sides:null,
-      teamAbbrs:p.team?[p.team]:(p.order||[]).slice(0,5),
-      machineHash:null,
-      isValid:null,
+      votes:0, voters:{}, comments:[], poll:null, sides:null,
+      teamAbbrs:p.order? (p.order.map(function(x){return x.abbr||x;}).slice(0,6)) : (p.away?[p.away,p.home]:[]),
+      machineHash:null, isValid:null,
       toolKind:p.kind,
+      toolPayload:p.kind==="wordle"?{prompt:p.prompt,answerHash:p.answerHash,answerLen:p.answerLen,maxGuesses:p.maxGuesses}:(p.interactive?{interactive:true,kind:p.kind}:null),
       createdAt:new Date().toISOString()
     };
+    // never put raw wordle answer on the post
     try{
       await window.db.collection("community_trades").add(doc);
       $("studioPost").textContent="Posted";
-      setTimeout(function(){ $("studioPost").textContent="Post to community"; },1500);
-      // switch to feed visually
+      setTimeout(function(){ $("studioPost").textContent="Post to community"; },1400);
       $("studio").classList.remove("open");
-      document.querySelectorAll("#createGrid .create-card").forEach(function(b){b.classList.remove("active");});
-      window.scrollTo({top:($("feedWrap")||document.body).offsetTop-80,behavior:"smooth"});
-    }catch(err){
-      alert("Post failed. Try signing in again.");
-      console.warn(err);
-    }
+      document.querySelectorAll("#createPills .create-pill").forEach(function(b){b.classList.remove("active");});
+    }catch(err){ console.warn(err); alert("Post failed."); }
   };
 })();
 

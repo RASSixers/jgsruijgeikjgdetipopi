@@ -2,7 +2,6 @@ const STANDINGS_URL = "https://site.api.espn.com/apis/v2/sports/basketball/nba/s
 const SEASON_COUNT = 10;
 const NEXT_SEASON_YEAR = 2027;
 const NEXT_SEASON_LABEL = "2026-27";
-const NEXT_SEASON_TIPOFF = new Date("2026-10-21T00:00:00-04:00");
 
 const EAST_TEAMS = [
   { abbreviation: "ATL", displayName: "Atlanta Hawks" },
@@ -100,13 +99,12 @@ function getStat(entry, name) {
 }
 
 function isPreseasonBlank(seasonYear, data) {
-  if (seasonYear === NEXT_SEASON_YEAR && Date.now() < NEXT_SEASON_TIPOFF.getTime()) return true;
   const conferences = data?.children || [];
   if (!conferences.length) return true;
   return !conferences.some((conf) =>
     (conf.standings?.entries || []).some((t) => {
-      const wins = t.stats.find((s) => s.name === "wins")?.value || 0;
-      const losses = t.stats.find((s) => s.name === "losses")?.value || 0;
+      const wins = Number(t.stats?.find((s) => s.name === "wins")?.value) || 0;
+      const losses = Number(t.stats?.find((s) => s.name === "losses")?.value) || 0;
       return wins + losses > 0;
     })
   );
@@ -282,11 +280,6 @@ async function getNBAStandings(seasonYear) {
   setGraphicSeason(label);
   populateSeasonSelect(year);
 
-  if (year === NEXT_SEASON_YEAR && Date.now() < NEXT_SEASON_TIPOFF.getTime()) {
-    renderPreseasonBoard(label);
-    return;
-  }
-
   container.innerHTML = `
     <div class="loader">
       <div class="loader-spinner"></div>
@@ -294,7 +287,10 @@ async function getNBAStandings(seasonYear) {
     </div>`;
 
   try {
-    const res = await fetch(`${STANDINGS_URL}?season=${year}`);
+    let res = await fetch(`${STANDINGS_URL}?season=${year}`, { cache: "no-store" });
+    if (!res.ok && year === NEXT_SEASON_YEAR) {
+      res = await fetch(STANDINGS_URL, { cache: "no-store" });
+    }
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
 
@@ -423,8 +419,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {
     const viewing = Number(document.getElementById("season-select")?.value || NEXT_SEASON_YEAR);
-    if (viewing !== NEXT_SEASON_YEAR || Date.now() >= NEXT_SEASON_TIPOFF.getTime()) {
-      getNBAStandings(viewing);
-    }
+    getNBAStandings(viewing);
   }, 300000);
 });

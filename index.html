@@ -2029,13 +2029,111 @@ listenToUpdates();
   else refresh();
 })();
 
-  // Graphic builder copied from the schedule page so both pages produce the same image
+  // Injury share graphic: canvas builder + modal handlers (all delegated, so load order doesn't matter)
+  function buildInjuryShareCanvas(payload) {
+    const W = 1080, PAD = 48, GAP = 24;
+    const colW = (W - PAD * 2 - GAP) / 2;
+    const COLORS = { OUT: '#b91c1c', Doubtful: '#c2410c', Questionable: '#b45309', Probable: '#15803d' };
 
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+
+    function rrect(x, y, w, h, r) {
+      ctx.beginPath();
+      if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+    function wrap(text, maxW, font) {
+      ctx.font = font;
+      const words = String(text || '').split(/\s+/), lines = [];
+      let line = '';
+      words.forEach(function (w) {
+        const t = line ? line + ' ' + w : w;
+        if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; }
+        else line = t;
+      });
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    // Layout pass: measure each column's height
+    const F_NAME = '700 24px Lexend, sans-serif';
+    const F_TYPE = '500 19px Lexend, sans-serif';
+    const F_NOTE = '400 18px Lexend, sans-serif';
+    const innerW = colW - 40;
+    const cols = payload.teams.map(function (t) {
+      let h = 70;
+      const rows = (t.items || []).map(function (it) {
+        const noteLines = it.comment ? wrap(it.comment, innerW, F_NOTE).slice(0, 4) : [];
+        const rh = 44 + (it.injuryType ? 26 : 0) + noteLines.length * 24 + 18;
+        h += rh;
+        return { it: it, noteLines: noteLines, rh: rh };
+      });
+      if (!rows.length) h += 40;
+      return { team: t.team, rows: rows, h: h };
+    });
+    const bodyH = Math.max.apply(null, cols.map(function (x) { return x.h; }));
+    const HEAD = 170, FOOT = 70;
+    c.width = W;
+    c.height = HEAD + bodyH + FOOT;
+
+    // Background + header
+    ctx.fillStyle = '#f6f8fc'; ctx.fillRect(0, 0, W, c.height);
+    ctx.fillStyle = '#001a57'; ctx.fillRect(0, 0, W, HEAD - 20);
+    ctx.fillStyle = '#fff'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '800 22px Lexend, sans-serif'; ctx.fillText('INJURY REPORT', PAD, 55);
+    ctx.font = '800 40px Lexend, sans-serif'; ctx.fillText(payload.matchup || '', PAD, 105);
+    ctx.font = '500 20px Lexend, sans-serif'; ctx.fillStyle = '#b8c4e0';
+    ctx.fillText((payload.dateStr || '') + (payload.updatedLabel ? '  ·  Updated ' + payload.updatedLabel : ''), PAD, 135);
+
+    // Columns
+    cols.forEach(function (col, i) {
+      const x = PAD + i * (colW + GAP), y0 = HEAD;
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#e4e8f0'; ctx.lineWidth = 2;
+      rrect(x, y0, colW, bodyH, 16); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#64748b'; ctx.font = '800 18px Lexend, sans-serif';
+      ctx.fillText(String(col.team).toUpperCase() + ' INJURIES', x + 20, y0 + 40);
+      let y = y0 + 70;
+      if (!col.rows.length) {
+        ctx.fillStyle = '#64748b'; ctx.font = F_TYPE; ctx.fillText('No injuries listed.', x + 20, y + 24);
+      }
+      col.rows.forEach(function (r) {
+        ctx.strokeStyle = '#eef1f5'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x + 20, y); ctx.lineTo(x + colW - 20, y); ctx.stroke();
+        ctx.fillStyle = '#0d0f1a'; ctx.font = F_NAME; ctx.fillText(r.it.name, x + 20, y + 32);
+        const label = String(r.it.label || '');
+        ctx.font = '800 16px Lexend, sans-serif';
+        const bw = ctx.measureText(label).width + 22;
+        const color = COLORS[label] || '#475569';
+        ctx.fillStyle = color + '22';
+        rrect(x + colW - 20 - bw, y + 10, bw, 30, 15); ctx.fill();
+        ctx.fillStyle = color; ctx.fillText(label, x + colW - 20 - bw + 11, y + 31);
+        let ty = y + 32;
+        if (r.it.injuryType) {
+          ty += 26; ctx.fillStyle = '#64748b'; ctx.font = F_TYPE; ctx.fillText(r.it.injuryType, x + 20, ty);
+        }
+        ctx.fillStyle = '#475569'; ctx.font = F_NOTE;
+        r.noteLines.forEach(function (ln) { ty += 24; ctx.fillText(ln, x + 20, ty); });
+        y += r.rh;
+      });
+    });
+
+    // Footer
+    ctx.fillStyle = '#006bb6'; ctx.font = '700 22px Lexend, sans-serif';
+    ctx.fillText('SixersHoops.com', PAD, c.height - 28);
+    return c;
+  }
 
   function openInjuryShareModal() {
     const payload = window.__injurySharePayload;
     if (!payload || !(payload.teams || []).length) return;
-    const canvas = buildInjuryShareCanvas(payload);
+    let canvas;
+    try { canvas = buildInjuryShareCanvas(payload); } catch (err) { console.error("injury graphic", err); return; }
     if (!canvas) return;
     const overlay = document.getElementById("injShareOverlay");
     const img = document.getElementById("injShareImg");
@@ -2053,49 +2151,38 @@ listenToUpdates();
     overlay.setAttribute("aria-hidden", "true");
   }
 
-  document.addEventListener("click", function (e) {
-    if (e.target && e.target.id === "homeInjShareBtn") {
+  document.addEventListener("click", async function (e) {
+    const t = e.target;
+    if (!t) return;
+    const overlay = document.getElementById("injShareOverlay");
+
+    if (t.closest && t.closest("#homeInjShareBtn")) {
       e.preventDefault();
       openInjuryShareModal();
+      return;
     }
-    if (e.target && (e.target.id === "injShareClose" || e.target.id === "injShareOverlay")) {
-      if (e.target.id === "injShareOverlay" && e.target !== e.currentTarget) return;
+    if (!overlay) return;
+    if (t === overlay || (t.closest && t.closest("#injShareClose"))) {
       closeInjuryShareModal();
+      return;
     }
-  });
-  const injOverlay = document.getElementById("injShareOverlay");
-  if (injOverlay) {
-    injOverlay.addEventListener("click", function (e) {
-      if (e.target === injOverlay) closeInjuryShareModal();
-    });
-  }
-  const injDl = document.getElementById("injShareDownload");
-  if (injDl) {
-    injDl.addEventListener("click", function () {
-      const overlay = document.getElementById("injShareOverlay");
-      const href = overlay && overlay.dataset.png;
-      if (!href) return;
+    if (t.id === "injShareDownload" && overlay.dataset.png) {
       const a = document.createElement("a");
-      a.href = href;
+      a.href = overlay.dataset.png;
       a.download = "sixershoops-injury-report.png";
       a.click();
-    });
-  }
-  const injCopy = document.getElementById("injShareCopy");
-  if (injCopy) {
-    injCopy.addEventListener("click", async function () {
+      return;
+    }
+    if (t.id === "injShareCopy") {
       try {
-        const overlay = document.getElementById("injShareOverlay");
-        const href = overlay && overlay.dataset.png;
-        if (!href || !navigator.clipboard || !window.ClipboardItem) return;
-        const res = await fetch(href);
-        const blob = await res.blob();
+        if (!overlay.dataset.png || !navigator.clipboard || !window.ClipboardItem) return;
+        const blob = await (await fetch(overlay.dataset.png)).blob();
         await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        injCopy.textContent = "Copied";
-        setTimeout(function () { injCopy.textContent = "Copy image"; }, 1600);
+        t.textContent = "Copied";
+        setTimeout(function () { t.textContent = "Copy image"; }, 1600);
       } catch (err) {}
-    });
-  }
+    }
+  });
 
 </script>
 

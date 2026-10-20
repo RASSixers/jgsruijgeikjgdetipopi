@@ -1,2725 +1,307 @@
-<!doctype html>
-<html lang="en">
-<head>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287"
-     crossorigin="anonymous"></script>
+rules_version = '2';
+// --- FIRESTORE RULES (full site + Pick'em + leagues) ---
+service cloud.firestore {
+  match /databases/{database}/documents {
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sixers Hoops — News, Analysis & Community</title>
-<meta name="description" content="The ultimate destination for Philadelphia 76ers fans. News, analysis, and community for everything Sixers." />
-<meta property="og:title" content="Sixers Hoops" />
-<meta property="og:description" content="The ultimate destination for Philadelphia 76ers fans. News, analysis, and community for everything Sixers." />
-<link rel="icon" href="/favicon.ico" />
-<link rel="canonical" href="/" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/navbar-styles.css" />
-<style>
-  :root {
-    --navy: #001a57;
-    --sixers-blue: #006bb6;
-    --sixers-red: #ed174c;
-    --cream: #ffffff;
-    --ink: #0d0f1a;
-    --mid: #64748b;
-    --border-light: #e4e8f0;
-    --card-bg: #ffffff;
-  }
-  *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
-  body {
-    background: var(--cream);
-    color: var(--ink);
-    font-family: "Lexend", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    margin-top: 64px;
-  }
-  a { color: inherit; }
-
-  .hero {
-    background: var(--cream);
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 1.75rem 1.25rem 1.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .hero-wordmark {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  .hero-title-top,
-  .hero-title-bottom {
-    font-size: clamp(2.1rem, 8vw, 3.75rem);
-    font-weight: 800;
-    line-height: 0.92;
-    letter-spacing: -0.035em;
-    margin: 0;
-    text-transform: uppercase;
-  }
-  .hero-title-top { color: var(--ink); }
-  .hero-title-bottom { color: var(--sixers-blue); }
-  .hero-sub {
-    font-size: 0.88rem;
-    color: var(--mid);
-    max-width: 420px;
-    line-height: 1.55;
-    margin: 0.85rem auto 0;
-    font-weight: 500;
-    text-transform: none;
-  }
-  .hero-cta-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
-    margin-top: 1.35rem;
-    width: 100%;
-    flex-wrap: wrap;
-  }
-  .hero-cta-primary,
-  .hero-cta-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 0.01em;
-    padding: 0.72rem 1.25rem;
-    border-radius: 999px;
-    text-decoration: none;
-    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
-    white-space: nowrap;
-  }
-  .hero-cta-primary {
-    background: var(--sixers-blue);
-    color: #fff !important;
-    border: 1px solid var(--sixers-blue);
-  }
-  .hero-cta-primary:hover { background: #0057a0; border-color: #0057a0; color: #fff !important; }
-  .hero-cta-secondary {
-    color: var(--ink);
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-light);
-  }
-  .hero-cta-secondary:hover {
-    border-color: var(--sixers-blue);
-    color: var(--sixers-blue);
-  }
-
-  .feature-cards-section {
-    background: var(--cream);
-    border-top: 1px solid var(--border-light);
-    padding: 0 0 1.75rem;
-  }
-  .feature-cards-inner {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 1.1rem 1.25rem 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.55rem;
-  }
-  .feature-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-light);
-    padding: 0.85rem 0.9rem;
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    border-radius: 12px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .feature-card:hover {
-    border-color: rgba(0, 107, 182, 0.35);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-  }
-  .feature-card-title { font-size: 0.8rem; font-weight: 700; color: var(--ink); }
-  .feature-card-desc { font-size: 0.68rem; color: var(--mid); line-height: 1.4; flex: 1; }
-  .feature-card-arrow { margin-top: 0.25rem; color: var(--sixers-blue); font-weight: 700; font-size: 0.85rem; }
-
-  /* —— Articles: modern featured + sidebar list —— */
-  .news-section {
-    background: #fafbfc;
-    padding: 3rem 0 3.75rem;
-    border-top: 1px solid #eef1f5;
-  }
-  .news-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .news-heading {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.75rem;
-  }
-  .news-eyebrow {
-    display: block;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--sixers-blue);
-    margin-bottom: 0.3rem;
-  }
-  .news-title {
-    font-size: clamp(1.4rem, 2.6vw, 1.7rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: var(--ink);
-    margin: 0;
-  }
-
-  .news-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.95fr);
-    gap: 2rem 2.25rem;
-    align-items: start;
-    width: 100%;
-    min-width: 0;
-  }
-
-  /* Lead story card */
-  .news-feature {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    background: #fff;
-    border: 1px solid #e8ecf1;
-    border-radius: 16px;
-    padding: 0;
-    overflow: hidden;
-    min-width: 0;
-    transition: border-color 0.18s, box-shadow 0.18s;
-  }
-  .news-feature:hover {
-    border-color: rgba(0, 107, 182, 0.28);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
-  }
-  .news-feature-visual {
-    display: block;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 0;
-    background:
-      radial-gradient(ellipse at 20% 80%, rgba(0, 107, 182, 0.22), transparent 55%),
-      radial-gradient(ellipse at 90% 10%, rgba(237, 23, 76, 0.14), transparent 50%),
-      linear-gradient(160deg, #0d1b2a 0%, #1b3a5a 45%, #243b55 100%);
-    margin: 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .news-feature-visual::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.35) 100%);
-    pointer-events: none;
-  }
-  .news-feature-visual::after {
-    content: attr(data-cat);
-    position: absolute;
-    left: 1.1rem;
-    bottom: 1.1rem;
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.14);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    padding: 0.38rem 0.7rem;
-    border-radius: 999px;
-    z-index: 1;
-  }
-  .news-feature-body {
-    padding: 1.25rem 1.35rem 1.35rem;
-  }
-  .news-feature .news-kicker,
-  .news-feature .news-tag { display: none; }
-  .news-feature-title {
-    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
-    font-weight: 800;
-    letter-spacing: -0.032em;
-    line-height: 1.2;
-    margin: 0 0 0.55rem;
-    color: var(--ink);
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
-  }
-  .news-feature:hover .news-feature-title { color: var(--sixers-blue); }
-  .news-feature-excerpt {
-    font-size: 0.94rem;
-    line-height: 1.6;
-    color: #64748b;
-    margin: 0 0 1rem;
-  }
-  .news-feature-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem 0.55rem;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    font-weight: 500;
-    padding-top: 0.85rem;
-    border-top: 1px solid #f1f4f8;
-  }
-  .news-feature-meta .news-read { display: none; }
-
-  /* Sidebar list — modern editorial */
-  .news-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: 1.25rem 0 0.5rem;
-    background: #fff;
-    border: 1px solid #e8ecf2;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    min-width: 0;
-  }
-  .news-stack-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #64748b;
-    margin: 0;
-    padding: 0 1.35rem 0.95rem;
-    border-bottom: 1px solid #eef1f5;
-    background: transparent;
-    position: relative;
-  }
-  .news-stack-label::after {
-    content: '';
-    position: absolute;
-    left: 1.35rem;
-    bottom: -1px;
-    width: 1.75rem;
-    height: 2px;
-    background: var(--sixers-blue);
-    border-radius: 1px;
-  }
-  .news-stack-empty {
-    font-size: 0.88rem;
-    color: #94a3b8;
-    margin: 0.35rem 0.35rem 0.5rem;
-    line-height: 1.5;
-    padding: 0;
-  }
-  .news-row {
-    display: block;
-    padding: 1.1rem 1.35rem;
-    text-decoration: none;
-    color: inherit;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #f1f4f8;
-    border-radius: 0;
-    min-width: 0;
-    transition: background 0.14s ease;
-  }
-  .news-row:last-child { border-bottom: none; }
-  .news-row:hover {
-    background: #f7f9fc;
-    box-shadow: none;
-    transform: none;
-  }
-  .news-row-num { display: none; }
-  .news-row-body { min-width: 0; }
-  .news-row-top,
-  .news-row .news-tag,
-  .news-row-time,
-  .news-row-excerpt { display: none; }
-  .news-row-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    line-height: 1.4;
-    margin: 0 0 0.45rem;
-    color: #0f172a;
-    letter-spacing: -0.015em;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    transition: color 0.12s ease;
-  }
-  .news-row:hover .news-row-title {
-    color: var(--sixers-blue);
-  }
-  .news-row-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    font-weight: 500;
-    margin: 0;
-  }
-  .news-row-meta .news-row-author {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .news-row-meta .news-row-date {
-    white-space: nowrap;
-    flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
-    color: #94a3b8;
-    font-weight: 500;
-    background: none;
-    padding: 0;
-    border-radius: 0;
-    font-size: 0.75rem;
-  }
-  .news-row-meta .news-row-sep { display: none; }
-
-  .news-tag {
-    font-size: 0.58rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--sixers-blue);
-    background: rgba(0, 107, 182, 0.08);
-    border: 1px solid rgba(0, 107, 182, 0.14);
-    padding: 3px 8px;
-    border-radius: 999px;
-  }
-  .news-empty, .news-loading {
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-    color: var(--mid);
-    font-size: 0.9rem;
-    background: #fff;
-    border: 1px solid #e8ecf1;
-    border-radius: 16px;
-    grid-column: 1 / -1;
-  }
-
-  @media (max-width: 900px) {
-    .news-grid {
-      grid-template-columns: 1fr;
-      gap: 1.35rem;
-    }
-  }
-  @media (min-width: 768px) {
-    .news-inner { padding: 0 2rem; }
-    .news-section { padding: 3.5rem 0 4.25rem; }
-  }
-  @media (max-width: 699px) {
-    .news-section {
-      padding: 1.85rem 0 2.5rem;
-      overflow-x: hidden;
-      width: 100%;
-      max-width: 100vw;
-      box-sizing: border-box;
-    }
-    .news-inner {
-      padding: 0 1rem;
-      max-width: 100%;
-      overflow-x: hidden;
-      box-sizing: border-box;
-    }
-    .news-heading { margin-bottom: 1.2rem; }
-    .news-title { font-size: 1.3rem; }
-    .news-feature { border-radius: 14px; }
-    .news-feature-visual { aspect-ratio: 16 / 10; }
-    .news-feature-body { padding: 1.05rem 1.1rem 1.15rem; }
-    .news-feature-title { font-size: 1.28rem; line-height: 1.22; }
-    .news-feature-excerpt { font-size: 0.88rem; margin-bottom: 0.85rem; }
-    .news-stack {
-      padding: 1rem 1.05rem 0.7rem;
-      border-radius: 14px;
-    }
-    .news-stack-label {
-      font-size: 0.68rem;
-      padding-bottom: 0.7rem;
-    }
-    .news-stack {
-      padding: 1rem 0 0.35rem;
-      border-radius: 14px;
-    }
-    .news-stack-label {
-      font-size: 0.65rem;
-      padding: 0 1.1rem 0.8rem;
-    }
-    .news-stack-label::after { left: 1.1rem; }
-    .news-row { padding: 0.95rem 1.1rem; }
-    .news-row-title { font-size: 0.92rem; }
-  }
-
-  /* Homepage team stats — match schedule page */
-  .hg-panel-team { padding: 0; }
-  .hg-panel-team .team-stats-wrap {
-    padding: 0.65rem 1rem 1rem;
-    overflow-x: auto;
-  }
-  .hg-panel-team .team-stats-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-    font-variant-numeric: tabular-nums;
-  }
-  .hg-panel-team .team-stats-table th,
-  .hg-panel-team .team-stats-table td {
-    padding: 0.4rem 0.55rem;
-    text-align: right;
-    border-bottom: 1px solid var(--border-light);
-  }
-  .hg-panel-team .team-stats-table th:first-child,
-  .hg-panel-team .team-stats-table td.ts-label {
-    text-align: left;
-    font-weight: 700;
-    color: var(--mid);
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
-  }
-  .hg-panel-team .team-stats-table th {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--ink);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .hg-panel-team .team-stats-table tbody tr:hover {
-    background: rgba(0, 107, 182, 0.04);
-  }
-
-  @media (min-width: 768px) {
-}
-  @media (max-width: 767px) {
-}
-
-  @media (min-width: 768px) {
-    .hero-inner { padding: 2.5rem 2rem 2.25rem; }
-    .hero-sub { margin-top: 1rem; }
-    .hero-cta-row { margin-top: 1.6rem; gap: 0.75rem; }
-    .feature-cards-inner { padding: 1.35rem 2rem 0; gap: 0.65rem; }
-}
-  @media (max-width: 767px) {
-    body { margin-top: 56px; }
-    .hero-inner { padding: 1.1rem 1rem 1.25rem; }
-    .hero-sub { font-size: 0.82rem; margin-top: 0.7rem; }
-    .hero-cta-row {
-      flex-direction: column;
-      align-items: stretch;
-      margin-top: 1.1rem;
-      gap: 0.5rem;
-      max-width: 280px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .hero-cta-primary,
-    .hero-cta-secondary {
-      width: 100%;
-      padding: 0.78rem 1rem;
-      font-size: 0.82rem;
-    }
-    .feature-cards-inner {
-      grid-template-columns: 1fr 1fr;
-      padding: 0.85rem 0.85rem 0;
-      gap: 0.45rem;
-    }
-    .feature-card { padding: 0.75rem 0.7rem; }
-    .feature-card-desc { display: none; }
-}
-  @media (max-width: 480px) {
-    .hero-title-top,
-    .hero-title-bottom { font-size: clamp(1.9rem, 11vw, 2.4rem); }
-  }
-
-
-  /* Fan poll */
-  .poll-section {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 1.25rem 2rem;
-  }
-  .poll-inner {
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 1.25rem 1.35rem;
-  }
-  .poll-loading, .updates-loading, .updates-empty {
-    color: var(--mid);
-    font-size: 0.9rem;
-    padding: 0.5rem 0;
-  }
-
-  /* From the desk */
-  .updates-section {
-    background: var(--cream);
-    border-top: 1px solid var(--border-light);
-    padding: 2.25rem 0 3.5rem;
-  }
-  .updates-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.25rem;
-  }
-  .updates-heading {
-    margin-bottom: 1.15rem;
-  }
-  /* 3 tweets per page */
-  .updates-feed {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.9rem;
-    align-items: start;
-  }
-  @media (min-width: 700px) {
-    .updates-feed {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  .update-card {
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 0.75rem 0.75rem 0.85rem;
-    overflow: visible;
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
-    min-width: 0;
-    min-height: 280px;
-  }
-  .update-card .update-embed {
-    max-width: 100%;
-    overflow: visible;
-    min-height: 260px;
-  }
-  .update-card .update-embed blockquote,
-  .update-card .update-embed iframe,
-  .update-card .update-embed twitter-widget {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 auto !important;
-  }
-  .update-card p,
-  .update-card .update-text {
-    margin: 0 0 0.65rem;
-    font-size: 0.9rem;
-    line-height: 1.55;
-    color: var(--ink);
-  }
-  .update-card p:last-child { margin-bottom: 0; }
-  .update-card img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    display: block;
-    margin: 0.5rem 0;
-  }
-  .update-card a { color: var(--sixers-blue); }
-  .updates-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.35rem;
-  }
-  .updates-page-btn {
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    border: 1px solid var(--border-light, #e4e8f0);
-    background: var(--card-bg, #fff);
-    color: var(--ink, #0d0f1a);
-    cursor: pointer;
-  }
-  .updates-page-btn:hover:not(:disabled) {
-    border-color: var(--sixers-blue);
-    color: var(--sixers-blue);
-  }
-  .updates-page-btn:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-  .updates-page-label {
-    font-size: 0.78rem;
-    color: var(--mid);
-    font-weight: 600;
-  }
-  @media (min-width: 640px) {
-    .updates-feed { grid-template-columns: 1fr 1fr; }
-  }
-  @media (min-width: 900px) {
-    .updates-feed { grid-template-columns: 1fr 1fr 1fr; }
-    .updates-inner { padding: 0 2rem; }
-  }
-  @media (min-width: 768px) {
-    .poll-section { padding: 0 2rem 2.25rem; max-width: 720px; }
-  }
-
-  .home-game {
-    max-width: 1080px; margin: 0 auto; padding: 0 2rem 2rem;
-  }
-  .home-game-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .home-game-card.is-live { border-color: rgba(237,23,76,.35); }
-  .home-game-head {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 1rem; padding: 0.85rem 1.15rem; background: var(--surface-soft, rgba(0,0,0,.02));
-    border-bottom: 1px solid var(--border-light);
-  }
-  .home-game-kicker {
-    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--mid);
-  }
-  .home-game-card.is-live .home-game-kicker { color: var(--sixers-red, #ED174C); }
-  .home-game-clock {
-    font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums;
-    padding: 0.25rem 0.65rem; border-radius: 999px;
-    border: 1px solid var(--border-light); color: var(--ink);
-  }
-  .home-game-card.is-live .home-game-clock {
-    color: var(--sixers-red, #ED174C);
-    border-color: rgba(237,23,76,.35);
-    background: rgba(237,23,76,.06);
-  }
-  .home-game-scoreline {
-    display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
-    gap: 0.75rem; align-items: center; padding: 1rem 1.15rem;
-  }
-  .home-game-team {
-    display: flex; align-items: center; gap: 0.5rem; font-weight: 700; min-width: 0;
-  }
-  .home-game-team.away { justify-content: flex-end; text-align: right; }
-  .home-game-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .home-game-logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
-  .home-game-score {
-    font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums; white-space: nowrap;
-  }
-  .home-game-tabs {
-    display: flex; gap: 0; padding: 0 1.15rem;
-    border-top: 1px solid var(--border-light);
-  }
-  .home-game-tab {
-    border: none; background: transparent; color: var(--mid);
-    font: inherit; font-size: 0.78rem; font-weight: 700;
-    padding: 0.55rem 0.75rem; cursor: pointer;
-    border-bottom: 2px solid transparent;
-  }
-  .home-game-tab.on { color: var(--sixers-blue); border-bottom-color: var(--sixers-blue); }
-  .home-game-pbp {
-    list-style: none; margin: 0; padding: 0; max-height: 280px; overflow: auto;
-  }
-  .home-game-pbp li {
-    display: grid; grid-template-columns: 5rem minmax(0,1fr) auto;
-    gap: 0.5rem; padding: 0.5rem 1.15rem; border-top: 1px solid var(--border-light);
-    font-size: 0.8rem; line-height: 1.35;
-  }
-  .home-game-pbp .clk { color: var(--mid); font-weight: 700; font-size: 0.72rem; white-space: nowrap; }
-  .home-game-pbp .sc { color: var(--mid); font-variant-numeric: tabular-nums; font-size: 0.75rem; }
-  .home-game-box { padding: 0.5rem 0 0.75rem; max-height: 320px; overflow: auto; }
-  .home-game-box-team { font-weight: 800; font-size: 0.85rem; padding: 0.4rem 1.15rem; }
-  .home-game-box table {
-    width: 100%; border-collapse: collapse; font-size: 0.72rem; min-width: 480px;
-  }
-  .home-game-box th, .home-game-box td {
-    padding: 0.3rem 0.35rem; text-align: right; border-bottom: 1px solid var(--border-light);
-    font-variant-numeric: tabular-nums; white-space: nowrap;
-  }
-  .home-game-box th { font-size: 0.62rem; color: var(--mid); text-transform: uppercase; }
-  .home-game-box .pl { text-align: left; font-weight: 600; position: sticky; left: 0; background: var(--card-bg); min-width: 7rem; }
-  .home-game-foot {
-    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
-    padding: 0.75rem 1.15rem; border-top: 1px solid var(--border-light);
-    font-size: 0.8rem;
-  }
-  .home-game-foot a {
-    color: var(--sixers-blue); font-weight: 700; text-decoration: none;
-  }
-  .home-game-empty { padding: 1.25rem; color: var(--mid); font-size: 0.9rem; margin: 0; }
-  .home-game-meta { padding: 0 1.15rem 0.85rem; color: var(--mid); font-size: 0.82rem; }
-
-
-  .home-inj-head-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.15rem;
-  }
-  .home-inj-share-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.85rem;
-    border-radius: 999px;
-    border: 1px solid var(--border-light, #e2e8f0);
-    background: var(--card-bg, #fff);
-    color: var(--ink, #0d0f1a);
-    font-size: 0.72rem;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-  }
-  .home-inj-share-btn:hover {
-    border-color: var(--sixers-blue, #006BB6);
-    color: var(--sixers-blue, #006BB6);
-  }
-  .inj-share-overlay {
-    position: fixed; inset: 0;
-    background: rgba(13,15,26,0.55);
-    display: none; align-items: center; justify-content: center;
-    padding: 1rem; z-index: 2000;
-    backdrop-filter: blur(2px);
-  }
-  .inj-share-overlay.active { display: flex; }
-  .inj-share-modal {
-    background: #fff;
-    border-radius: 16px;
-    max-width: min(420px, 100%);
-    width: 100%;
-    max-height: 92vh;
-    overflow: auto;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.28);
-  }
-  .inj-share-modal-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.9rem 1.1rem;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .inj-share-modal-head h3 {
-    margin: 0; font-size: 0.95rem; font-weight: 800; color: #0d0f1a;
-  }
-  .inj-share-close {
-    border: 0; background: #f1f5f9; width: 32px; height: 32px;
-    border-radius: 999px; cursor: pointer; font-size: 1.1rem; line-height: 1;
-    color: #0d0f1a;
-  }
-  .inj-share-preview {
-    padding: 0.85rem 1rem;
-    background: #f6f8fc;
-  }
-  .inj-share-preview img {
-    width: 100%; height: auto; display: block;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-  }
-  .inj-share-actions {
-    display: flex; gap: 0.55rem; padding: 0.85rem 1rem 1.1rem;
-    flex-wrap: wrap;
-  }
-  .inj-share-actions button {
-    flex: 1;
-    min-width: 120px;
-    padding: 0.65rem 1rem;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    font-family: inherit;
-    cursor: pointer;
-  }
-  .inj-share-download {
-    background: #006BB6; color: #fff; border: 0;
-  }
-  .inj-share-copy {
-    background: #fff; color: #0d0f1a; border: 1px solid #e2e8f0;
-  }
-
-  .home-inj-admin-btn {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    padding: 0.35rem 0.75rem; border-radius: 999px;
-    border: 1px solid var(--border-light, #e2e8f0);
-    background: var(--card-bg, #fff); color: var(--ink, #0d0f1a);
-    font-size: 0.7rem; font-weight: 700; cursor: pointer; font-family: inherit;
-  }
-  .home-inj-admin-btn:hover { border-color: var(--sixers-blue, #006BB6); color: var(--sixers-blue, #006BB6); }
-  .inj-edit-overlay {
-    position: fixed; inset: 0; background: rgba(13,15,26,0.55);
-    display: none; align-items: center; justify-content: center;
-    padding: 1rem; z-index: 2100; backdrop-filter: blur(2px);
-  }
-  .inj-edit-overlay.active { display: flex; }
-  .inj-edit-modal {
-    background: #fff; border-radius: 16px; max-width: min(560px, 100%);
-    width: 100%; max-height: 90vh; overflow: auto;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.28);
-  }
-  .inj-edit-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.95rem 1.15rem; border-bottom: 1px solid #e2e8f0;
-    position: sticky; top: 0; background: #fff; z-index: 1;
-  }
-  .inj-edit-head h3 { margin: 0; font-size: 1rem; font-weight: 800; }
-  .inj-edit-close {
-    border: 0; background: #f1f5f9; width: 32px; height: 32px;
-    border-radius: 999px; cursor: pointer; font-size: 1.1rem;
-  }
-  .inj-edit-body { padding: 1rem 1.15rem 1.25rem; }
-  .inj-edit-hint { font-size: 0.8rem; color: #64748b; margin: 0 0 0.85rem; line-height: 1.4; }
-  .inj-edit-row {
-    border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.75rem;
-    margin-bottom: 0.65rem; background: #fafbfd;
-  }
-  .inj-edit-row-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
-  }
-  @media (max-width: 520px) { .inj-edit-row-grid { grid-template-columns: 1fr; } }
-  .inj-edit-row label {
-    display: block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em;
-    text-transform: uppercase; color: #64748b; margin: 0 0 0.25rem;
-  }
-  .inj-edit-row input, .inj-edit-row select, .inj-edit-row textarea {
-    width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;
-    padding: 0.45rem 0.55rem; font: 500 0.85rem Lexend, system-ui, sans-serif;
-    background: #fff; color: #0d0f1a; box-sizing: border-box;
-  }
-  .inj-edit-row textarea { min-height: 52px; resize: vertical; }
-  .inj-edit-row-actions { margin-top: 0.45rem; text-align: right; }
-  .inj-edit-remove {
-    border: 0; background: transparent; color: #b91c1c;
-    font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit;
-  }
-  .inj-edit-foot {
-    display: flex; flex-wrap: wrap; gap: 0.5rem;
-    padding: 0.85rem 1.15rem 1.15rem; border-top: 1px solid #e2e8f0;
-    position: sticky; bottom: 0; background: #fff;
-  }
-  .inj-edit-foot button {
-    border-radius: 999px; padding: 0.55rem 1rem; font: 700 0.8rem Lexend, system-ui, sans-serif;
-    cursor: pointer;
-  }
-  .inj-edit-save { background: #006BB6; color: #fff; border: 0; }
-  .inj-edit-add { background: #fff; border: 1px solid #e2e8f0; color: #0d0f1a; }
-  .inj-edit-clear { background: #fff; border: 1px solid #fecaca; color: #b91c1c; }
-  .inj-edit-status { font-size: 0.78rem; color: #64748b; flex: 1; align-self: center; }
-  .home-inj {
-    padding: 0.45rem 1.15rem 0.9rem;
-    border-top: 1px solid var(--border-light);
-  }
-  .home-inj-title {
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--mid);
-    margin: 0.55rem 0 0.25rem;
-  }
-  .home-inj-updated {
-    font-size: 0.75rem;
-    color: var(--mid);
-    margin: 0 0 0.75rem;
-  }
-  .home-inj-updated strong { color: var(--ink); font-weight: 700; }
-  .home-inj-team { margin-bottom: 0.75rem; }
-  .home-inj-team-name {
-    font-size: 0.8rem;
-    font-weight: 800;
-    color: var(--ink);
-    margin-bottom: 0.35rem;
-  }
-  .home-inj-list { list-style: none; margin: 0; padding: 0; }
-  .home-inj-row {
-    padding: 0.45rem 0;
-    border-bottom: 1px solid rgba(15,23,42,0.06);
-  }
-  .home-inj-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.65rem;
-  }
-  .home-inj-name { font-weight: 700; color: var(--ink); font-size: 0.88rem; }
-  .home-inj-badge {
-    flex-shrink: 0;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 0.2rem 0.5rem;
-    border-radius: 999px;
-    border: 1px solid transparent;
-  }
-  .home-inj-badge.inj-out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-  .home-inj-badge.inj-doubt { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
-  .home-inj-badge.inj-q { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-  .home-inj-badge.inj-gtd { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-  .home-inj-badge.inj-prob { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-  .home-inj-badge.inj-other { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
-  .home-inj-meta {
-    font-size: 0.78rem;
-    color: var(--mid);
-    margin-top: 0.2rem;
-  }
-  .home-inj-player-updated {
-    font-size: 0.7rem;
-    color: #94a3b8;
-    margin-top: 0.15rem;
-  }
-  .home-inj-comment {
-    font-size: 0.8rem;
-    color: #475569;
-    line-height: 1.4;
-    margin-top: 0.3rem;
-  }
-
-  @media (max-width: 720px) {
-    .home-game { padding: 0 0.85rem 1.5rem; }
-    .home-game-score { font-size: 1.4rem; }
-    .home-game-pbp li { grid-template-columns: 4.5rem minmax(0,1fr); }
-    .home-game-pbp .sc { grid-column: 2; justify-self: start; font-size: 0.7rem; }
-  }
-
-</style>
-</head>
-<body>
-<main>
-  <header class="hero">
-    <div class="hero-inner">
-      <div class="hero-wordmark">
-        <p class="hero-title-top">Sixers</p>
-        <p class="hero-title-bottom">Hoops</p>
-        <p class="hero-sub">Independent Philadelphia 76ers news, analysis, Pick'em, and tools. Not affiliated with the NBA or the Sixers.</p>
-        <div class="hero-cta-row">
-          <a href="/nba-trade-machine" class="hero-cta-primary">NBA Trade Machine</a>
-          <a href="/pickem" class="hero-cta-secondary">Play Pick'em →</a>
-        </div>
-      </div>
-    </div>
-    <div class="feature-cards-section" id="features">
-      <div class="feature-cards-inner">
-        <a href="/future-draft-picks" class="feature-card">
-          <div class="feature-card-title">Future Draft Picks</div>
-          <div class="feature-card-desc">Owned picks, swaps, and protections by year.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-        <a href="/roster" class="feature-card">
-          <div class="feature-card-title">Roster</div>
-          <div class="feature-card-desc">Full squad, contracts, and player info.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-        <a href="/sixers-depth-chart" class="feature-card">
-          <div class="feature-card-title">Depth Chart</div>
-          <div class="feature-card-desc">Starters, rotation, and positional depth.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-        <a href="/salary" class="feature-card">
-          <div class="feature-card-title">Salary Sheet</div>
-          <div class="feature-card-desc">Cap figures, contracts, and luxury tax outlook.</div>
-          <div class="feature-card-arrow">→</div>
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <section id="game-center" class="home-game" aria-live="polite">
-    <div class="home-game-card" id="home-game-card">
-      <div class="home-game-head">
-        <span class="home-game-kicker" id="home-game-kicker">Loading</span>
-        <span class="home-game-clock" id="home-game-clock">—</span>
-      </div>
-      <div id="home-game-body">
-        <p class="home-game-empty">Loading game center…</p>
-      </div>
-      <div class="home-game-foot">
-        <span id="home-game-note" style="color:var(--mid);font-size:0.78rem;"></span>
-        <a href="/schedule">Full schedule →</a>
-      </div>
-    </div>
-  </section>
-
-  <section id="news" class="news-section">
-    <div class="news-inner">
-      <div class="news-heading">
-        <div>
-          <span class="news-eyebrow">Latest</span>
-          <h2 class="news-title">News &amp; Analysis</h2>
-        </div>
-      </div>
-      <div class="news-grid" id="news-grid">
-        <div class="news-loading">Loading the latest…</div>
-      </div>
-    </div>
-  </section>
-
-  <section id="fan-poll" class="poll-section">
-    <div class="poll-inner" id="poll-box">
-      <div class="poll-loading">Loading poll…</div>
-    </div>
-  </section>
-
-  <section id="updates" class="updates-section">
-    <div class="updates-inner">
-      <div class="updates-heading">
-        <div>
-          <span class="news-eyebrow">From the desk</span>
-          <h2 class="news-title">Sixers Updates</h2>
-        </div>
-      </div>
-      <div class="updates-feed" id="updates-feed">
-        <div class="updates-loading">Loading updates…</div>
-      </div>
-      <div class="updates-pagination" id="updates-pagination" hidden>
-        <button type="button" class="updates-page-btn" id="updates-prev">Previous</button>
-        <span class="updates-page-label" id="updates-page-label"></span>
-        <button type="button" class="updates-page-btn" id="updates-next">Next</button>
-      </div>
-    </div>
-  </section>
-</main>
-
-<script src="/nav.js"></script>
-<script>
-const NEWS_COLLECTION = 'editorial_articles';
-const UPDATES_COLLECTION = 'social_posts';
-const POLLS_COLLECTION = 'fan_polls';
-function updatesPerPage() {
-  // 3 tweets per page on all screen sizes
-  return 3;
-}
-const CATEGORY_COLORS = {'Player Grades':'#1e7d46','Analysis':'#006BB6','Opinion':'#b06b00','Preview':'#ED174C','Recap':'#475569','News':'#0077cc'};
-const GRADE_COLORS = {'A+':'#1a6b3c','A':'#1e7d46','A-':'#2d8f56','B+':'#006BB6','B':'#0077cc','B-':'#2a85d0','C+':'#b06b00','C':'#c27800','D+':'#b83232','D':'#a02828','F':'#7a1a1a','INC':'#6b21a8'};
-const THUMB_COLORS = ['#ED174C', '#006BB6', '#000000', '#001a57'];
-
-let allUpdates = [];
-let updatesPage = 0;
-let activePoll = null;
-
-function waitForDb(cb, tries) {
-  tries = tries || 0;
-  if (window.db) { cb(); return; }
-  if (tries > 60) return;
-  setTimeout(function () { waitForDb(cb, tries + 1); }, 250);
-}
-function escapeHtml(str) {
-  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-function timeAgo(date) {
-  if (!date) return '';
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return 'Just now';
-  const mins = Math.floor(seconds / 60);
-  if (mins < 60) return mins + 'm ago';
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return hours + 'h ago';
-  const days = Math.floor(hours / 24);
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return days + 'd ago';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-function toDate(ts) {
-  if (!ts) return null;
-  if (ts.toDate) return ts.toDate();
-  return new Date(ts);
-}
-function isPublished(a) {
-  if (a && a.status === 'draft') return false;
-  if (a && a.visibility === 'private') return false;
-  return !a.status || a.status === 'published';
-}
-function byline(a) {
-  const name = (a.author || a.byline || 'SixersHoops').trim();
-  return 'By: ' + name;
-}
-
-function renderNews(articles) {
-  const grid = document.getElementById('news-grid');
-  if (!grid) return;
-  articles = (articles || []).filter(isPublished);
-  if (!articles.length) {
-    grid.innerHTML = '<div class="news-empty">No articles published yet. Check back soon.</div>';
-    return;
-  }
-
-  // Text-only (no article photos — copyright-safe). Layout mirrors a featured + sidebar list.
-  const featured = articles[0];
-  const rest = articles.slice(1, 8);
-
-  function articleUrl(a) {
-    return a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
-  }
-  function shortDate(d) {
-    if (!d || isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
-  }
-
-  const featDate = shortDate(toDate(featured.createdAt));
-  const featuredHtml =
-    '<a href="' + articleUrl(featured) + '" class="news-feature">' +
-      '<div class="news-feature-visual" data-cat="' + escapeHtml(featured.category || 'News') + '" aria-hidden="true"></div>' +
-      '<div class="news-feature-body">' +
-        '<h3 class="news-feature-title">' + escapeHtml(featured.title) + '</h3>' +
-        (featured.excerpt ? '<p class="news-feature-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
-        '<div class="news-feature-meta">' +
-          '<span>' + escapeHtml(byline(featured)) + '</span>' +
-          (featDate ? '<span>·</span><span>' + escapeHtml(featDate) + '</span>' : '') +
-        '</div>' +
-      '</div>' +
-    '</a>';
-
-  const listHtml = rest.map(function (a) {
-    const when = toDate(a.createdAt);
-    const dateStr = shortDate(when);
-    return (
-      '<a href="' + articleUrl(a) + '" class="news-row">' +
-        '<div class="news-row-body">' +
-          '<h3 class="news-row-title">' + escapeHtml(a.title) + '</h3>' +
-          '<div class="news-row-meta">' +
-            '<span class="news-row-author">' + escapeHtml(byline(a)) + '</span>' +
-            (dateStr ? '<span class="news-row-date">' + escapeHtml(dateStr) + '</span>' : '') +
-          '</div>' +
-        '</div>' +
-      '</a>'
-    );
-  }).join('');
-
-  const stackBody = listHtml
-    ? listHtml
-    : '<p class="news-stack-empty">More stories will appear here as they are published.</p>';
-  grid.innerHTML = featuredHtml +
-    '<div class="news-stack"><div class="news-stack-label">Featured Posts</div>' + stackBody + '</div>';
-}
-
-function listenToNews() {
-  waitForDb(function () {
-    window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(12).onSnapshot(
-      function (snap) {
-        renderNews(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }));
-      },
-      function (err) {
-        console.error(err);
-        document.getElementById('news-grid').innerHTML = '<div class="news-empty">Couldn\'t load news right now.</div>';
-      }
-    );
-  });
-}
-
-function pollVoteKey(id) {
-  return 'sixers_poll_vote_' + id;
-}
-function renderPoll(poll) {
-  const box = document.getElementById('poll-box');
-  if (!poll || !poll.options || poll.options.length < 2) {
-    box.innerHTML = '';
-    return;
-  }
-  const total = poll.options.reduce(function (sum, o) { return sum + (Number(o.votes) || 0); }, 0);
-  const voted = localStorage.getItem(pollVoteKey(poll.id));
-  const optionsHtml = poll.options.map(function (o, i) {
-    const votes = Number(o.votes) || 0;
-    const pct = total ? Math.round((votes / total) * 100) : 0;
-    return '<button type="button" class="poll-option" data-idx="' + i + '"' + (voted ? ' disabled' : '') + '>' +
-      '<span class="poll-option-fill" style="width:' + (voted || total ? pct : 0) + '%;"></span>' +
-      '<span class="poll-option-row"><span class="poll-option-name">' + escapeHtml(o.text) + '</span>' +
-      '<span class="poll-option-pct">' + pct + '%</span></span></button>';
-  }).join('');
-  box.innerHTML =
-    '<div class="poll-card">' +
-      '<span class="news-eyebrow">Fan Poll</span>' +
-      '<h2 class="poll-question">' + escapeHtml(poll.question || '') + '</h2>' +
-      '<div class="poll-options">' + optionsHtml + '</div>' +
-    '</div>';
-  if (!voted) {
-    box.querySelectorAll('.poll-option').forEach(function (btn) {
-      btn.addEventListener('click', function () { votePoll(poll.id, Number(btn.getAttribute('data-idx'))); });
-    });
-  }
-}
-async function votePoll(id, idx) {
-  if (!activePoll || localStorage.getItem(pollVoteKey(id))) return;
-  const options = (activePoll.options || []).map(function (o, i) {
-    return { text: o.text, votes: (Number(o.votes) || 0) + (i === idx ? 1 : 0) };
-  });
-  localStorage.setItem(pollVoteKey(id), String(idx));
-  try {
-    await window.db.collection(POLLS_COLLECTION).doc(id).update({ options: options });
-  } catch (e) {
-    console.error(e);
-  }
-}
-function listenToPoll() {
-  waitForDb(function () {
-    window.db.collection(POLLS_COLLECTION).where('isActive', '==', true).limit(8).onSnapshot(
-      function (snap) {
-        const polls = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        activePoll = polls[0] || null;
-        renderPoll(activePoll);
-      },
-      function () {
-        document.getElementById('poll-box').innerHTML = '';
-      }
-    );
-  });
-}
-
-function isTweetUrl(url) {
-  return /^https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/.+\/status\/\d+/i.test(String(url || '').trim());
-}
-function extractTweetUrl(p) {
-  var u = (p && p.tweetUrl) ? String(p.tweetUrl).trim() : '';
-  if (isTweetUrl(u)) return u;
-  var text = (p && p.text) ? String(p.text) : '';
-  var m = text.match(/https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[^\s]+\/status\/\d+/i);
-  return m ? m[0] : '';
-}
-function tweetCardEmbed(url) {
-  const safe = escapeHtml(url);
-  const theme = document.documentElement.classList.contains('dark-mode') || document.documentElement.classList.contains('navy-mode') ? 'dark' : 'light';
-  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true" data-theme="' + theme + '"><a href="' + safe + '">Loading post…</a></blockquote></div>';
-}
-function loadTweetWidgets(container) {
-  function doLoad() {
-    try {
-      if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
-        window.twttr.widgets.load(container || document.body);
-      }
-    } catch (e) { console.warn('tweet widgets', e); }
-  }
-  if (window.twttr && window.twttr.widgets) {
-    if (window.twttr.ready) window.twttr.ready(doLoad);
-    else doLoad();
-    return;
-  }
-  var existing = document.getElementById('twitter-wjs');
-  if (existing) {
-    existing.addEventListener('load', doLoad);
-    setTimeout(doLoad, 800);
-    return;
-  }
-  var s = document.createElement('script');
-  s.id = 'twitter-wjs';
-  s.async = true;
-  s.src = 'https://platform.twitter.com/widgets.js';
-  s.onload = function () {
-    if (window.twttr && window.twttr.ready) window.twttr.ready(doLoad);
-    else setTimeout(doLoad, 200);
-  };
-  document.body.appendChild(s);
-}
-function renderUpdatesPage() {
-  const feed = document.getElementById('updates-feed');
-  const pager = document.getElementById('updates-pagination');
-  const label = document.getElementById('updates-page-label');
-  const prev = document.getElementById('updates-prev');
-  const next = document.getElementById('updates-next');
-
-  if (!allUpdates.length) {
-    feed.innerHTML = '<div class="updates-empty" style="grid-column:1/-1">No updates posted yet. Check back soon.</div>';
-    pager.hidden = true;
-    return;
-  }
-
-  const perPage = updatesPerPage();
-  const totalPages = Math.max(1, Math.ceil(allUpdates.length / perPage));
-  if (updatesPage >= totalPages) updatesPage = totalPages - 1;
-  if (updatesPage < 0) updatesPage = 0;
-
-  const start = updatesPage * perPage;
-  const pagePosts = allUpdates.slice(start, start + perPage);
-
-  var hasTweet = false;
-  feed.innerHTML = pagePosts.map(function (p) {
-    var tweet = extractTweetUrl(p);
-    var body;
-    if (tweet) {
-      hasTweet = true;
-      body = tweetCardEmbed(tweet);
-    } else if (p.text) {
-      body = '<p class="update-text">' + escapeHtml(p.text) + '</p>';
-    } else {
-      body = '';
-    }
-    return '<div class="update-card">' + body + '</div>';
-  }).join('');
-
-  pager.hidden = totalPages <= 1;
-  label.textContent = 'Page ' + (updatesPage + 1) + ' of ' + totalPages;
-  prev.disabled = updatesPage === 0;
-  next.disabled = updatesPage >= totalPages - 1;
-
-  if (hasTweet) {
-    loadTweetWidgets(feed);
-    // Retry once after widgets settle
-    setTimeout(function () { loadTweetWidgets(feed); }, 1200);
-  }
-}
-function listenToUpdates() {
-  waitForDb(function () {
-    window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(60).onSnapshot(
-      function (snap) {
-        allUpdates = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        updatesPage = 0;
-        renderUpdatesPage();
-      },
-      function (err) {
-        console.error(err);
-        document.getElementById('updates-feed').innerHTML = '<div class="updates-empty">Couldn\'t load updates right now.</div>';
-      }
-    );
-  });
-}
-
-document.getElementById('updates-prev').addEventListener('click', function () {
-  updatesPage -= 1;
-  renderUpdatesPage();
-});
-document.getElementById('updates-next').addEventListener('click', function () {
-  updatesPage += 1;
-  renderUpdatesPage();
-});
-(function () {
-  let lastMobile = null;
-  function checkUpdatesLayout() {
-    const mobile = !!(window.matchMedia && window.matchMedia('(max-width: 699px)').matches);
-    if (lastMobile === null) { lastMobile = mobile; return; }
-    if (mobile !== lastMobile) {
-      lastMobile = mobile;
-      updatesPage = 0;
-      renderUpdatesPage();
-    }
-  }
-  window.addEventListener('resize', checkUpdatesLayout);
-})();
-
-listenToNews();
-listenToPoll();
-listenToUpdates();
-</script>
-
-<script>
-(function () {
-  const SCHEDULE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/phi/schedule";
-  const SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard";
-  const SUMMARY = "https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary";
-  const INJURIES_LEAGUE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
-
-  let panel = "pbp";
-  let lastSummary = null;
-  let featured = null;
-  let timer = null;
-
-  function get(obj, path, fb) {
-    const v = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
-    return v == null ? fb : v;
-  }
-  function isLive(ev) {
-    const n = String(get(ev, "competitions.0.status.type.name", "")).toUpperCase();
-    const s = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
-    return s === "in" || n.includes("PROGRESS") || n.includes("HALFTIME") || n.includes("LIVE");
-  }
-  function isFinal(ev) {
-    const n = String(get(ev, "competitions.0.status.type.name", "")).toUpperCase();
-    const s = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
-    return s === "post" || n.includes("FINAL");
-  }
-
-  function buildPlayerStatMap(summary) {
-    const map = Object.create(null);
-    const groups = (((summary || {}).boxscore || {}).players) || [];
-    groups.forEach(function (group) {
-      const stats = (group.statistics || [])[0] || {};
-      const keys = stats.keys || [];
-      const idx = {};
-      keys.forEach(function (k, i) { idx[k] = i; });
-      (stats.athletes || []).forEach(function (a) {
-        const name = get(a, "athlete.displayName", "") || get(a, "athlete.shortName", "");
-        if (!name) return;
-        const st = a.stats || [];
-        function val(k) {
-          const i = idx[k];
-          return i != null && st[i] != null && st[i] !== "" ? st[i] : null;
-        }
-        const entry = {
-          pts: val("points"), reb: val("rebounds"), oreb: val("offensiveRebounds"),
-          dreb: val("defensiveRebounds"), ast: val("assists"), stl: val("steals"),
-          blk: val("blocks"), to: val("turnovers")
-        };
-        map[name.toLowerCase()] = entry;
-        const parts = name.split(/\s+/);
-        if (parts.length >= 2) {
-          map[parts[parts.length - 1].toLowerCase()] = entry;
-          map[(parts[0][0] + ". " + parts[parts.length - 1]).toLowerCase()] = entry;
-        }
-      });
-    });
-    return map;
-  }
-  function lookupPlayerStat(map, name) {
-    if (!name || !map) return null;
-    const n = String(name).replace(/\s+/g, " ").trim().toLowerCase();
-    if (map[n]) return map[n];
-    const last = n.split(" ").pop();
-    if (last && map[last]) return map[last];
-    return null;
-  }
-  function enrichPlayText(raw, statMap) {
-    if (!raw) return "—";
-    if (!statMap) return String(raw);
-    let text = String(raw);
-    text = text.replace(/\(([A-Za-z.''\-\s]+?)\s+assists?\)/gi, function (_, name) {
-      const s = lookupPlayerStat(statMap, name);
-      const n = name.trim();
-      if (!s || s.ast == null) return "(" + n + " assists)";
-      return "(" + n + " assists · " + s.ast + " AST)";
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+(offensive|defensive)\s+rebound\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      if (!s) return m;
-      return m + " (Off:" + (s.oreb != null ? s.oreb : "–") + " Def:" + (s.dreb != null ? s.dreb : "–") + ")";
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+rebound\b/gi, function (m, name) {
-      if (/offensive|defensive/i.test(m) || /\(Off:/i.test(m)) return m;
-      const s = lookupPlayerStat(statMap, name);
-      if (!s) return m;
-      return m + " (Off:" + (s.oreb != null ? s.oreb : "–") + " Def:" + (s.dreb != null ? s.dreb : "–") + ")";
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+steal\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      return (!s || s.stl == null) ? m : (m + " (" + s.stl + " STL)");
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+blocks?\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      return (!s || s.blk == null) ? m : (m + " (" + s.blk + " BLK)");
-    });
-    text = text.replace(/\b([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+turnover\b/gi, function (m, name) {
-      const s = lookupPlayerStat(statMap, name);
-      return (!s || s.to == null) ? m : (m + " (" + s.to + " TO)");
-    });
-    if (!/\(\d+\s*PTS\)/i.test(text)) {
-      text = text.replace(/^(.*?\bmakes\b.*?)(\s*\(|$)/i, function (full, head, tail) {
-        const mm = head.match(/^([A-Za-z.''\-]+(?:\s+[A-Za-z.''\-]+(?:\s+Jr\.|\s+Sr\.|\s+II|\s+III|\s+IV)?)?)\s+makes\b/i);
-        if (!mm) return full;
-        const s = lookupPlayerStat(statMap, mm[1]);
-        if (!s || s.pts == null) return full;
-        return head.replace(/\s+$/, "") + " (" + s.pts + " PTS)" + tail;
-      });
-    }
-    return text;
-  }
-  function renderTeamStats(summary) {
-    const teams = (((summary || {}).boxscore || {}).teams) || [];
-    const prefer = [
-      ["fieldGoalsMade-fieldGoalsAttempted", "FG"],
-      ["fieldGoalPct", "FG%"],
-      ["threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3PT"],
-      ["threePointFieldGoalPct", "3P%"],
-      ["freeThrowsMade-freeThrowsAttempted", "FT"],
-      ["freeThrowPct", "FT%"],
-      ["totalRebounds", "REB"],
-      ["rebounds", "REB"],
-      ["offensiveRebounds", "OREB"],
-      ["defensiveRebounds", "DREB"],
-      ["assists", "AST"],
-      ["steals", "STL"],
-      ["blocks", "BLK"],
-      ["turnovers", "TO"],
-      ["points", "PTS"],
-      ["pointsInPaint", "PITP"],
-      ["fastBreakPoints", "FB PTS"],
-      ["pointsOffTurnovers", "PTS OFF TO"],
-      ["benchPoints", "BENCH"],
-      ["largestLead", "Largest Lead"]
-    ];
-    function parseTeam(t) {
-      const abbr = get(t, "team.abbreviation", "") || get(t, "team.shortDisplayName", "TM");
-      const byKey = {};
-      (t.statistics || t.stats || []).forEach(function (s) {
-        if (!s) return;
-        const val = s.displayValue != null ? s.displayValue : (s.value != null ? String(s.value) : null);
-        if (val == null) return;
-        [s.name, s.abbreviation, s.label, s.displayName].forEach(function (k) {
-          if (k) byKey[k] = val;
-        });
-      });
-      return { abbr: abbr, byKey: byKey };
-    }
-    let parsed = teams.map(parseTeam);
-    if (!parsed.length || parsed.every(function (p) { return !Object.keys(p.byKey).length; })) {
-      const groups = (((summary || {}).boxscore || {}).players) || [];
-      parsed = groups.map(function (group) {
-        const abbr = get(group, "team.abbreviation", "TM");
-        const stats = (group.statistics || [])[0] || {};
-        const keys = stats.keys || [];
-        const totals = stats.totals || [];
-        const byKey = {};
-        keys.forEach(function (k, i) {
-          if (totals[i] != null && totals[i] !== "") byKey[k] = String(totals[i]);
-        });
-        return { abbr: abbr, byKey: byKey };
-      });
-    }
-    if (!parsed.length) {
-      return '<p class="home-game-empty">Team stats will appear once the game starts.</p>';
-    }
-    const seen = {};
-    const rows = [];
-    prefer.forEach(function (pair) {
-      const key = pair[0], label = pair[1];
-      if (seen[label]) return;
-      const vals = parsed.map(function (p) { return p.byKey[key]; });
-      if (vals.some(function (v) { return v != null; })) {
-        seen[label] = true;
-        rows.push({ label: label, vals: vals.map(function (v) { return v != null ? v : "—"; }) });
-      }
-    });
-    if (!rows.length) {
-      return '<p class="home-game-empty">Team stats unavailable.</p>';
-    }
-    const head = parsed.map(function (p) { return "<th>" + p.abbr + "</th>"; }).join("");
-    const body = rows.map(function (r) {
-      return '<tr><td class="ts-label">' + r.label + "</td>" +
-        r.vals.map(function (v) { return "<td>" + v + "</td>"; }).join("") + "</tr>";
-    }).join("");
-    return '<div class="team-stats-wrap"><table class="team-stats-table"><thead><tr><th>Stat</th>' +
-      head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
-  }
-
-
-  function logo(team) {
-    return get(team, "logos.0.href", "") || get(team, "logo", "") || "";
-  }
-  function fmtClock(status) {
-    const period = get(status, "period", "");
-    const clock = get(status, "displayClock", "");
-    const short = get(status, "type.shortDetail", "") || get(status, "type.detail", "");
-    const name = String(get(status, "type.name", "")).toUpperCase();
-    if (name.includes("HALFTIME") || /half/i.test(short)) return "Halftime";
-    if (period && Number(period) > 4) {
-      const ot = Number(period) - 4;
-      return clock ? "OT" + ot + " · " + clock : "OT" + ot;
-    }
-    if (period && clock) return "Q" + period + " · " + clock;
-    return short || "—";
-  }
-
-  async function fetchEvents() {
-    const byId = new Map();
-    function addAll(list) {
-      (list || []).forEach(function (e) {
-        if (e && e.id) byId.set(String(e.id), e);
-      });
-    }
-    // Team schedule (season slate)
-    try {
-      const res = await fetch(SCHEDULE + "?seasontype=2", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        addAll(data.events || []);
-      }
-    } catch (_) {}
-    try {
-      const res = await fetch(SCHEDULE, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        addAll(data.events || []);
-      }
-    } catch (_) {}
-    // Scoreboard for today / nearby days (catches preseason & tip-soon games)
-    try {
-      const res = await fetch(SCOREBOARD + "?limit=100", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        (data.events || []).forEach(function (e) {
-          const comps = get(e, "competitions.0.competitors", []) || [];
-          const isPhi = comps.some(function (c) {
-            return get(c, "team.abbreviation", "") === "PHI" ||
-              /76ers|philadelphia/i.test(get(c, "team.displayName", ""));
-          });
-          if (isPhi) byId.set(String(e.id), e);
-        });
-      }
-    } catch (_) {}
-    return Array.from(byId.values());
-  }
-  async function findLive() {
-    try {
-      const res = await fetch(SCOREBOARD + "?limit=50");
-      if (!res.ok) return null;
-      const data = await res.json();
-      return (data.events || []).find(e => {
-        const comps = get(e, "competitions.0.competitors", []) || [];
-        return comps.some(c => get(c, "team.abbreviation", "") === "PHI") && isLive(e);
-      }) || null;
-    } catch (_) { return null; }
-  }
-  async function fetchSummary(id) {
-    try {
-      const res = await fetch(SUMMARY + "?event=" + encodeURIComponent(id), { cache: "no-store" });
-      if (!res.ok) return null;
-      return await res.json();
-    } catch (_) { return null; }
-  }
-
-  // Full injury notes (shortComment / longComment) live on the league injuries feed
-  async function fetchLeagueInjuriesByAbbr(abbrs) {
-    const want = new Set((abbrs || []).map(function (a) { return String(a || "").toUpperCase(); }).filter(Boolean));
-    if (!want.size) return [];
-    try {
-      const res = await fetch(INJURIES_LEAGUE, { cache: "no-store" });
-      if (!res.ok) return [];
-      const data = await res.json();
-      const out = [];
-      (data.injuries || []).forEach(function (teamBlock) {
-        const sample = ((teamBlock.injuries || [])[0] || {}).athlete || {};
-        // teamBlock has displayName; map via first injury team links is messy — match by known abbr from athlete team? 
-        // League payload uses team id + displayName at top level
-        const name = String(teamBlock.displayName || "").toLowerCase();
-        let abbr = "";
-        if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
-        else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
-        else {
-          // try parse from links href /name/phi/
-          const links = teamBlock.links || [];
-          for (let i = 0; i < links.length; i++) {
-            const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
-            if (m) { abbr = m[1].toUpperCase(); break; }
-          }
-        }
-        // Fallback: id map common NBA
-        if (!abbr && teamBlock.id) {
-          const ID_ABBR = { "20": "PHI", "2": "BOS", "1": "ATL", "17": "BKN", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN", "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL", "14": "MEM", "15": "MIA", "16": "MIL", "18": "MIN", "3": "NO", "19": "NY", "21": "OKC", "22": "ORL", "23": "PHX", "24": "POR", "25": "SAC", "26": "SA", "27": "TOR", "28": "UTAH", "29": "WSH", "30": "CHA" };
-          abbr = ID_ABBR[String(teamBlock.id)] || "";
-        }
-        if (!want.has(abbr)) return;
-        out.push({
-          team: { abbreviation: abbr, displayName: teamBlock.displayName || abbr },
-          injuries: teamBlock.injuries || []
-        });
-      });
-      return out;
-    } catch (_) { return []; }
-  }
-
-  function mergeInjuryGroups(summaryGroups, leagueGroups) {
-    // Prefer league feed (has shortComment). Fall back to summary.
-    if (leagueGroups && leagueGroups.length) return leagueGroups;
-    return summaryGroups || [];
-  }
-
-  function isUpcoming(ev) {
-    if (isLive(ev) || isFinal(ev)) return false;
-    const state = String(get(ev, "competitions.0.status.type.state", "")).toLowerCase();
-    if (state === "pre") return true;
-    const tip = new Date(ev.date).getTime();
-    if (isNaN(tip)) return false;
-    // Not started yet (or tip within last 30 min and not marked final)
-    return tip > Date.now() - 30 * 60 * 1000;
-  }
-
-  function pickFeatured(events) {
-    // Priority: live → upcoming if within 12h of tip → previous final until then → next upcoming
-    const live = events.find(isLive);
-    if (live) return { event: live, mode: "live" };
-
-    const now = Date.now();
-    const TWELVE_H = 12 * 60 * 60 * 1000;
-
-    const upcoming = events
-      .filter(isUpcoming)
-      .sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
-    const next = upcoming[0] || null;
-    const untilNext = next ? (new Date(next.date).getTime() - now) : null;
-
-    const finals = events.filter(isFinal).sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
-    const latestFinal = finals[0] || null;
-
-    // Next tip is within 12 hours → always show that game
-    if (next && untilNext != null && untilNext <= TWELVE_H) {
-      return { event: next, mode: "upcoming" };
+    function signedIn() {
+      return request.auth != null;
     }
 
-    // Otherwise keep showing the last final while we are still more than 12h from tip
-    if (latestFinal) {
-      if (untilNext == null || untilNext > TWELVE_H) {
-        return { event: latestFinal, mode: "final" };
-      }
-    }
-
-    if (next) return { event: next, mode: "upcoming" };
-    return latestFinal ? { event: latestFinal, mode: "final" } : null;
-  }
-
-  function renderBox(summary) {
-    const groups = get(summary, "boxscore.players", []) || [];
-    if (!groups.length) return '<p class="home-game-empty">Box score unavailable yet.</p>';
-    return groups.map(g => {
-      const abbr = get(g, "team.abbreviation", "Team");
-      const name = get(g, "team.displayName", abbr);
-      const st = (g.statistics || [])[0] || {};
-      const labels = st.labels || st.names || [];
-      const keys = st.keys || [];
-      const want = ["minutes","points","rebounds","assists","steals","blocks","turnovers","plusMinus"];
-      let idx = want.map(k => keys.indexOf(k)).filter(i => i >= 0);
-      if (!idx.length) idx = labels.map((_, i) => i).slice(0, 7);
-      const head = idx.map(i => "<th>" + (labels[i] || "") + "</th>").join("");
-      const rows = (st.athletes || []).map(a => {
-        const player = get(a, "athlete.displayName", "Player");
-        const stats = a.stats || [];
-        if ((a.didNotPlay || a.reason) && !stats.length) {
-          return '<tr><td class="pl">' + player + '</td><td colspan="' + idx.length + '" style="text-align:left;color:var(--mid)">' + (a.reason || "DNP") + "</td></tr>";
-        }
-        return "<tr><td class=\"pl\">" + player + "</td>" + idx.map(i => "<td>" + (stats[i] != null ? stats[i] : "—") + "</td>").join("") + "</tr>";
-      }).join("");
-      return '<div class="home-game-box-team">' + name + '</div><div style="overflow-x:auto;padding:0 .65rem 0.5rem"><table><thead><tr><th class="pl">Player</th>' + head + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
-    }).join("");
-  }
-
-
-  function filterInjuriesForEvent(groups, event) {
-    const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-
-    function resolveGameDate(ev) {
-      if (!ev) return null;
-      const candidates = [
-        ev.date,
-        get(ev, "competitions.0.date", null),
-        get(ev, "competitions.0.startDate", null)
-      ];
-      for (let i = 0; i < candidates.length; i++) {
-        const raw = candidates[i];
-        if (!raw) continue;
-        // Avoid date-only strings parsing as UTC midnight (wrong ET day)
-        let s = String(raw);
-        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s = s + "T17:00:00-04:00";
-        const d = new Date(s);
-        if (!isNaN(d.getTime())) return d;
-      }
-      return null;
-    }
-
-    function resolveGameWeekday(ev) {
-      // 1) From status detail text ESPN already localized (most reliable)
-      const detail = [
-        get(ev, "competitions.0.status.type.detail", ""),
-        get(ev, "competitions.0.status.type.shortDetail", ""),
-        get(ev, "status.type.detail", ""),
-        get(ev, "status.type.shortDetail", "")
-      ].join(" ").toLowerCase();
-      for (let i = 0; i < WEEKDAYS.length; i++) {
-        if (detail.indexOf(WEEKDAYS[i]) !== -1 || detail.indexOf(WEEKDAYS[i].slice(0, 3)) !== -1) {
-          // prefer full day if present; short "fri" / "sat" from "Fri,"
-          if (detail.indexOf(WEEKDAYS[i]) !== -1) return WEEKDAYS[i];
-        }
-      }
-      // short forms: fri, sat, mon...
-      const shortMap = { sun: "sunday", mon: "monday", tue: "tuesday", wed: "wednesday", thu: "thursday", fri: "friday", sat: "saturday" };
-      for (const k in shortMap) {
-        if (new RegExp("\\b" + k + "\\b", "i").test(detail)) return shortMap[k];
-      }
-
-      // 2) From Date in America/New_York
-      const d = resolveGameDate(ev);
-      if (d) {
-        try {
-          return d.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase();
-        } catch (_) {}
-      }
-      return "";
-    }
-
-    const gameWeekday = resolveGameWeekday(event);
-    if (!gameWeekday) {
-      // If we cannot tell the tip day, only show season-long absences
-      return (groups || []).map(function (g) {
-        const items = (g.injuries || []).filter(function (inj) {
-          const text = [inj.shortComment, inj.longComment].filter(Boolean).join(" ").toLowerCase();
-          return /season-ending|out for (the )?season|out indefinitely/.test(text) ||
-            (/achilles/.test(text) && /rupture/.test(text));
-        });
-        return { team: g.team, injuries: items };
-      }).filter(function (g) { return g.injuries.length; });
-    }
-
-    function textOf(inj) {
-      return [inj.shortComment, inj.longComment, inj.comment, inj.description]
-        .filter(Boolean).join(" ").toLowerCase();
-    }
-
-    function isSeasonLong(text) {
-      return /out for (the )?season/.test(text) ||
-        /season-ending/.test(text) ||
-        /out indefinitely/.test(text) ||
-        (/achilles/.test(text) && /rupture/.test(text));
-    }
-
-    function keep(inj) {
-      const text = textOf(inj);
-      if (isSeasonLong(text)) return true;
-      if (!text || text.length < 8) return false;
-
-      // Drop notes about a *different* weekday
-      for (let i = 0; i < WEEKDAYS.length; i++) {
-        const d = WEEKDAYS[i];
-        if (d === gameWeekday) continue;
-        if (text.indexOf(d) !== -1) return false;
-      }
-
-      // Keep if note names this tip's weekday
-      if (text.indexOf(gameWeekday) !== -1) return true;
-
-      // Same-day language when we know the tip day
-      if (/\b(tonight|today|this game|tip-?off)\b/.test(text)) return true;
-
-      return false;
-    }
-
-    return (groups || []).map(function (g) {
-      return {
-        team: g.team,
-        injuries: (Array.isArray(g.injuries) ? g.injuries : []).filter(keep)
-      };
-    }).filter(function (g) { return g.injuries && g.injuries.length; });
-  }
-
-  function renderInjuriesBlock(summary, event) {
-    // Always apply the same filter again so only this tip's notes show
-    let groups = filterInjuriesForEvent(
-      (summary && Array.isArray(summary.injuries)) ? summary.injuries : [],
-      event
-    );
-    // Merge admin overrides (if loaded for this event)
-    groups = window.__mergeInjuryOverrides(groups, event) || groups;
-
-    if (!groups.length) {
-      var emptyAdmin = window.__isHomeInjAdmin && window.__isHomeInjAdmin()
-        ? '<div class="home-inj-head-row" style="margin-top:0.35rem"><button type="button" class="home-inj-admin-btn" id="homeInjEditBtn">Edit injury report</button></div>'
-        : '';
-      return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
-        '<p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed for this game.</p>' + emptyAdmin + '</div>';
-    }
-
-    function resolveGameDate(ev) {
-      if (!ev) return null;
-      const candidates = [ev.date, get(ev, "competitions.0.date", null), get(ev, "competitions.0.startDate", null)];
-      for (let i = 0; i < candidates.length; i++) {
-        if (!candidates[i]) continue;
-        const d = new Date(candidates[i]);
-        if (!isNaN(d.getTime())) return d;
-      }
-      return null;
-    }
-    const gameDate = resolveGameDate(event);
-    const gameWeekday = gameDate
-      ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase()
-      : "";
-
-    function collectText(inj) {
-      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
-        get(inj, "type.description", ""), get(inj, "details.type", ""), get(inj, "details.detail", "")]
-        .filter(Boolean).join(" ");
-    }
-
-    function displayStatus(inj) {
-      const text = collectText(inj);
-      const official = String(inj.status || "").toLowerCase();
-      const outFromWriteup = (
-        /\bis out\b/i.test(text) ||
-        /\bremains out\b/i.test(text) ||
-        /\bwonn'?t play\b/i.test(text) ||
-        /\bwill not play\b/i.test(text) ||
-        /\bwon'?t be available\b/i.test(text) ||
-        /\bwon'?t suit up\b/i.test(text) ||
-        /\bruled out\b/i.test(text) ||
-        /\bout for (the )?season\b/i.test(text) ||
-        /\bseason-ending\b/i.test(text)
+    // Admin: token email OR admins/{uid} document
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.email == 'rhatus13@gmail.com'
+        || (
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+          && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('isAdmin', true) != false
+        )
       );
-      if (outFromWriteup || official === "out" || official.includes("out for season")) {
-        return { label: "OUT", cls: "inj-out" };
-      }
-      if (/\bdoubtful\b/i.test(text) || official.includes("doubtful")) return { label: "Doubtful", cls: "inj-doubt" };
-      if (/\bquestionable\b/i.test(text) || official.includes("questionable")) return { label: "Questionable", cls: "inj-q" };
-      if (official.includes("day-to-day") || official.includes("day to day") || /\bgtd\b/i.test(text)) {
-        return { label: "GTD", cls: "inj-gtd" };
-      }
-      return { label: inj.status || "Listed", cls: "inj-other" };
     }
 
-    function formatInjDate(iso) {
-      if (!iso) return null;
-      try {
-        const d = new Date(iso);
-        if (isNaN(d.getTime())) return null;
-        return d.toLocaleString("en-US", {
-          timeZone: "America/New_York",
-          month: "short", day: "numeric", year: "numeric",
-          hour: "numeric", minute: "2-digit"
-        }) + " ET";
-      } catch (_) { return null; }
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function userExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    // Active accounts only (banned / suspended cannot create content)
+    function isNotBanned() {
+      return signedIn() && (
+        !userExists()
+        || (
+          userDoc().data.get('accountStatus', 'active') != 'banned'
+          && (
+            userDoc().data.get('accountStatus', 'active') != 'suspended'
+            || (
+              userDoc().data.keys().hasAny(['suspendedUntil'])
+              && userDoc().data.suspendedUntil < request.time
+            )
+          )
+        )
+      );
+    }
+    function hasPerm(perm) {
+      return isAdmin() || (
+        signedIn() && userExists() && userDoc().data.get(perm, false) == true
+      );
     }
 
-    let latestMs = 0;
-    groups.forEach(function (g) {
-      (g.injuries || []).forEach(function (inj) {
-        const ms = inj.date ? new Date(inj.date).getTime() : 0;
-        if (ms && ms > latestMs) latestMs = ms;
-      });
-    });
-    const updatedLabel = latestMs ? formatInjDate(new Date(latestMs).toISOString()) : null;
-    const dayNote = gameWeekday ? (gameWeekday.charAt(0).toUpperCase() + gameWeekday.slice(1)) : "this game";
 
-    const sharePayload = {
-      updatedLabel: updatedLabel,
-      dayNote: dayNote,
-      gameDate: gameDate ? gameDate.toISOString() : null,
-      matchup: (function () {
-        try {
-          const comps = get(event, "competitions.0.competitors", []) || [];
-          const home = comps.find(function (c) { return c && c.homeAway === "home"; }) || comps[0];
-          const away = comps.find(function (c) { return c && c.homeAway === "away"; }) || comps[1];
-          const h = get(home, "team.abbreviation", "") || get(home, "team.shortDisplayName", "HOME");
-          const a = get(away, "team.abbreviation", "") || get(away, "team.shortDisplayName", "AWAY");
-          return a + " @ " + h;
-        } catch (e) { return "Injury Report"; }
-      })(),
-      teams: groups.map(function (g) {
-        const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-        const items = (g.injuries || []).map(function (inj) {
-          const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
-          const st = displayStatus(inj);
-          const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
-          const comment = inj.shortComment || inj.longComment || "";
-          return { name: name, label: st.label, cls: st.cls, injuryType: injuryType, comment: comment };
-        });
-        return { team: team, items: items };
-      })
-    };
-    try { window.__injurySharePayload = sharePayload; } catch (e) {}
-    try {
-      window.__homeInjEvent = event;
-      window.__homeInjGroups = groups;
-      window.__homeInjShareMeta = sharePayload;
-    } catch (e) {}
-
-    const adminBtn = (window.__isHomeInjAdmin && window.__isHomeInjAdmin())
-      ? '<button type="button" class="home-inj-admin-btn" id="homeInjEditBtn">Edit</button>'
-      : '';
-    const head = '<div class="home-inj-head-row">' +
-        '<div class="home-inj-title" style="margin:0;">Injury report</div>' +
-        '<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">' +
-          adminBtn +
-          '<button type="button" class="home-inj-share-btn" id="homeInjShareBtn">Share graphic</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="home-inj-updated">' +
-        (updatedLabel ? ('Last ESPN update: <strong>' + updatedLabel + '</strong> · ') : '') +
-        'Only <strong>' + dayNote + '</strong> game notes' +
-      '</div>';
-
-    const body = groups.map(function (g) {
-      const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-      const items = (g.injuries || []).slice().sort(function (a, b) {
-        return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
-      });
-      const rows = items.map(function (inj) {
-        const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
-        const st = displayStatus(inj);
-        const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
-        const comment = inj.shortComment || inj.longComment || "";
-        const playerUpdated = formatInjDate(inj.date);
-        return '<li class="home-inj-row">' +
-          '<div class="home-inj-main">' +
-            '<span class="home-inj-name">' + name + '</span>' +
-            '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
-          '</div>' +
-          (injuryType ? '<div class="home-inj-meta">' + injuryType + '</div>' : '') +
-          (comment ? '<div class="home-inj-comment">' + comment + '</div>' : '') +
-          (playerUpdated ? '<div class="home-inj-player-updated">Updated ' + playerUpdated + '</div>' : '') +
-          '</li>';
-      }).join("");
-      return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
-    }).join("");
-
-    return '<div class="home-inj">' + head + body + '</div>';
-  }
-
-  function renderBoard(event, summary, mode) {
-
-    const card = document.getElementById("home-game-card");
-    const body = document.getElementById("home-game-body");
-    const kicker = document.getElementById("home-game-kicker");
-    const clockEl = document.getElementById("home-game-clock");
-    const note = document.getElementById("home-game-note");
-    if (!card || !body) return;
-
-    card.classList.toggle("is-live", mode === "live");
-    kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : "Up next");
-
-    let comps = get(summary, "header.competitions.0.competitors", null);
-    if (!Array.isArray(comps) || !comps.length) {
-      comps = get(event, "competitions.0.competitors", null);
-    }
-    if (!Array.isArray(comps)) comps = [];
-    let home = comps.find(c => c && c.homeAway === "home") || comps[0] || null;
-    let away = comps.find(c => c && c.homeAway === "away") || comps[1] || null;
-    if ((!home || !away) && event && event.name) {
-      const m = String(event.name).match(/^(.+?)\s+at\s+(.+)$/i);
-      if (m) {
-        if (!away) away = { team: { displayName: m[1].trim(), shortDisplayName: m[1].trim() } };
-        if (!home) home = { team: { displayName: m[2].trim(), shortDisplayName: m[2].trim() } };
-      }
-    }
-    home = home || {};
-    away = away || {};
-    const status = get(summary, "header.competitions.0.status", null) || get(event, "competitions.0.status", {}) || {};
-
-    if (mode === "upcoming") {
-      const tip = new Date(event.date);
-      const tipStr = isNaN(tip) ? "TBD" : tip.toLocaleString("en-US", {
-        weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
-      });
-      clockEl.textContent = tipStr;
-      function sideLabel(side, fb) {
-        return get(side, "team.abbreviation", null) ||
-          get(side, "team.shortDisplayName", null) ||
-          get(side, "team.displayName", null) ||
-          get(side, "team.location", null) || fb;
-      }
-      const awayN = sideLabel(away, "AWAY");
-      const homeN = sideLabel(home, "HOME");
-      body.innerHTML =
-        '<div class="home-game-scoreline">' +
-          '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
-          '<div class="home-game-score">vs</div>' +
-          '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
-        '</div>' +
-        renderInjuriesBlock(summary, event) +
-        '<p class="home-game-meta">Upcoming tip · Live scores & play-by-play appear here when the game starts.</p>';
-      note.textContent = "";
-      return;
+    // --- ADMINS ---
+    match /admins/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if false;
     }
 
-    clockEl.textContent = mode === "final"
-      ? (get(status, "type.shortDetail", "Final") || "Final")
-      : fmtClock(status);
-
-    const awayScore = get(away, "score", "0");
-    const homeScore = get(home, "score", "0");
-    const awayN = get(away, "team.abbreviation", "AWAY");
-    const homeN = get(home, "team.abbreviation", "HOME");
-
-    let plays = Array.isArray(get(summary, "plays", null)) ? summary.plays.slice() : [];
-    plays = plays.reverse().slice(0, 40);
-    const playerStatMap = buildPlayerStatMap(summary || {});
-    const pbp = plays.length
-      ? '<ul class="home-game-pbp">' + plays.map(p => {
-          const n = get(p, "period.number", "");
-          const clk = (n ? ("Q" + n + " ") : "") + (get(p, "clock.displayValue", "") || "");
-          const text = enrichPlayText(get(p, "text", "") || "—", playerStatMap);
-          const sc = (get(p, "awayScore", "") !== "" ? get(p, "awayScore", "") + "–" + get(p, "homeScore", "") : "");
-          return '<li><span class="clk">' + clk + '</span><span>' + text + '</span><span class="sc">' + sc + "</span></li>";
-        }).join("") + "</ul>"
-      : '<p class="home-game-empty">Play-by-play will appear as the game progresses…</p>';
-
-    body.innerHTML =
-      '<div class="home-game-scoreline">' +
-        '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
-        '<div class="home-game-score">' + awayScore + "–" + homeScore + "</div>" +
-        '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
-      "</div>" +
-      '<div class="home-game-tabs">' +
-        '<button type="button" class="home-game-tab' + (panel === "pbp" ? " on" : "") + '" data-hg-panel="pbp">Play-by-play</button>' +
-        '<button type="button" class="home-game-tab' + (panel === "box" ? " on" : "") + '" data-hg-panel="box">Box score</button>' +
-        '<button type="button" class="home-game-tab' + (panel === "team" ? " on" : "") + '" data-hg-panel="team">Team stats</button>' +
-      "</div>" +
-      '<div class="hg-panel-pbp" style="' + (panel === "pbp" ? "" : "display:none") + '">' + pbp + "</div>" +
-      '<div class="hg-panel-box home-game-box" style="' + (panel === "box" ? "" : "display:none") + '">' + renderBox(summary || {}) + "</div>" +
-      '<div class="hg-panel-team" style="' + (panel === "team" ? "" : "display:none") + '">' + renderTeamStats(summary || {}) + "</div>";
-
-    note.textContent = mode === "live" ? "Updates automatically" : "Full box score & PBP";
-  }
-
-  async function refresh() {
-    try {
-      const live = await findLive();
-      let chosen;
-      if (live) chosen = { event: live, mode: "live" };
-      else {
-        const events = await fetchEvents();
-        chosen = pickFeatured(events);
-      }
-      if (!chosen) {
-        document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">No Sixers games to show right now.</p>';
-        return;
-      }
-      featured = chosen.event;
-      let summary = await fetchSummary(featured.id);
-      if (summary) lastSummary = summary;
-      else if (chosen.mode !== "upcoming") summary = lastSummary;
-      summary = summary || {};
-      // Enrich with league injury writeups (shortComment) for PHI + opponent
-      // Injury report: ONLY ESPN league write-ups (have shortComment), filtered to this tip
-      try {
-        const comps = get(featured, "competitions.0.competitors", []) ||
-          get(summary, "header.competitions.0.competitors", []) || [];
-        let abbrs = comps.map(function (c) { return get(c, "team.abbreviation", ""); }).filter(Boolean);
-        if (!abbrs.length) abbrs = ["PHI"];
-        if (abbrs.indexOf("PHI") === -1) abbrs.push("PHI");
-        const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
-        // Never use summary.injuries fallback — those lack shortComment and list every GTD
-        summary.injuries = filterInjuriesForEvent(leagueInj || [], featured);
-      } catch (injErr) {
-        console.warn("injuries", injErr);
-        summary.injuries = [];
-      }
-      await __loadInjuryOverride(featured);
-      window.__homeInjSummary = summary;
-      window.__refreshHomeGame = function () { refresh(); };
-      renderBoard(featured, summary, chosen.mode);
-
-
-      clearTimeout(timer);
-      timer = setTimeout(refresh, chosen.mode === "live" ? 2000 : 60000);
-    } catch (err) {
-      console.warn("home game", err);
-      document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">Could not load game center.</p>';
+    // --- SIDEBAR ARTICLES ---
+    match /sidebar_articles/{articleId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
-  }
 
-  document.addEventListener("click", e => {
-    const btn = e.target.closest("[data-hg-panel]");
-    if (!btn) return;
-    panel = btn.getAttribute("data-hg-panel") || "pbp";
-    document.querySelectorAll(".home-game-tab").forEach(b => b.classList.toggle("on", b.getAttribute("data-hg-panel") === panel));
-    const pbp = document.querySelector(".hg-panel-pbp");
-    const box = document.querySelector(".hg-panel-box");
-    const team = document.querySelector(".hg-panel-team");
-    if (pbp) pbp.style.display = panel === "pbp" ? "" : "none";
-    if (box) box.style.display = panel === "box" ? "" : "none";
-    if (team) team.style.display = panel === "team" ? "" : "none";
-  });
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh);
-  else refresh();
-})();
-
-  
-  /* Admin injury overrides for homepage game card */
-  window.__injuryOverrideCache = window.__injuryOverrideCache || {};
-  window.__isHomeInjAdmin = function () {
-    try {
-      var u = window.auth && window.auth.currentUser;
-      if (!u) return false;
-      if (u.email && u.email.toLowerCase() === "rhatus13@gmail.com") return true;
-      if (localStorage.getItem("canWriteArticles") === "1") return true;
-      if (localStorage.getItem("isAdmin") === "1") return true;
-    } catch (e) {}
-    return false;
-  };
-
-  function __injEventKey(event) {
-    if (!event) return null;
-    if (event.id) return String(event.id);
-    var d = event.date ? new Date(event.date) : null;
-    if (d && !isNaN(d.getTime())) {
-      return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    // --- TRENDING HEADLINES ---
+    match /trending_headlines/{headlineId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
-    return null;
-  }
 
-  window.__mergeInjuryOverrides = function (groups, event) {
-    var key = __injEventKey(event);
-    var ov = key && window.__injuryOverrideCache[key];
-    if (!ov || !Array.isArray(ov.players) || !ov.players.length) return groups;
-    var byTeam = {};
-    ov.players.forEach(function (p) {
-      var team = p.team || "PHI";
-      if (!byTeam[team]) byTeam[team] = [];
-      byTeam[team].push({
-        status: p.status || "Listed",
-        shortComment: p.comment || "",
-        date: p.updatedAt || ov.updatedAt || new Date().toISOString(),
-        athlete: { displayName: p.name || "Player" },
-        details: { type: p.injuryType || "", detail: "" }
-      });
-    });
-    return Object.keys(byTeam).map(function (team) {
-      return { team: { abbreviation: team, displayName: team }, injuries: byTeam[team] };
-    });
-  };
-
-  async function __loadInjuryOverride(event) {
-    var key = __injEventKey(event);
-    if (!key || !window.db) return null;
-    try {
-      var snap = await window.db.collection("injuryOverrides").doc(key).get();
-      if (snap.exists) {
-        var data = snap.data() || {};
-        window.__injuryOverrideCache[key] = data;
-        return data;
-      }
-    } catch (e) { console.warn("injury override load", e); }
-    return null;
-  }
-
-  function __openInjEditor() {
-    var overlay = document.getElementById("injEditOverlay");
-    var list = document.getElementById("injEditList");
-    if (!overlay || !list) return;
-    var groups = window.__homeInjGroups || [];
-    var rows = [];
-    groups.forEach(function (g) {
-      var team = (g.team && (g.team.abbreviation || g.team.displayName)) || "Team";
-      (g.injuries || []).forEach(function (inj) {
-        var name = (inj.athlete && (inj.athlete.displayName || inj.athlete.shortName)) || "Player";
-        var st = String(inj.status || "Listed");
-        var low = st.toLowerCase();
-        if (low.indexOf("out") >= 0) st = "OUT";
-        else if (low.indexOf("doubt") >= 0) st = "Doubtful";
-        else if (low.indexOf("question") >= 0) st = "Questionable";
-        else if (low.indexOf("gtd") >= 0 || low.indexOf("day") >= 0) st = "GTD";
-        rows.push({
-          name: name,
-          team: team,
-          status: st,
-          injuryType: (inj.details && (inj.details.type || inj.details.detail)) || "",
-          comment: inj.shortComment || inj.longComment || ""
-        });
-      });
-    });
-    var key = __injEventKey(window.__homeInjEvent);
-    var ov = key && window.__injuryOverrideCache[key];
-    if (ov && Array.isArray(ov.players) && ov.players.length) {
-      rows = ov.players.map(function (p) {
-        return { name: p.name || "", team: p.team || "PHI", status: p.status || "Listed", injuryType: p.injuryType || "", comment: p.comment || "" };
-      });
+    // --- EDITORIAL ARTICLES ---
+    match /editorial_articles/{articleId} {
+      allow read: if true;
+      allow create, update: if isAdmin() || hasPerm('canWriteArticles');
+      allow delete: if isAdmin()
+        || (hasPerm('canWriteArticles') && resource.data.authorUid == request.auth.uid);
     }
-    if (!rows.length) rows = [{ name: "", team: "PHI", status: "OUT", injuryType: "", comment: "" }];
-    window.__injEditRows = rows;
-    __paintInjEditList();
-    var st = document.getElementById("injEditStatus");
-    if (st) st.textContent = "";
-    overlay.classList.add("active");
-    overlay.setAttribute("aria-hidden", "false");
-  }
 
-  function __paintInjEditList() {
-    var list = document.getElementById("injEditList");
-    if (!list) return;
-    var rows = window.__injEditRows || [];
-    var statusOpts = ["OUT", "Doubtful", "Questionable", "GTD", "Probable", "Available", "Listed"];
-    list.innerHTML = rows.map(function (r, i) {
-      var opts = statusOpts.map(function (s) {
-        return '<option value="' + s + '"' + (r.status === s ? " selected" : "") + ">" + s + "</option>";
-      }).join("");
-      return '<div class="inj-edit-row" data-i="' + i + '">' +
-        '<div class="inj-edit-row-grid">' +
-          '<div><label>Player</label><input data-f="name" value="' + String(r.name || "").replace(/"/g, "&quot;") + '"/></div>' +
-          '<div><label>Team</label><input data-f="team" value="' + String(r.team || "").replace(/"/g, "&quot;") + '" placeholder="PHI"/></div>' +
-          '<div><label>Status</label><select data-f="status">' + opts + "</select></div>" +
-          '<div><label>Injury</label><input data-f="injuryType" value="' + String(r.injuryType || "").replace(/"/g, "&quot;") + '" placeholder="Ankle"/></div>' +
-        "</div>" +
-        '<div style="margin-top:0.45rem"><label>Note</label><textarea data-f="comment">' + String(r.comment || "").replace(/</g, "&lt;") + "</textarea></div>" +
-        '<div class="inj-edit-row-actions"><button type="button" class="inj-edit-remove" data-remove="' + i + '">Remove</button></div>' +
-      "</div>";
-    }).join("");
-  }
+    // --- SIXERS UPDATES ---
+    match /social_posts/{postId} {
+      allow read: if true;
+      allow create, delete: if isAdmin() || hasPerm('canWriteArticles');
+      allow update: if false;
+    }
 
-  function __readInjEditRows() {
-    var list = document.getElementById("injEditList");
-    if (!list) return [];
-    var rows = [];
-    list.querySelectorAll(".inj-edit-row").forEach(function (el) {
-      var get = function (f) {
-        var n = el.querySelector('[data-f="' + f + '"]');
-        return n ? n.value.trim() : "";
-      };
-      var name = get("name");
-      if (!name) return;
-      rows.push({
-        name: name,
-        team: get("team") || "PHI",
-        status: get("status") || "Listed",
-        injuryType: get("injuryType"),
-        comment: get("comment"),
-        updatedAt: new Date().toISOString()
-      });
-    });
-    return rows;
-  }
+    // --- FAN POLLS ---
+    match /fan_polls/{pollId} {
+      allow read: if true;
+      allow create, delete: if isAdmin() || hasPerm('canWriteArticles');
+      allow update: if isAdmin() || (
+        signedIn() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['options', 'updatedAt'])
+      );
+    }
 
-  async function __saveInjOverrides() {
-    var status = document.getElementById("injEditStatus");
-    var user = window.auth && window.auth.currentUser;
-    if (!user || !window.__isHomeInjAdmin()) {
-      if (status) status.textContent = "Admin sign-in required.";
-      return;
+    // --- COMMUNITY FEED ---
+    match /community_posts/{postId} {
+      allow read: if true;
+      allow create: if isNotBanned() && (
+        hasPerm('canPostCommunity')
+        || !userExists()
+        || userDoc().data.get('canPostCommunity', true) != false
+      );
+      // Default: active users may post unless canPostCommunity explicitly false
+      allow update: if isNotBanned() && signedIn();
+      allow delete: if signedIn() &&
+        (resource.data.authorId == request.auth.uid || isAdmin() || hasPerm('canModerate'));
     }
-    if (!window.db) {
-      if (status) status.textContent = "Database not ready.";
-      return;
+
+    // --- COMMUNITY TRADES ---
+    match /community_trades/{tradeId} {
+      allow read: if true;
+      allow create: if isNotBanned()
+        && request.resource.data.authorId == request.auth.uid
+        && (isAdmin() || hasPerm('canPostTrades') || !userExists() || userDoc().data.get('canPostTrades', true) == true)
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120;
+      allow update: if signedIn() && (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes', 'voters'])
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments'])
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes', 'voters', 'comments'])
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['poll'])
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'notes', 'summary', 'editedAt'])
+        || resource.data.authorId == request.auth.uid
+        || isAdmin()
+      );
+      allow delete: if signedIn() &&
+        (resource.data.authorId == request.auth.uid || isAdmin());
     }
-    var key = __injEventKey(window.__homeInjEvent);
-    if (!key) {
-      if (status) status.textContent = "No active game.";
-      return;
+
+    // --- FOLLOWS ---
+    match /follows/{followId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.followerId == request.auth.uid
+        && request.resource.data.followingId is string
+        && request.resource.data.followingId.size() > 0
+        && request.resource.data.followerId != request.resource.data.followingId;
+      allow delete: if signedIn() && resource.data.followerId == request.auth.uid;
+      allow update: if false;
     }
-    var players = __readInjEditRows();
-    if (status) status.textContent = "Saving…";
-    try {
-      var payload = {
-        eventId: key,
-        players: players,
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.uid,
-        updatedEmail: user.email || ""
-      };
-      await window.db.collection("injuryOverrides").doc(key).set(payload, { merge: true });
-      window.__injuryOverrideCache[key] = payload;
-      if (status) status.textContent = "Saved.";
-      var overlay = document.getElementById("injEditOverlay");
-      if (overlay) { overlay.classList.remove("active"); overlay.setAttribute("aria-hidden", "true"); }
-      if (typeof window.__refreshHomeGame === "function") window.__refreshHomeGame();
-      else location.reload();
-    } catch (e) {
-      console.warn(e);
-      if (status) status.textContent = "Save failed. Add Firestore rules for injuryOverrides.";
+
+    // --- COMMUNITY REPORTS ---
+    match /community_reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.type is string;
+      allow update, delete: if isAdmin();
+    }
+
+    // --- NOTIFICATIONS ---
+    match /notifications/{notificationId} {
+      allow read: if signedIn() &&
+        (resource.data.recipientId == request.auth.uid || isAdmin());
+      allow create: if signedIn();
+      allow update: if signedIn() && resource.data.recipientId == request.auth.uid;
+      allow delete: if signedIn() &&
+        (resource.data.recipientId == request.auth.uid || isAdmin());
+    }
+
+    // --- USER PROFILES ---
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if signedIn() && request.auth.uid == userId
+        && !request.resource.data.keys().hasAny([
+          'canWriteArticles', 'canPostTrades', 'canPostCommunity', 'canModerate',
+          'isAdmin', 'accountStatus', 'banReason', 'suspendedUntil'
+        ]);
+      // Self-update profile fields only — cannot grant own permissions or change status
+      allow update: if signedIn() && request.auth.uid == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'canWriteArticles', 'canPostTrades', 'canPostCommunity', 'canModerate',
+          'isAdmin', 'role', 'accountStatus', 'banReason', 'suspendedUntil', 'adminNote', 'updatedBy'
+        ]);
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['followerCount', 'followingCount']);
+      // Admin-only privilege / ban changes
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- MOCK DRAFT ---
+    match /mock_draft_rooms/{roomId} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if signedIn();
+      allow delete: if signedIn() &&
+        (resource.data.hostUid == request.auth.uid || resource.data.createdBy == request.auth.uid || isAdmin());
+    }
+    match /mock_draft_rooms/{roomId}/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+    match /mockDraftRooms/{roomId} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if signedIn();
+      allow delete: if signedIn() &&
+        (resource.data.hostUid == request.auth.uid || resource.data.createdBy == request.auth.uid || isAdmin());
+    }
+    match /mockDraftRooms/{roomId}/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+
+    // --- PICK'EM ---
+    // READS ARE PUBLIC so guests can browse picks, lock times and leaderboards.
+    // Writes are unchanged (guests still cannot make picks).
+    match /questions/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /correctAnswers/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /lockTimes/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /questionSchedules/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /weeks/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /weekSchedules/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /winners/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /picks/{document=**} {
+      allow create: if signedIn();
+      allow read: if true;
+      // Owner can update their own picks; admin can update any (e.g. archive seasonId)
+      allow update: if signedIn() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow delete: if signedIn() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    match /scoreOverrides/{document=**} {
+      allow read: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /leaderboardArchives/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // --- GROUP LEAGUES (simplified — signed-in users can create/join) ---
+    // Reads stay signed-in only: league docs store the group password.
+    match /leagues/{leagueId} {
+      allow read: if signedIn();
+      // Any signed-in user may create a league they own
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.code is string;
+      allow update, delete: if signedIn()
+        && resource.data.createdBy == request.auth.uid;
+    }
+    match /leagueMembers/{memberId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.leagueId is string;
+      allow delete: if signedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if false;
+    }
+
+
+    // --- GROUP CHAT ---
+    match /leagueChats/{leagueId}/messages/{msgId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 400;
+      allow update, delete: if false;
+    }
+
+    // --- SITE CONTENT ---
+    match /siteContent/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    // --- CONTACT FORM ---
+    match /contactMessages/{msgId} {
+      allow create: if true
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 5000;
+      allow read, update, delete: if isAdmin();
     }
   }
-
-  async function __clearInjOverrides() {
-    var key = __injEventKey(window.__homeInjEvent);
-    if (!key || !window.db) return;
-    var status = document.getElementById("injEditStatus");
-    try {
-      await window.db.collection("injuryOverrides").doc(key).delete();
-      delete window.__injuryOverrideCache[key];
-      if (status) status.textContent = "Overrides cleared.";
-      var overlay = document.getElementById("injEditOverlay");
-      if (overlay) { overlay.classList.remove("active"); overlay.setAttribute("aria-hidden", "true"); }
-      if (typeof window.__refreshHomeGame === "function") window.__refreshHomeGame();
-      else location.reload();
-    } catch (e) {
-      if (status) status.textContent = "Could not clear.";
-    }
-  }
-
-  document.addEventListener("click", function (e) {
-    if (e.target && e.target.id === "homeInjEditBtn") {
-      e.preventDefault();
-      __openInjEditor();
-    }
-    if (e.target && e.target.id === "injEditClose") {
-      var o = document.getElementById("injEditOverlay");
-      if (o) { o.classList.remove("active"); o.setAttribute("aria-hidden", "true"); }
-    }
-    if (e.target && e.target.id === "injEditOverlay") {
-      e.target.classList.remove("active");
-      e.target.setAttribute("aria-hidden", "true");
-    }
-    if (e.target && e.target.id === "injEditAdd") {
-      window.__injEditRows = __readInjEditRows();
-      window.__injEditRows.push({ name: "", team: "PHI", status: "OUT", injuryType: "", comment: "" });
-      __paintInjEditList();
-    }
-    if (e.target && e.target.id === "injEditSave") __saveInjOverrides();
-    if (e.target && e.target.id === "injEditClear") {
-      if (confirm("Remove all admin overrides for this game and use ESPN only?")) __clearInjOverrides();
-    }
-    if (e.target && e.target.getAttribute && e.target.getAttribute("data-remove") != null) {
-      var idx = Number(e.target.getAttribute("data-remove"));
-      window.__injEditRows = __readInjEditRows();
-      window.__injEditRows.splice(idx, 1);
-      if (!window.__injEditRows.length) window.__injEditRows.push({ name: "", team: "PHI", status: "OUT", injuryType: "", comment: "" });
-      __paintInjEditList();
-    }
-  });
-
-function buildInjuryShareCanvas(payload) {
-    if (!payload) return null;
-    const W = 1080;
-    const PAD = 48;
-    const NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
-    const WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
-    const MID = "#64748b", BORDER = "#e4e8f0";
-    const BADGE = {
-      "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
-      "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
-      "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
-      "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
-      "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
-    };
-
-    const teams = payload.teams || [];
-    let rows = 0;
-    teams.forEach(function (t) { rows += Math.max((t.items || []).length, 1); });
-    const headerH = 168;
-    const rowH = 72;
-    const teamHeadH = 40;
-    const H = headerH + teams.length * teamHeadH + rows * rowH + 90;
-
-    const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d");
-
-    function rr(x, y, w, h, r, fill) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + w, y, x + w, y + h, r);
-      ctx.arcTo(x + w, y + h, x, y + h, r);
-      ctx.arcTo(x, y + h, x, y, r);
-      ctx.arcTo(x, y, x + w, y, r);
-      ctx.closePath();
-      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-    }
-    function text(str, x, y, font, color, align) {
-      ctx.font = font;
-      ctx.fillStyle = color;
-      ctx.textAlign = align || "left";
-      ctx.fillText(str, x, y);
-    }
-    function wrapText(str, maxW, font) {
-      ctx.font = font;
-      const words = String(str || "").split(/\s+/);
-      const lines = [];
-      let line = "";
-      words.forEach(function (w) {
-        const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > maxW && line) {
-          lines.push(line);
-          line = w;
-        } else line = test;
-      });
-      if (line) lines.push(line);
-      return lines.slice(0, 2);
-    }
-
-    ctx.fillStyle = CREAM;
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = NAVY;
-    ctx.fillRect(0, 0, W, 132);
-    ctx.fillStyle = RED;
-    ctx.fillRect(0, 132, W, 4);
-
-    text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
-    text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
-    text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
-    if (payload.updatedLabel) {
-      text("Updated " + payload.updatedLabel, W - PAD, 116, "500 14px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.65)", "right");
-    }
-
-    let y = headerH;
-    teams.forEach(function (team) {
-      rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
-      text(String(team.team || "Team").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
-      y += teamHeadH;
-      const items = team.items || [];
-      if (!items.length) {
-        text("No injuries listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
-        y += rowH;
-        return;
-      }
-      items.forEach(function (item) {
-        rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        text(item.name, PAD + 20, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
-        const badge = BADGE[item.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
-        const label = String(item.label || "Listed").toUpperCase();
-        ctx.font = "800 12px Lexend, system-ui, sans-serif";
-        const bw = ctx.measureText(label).width + 22;
-        const bx = W - PAD - 20 - bw;
-        rr(bx, y + 12, bw, 26, 13, badge.bg);
-        ctx.strokeStyle = badge.border;
-        ctx.stroke();
-        text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
-        const sub = item.injuryType || item.comment || "";
-        if (sub) {
-          const lines = wrapText(sub, W - PAD * 2 - 40, "500 13px Lexend, system-ui, sans-serif");
-          lines.forEach(function (ln, i) {
-            text(ln, PAD + 20, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
-          });
-        }
-        y += rowH;
-      });
-    });
-
-    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
-    return canvas;
-  }
-
-  function openInjuryShareModal() {
-    const payload = window.__injurySharePayload;
-    if (!payload || !(payload.teams || []).length) return;
-    const canvas = buildInjuryShareCanvas(payload);
-    if (!canvas) return;
-    const overlay = document.getElementById("injShareOverlay");
-    const img = document.getElementById("injShareImg");
-    if (!overlay || !img) return;
-    img.src = canvas.toDataURL("image/png");
-    overlay.dataset.png = img.src;
-    overlay.classList.add("active");
-    overlay.setAttribute("aria-hidden", "false");
-  }
-
-  function closeInjuryShareModal() {
-    const overlay = document.getElementById("injShareOverlay");
-    if (!overlay) return;
-    overlay.classList.remove("active");
-    overlay.setAttribute("aria-hidden", "true");
-  }
-
-  document.addEventListener("click", function (e) {
-    if (e.target && e.target.id === "homeInjShareBtn") {
-      e.preventDefault();
-      openInjuryShareModal();
-    }
-    if (e.target && (e.target.id === "injShareClose" || e.target.id === "injShareOverlay")) {
-      if (e.target.id === "injShareOverlay" && e.target !== e.currentTarget) return;
-      closeInjuryShareModal();
-    }
-  });
-  const injOverlay = document.getElementById("injShareOverlay");
-  if (injOverlay) {
-    injOverlay.addEventListener("click", function (e) {
-      if (e.target === injOverlay) closeInjuryShareModal();
-    });
-  }
-  const injDl = document.getElementById("injShareDownload");
-  if (injDl) {
-    injDl.addEventListener("click", function () {
-      const overlay = document.getElementById("injShareOverlay");
-      const href = overlay && overlay.dataset.png;
-      if (!href) return;
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = "sixershoops-injury-report.png";
-      a.click();
-    });
-  }
-  const injCopy = document.getElementById("injShareCopy");
-  if (injCopy) {
-    injCopy.addEventListener("click", async function () {
-      try {
-        const overlay = document.getElementById("injShareOverlay");
-        const href = overlay && overlay.dataset.png;
-        if (!href || !navigator.clipboard || !window.ClipboardItem) return;
-        const res = await fetch(href);
-        const blob = await res.blob();
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        injCopy.textContent = "Copied";
-        setTimeout(function () { injCopy.textContent = "Copy image"; }, 1600);
-      } catch (err) {}
-    });
-  }
-
-</script>
-
-
-<footer class="footer" id="site-footer">
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div class="footer-brand-block">
-        <a href="/" class="footer-brand">
-          <img src="/favicon.ico" alt="" class="footer-logo" width="28" height="28">
-          <span class="footer-brand-name">SixersHoops</span>
-        </a>
-        <p class="footer-tagline">Independent Philadelphia 76ers coverage, tools, and community for fans who want the full picture.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <h3 class="footer-title">Explore</h3>
-          <ul class="footer-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/pickem">Pick'em</a></li>
-            <li><a href="/nba-trade-machine">Trade Machine</a></li>
-            <li><a href="/schedule">Schedule</a></li>
-            <li><a href="/roster">Roster</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h3 class="footer-title">Support</h3>
-          <ul class="footer-links">
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li><a href="mailto:info@sixershoops.com">info@sixershoops.com</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h3 class="footer-title">Legal</h3>
-          <ul class="footer-links">
-            <li><a href="/terms-of-service">Terms of Service</a></li>
-            <li><a href="/privacy-policy">Privacy Policy</a></li>
-            <li><a href="/cookie-policy">Cookie Policy</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="footer-disclaimer">
-      <p>SixersHoops is an independent fan site and is not affiliated with, endorsed by, or sponsored by the National Basketball Association (NBA), the Philadelphia 76ers, or any related entity. All trademarks and team names belong to their respective owners.</p>
-      <p>User-generated content (including chat, comments, trades, picks, and posts) is provided by users. SixersHoops does not control, verify, or guarantee that content and is not responsible for it. Use of this site is at your own risk.</p>
-    </div>
-    <div class="footer-bottom">
-      <span>&copy; 2026 SixersHoops. All rights reserved.</span>
-      <span class="footer-bottom-meta">For entertainment and informational purposes only</span>
-    </div>
-  </div>
-</footer>
-
-
-
-<div class="inj-edit-overlay" id="injEditOverlay" aria-hidden="true">
-  <div class="inj-edit-modal" role="dialog" aria-labelledby="injEditTitle">
-    <div class="inj-edit-head">
-      <h3 id="injEditTitle">Edit injury report</h3>
-      <button type="button" class="inj-edit-close" id="injEditClose" aria-label="Close">&times;</button>
-    </div>
-    <div class="inj-edit-body">
-      <p class="inj-edit-hint">Overrides ESPN for this game on the homepage. Change status when a report updates (e.g. GTD → OUT). Saved for all visitors.</p>
-      <div id="injEditList"></div>
-    </div>
-    <div class="inj-edit-foot">
-      <button type="button" class="inj-edit-add" id="injEditAdd">Add player</button>
-      <button type="button" class="inj-edit-clear" id="injEditClear">Clear overrides</button>
-      <span class="inj-edit-status" id="injEditStatus"></span>
-      <button type="button" class="inj-edit-save" id="injEditSave">Save</button>
-    </div>
-  </div>
-</div>
-
-<div class="inj-share-overlay" id="injShareOverlay" aria-hidden="true">
-  <div class="inj-share-modal" role="dialog" aria-labelledby="injShareTitle">
-    <div class="inj-share-modal-head">
-      <h3 id="injShareTitle">Injury report graphic</h3>
-      <button type="button" class="inj-share-close" id="injShareClose" aria-label="Close">&times;</button>
-    </div>
-    <div class="inj-share-preview">
-      <img id="injShareImg" alt="Injury report share graphic"/>
-    </div>
-    <div class="inj-share-actions">
-      <button type="button" class="inj-share-download" id="injShareDownload">Download PNG</button>
-      <button type="button" class="inj-share-copy" id="injShareCopy">Copy image</button>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
+}

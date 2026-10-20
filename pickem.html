@@ -4559,16 +4559,14 @@
     // Check lock status for users
     async function checkAndDisplayLockStatus(date) {
       try {
-        if (!auth.currentUser) {
-          return;
+        let hasSubmitted = false;
+        if (auth.currentUser) {
+          const userPicksSnapshot = await db.collection('picks')
+            .where('userId', '==', auth.currentUser.uid)
+            .where('date', '==', date)
+            .get();
+          hasSubmitted = !userPicksSnapshot.empty;
         }
-        
-        const userPicksSnapshot = await db.collection('picks')
-          .where('userId', '==', auth.currentUser.uid)
-          .where('date', '==', date)
-          .get();
-        
-        const hasSubmitted = !userPicksSnapshot.empty;
         
         const snapshot = await db.collection('lockTimes').where('date', '==', date).get();
         
@@ -5313,7 +5311,7 @@
     }
 
     async function loadQuestionsForDate(dateStr, weekNumber = null) {
-      if (!currentUser) return;
+      // Guests can view questions; picking prompts sign-in (see guest interceptor at bottom)
       const container = document.getElementById('questionsContainer');
 
       // Picks open only within 4 days of the slate date (and until lock)
@@ -5444,8 +5442,8 @@
         }
 
         try { await checkSubmissionForDate(dateStr); } catch (e) { console.warn('checkSubmission', e); }
-        // Restore unsubmitted clicks from draft; schedule auto-submit at lock
-        try {
+        // Restore unsubmitted clicks from draft; schedule auto-submit at lock (signed-in only)
+        if (auth.currentUser) try {
           const existing = await db.collection('picks')
             .where('userId', '==', auth.currentUser.uid)
             .where('date', '==', dateStr)
@@ -5459,6 +5457,7 @@
           await scheduleAutoSubmitAtLock(dateStr);
         } catch (e) { console.warn('draft/auto-submit setup', e); }
         try { await checkAndDisplayLockStatus(dateStr); } catch (e) { console.warn('lock status', e); }
+        try { applyGuestPickUi(); } catch (e) { console.warn('guest ui', e); }
         try { await renderConsensus(dateStr); } catch (e) { console.warn('consensus', e); }
         try { await applyGradedResults(dateStr); } catch (e) { console.warn('graded results', e); }
       } catch (err) {
@@ -6068,7 +6067,7 @@
 
     document.getElementById('submitBtn').addEventListener('click', async () => {
       if (!auth.currentUser) {
-        showMessage('Not logged in', 'error');
+        showSignupPrompt();
         return;
       }
 
@@ -11115,6 +11114,18 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
 
   
+    // Guests see the slate but the submit button invites them to sign in
+    function applyGuestPickUi() {
+      if (currentUser) return;
+      const sb = document.getElementById('submitBtn');
+      if (sb && !(sb.dataset.mode === 'locked')) {
+        sb.disabled = false;
+        sb.textContent = 'Sign in to Make Picks';
+        sb.dataset.mode = 'guest';
+      }
+      const cb = document.getElementById('clearBtn');
+      if (cb) cb.disabled = false;
+    }
     function showSignupPrompt() {
       const overlay = document.getElementById("signupPromptOverlay");
       if (overlay) overlay.classList.add("active");
@@ -11137,13 +11148,28 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       if (overlay) overlay.addEventListener("click", function (e) {
         if (e.target === overlay) hideSignupPrompt();
       });
-      // Intercept pick interactions when not signed in
-      document.addEventListener("click", function (e) {
+      // Intercept pick interactions when not signed in (guests can browse, not play)
+      const GUEST_PICK_SEL = ".option.radio-option, #questionsContainer .text-input, #submitBtn, #clearBtn";
+      function guestBlock(e) {
         if (currentUser) return;
-        const isPick = e.target.closest(".option.radio-option") || e.target.closest("#submitBtn") || e.target.closest("#clearBtn");
-        if (isPick) {
+        if (!e.target.closest || !e.target.closest(GUEST_PICK_SEL)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.target.blur) e.target.blur();
+        showSignupPrompt();
+      }
+      document.addEventListener("click", guestBlock, true);
+      // Keyboard / focus into a pick input (space, arrows, typing a number)
+      document.addEventListener("focusin", function (e) {
+        if (currentUser) return;
+        if (e.target.closest && e.target.closest("#questionsContainer") &&
+            (e.target.matches("input[type=number]") )) guestBlock(e);
+      }, true);
+      document.addEventListener("keydown", function (e) {
+        if (currentUser) return;
+        if (e.target.closest && e.target.closest("#questionsContainer") && e.target.matches("input")) {
+          if (e.key === "Tab" || e.key === "Escape") return;
           e.preventDefault();
-          e.stopPropagation();
           showSignupPrompt();
         }
       }, true);

@@ -743,9 +743,7 @@
   }
   .home-game-pbp .clk { color: var(--mid); font-weight: 700; font-size: 0.72rem; white-space: nowrap; }
   .home-game-pbp .sc { color: var(--mid); font-variant-numeric: tabular-nums; font-size: 0.75rem; }
-  /* Show BOTH teams in normal page flow (no cramped inner vertical scroller); tables scroll sideways only */
-  .home-game-box { padding: 0.5rem 0 0.75rem; max-height: none; overflow: visible; }
-  .home-game-box > div[style*="overflow-x"] { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
+  .home-game-box { padding: 0.5rem 0 0.75rem; max-height: 320px; overflow: auto; }
   .home-game-box-team { font-weight: 800; font-size: 0.85rem; padding: 0.4rem 1.15rem; }
   .home-game-box table {
     width: 100%; border-collapse: collapse; font-size: 0.72rem; min-width: 480px;
@@ -854,6 +852,74 @@
   .inj-share-copy {
     background: #fff; color: #0d0f1a; border: 1px solid #e2e8f0;
   }
+
+  .home-inj-admin-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.35rem 0.75rem; border-radius: 999px;
+    border: 1px solid var(--border-light, #e2e8f0);
+    background: var(--card-bg, #fff); color: var(--ink, #0d0f1a);
+    font-size: 0.7rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .home-inj-admin-btn:hover { border-color: var(--sixers-blue, #006BB6); color: var(--sixers-blue, #006BB6); }
+  .inj-edit-overlay {
+    position: fixed; inset: 0; background: rgba(13,15,26,0.55);
+    display: none; align-items: center; justify-content: center;
+    padding: 1rem; z-index: 2100; backdrop-filter: blur(2px);
+  }
+  .inj-edit-overlay.active { display: flex; }
+  .inj-edit-modal {
+    background: #fff; border-radius: 16px; max-width: min(560px, 100%);
+    width: 100%; max-height: 90vh; overflow: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+  }
+  .inj-edit-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.95rem 1.15rem; border-bottom: 1px solid #e2e8f0;
+    position: sticky; top: 0; background: #fff; z-index: 1;
+  }
+  .inj-edit-head h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+  .inj-edit-close {
+    border: 0; background: #f1f5f9; width: 32px; height: 32px;
+    border-radius: 999px; cursor: pointer; font-size: 1.1rem;
+  }
+  .inj-edit-body { padding: 1rem 1.15rem 1.25rem; }
+  .inj-edit-hint { font-size: 0.8rem; color: #64748b; margin: 0 0 0.85rem; line-height: 1.4; }
+  .inj-edit-row {
+    border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.75rem;
+    margin-bottom: 0.65rem; background: #fafbfd;
+  }
+  .inj-edit-row-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+  }
+  @media (max-width: 520px) { .inj-edit-row-grid { grid-template-columns: 1fr; } }
+  .inj-edit-row label {
+    display: block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase; color: #64748b; margin: 0 0 0.25rem;
+  }
+  .inj-edit-row input, .inj-edit-row select, .inj-edit-row textarea {
+    width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 0.45rem 0.55rem; font: 500 0.85rem Lexend, system-ui, sans-serif;
+    background: #fff; color: #0d0f1a; box-sizing: border-box;
+  }
+  .inj-edit-row textarea { min-height: 52px; resize: vertical; }
+  .inj-edit-row-actions { margin-top: 0.45rem; text-align: right; }
+  .inj-edit-remove {
+    border: 0; background: transparent; color: #b91c1c;
+    font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .inj-edit-foot {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    padding: 0.85rem 1.15rem 1.15rem; border-top: 1px solid #e2e8f0;
+    position: sticky; bottom: 0; background: #fff;
+  }
+  .inj-edit-foot button {
+    border-radius: 999px; padding: 0.55rem 1rem; font: 700 0.8rem Lexend, system-ui, sans-serif;
+    cursor: pointer;
+  }
+  .inj-edit-save { background: #006BB6; color: #fff; border: 0; }
+  .inj-edit-add { background: #fff; border: 1px solid #e2e8f0; color: #0d0f1a; }
+  .inj-edit-clear { background: #fff; border: 1px solid #fecaca; color: #b91c1c; }
+  .inj-edit-status { font-size: 0.78rem; color: #64748b; flex: 1; align-self: center; }
   .home-inj {
     padding: 0.45rem 1.15rem 0.9rem;
     border-top: 1px solid var(--border-light);
@@ -904,7 +970,7 @@
   .home-inj-badge.inj-out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
   .home-inj-badge.inj-doubt { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
   .home-inj-badge.inj-q { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-  .home-inj-badge.inj-gtd { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+  .home-inj-badge.inj-gtd { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
   .home-inj-badge.inj-prob { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
   .home-inj-badge.inj-other { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
   .home-inj-meta {
@@ -931,35 +997,6 @@
     .home-game-pbp .sc { grid-column: 2; justify-self: start; font-size: 0.7rem; }
   }
 
-
-    
-
-    /* Injury report — matches draft picks graphic style */
-    .sh-inj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1rem 0; }
-    .sh-inj-card { background: var(--card-bg, #fff); border: 1px solid var(--border-light); border-radius: 12px; padding: 1.1rem 1.15rem; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03); }
-    .sh-inj-head { font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); margin-bottom: .85rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border-light); }
-    .sh-inj-player { padding: .7rem 0; border-bottom: 1px solid var(--border-light); }
-    .sh-inj-player:last-child { border-bottom: 0; padding-bottom: 0; }
-    .sh-inj-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
-    .sh-inj-name { font-weight: 700; font-size: .92rem; color: var(--ink); }
-    .sh-inj-badge { font-size: .62rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; padding: .22rem .55rem; border-radius: 999px; border: 1px solid transparent; flex-shrink: 0; }
-    .sh-inj-badge.out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-    .sh-inj-badge.doubtful { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
-    .sh-inj-badge.questionable { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-    .sh-inj-badge.gtd { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-    .sh-inj-badge.probable { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-    .sh-inj-badge.other { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
-    .sh-inj-type { font-size: .78rem; color: var(--mid); margin-top: .25rem; }
-    .sh-inj-note { font-size: .8rem; color: #475569; line-height: 1.45; margin-top: .35rem; }
-    .sh-inj-empty { color: var(--mid); font-size: .84rem; margin: 0; }
-    @media (max-width: 720px) { .sh-inj-grid { grid-template-columns: 1fr; gap: .85rem; } }
-    html.dark-mode .sh-inj-card { background: var(--card-bg); }
-    html.dark-mode .sh-inj-badge.out { background: rgba(237,23,76,.15); color: #f87171; border-color: rgba(237,23,76,.3); }
-    html.dark-mode .sh-inj-badge.doubtful, html.dark-mode .sh-inj-badge.questionable { background: rgba(180,83,9,.15); color: #fdba74; border-color: rgba(180,83,9,.3); }
-    html.dark-mode .sh-inj-badge.gtd { background: rgba(180,83,9,.15); color: #fdba74; border-color: rgba(180,83,9,.3); }
-    html.dark-mode .sh-inj-badge.probable { background: rgba(21,128,61,.15); color: #86efac; border-color: rgba(21,128,61,.3); }
-
-    .sh-inj-pad { padding: 1rem 1.15rem 0.5rem; }
 </style>
 </head>
 <body>
@@ -1640,54 +1677,50 @@ listenToUpdates();
     } catch (_) { return null; }
   }
 
-  // ===== Injury report (ported from the schedule page) =====
-  let injCache = { at: 0, data: null };
-  async function fetchInjuryBlocks() {
-    if (injCache.data && Date.now() - injCache.at < 5 * 60 * 1000) return injCache.data;
+  // Full injury notes (shortComment / longComment) live on the league injuries feed
+  async function fetchLeagueInjuriesByAbbr(abbrs) {
+    const want = new Set((abbrs || []).map(function (a) { return String(a || "").toUpperCase(); }).filter(Boolean));
+    if (!want.size) return [];
     try {
       const res = await fetch(INJURIES_LEAGUE, { cache: "no-store" });
-      if (!res.ok) return injCache.data || [];
+      if (!res.ok) return [];
       const data = await res.json();
-      injCache = { at: Date.now(), data: Array.isArray(data.injuries) ? data.injuries : [] };
-      return injCache.data;
-    } catch (_) { return injCache.data || []; }
+      const out = [];
+      (data.injuries || []).forEach(function (teamBlock) {
+        const sample = ((teamBlock.injuries || [])[0] || {}).athlete || {};
+        // teamBlock has displayName; map via first injury team links is messy — match by known abbr from athlete team? 
+        // League payload uses team id + displayName at top level
+        const name = String(teamBlock.displayName || "").toLowerCase();
+        let abbr = "";
+        if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
+        else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
+        else {
+          // try parse from links href /name/phi/
+          const links = teamBlock.links || [];
+          for (let i = 0; i < links.length; i++) {
+            const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
+            if (m) { abbr = m[1].toUpperCase(); break; }
+          }
+        }
+        // Fallback: id map common NBA
+        if (!abbr && teamBlock.id) {
+          const ID_ABBR = { "20": "PHI", "2": "BOS", "1": "ATL", "17": "BKN", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN", "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL", "14": "MEM", "15": "MIA", "16": "MIL", "18": "MIN", "3": "NO", "19": "NY", "21": "OKC", "22": "ORL", "23": "PHX", "24": "POR", "25": "SAC", "26": "SA", "27": "TOR", "28": "UTAH", "29": "WSH", "30": "CHA" };
+          abbr = ID_ABBR[String(teamBlock.id)] || "";
+        }
+        if (!want.has(abbr)) return;
+        out.push({
+          team: { abbreviation: abbr, displayName: teamBlock.displayName || abbr },
+          injuries: teamBlock.injuries || []
+        });
+      });
+      return out;
+    } catch (_) { return []; }
   }
-  function parseTeamInjuries(teamBlock) {
-    return (get(teamBlock, "injuries", []) || []).map(function (inj) {
-      return {
-        name: get(inj, "athlete.displayName", "Player"),
-        status: inj.status || get(inj, "type.description", "—"),
-        detail: get(inj, "details.type", "") || get(inj, "details.detail", "") || "—",
-        comment: (inj.shortComment || inj.longComment || "").trim(),
-        date: inj.date || null
-      };
-    });
-  }
-  // Match a league-feed team block to a game competitor by ESPN team id (then name / abbreviation)
-  function injuriesForTeam(blocks, team) {
-    team = team || {};
-    const id = String(team.id || "");
-    const abbr = String(team.abbreviation || "").toUpperCase();
-    const names = [team.displayName, team.shortDisplayName, team.name, team.location]
-      .filter(Boolean).map(function (n) { return String(n).toLowerCase(); });
-    const block = (blocks || []).find(function (b) {
-      if (id && String(b.id || "") === id) return true;
-      const dn = String(b.displayName || "").toLowerCase();
-      if (dn && names.indexOf(dn) !== -1) return true;
-      if (abbr && String(get(b, "team.abbreviation", "")).toUpperCase() === abbr) return true;
-      if (abbr === "PHI" && /76ers|philadelphia/.test(dn)) return true;
-      return false;
-    });
-    return block ? parseTeamInjuries(block) : [];
-  }
-  function normalizeInjStatus(status) {
-    const s = String(status || "").toLowerCase();
-    if (s.includes("out")) return "OUT";
-    if (s.includes("doubt")) return "Doubtful";
-    if (s.includes("question")) return "Questionable";
-    if (s.includes("gtd") || s.includes("day")) return "Questionable";
-    if (s.includes("prob")) return "Probable";
-    return status || "Listed";
+
+  function mergeInjuryGroups(summaryGroups, leagueGroups) {
+    // Prefer league feed (has shortComment). Fall back to summary.
+    if (leagueGroups && leagueGroups.length) return leagueGroups;
+    return summaryGroups || [];
   }
 
   function isUpcoming(ev) {
@@ -1759,11 +1792,30 @@ listenToUpdates();
   }
 
 
-  // Same filtering the schedule page uses: drop notes about a *different* weekday, keep the rest
-  function filterInjuriesForGame(items, event) {
-    if (!items || !items.length || !event) return items || [];
+  function filterInjuriesForEvent(groups, event) {
     const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+    function resolveGameDate(ev) {
+      if (!ev) return null;
+      const candidates = [
+        ev.date,
+        get(ev, "competitions.0.date", null),
+        get(ev, "competitions.0.startDate", null)
+      ];
+      for (let i = 0; i < candidates.length; i++) {
+        const raw = candidates[i];
+        if (!raw) continue;
+        // Avoid date-only strings parsing as UTC midnight (wrong ET day)
+        let s = String(raw);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s = s + "T17:00:00-04:00";
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
+    }
+
     function resolveGameWeekday(ev) {
+      // 1) From status detail text ESPN already localized (most reliable)
       const detail = [
         get(ev, "competitions.0.status.type.detail", ""),
         get(ev, "competitions.0.status.type.shortDetail", ""),
@@ -1771,111 +1823,241 @@ listenToUpdates();
         get(ev, "status.type.shortDetail", "")
       ].join(" ").toLowerCase();
       for (let i = 0; i < WEEKDAYS.length; i++) {
-        if (detail.indexOf(WEEKDAYS[i]) !== -1) return WEEKDAYS[i];
+        if (detail.indexOf(WEEKDAYS[i]) !== -1 || detail.indexOf(WEEKDAYS[i].slice(0, 3)) !== -1) {
+          // prefer full day if present; short "fri" / "sat" from "Fri,"
+          if (detail.indexOf(WEEKDAYS[i]) !== -1) return WEEKDAYS[i];
+        }
       }
+      // short forms: fri, sat, mon...
       const shortMap = { sun: "sunday", mon: "monday", tue: "tuesday", wed: "wednesday", thu: "thursday", fri: "friday", sat: "saturday" };
       for (const k in shortMap) {
         if (new RegExp("\\b" + k + "\\b", "i").test(detail)) return shortMap[k];
       }
-      const date = new Date(ev.date);
-      if (!isNaN(date.getTime())) {
-        try { return date.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase(); } catch (e) {}
+
+      // 2) From Date in America/New_York
+      const d = resolveGameDate(ev);
+      if (d) {
+        try {
+          return d.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase();
+        } catch (_) {}
       }
       return "";
     }
+
     const gameWeekday = resolveGameWeekday(event);
-    function textOf(item) { return [item.comment || "", item.detail || ""].join(" ").toLowerCase(); }
-    function isSeasonLong(text) {
-      return /out for (the )?season|season-ending|out indefinitely|achilles.*rupture/.test(text);
+    if (!gameWeekday) {
+      // If we cannot tell the tip day, only show season-long absences
+      return (groups || []).map(function (g) {
+        const items = (g.injuries || []).filter(function (inj) {
+          const text = [inj.shortComment, inj.longComment].filter(Boolean).join(" ").toLowerCase();
+          return /season-ending|out for (the )?season|out indefinitely/.test(text) ||
+            (/achilles/.test(text) && /rupture/.test(text));
+        });
+        return { team: g.team, injuries: items };
+      }).filter(function (g) { return g.injuries.length; });
     }
-    return items.filter(function (item) {
-      const text = textOf(item);
+
+    function textOf(inj) {
+      return [inj.shortComment, inj.longComment, inj.comment, inj.description]
+        .filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function isSeasonLong(text) {
+      return /out for (the )?season/.test(text) ||
+        /season-ending/.test(text) ||
+        /out indefinitely/.test(text) ||
+        (/achilles/.test(text) && /rupture/.test(text));
+    }
+
+    function keep(inj) {
+      const text = textOf(inj);
       if (isSeasonLong(text)) return true;
-      if (!text || text.length < 6) return true;
+      if (!text || text.length < 8) return false;
+
+      // Drop notes about a *different* weekday
       for (let i = 0; i < WEEKDAYS.length; i++) {
         const d = WEEKDAYS[i];
         if (d === gameWeekday) continue;
         if (text.indexOf(d) !== -1) return false;
       }
-      return true;
-    });
-  }
 
-  function injStatusClass(status) {
-    const s = String(status || "").toLowerCase();
-    if (s.includes("out")) return "out";
-    if (s.includes("doubt")) return "doubtful";
-    if (s.includes("question") || s.includes("gtd") || s.includes("day")) return "questionable";
-    if (s.includes("prob")) return "probable";
-    return "other";
-  }
+      // Keep if note names this tip's weekday
+      if (text.indexOf(gameWeekday) !== -1) return true;
 
-  // Build { phi, opp, oppName, payload } for the featured game
-  function buildHomeInjuries(event, summary, blocks) {
-    let comps = get(event, "competitions.0.competitors", null);
-    if (!Array.isArray(comps) || !comps.length) comps = get(summary, "header.competitions.0.competitors", []) || [];
-    const isPhi = function (c) {
-      return String(get(c, "team.abbreviation", "")).toUpperCase() === "PHI" || String(get(c, "team.id", "")) === "20";
-    };
-    const phiC = comps.find(isPhi) || null;
-    const oppC = comps.find(function (c) { return c && !isPhi(c); }) || null;
-    const phiTeam = phiC ? phiC.team : { id: "20", abbreviation: "PHI", displayName: "Philadelphia 76ers" };
-    const oppTeam = oppC ? oppC.team : null;
-    const oppName = get(oppTeam, "shortDisplayName", "") || get(oppTeam, "displayName", "") || "Opponent";
-    const oppFull = get(oppTeam, "displayName", "") || oppName;
+      // Same-day language when we know the tip day
+      if (/\b(tonight|today|this game|tip-?off)\b/.test(text)) return true;
 
-    const phi = filterInjuriesForGame(injuriesForTeam(blocks, phiTeam), event);
-    const opp = oppTeam ? filterInjuriesForGame(injuriesForTeam(blocks, oppTeam), event) : [];
+      return false;
+    }
 
-    const mapItem = function (it) {
-      return { name: it.name, label: normalizeInjStatus(it.status), injuryType: it.detail === "—" ? "" : it.detail, comment: it.comment || "" };
-    };
-    const d = new Date(event.date);
-    const dateStr = isNaN(d) ? "" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
-    const updatedLabel = new Date().toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }) + " ET";
-    return {
-      phi: phi, opp: opp, oppName: oppName,
-      payload: {
-        matchup: "76ers vs " + oppFull,
-        dateStr: dateStr,
-        updatedLabel: updatedLabel,
-        teams: [
-          { team: "76ers", items: phi.map(mapItem) },
-          { team: oppFull, items: opp.map(mapItem) }
-        ]
-      }
-    };
+    return (groups || []).map(function (g) {
+      return {
+        team: g.team,
+        injuries: (Array.isArray(g.injuries) ? g.injuries : []).filter(keep)
+      };
+    }).filter(function (g) { return g.injuries && g.injuries.length; });
   }
 
   function renderInjuriesBlock(summary, event) {
-    const inj = summary && summary.homeInj;
-    if (!inj) return "";
-    function rows(items) {
-      if (!items || !items.length) return '<p class="sh-inj-empty">No injuries listed.</p>';
-      return items.map(function (item) {
-        return '<div class="sh-inj-player">' +
-          '<div class="sh-inj-top">' +
-            '<span class="sh-inj-name">' + item.name + '</span>' +
-            '<span class="sh-inj-badge ' + injStatusClass(item.status) + '">' + item.status + '</span>' +
-          '</div>' +
-          (item.detail && item.detail !== "—" ? '<div class="sh-inj-type">' + item.detail + '</div>' : '') +
-          (item.comment ? '<div class="sh-inj-note">' + item.comment + '</div>' : '') +
-        '</div>';
-      }).join("");
-    }
-    window.__injurySharePayload = inj.payload;
-    return '<div class="sh-inj-pad">' +
-      '<div class="home-inj-head-row">' +
-        '<span class="sh-inj-head" style="border:0;margin:0;padding:0;">Injury report</span>' +
-        '<button type="button" class="home-inj-share-btn" id="homeInjShareBtn">Share injury graphic</button>' +
-      '</div>' +
-      '<div class="sh-inj-grid">' +
-        '<div class="sh-inj-card"><div class="sh-inj-head">76ERS INJURIES</div>' + rows(inj.phi) + '</div>' +
-        '<div class="sh-inj-card"><div class="sh-inj-head">' + String(inj.oppName || "OPPONENT").toUpperCase() + ' INJURIES</div>' + rows(inj.opp) + '</div>' +
-      '</div>' +
-    '</div>';
-  }
+    // Always apply the same filter again so only this tip's notes show
+    let groups = filterInjuriesForEvent(
+      (summary && Array.isArray(summary.injuries)) ? summary.injuries : [],
+      event
+    );
+    // Merge admin overrides (if loaded for this event)
+    groups = window.__mergeInjuryOverrides(groups, event) || groups;
 
+    if (!groups.length) {
+      var emptyAdmin = window.__isHomeInjAdmin && window.__isHomeInjAdmin()
+        ? '<div class="home-inj-head-row" style="margin-top:0.35rem"><button type="button" class="home-inj-admin-btn" id="homeInjEditBtn">Edit injury report</button></div>'
+        : '';
+      return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
+        '<p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed for this game.</p>' + emptyAdmin + '</div>';
+    }
+
+    function resolveGameDate(ev) {
+      if (!ev) return null;
+      const candidates = [ev.date, get(ev, "competitions.0.date", null), get(ev, "competitions.0.startDate", null)];
+      for (let i = 0; i < candidates.length; i++) {
+        if (!candidates[i]) continue;
+        const d = new Date(candidates[i]);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
+    }
+    const gameDate = resolveGameDate(event);
+    const gameWeekday = gameDate
+      ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase()
+      : "";
+
+    function collectText(inj) {
+      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
+        get(inj, "type.description", ""), get(inj, "details.type", ""), get(inj, "details.detail", "")]
+        .filter(Boolean).join(" ");
+    }
+
+    function displayStatus(inj) {
+      const text = collectText(inj);
+      const official = String(inj.status || "").toLowerCase();
+      const outFromWriteup = (
+        /\bis out\b/i.test(text) ||
+        /\bremains out\b/i.test(text) ||
+        /\bwonn'?t play\b/i.test(text) ||
+        /\bwill not play\b/i.test(text) ||
+        /\bwon'?t be available\b/i.test(text) ||
+        /\bwon'?t suit up\b/i.test(text) ||
+        /\bruled out\b/i.test(text) ||
+        /\bout for (the )?season\b/i.test(text) ||
+        /\bseason-ending\b/i.test(text)
+      );
+      if (outFromWriteup || official === "out" || official.includes("out for season")) {
+        return { label: "OUT", cls: "inj-out" };
+      }
+      if (/\bdoubtful\b/i.test(text) || official.includes("doubtful")) return { label: "Doubtful", cls: "inj-doubt" };
+      if (/\bquestionable\b/i.test(text) || official.includes("questionable")) return { label: "Questionable", cls: "inj-q" };
+      if (official.includes("day-to-day") || official.includes("day to day") || /\bgtd\b/i.test(text)) {
+        return { label: "GTD", cls: "inj-gtd" };
+      }
+      return { label: inj.status || "Listed", cls: "inj-other" };
+    }
+
+    function formatInjDate(iso) {
+      if (!iso) return null;
+      try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return null;
+        return d.toLocaleString("en-US", {
+          timeZone: "America/New_York",
+          month: "short", day: "numeric", year: "numeric",
+          hour: "numeric", minute: "2-digit"
+        }) + " ET";
+      } catch (_) { return null; }
+    }
+
+    let latestMs = 0;
+    groups.forEach(function (g) {
+      (g.injuries || []).forEach(function (inj) {
+        const ms = inj.date ? new Date(inj.date).getTime() : 0;
+        if (ms && ms > latestMs) latestMs = ms;
+      });
+    });
+    const updatedLabel = latestMs ? formatInjDate(new Date(latestMs).toISOString()) : null;
+    const dayNote = gameWeekday ? (gameWeekday.charAt(0).toUpperCase() + gameWeekday.slice(1)) : "this game";
+
+    const sharePayload = {
+      updatedLabel: updatedLabel,
+      dayNote: dayNote,
+      gameDate: gameDate ? gameDate.toISOString() : null,
+      matchup: (function () {
+        try {
+          const comps = get(event, "competitions.0.competitors", []) || [];
+          const home = comps.find(function (c) { return c && c.homeAway === "home"; }) || comps[0];
+          const away = comps.find(function (c) { return c && c.homeAway === "away"; }) || comps[1];
+          const h = get(home, "team.abbreviation", "") || get(home, "team.shortDisplayName", "HOME");
+          const a = get(away, "team.abbreviation", "") || get(away, "team.shortDisplayName", "AWAY");
+          return a + " @ " + h;
+        } catch (e) { return "Injury Report"; }
+      })(),
+      teams: groups.map(function (g) {
+        const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
+        const items = (g.injuries || []).map(function (inj) {
+          const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
+          const st = displayStatus(inj);
+          const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
+          const comment = inj.shortComment || inj.longComment || "";
+          return { name: name, label: st.label, cls: st.cls, injuryType: injuryType, comment: comment };
+        });
+        return { team: team, items: items };
+      })
+    };
+    try { window.__injurySharePayload = sharePayload; } catch (e) {}
+    try {
+      window.__homeInjEvent = event;
+      window.__homeInjGroups = groups;
+      window.__homeInjShareMeta = sharePayload;
+    } catch (e) {}
+
+    const adminBtn = (window.__isHomeInjAdmin && window.__isHomeInjAdmin())
+      ? '<button type="button" class="home-inj-admin-btn" id="homeInjEditBtn">Edit</button>'
+      : '';
+    const head = '<div class="home-inj-head-row">' +
+        '<div class="home-inj-title" style="margin:0;">Injury report</div>' +
+        '<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">' +
+          adminBtn +
+          '<button type="button" class="home-inj-share-btn" id="homeInjShareBtn">Share graphic</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="home-inj-updated">' +
+        (updatedLabel ? ('Last ESPN update: <strong>' + updatedLabel + '</strong> · ') : '') +
+        'Only <strong>' + dayNote + '</strong> game notes' +
+      '</div>';
+
+    const body = groups.map(function (g) {
+      const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
+      const items = (g.injuries || []).slice().sort(function (a, b) {
+        return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
+      });
+      const rows = items.map(function (inj) {
+        const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
+        const st = displayStatus(inj);
+        const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
+        const comment = inj.shortComment || inj.longComment || "";
+        const playerUpdated = formatInjDate(inj.date);
+        return '<li class="home-inj-row">' +
+          '<div class="home-inj-main">' +
+            '<span class="home-inj-name">' + name + '</span>' +
+            '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
+          '</div>' +
+          (injuryType ? '<div class="home-inj-meta">' + injuryType + '</div>' : '') +
+          (comment ? '<div class="home-inj-comment">' + comment + '</div>' : '') +
+          (playerUpdated ? '<div class="home-inj-player-updated">Updated ' + playerUpdated + '</div>' : '') +
+          '</li>';
+      }).join("");
+      return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
+    }).join("");
+
+    return '<div class="home-inj">' + head + body + '</div>';
+  }
 
   function renderBoard(event, summary, mode) {
 
@@ -1991,16 +2173,24 @@ listenToUpdates();
       if (summary) lastSummary = summary;
       else if (chosen.mode !== "upcoming") summary = lastSummary;
       summary = summary || {};
-      // Injury report (same data + filtering as the schedule page) — only needed for the pre-game view
-      summary.homeInj = null;
-      if (chosen.mode === "upcoming") {
-        try {
-          const blocks = await fetchInjuryBlocks();
-          summary.homeInj = buildHomeInjuries(featured, summary, blocks);
-        } catch (injErr) {
-          console.warn("injuries", injErr);
-        }
+      // Enrich with league injury writeups (shortComment) for PHI + opponent
+      // Injury report: ONLY ESPN league write-ups (have shortComment), filtered to this tip
+      try {
+        const comps = get(featured, "competitions.0.competitors", []) ||
+          get(summary, "header.competitions.0.competitors", []) || [];
+        let abbrs = comps.map(function (c) { return get(c, "team.abbreviation", ""); }).filter(Boolean);
+        if (!abbrs.length) abbrs = ["PHI"];
+        if (abbrs.indexOf("PHI") === -1) abbrs.push("PHI");
+        const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
+        // Never use summary.injuries fallback — those lack shortComment and list every GTD
+        summary.injuries = filterInjuriesForEvent(leagueInj || [], featured);
+      } catch (injErr) {
+        console.warn("injuries", injErr);
+        summary.injuries = [];
       }
+      await __loadInjuryOverride(featured);
+      window.__homeInjSummary = summary;
+      window.__refreshHomeGame = function () { refresh(); };
       renderBoard(featured, summary, chosen.mode);
 
 
@@ -2029,37 +2219,266 @@ listenToUpdates();
   else refresh();
 })();
 
-  // Injury share graphic: canvas builder + modal handlers (all delegated, so load order doesn't matter)
-  function buildInjuryShareCanvas(payload) {
+  
+  /* Admin injury overrides for homepage game card */
+  window.__injuryOverrideCache = window.__injuryOverrideCache || {};
+  window.__isHomeInjAdmin = function () {
+    try {
+      var u = window.auth && window.auth.currentUser;
+      if (!u) return false;
+      if (u.email && u.email.toLowerCase() === "rhatus13@gmail.com") return true;
+      if (localStorage.getItem("canWriteArticles") === "1") return true;
+      if (localStorage.getItem("isAdmin") === "1") return true;
+    } catch (e) {}
+    return false;
+  };
+
+  function __injEventKey(event) {
+    if (!event) return null;
+    if (event.id) return String(event.id);
+    var d = event.date ? new Date(event.date) : null;
+    if (d && !isNaN(d.getTime())) {
+      return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    }
+    return null;
+  }
+
+  window.__mergeInjuryOverrides = function (groups, event) {
+    var key = __injEventKey(event);
+    var ov = key && window.__injuryOverrideCache[key];
+    if (!ov || !Array.isArray(ov.players) || !ov.players.length) return groups;
+    var byTeam = {};
+    ov.players.forEach(function (p) {
+      var team = p.team || "PHI";
+      if (!byTeam[team]) byTeam[team] = [];
+      byTeam[team].push({
+        status: p.status || "Listed",
+        shortComment: p.comment || "",
+        date: p.updatedAt || ov.updatedAt || new Date().toISOString(),
+        athlete: { displayName: p.name || "Player" },
+        details: { type: p.injuryType || "", detail: "" }
+      });
+    });
+    return Object.keys(byTeam).map(function (team) {
+      return { team: { abbreviation: team, displayName: team }, injuries: byTeam[team] };
+    });
+  };
+
+  async function __loadInjuryOverride(event) {
+    var key = __injEventKey(event);
+    if (!key || !window.db) return null;
+    try {
+      var snap = await window.db.collection("injuryOverrides").doc(key).get();
+      if (snap.exists) {
+        var data = snap.data() || {};
+        window.__injuryOverrideCache[key] = data;
+        return data;
+      }
+    } catch (e) { console.warn("injury override load", e); }
+    return null;
+  }
+
+  function __openInjEditor() {
+    var overlay = document.getElementById("injEditOverlay");
+    var list = document.getElementById("injEditList");
+    if (!overlay || !list) return;
+    var groups = window.__homeInjGroups || [];
+    var rows = [];
+    groups.forEach(function (g) {
+      var team = (g.team && (g.team.abbreviation || g.team.displayName)) || "Team";
+      (g.injuries || []).forEach(function (inj) {
+        var name = (inj.athlete && (inj.athlete.displayName || inj.athlete.shortName)) || "Player";
+        var st = String(inj.status || "Listed");
+        var low = st.toLowerCase();
+        if (low.indexOf("out") >= 0) st = "OUT";
+        else if (low.indexOf("doubt") >= 0) st = "Doubtful";
+        else if (low.indexOf("question") >= 0) st = "Questionable";
+        else if (low.indexOf("gtd") >= 0 || low.indexOf("day") >= 0) st = "GTD";
+        rows.push({
+          name: name,
+          team: team,
+          status: st,
+          injuryType: (inj.details && (inj.details.type || inj.details.detail)) || "",
+          comment: inj.shortComment || inj.longComment || ""
+        });
+      });
+    });
+    var key = __injEventKey(window.__homeInjEvent);
+    var ov = key && window.__injuryOverrideCache[key];
+    if (ov && Array.isArray(ov.players) && ov.players.length) {
+      rows = ov.players.map(function (p) {
+        return { name: p.name || "", team: p.team || "PHI", status: p.status || "Listed", injuryType: p.injuryType || "", comment: p.comment || "" };
+      });
+    }
+    if (!rows.length) rows = [{ name: "", team: "PHI", status: "OUT", injuryType: "", comment: "" }];
+    window.__injEditRows = rows;
+    __paintInjEditList();
+    var st = document.getElementById("injEditStatus");
+    if (st) st.textContent = "";
+    overlay.classList.add("active");
+    overlay.setAttribute("aria-hidden", "false");
+  }
+
+  function __paintInjEditList() {
+    var list = document.getElementById("injEditList");
+    if (!list) return;
+    var rows = window.__injEditRows || [];
+    var statusOpts = ["OUT", "Doubtful", "Questionable", "GTD", "Probable", "Available", "Listed"];
+    list.innerHTML = rows.map(function (r, i) {
+      var opts = statusOpts.map(function (s) {
+        return '<option value="' + s + '"' + (r.status === s ? " selected" : "") + ">" + s + "</option>";
+      }).join("");
+      return '<div class="inj-edit-row" data-i="' + i + '">' +
+        '<div class="inj-edit-row-grid">' +
+          '<div><label>Player</label><input data-f="name" value="' + String(r.name || "").replace(/"/g, "&quot;") + '"/></div>' +
+          '<div><label>Team</label><input data-f="team" value="' + String(r.team || "").replace(/"/g, "&quot;") + '" placeholder="PHI"/></div>' +
+          '<div><label>Status</label><select data-f="status">' + opts + "</select></div>" +
+          '<div><label>Injury</label><input data-f="injuryType" value="' + String(r.injuryType || "").replace(/"/g, "&quot;") + '" placeholder="Ankle"/></div>' +
+        "</div>" +
+        '<div style="margin-top:0.45rem"><label>Note</label><textarea data-f="comment">' + String(r.comment || "").replace(/</g, "&lt;") + "</textarea></div>" +
+        '<div class="inj-edit-row-actions"><button type="button" class="inj-edit-remove" data-remove="' + i + '">Remove</button></div>' +
+      "</div>";
+    }).join("");
+  }
+
+  function __readInjEditRows() {
+    var list = document.getElementById("injEditList");
+    if (!list) return [];
+    var rows = [];
+    list.querySelectorAll(".inj-edit-row").forEach(function (el) {
+      var get = function (f) {
+        var n = el.querySelector('[data-f="' + f + '"]');
+        return n ? n.value.trim() : "";
+      };
+      var name = get("name");
+      if (!name) return;
+      rows.push({
+        name: name,
+        team: get("team") || "PHI",
+        status: get("status") || "Listed",
+        injuryType: get("injuryType"),
+        comment: get("comment"),
+        updatedAt: new Date().toISOString()
+      });
+    });
+    return rows;
+  }
+
+  async function __saveInjOverrides() {
+    var status = document.getElementById("injEditStatus");
+    var user = window.auth && window.auth.currentUser;
+    if (!user || !window.__isHomeInjAdmin()) {
+      if (status) status.textContent = "Admin sign-in required.";
+      return;
+    }
+    if (!window.db) {
+      if (status) status.textContent = "Database not ready.";
+      return;
+    }
+    var key = __injEventKey(window.__homeInjEvent);
+    if (!key) {
+      if (status) status.textContent = "No active game.";
+      return;
+    }
+    var players = __readInjEditRows();
+    if (status) status.textContent = "Saving…";
+    try {
+      var payload = {
+        eventId: key,
+        players: players,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.uid,
+        updatedEmail: user.email || ""
+      };
+      await window.db.collection("injuryOverrides").doc(key).set(payload, { merge: true });
+      window.__injuryOverrideCache[key] = payload;
+      if (status) status.textContent = "Saved.";
+      var overlay = document.getElementById("injEditOverlay");
+      if (overlay) { overlay.classList.remove("active"); overlay.setAttribute("aria-hidden", "true"); }
+      if (typeof window.__refreshHomeGame === "function") window.__refreshHomeGame();
+      else location.reload();
+    } catch (e) {
+      console.warn(e);
+      if (status) status.textContent = "Save failed. Add Firestore rules for injuryOverrides.";
+    }
+  }
+
+  async function __clearInjOverrides() {
+    var key = __injEventKey(window.__homeInjEvent);
+    if (!key || !window.db) return;
+    var status = document.getElementById("injEditStatus");
+    try {
+      await window.db.collection("injuryOverrides").doc(key).delete();
+      delete window.__injuryOverrideCache[key];
+      if (status) status.textContent = "Overrides cleared.";
+      var overlay = document.getElementById("injEditOverlay");
+      if (overlay) { overlay.classList.remove("active"); overlay.setAttribute("aria-hidden", "true"); }
+      if (typeof window.__refreshHomeGame === "function") window.__refreshHomeGame();
+      else location.reload();
+    } catch (e) {
+      if (status) status.textContent = "Could not clear.";
+    }
+  }
+
+  document.addEventListener("click", function (e) {
+    if (e.target && e.target.id === "homeInjEditBtn") {
+      e.preventDefault();
+      __openInjEditor();
+    }
+    if (e.target && e.target.id === "injEditClose") {
+      var o = document.getElementById("injEditOverlay");
+      if (o) { o.classList.remove("active"); o.setAttribute("aria-hidden", "true"); }
+    }
+    if (e.target && e.target.id === "injEditOverlay") {
+      e.target.classList.remove("active");
+      e.target.setAttribute("aria-hidden", "true");
+    }
+    if (e.target && e.target.id === "injEditAdd") {
+      window.__injEditRows = __readInjEditRows();
+      window.__injEditRows.push({ name: "", team: "PHI", status: "OUT", injuryType: "", comment: "" });
+      __paintInjEditList();
+    }
+    if (e.target && e.target.id === "injEditSave") __saveInjOverrides();
+    if (e.target && e.target.id === "injEditClear") {
+      if (confirm("Remove all admin overrides for this game and use ESPN only?")) __clearInjOverrides();
+    }
+    if (e.target && e.target.getAttribute && e.target.getAttribute("data-remove") != null) {
+      var idx = Number(e.target.getAttribute("data-remove"));
+      window.__injEditRows = __readInjEditRows();
+      window.__injEditRows.splice(idx, 1);
+      if (!window.__injEditRows.length) window.__injEditRows.push({ name: "", team: "PHI", status: "OUT", injuryType: "", comment: "" });
+      __paintInjEditList();
+    }
+  });
+
+function buildInjuryShareCanvas(payload) {
     if (!payload) return null;
     const W = 1080;
     const PAD = 48;
-    const BLUE = "#006BB6";
-    const INK = "#0d0f1a";
-    const MID = "#64748b";
-    const BORDER = "#e4e8f0";
-    const CARD = "#f6f8fc";
-    const WHITE = "#ffffff";
-    const RED = "#ED174C";
+    const NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
+    const WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
+    const MID = "#64748b", BORDER = "#e4e8f0";
     const BADGE = {
       "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
       "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
       "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
-      "GTD": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
-      "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
-      "DAY-TO-DAY": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" }
+      "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
     };
+
     const teams = payload.teams || [];
-    const colW = (W - PAD * 2 - 24) / 2;
-    let maxRows = 1;
-    teams.forEach(t => { maxRows = Math.max(maxRows, (t.items || []).length || 1); });
-    const rowH = 88;
-    const cardH = 48 + maxRows * rowH;
-    const H = 220 + cardH + 80;
+    let rows = 0;
+    teams.forEach(function (t) { rows += Math.max((t.items || []).length, 1); });
+    const headerH = 168;
+    const rowH = 72;
+    const teamHeadH = 40;
+    const H = headerH + teams.length * teamHeadH + rows * rowH + 90;
+
     const canvas = document.createElement("canvas");
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
+
     function rr(x, y, w, h, r, fill) {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -2076,72 +2495,81 @@ listenToUpdates();
       ctx.textAlign = align || "left";
       ctx.fillText(str, x, y);
     }
-    function wrap(str, maxW, font) {
+    function wrapText(str, maxW, font) {
       ctx.font = font;
       const words = String(str || "").split(/\s+/);
       const lines = [];
       let line = "";
-      words.forEach(w => {
+      words.forEach(function (w) {
         const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
-        else line = test;
+        if (ctx.measureText(test).width > maxW && line) {
+          lines.push(line);
+          line = w;
+        } else line = test;
       });
       if (line) lines.push(line);
       return lines.slice(0, 2);
     }
-    ctx.fillStyle = WHITE;
+
+    ctx.fillStyle = CREAM;
     ctx.fillRect(0, 0, W, H);
-    // Header matching draft picks style
-    text("SIXERSHOOPS", W / 2, 48, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
-    text("Injury Report", W / 2, 100, "800 42px Lexend, system-ui, sans-serif", INK, "center");
-    text(payload.matchup || "", W / 2, 138, "700 20px Lexend, system-ui, sans-serif", INK, "center");
-    const dateLine = payload.dateStr ? payload.dateStr : "";
-    const updateLine = payload.updatedLabel ? "Updated " + payload.updatedLabel : "";
-    const sub = [dateLine, updateLine].filter(Boolean).join(" · ");
-    text(sub, W / 2, 164, "500 15px Lexend, system-ui, sans-serif", MID, "center");
-    // Two cards
-    const startY = 190;
-    teams.slice(0, 2).forEach((team, idx) => {
-      const x = PAD + idx * (colW + 24);
-      rr(x, startY, colW, cardH, 14, CARD);
-      text(String(team.team || "TEAM").toUpperCase() + " INJURIES", x + 20, startY + 32, "800 13px Lexend, system-ui, sans-serif", MID);
+    ctx.fillStyle = NAVY;
+    ctx.fillRect(0, 0, W, 132);
+    ctx.fillStyle = RED;
+    ctx.fillRect(0, 132, W, 4);
+
+    text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
+    text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
+    text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
+    if (payload.updatedLabel) {
+      text("Updated " + payload.updatedLabel, W - PAD, 116, "500 14px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.65)", "right");
+    }
+
+    let y = headerH;
+    teams.forEach(function (team) {
+      rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
+      text(String(team.team || "Team").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
+      y += teamHeadH;
       const items = team.items || [];
-      let ry = startY + 48;
       if (!items.length) {
-        text("No injuries listed.", x + 20, ry + 28, "500 15px Lexend, system-ui, sans-serif", MID);
+        text("No injuries listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
+        y += rowH;
         return;
       }
-      items.forEach(item => {
-        text(item.name, x + 20, ry + 24, "700 18px Lexend, system-ui, sans-serif", INK);
-        const label = String(item.label || "Listed").toUpperCase();
-        const badge = BADGE[label] || BADGE["DAY-TO-DAY"] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
-        ctx.font = "800 11px Lexend, system-ui, sans-serif";
-        const bw = ctx.measureText(label).width + 20;
-        const bx = x + colW - 20 - bw;
-        rr(bx, ry + 8, bw, 24, 12, badge.bg);
-        ctx.strokeStyle = badge.border;
+      items.forEach(function (item) {
+        rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+        ctx.strokeStyle = BORDER;
         ctx.lineWidth = 1;
         ctx.stroke();
-        text(label, bx + bw / 2, ry + 24, "800 11px Lexend, system-ui, sans-serif", badge.text, "center");
-        if (item.injuryType) {
-          text(item.injuryType, x + 20, ry + 44, "500 13px Lexend, system-ui, sans-serif", MID);
+        text(item.name, PAD + 20, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
+        const badge = BADGE[item.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+        const label = String(item.label || "Listed").toUpperCase();
+        ctx.font = "800 12px Lexend, system-ui, sans-serif";
+        const bw = ctx.measureText(label).width + 22;
+        const bx = W - PAD - 20 - bw;
+        rr(bx, y + 12, bw, 26, 13, badge.bg);
+        ctx.strokeStyle = badge.border;
+        ctx.stroke();
+        text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
+        const sub = item.injuryType || item.comment || "";
+        if (sub) {
+          const lines = wrapText(sub, W - PAD * 2 - 40, "500 13px Lexend, system-ui, sans-serif");
+          lines.forEach(function (ln, i) {
+            text(ln, PAD + 20, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
+          });
         }
-        if (item.comment) {
-          const lines = wrap(item.comment, colW - 40, "500 12px Lexend, system-ui, sans-serif");
-          lines.forEach((ln, i) => text(ln, x + 20, ry + 62 + i * 15, "500 12px Lexend, system-ui, sans-serif", "#475569"));
-        }
-        ry += rowH;
+        y += rowH;
       });
     });
-    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", BLUE, "center");
+
+    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
     return canvas;
   }
 
   function openInjuryShareModal() {
     const payload = window.__injurySharePayload;
     if (!payload || !(payload.teams || []).length) return;
-    let canvas;
-    try { canvas = buildInjuryShareCanvas(payload); } catch (err) { console.error("injury graphic", err); return; }
+    const canvas = buildInjuryShareCanvas(payload);
     if (!canvas) return;
     const overlay = document.getElementById("injShareOverlay");
     const img = document.getElementById("injShareImg");
@@ -2159,38 +2587,49 @@ listenToUpdates();
     overlay.setAttribute("aria-hidden", "true");
   }
 
-  document.addEventListener("click", async function (e) {
-    const t = e.target;
-    if (!t) return;
-    const overlay = document.getElementById("injShareOverlay");
-
-    if (t.closest && t.closest("#homeInjShareBtn")) {
+  document.addEventListener("click", function (e) {
+    if (e.target && e.target.id === "homeInjShareBtn") {
       e.preventDefault();
       openInjuryShareModal();
-      return;
     }
-    if (!overlay) return;
-    if (t === overlay || (t.closest && t.closest("#injShareClose"))) {
+    if (e.target && (e.target.id === "injShareClose" || e.target.id === "injShareOverlay")) {
+      if (e.target.id === "injShareOverlay" && e.target !== e.currentTarget) return;
       closeInjuryShareModal();
-      return;
-    }
-    if (t.id === "injShareDownload" && overlay.dataset.png) {
-      const a = document.createElement("a");
-      a.href = overlay.dataset.png;
-      a.download = "sixershoops-injury-report.png";
-      a.click();
-      return;
-    }
-    if (t.id === "injShareCopy") {
-      try {
-        if (!overlay.dataset.png || !navigator.clipboard || !window.ClipboardItem) return;
-        const blob = await (await fetch(overlay.dataset.png)).blob();
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        t.textContent = "Copied";
-        setTimeout(function () { t.textContent = "Copy image"; }, 1600);
-      } catch (err) {}
     }
   });
+  const injOverlay = document.getElementById("injShareOverlay");
+  if (injOverlay) {
+    injOverlay.addEventListener("click", function (e) {
+      if (e.target === injOverlay) closeInjuryShareModal();
+    });
+  }
+  const injDl = document.getElementById("injShareDownload");
+  if (injDl) {
+    injDl.addEventListener("click", function () {
+      const overlay = document.getElementById("injShareOverlay");
+      const href = overlay && overlay.dataset.png;
+      if (!href) return;
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = "sixershoops-injury-report.png";
+      a.click();
+    });
+  }
+  const injCopy = document.getElementById("injShareCopy");
+  if (injCopy) {
+    injCopy.addEventListener("click", async function () {
+      try {
+        const overlay = document.getElementById("injShareOverlay");
+        const href = overlay && overlay.dataset.png;
+        if (!href || !navigator.clipboard || !window.ClipboardItem) return;
+        const res = await fetch(href);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        injCopy.textContent = "Copied";
+        setTimeout(function () { injCopy.textContent = "Copy image"; }, 1600);
+      } catch (err) {}
+    });
+  }
 
 </script>
 
@@ -2245,6 +2684,26 @@ listenToUpdates();
   </div>
 </footer>
 
+
+
+<div class="inj-edit-overlay" id="injEditOverlay" aria-hidden="true">
+  <div class="inj-edit-modal" role="dialog" aria-labelledby="injEditTitle">
+    <div class="inj-edit-head">
+      <h3 id="injEditTitle">Edit injury report</h3>
+      <button type="button" class="inj-edit-close" id="injEditClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="inj-edit-body">
+      <p class="inj-edit-hint">Overrides ESPN for this game on the homepage. Change status when a report updates (e.g. GTD → OUT). Saved for all visitors.</p>
+      <div id="injEditList"></div>
+    </div>
+    <div class="inj-edit-foot">
+      <button type="button" class="inj-edit-add" id="injEditAdd">Add player</button>
+      <button type="button" class="inj-edit-clear" id="injEditClear">Clear overrides</button>
+      <span class="inj-edit-status" id="injEditStatus"></span>
+      <button type="button" class="inj-edit-save" id="injEditSave">Save</button>
+    </div>
+  </div>
+</div>
 
 <div class="inj-share-overlay" id="injShareOverlay" aria-hidden="true">
   <div class="inj-share-modal" role="dialog" aria-labelledby="injShareTitle">

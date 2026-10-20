@@ -1,0 +1,106 @@
+/* ===== Homepage injury report — two-column cards matching the schedule look ===== */
+.home-inj {
+  margin-top: 0.75rem;
+}
+.home-inj-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+.home-inj-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-light, #e2e8f0);
+  background: #fff;
+  color: var(--ink, #0d0f1a);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.home-inj-share-btn:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
+.home-inj-updated {
+  font-size: 0.72rem;
+  color: var(--mid, #64748b);
+  margin: 0 0 0.6rem;
+}
+.home-inj-updated strong { color: var(--ink); font-weight: 700; }
+
+/* Two-column team cards */
+.home-inj-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+.home-inj-team {
+  background: #fff;
+  border: 1px solid var(--border-light, #e4e8f0);
+  border-radius: 12px;
+  padding: 1rem 1.05rem 0.85rem;
+  margin: 0;
+}
+.home-inj-team-name {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mid, #64748b);
+  margin: 0 0 0.55rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--border-light, #e4e8f0);
+}
+.home-inj-list { list-style: none; margin: 0; padding: 0; }
+.home-inj-row {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+}
+.home-inj-row:last-child { border-bottom: 0; }
+.home-inj-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.home-inj-name { font-weight: 700; color: var(--ink); font-size: 0.92rem; }
+.home-inj-badge {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+.home-inj-badge.inj-out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.home-inj-badge.inj-doubt { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.home-inj-badge.inj-q { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.home-inj-badge.inj-gtd { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.home-inj-badge.inj-prob { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.home-inj-badge.inj-other { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+.home-inj-meta {
+  font-size: 0.78rem;
+  color: var(--mid, #64748b);
+  margin-top: 0.18rem;
+}
+.home-inj-comment {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.45;
+  margin-top: 0.35rem;
+}
+.home-inj-empty {
+  color: var(--mid, #64748b);
+  font-size: 0.82rem;
+  margin: 0.4rem 0 0;
+}
+
+@media (max-width: 720px) {
+  .home-inj-grid { grid-template-columns: 1fr; }
+}

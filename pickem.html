@@ -1596,28 +1596,28 @@
       justify-content: center;
       box-sizing: border-box;
       width: 100%;
-      min-height: 42px;
-      padding: 9px 10px;
+      min-height: 44px;
+      padding: 10px 12px;
       border-radius: 10px;
       border: 1.5px solid #dbe3ee;
       background: #fff;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 600;
       line-height: 20px;
-      color: #475569;
+      letter-spacing: -0.005em;
+      color: #0d0f1a;
       text-align: center;
       overflow: visible;
     }
     #pickem-social-export .sg-chip.sg-selected {
       border-color: #006BB6;
-      background: rgba(0,107,182,0.12);
-      color: #006BB6;
-      box-shadow: inset 0 0 0 1px rgba(0,107,182,0.15);
+      background: #c4e0f7;
+      color: #0d0f1a;
     }
     #pickem-social-export .sg-chip.sg-correct {
       border-color: #16a34a;
-      background: rgba(22,163,74,0.12);
-      color: #15803d;
+      background: #c9efd7;
+      color: #0d0f1a;
     }
     /* No fixed height, overflow clipping or ellipsis: html2canvas clips glyphs and
        ignores text-overflow, so long answers wrap instead of getting cut off. */
@@ -1641,9 +1641,11 @@
     }
     #pickem-social-export .sg-chip.sg-wrong {
       border-color: #dc2626;
-      background: rgba(220,38,38,0.1);
-      color: #b91c1c;
+      background: #f9cfcf;
+      color: #0d0f1a;
     }
+    #pickem-social-export .sg-chip.sg-correct .sg-mark { color: #15803d; }
+    #pickem-social-export .sg-chip.sg-wrong .sg-mark { color: #b91c1c; }
     #pickem-social-export .sg-ok { color: #16a34a; }
     #pickem-social-export .sg-no { color: #dc2626; }
     #pickem-social-export .sg-bottom { text-align: center; margin-top: 20px; }
@@ -9862,12 +9864,11 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
               if (mode === 'results') {
                 if (selected && l.ok === true) chipCls += ' sg-correct';
                 else if (selected && l.ok === false) chipCls += ' sg-wrong';
-                else if (l.right != null && String(l.right).toLowerCase() === String(opt).toLowerCase()) chipCls += ' sg-correct';
                 else if (selected) chipCls += ' sg-selected';
               }
               const mark = (mode === 'results' && selected)
                 ? (l.ok === true ? ' ✓' : (l.ok === false ? ' ✗' : ''))
-                : (selected ? ' ●' : '');
+                : '';
               let label = String(opt || '').trim();
               if (label.length > 44) label = label.slice(0, 43) + '…';
               const markHtml = mark ? '<span class="sg-mark">' + mark.trim() + '</span>' : '';

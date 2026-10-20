@@ -575,6 +575,30 @@
   .inj-share-download { background: #006BB6; color: #fff; border: 0; }
   .inj-share-copy { background: #fff; color: #0d0f1a; border: 1px solid #e2e8f0; }
 
+
+    /* Modern injury report */
+    .sh-inj-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: .75rem 0; }
+    .sh-inj-col { background: var(--card-bg, #fff); border: 1px solid var(--border-light); border-radius: 12px; padding: .85rem 1rem; }
+    .sh-inj-team { font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); margin-bottom: .6rem; }
+    .sh-inj-row { padding: .55rem 0; border-bottom: 1px solid var(--border-light); }
+    .sh-inj-row:last-child { border-bottom: 0; }
+    .sh-inj-main { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .sh-inj-name { font-weight: 700; font-size: .88rem; color: var(--ink); }
+    .sh-inj-badge { font-size: .65rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: .18rem .5rem; border-radius: 999px; border: 1px solid transparent; flex-shrink: 0; }
+    .sh-inj-badge.out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .sh-inj-badge.doubtful { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .sh-inj-badge.questionable { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+    .sh-inj-badge.gtd { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .sh-inj-badge.probable { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .sh-inj-badge.other { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+    .sh-inj-detail { font-size: .76rem; color: var(--mid); margin-top: .2rem; }
+    .sh-inj-comment { font-size: .78rem; color: #475569; line-height: 1.4; margin-top: .3rem; }
+    .sh-inj-empty { color: var(--mid); font-size: .82rem; margin: 0; }
+    @media (max-width: 640px) { .sh-inj-wrap { grid-template-columns: 1fr; } }
+    html.dark-mode .sh-inj-badge.out { background: rgba(237,23,76,.15); color: #f87171; border-color: rgba(237,23,76,.3); }
+    html.dark-mode .sh-inj-badge.doubtful, html.dark-mode .sh-inj-badge.questionable { background: rgba(180,83,9,.15); color: #fdba74; border-color: rgba(180,83,9,.3); }
+    html.dark-mode .sh-inj-badge.gtd { background: rgba(29,78,216,.15); color: #93c5fd; border-color: rgba(29,78,216,.3); }
+    html.dark-mode .sh-inj-badge.probable { background: rgba(21,128,61,.15); color: #86efac; border-color: rgba(21,128,61,.3); }
 </style>
 </head>
 <body>

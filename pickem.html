@@ -2018,7 +2018,7 @@
           <div class="info-content" id="scheduleContent">
             <h2 class="info-desktop-title">Schedule</h2>
             <ul>
-              <li>Each week's picks open together when the week starts (next week opens when it begins)</li>
+              <li>Each week's picks open together; next week opens 48 hours before it starts</li>
               <li>Lock time is the earliest tip-off for that date</li>
               <li>You can update your picks anytime before lock</li>
               <li>Check back for upcoming pick dates</li>
@@ -5332,23 +5332,30 @@
           d.setDate(d.getDate() + (Number(slateWeek) - 1) * 7);
           opensOn = formatDateForComparison(d);
         }
-        const res = { open: Number(slateWeek) <= Number(curWeek), slateWeek: Number(slateWeek), curWeek: Number(curWeek), opensOn };
+        // A week is open once it has started, OR from 48 hours before it starts (early access to next week).
+        let opensAt = null;
+        let isOpen = Number(slateWeek) <= Number(curWeek);
+        if (opensOn) {
+          const [oy, om, od] = String(opensOn).split('-').map(Number);
+          opensAt = new Date(oy, om - 1, od - 2, 0, 0, 0, 0); // 48h before the week's first day, 12:00 AM ET
+          if (!isOpen && getESTNow() >= opensAt) isOpen = true;
+        }
+        const res = { open: isOpen, slateWeek: Number(slateWeek), curWeek: Number(curWeek), opensOn, opensAt };
         console.log('[pickem weekly]', dateStr, res);
         return res;
       } catch (e) { console.warn('[pickem weekly] error', e); return null; }
     }
     function renderPicksNotOpenYet(container, weekly) {
       let when = '';
-      if (weekly && weekly.opensOn) {
+      if (weekly && weekly.opensAt) {
         try {
-          const d = new Date(weekly.opensOn + 'T12:00:00');
-          when = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-        } catch (_) { when = weekly.opensOn; }
+          when = weekly.opensAt.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) + ' at 12:00 AM ET';
+        } catch (_) { when = weekly.opensOn || ''; }
       }
       container.innerHTML = '<div class="empty-state" style="padding:2rem 1rem;text-align:center;">' +
         '<p style="font-weight:700;margin:0 0 0.5rem;">Picks not open yet</p>' +
         '<p style="color:var(--mid);margin:0;font-size:0.92rem;line-height:1.5;">' +
-        (weekly ? 'Week ' + weekly.slateWeek + ' picks open when the week starts' + (when ? ' (' + escapeHtml(when) + ')' : '') + '. ' : '') +
+        (weekly ? 'Week ' + weekly.slateWeek + ' picks open 48 hours before the week starts' + (when ? ' (' + escapeHtml(when) + ')' : '') + '. ' : '') +
         'Check back then to make all of that week\'s picks.</p></div>';
       try {
         document.getElementById('lockTimeStatus').style.display = 'none';
@@ -6367,7 +6374,7 @@
         const wk = getWeeklyPickWindow(d.value);
         const soon = wk ? !wk.open : ahead > 4;
         return `
-          <button type="button" class="date-picker-btn ${isActive ? 'active' : ''}${soon ? ' date-soon' : ''}" data-date="${d.value}" title="${soon ? 'Picks open when this slate\'s week starts' : ''}">
+          <button type="button" class="date-picker-btn ${isActive ? 'active' : ''}${soon ? ' date-soon' : ''}" data-date="${d.value}" title="${soon ? 'Picks open 48 hours before this slate\'s week starts' : ''}">
             <div style="font-weight: 700; font-size: 12px;">${d.label.day}</div>
             <div class="date-picker-date">${d.label.date}</div>
             ${soon ? '<div class="date-picker-soon">Soon</div>' : ''}

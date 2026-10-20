@@ -1865,9 +1865,8 @@ listenToUpdates();
       const t = String(s || "").toLowerCase();
       if (t.includes("out")) return "out";
       if (t.includes("doubt")) return "doubtful";
-      if (t.includes("question")) return "questionable";
+      if (t.includes("question") || t.includes("gtd") || t.includes("day")) return "questionable";
       if (t.includes("prob")) return "probable";
-      if (t.includes("gtd") || t.includes("day")) return "gtd";
       return "other";
     }
     function card(g) {
@@ -1890,8 +1889,8 @@ listenToUpdates();
       }).join("");
       return '<div class="sh-inj-card"><div class="sh-inj-head">' + team + ' INJURIES</div>' + players + '</div>';
     }
-    if (!groups.length) return '<div class="sh-inj-pad"><div class="sh-inj-grid"><p class="sh-inj-empty">No injuries listed.</p></div></div>';
-    return '<div class="sh-inj-pad"><div class="sh-inj-grid">' + groups.map(card).join("") + '</div></div>';
+    if (!groups.length) return '<div class="sh-inj-grid"><p class="sh-inj-empty">No injuries listed.</p></div>';
+    return '<div class="sh-inj-grid">' + groups.map(card).join("") + '</div>';
   }
 
 

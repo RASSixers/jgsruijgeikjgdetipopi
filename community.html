@@ -286,61 +286,100 @@
     .err{display:none;color:#dc2626;font-size:.8rem;font-weight:600;margin-bottom:.75rem}
     .hint{font-size:.75rem;color:var(--mid);margin:.35rem 0 0}
   
-    /* Community tools */
-    .mode-tabs{display:flex;gap:.45rem;flex-wrap:wrap;margin:0 0 1.1rem}
-    .mode-tab{
-      border:1px solid var(--border);background:var(--card);color:var(--ink);
-      border-radius:999px;padding:.5rem 1rem;font:700 .78rem Lexend,sans-serif;cursor:pointer;
+
+    /* Fan creations hub */
+    .create-hub{margin:0 0 1.5rem}
+    .create-hub-head{margin:0 0 1rem}
+    .create-hub-head h2{margin:0 0 .35rem;font-size:1.2rem;font-weight:900;letter-spacing:-.02em;color:var(--navy)}
+    .create-hub-head p{margin:0;color:var(--mid);font-size:.9rem;line-height:1.5;max-width:40rem}
+    .create-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin-bottom:1rem;
     }
-    .mode-tab:hover{border-color:var(--sixers-blue);color:var(--sixers-blue)}
-    .mode-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
-    .tools-wrap{display:none}
-    .tools-wrap.active{display:block}
-    .feed-wrap.hidden-mode{display:none !important}
-    .tool-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1rem}
-    .tool-tab{
-      border:1px solid var(--border);background:var(--card);color:var(--ink);
-      border-radius:999px;padding:.45rem .9rem;font:700 .74rem Lexend,sans-serif;cursor:pointer;
+    .create-card{
+      border:1px solid var(--border);background:var(--card);border-radius:14px;padding:1rem .9rem;
+      cursor:pointer;text-align:left;transition:border-color .15s,box-shadow .15s,transform .15s;
+      font-family:inherit;color:inherit;
     }
-    .tool-tab.active{background:var(--sixers-blue);color:#fff;border-color:var(--sixers-blue)}
-    .tool-panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.15rem 1.25rem}
-    .tool-panel.active{display:block}
-    .tool-panel h2{margin:0 0 .3rem;font-size:1.05rem;font-weight:800}
-    .tool-panel .sub{margin:0 0 .9rem;color:var(--mid);font-size:.84rem;line-height:1.45}
-    .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-    @media(max-width:720px){.tool-grid{grid-template-columns:1fr}}
-    .tool-panel table{width:100%;border-collapse:collapse;font-size:.85rem}
-    .tool-panel th,.tool-panel td{padding:.5rem .45rem;border-bottom:1px solid var(--border);text-align:left}
-    .tool-panel th{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mid)}
-    .tool-panel .rank{font-weight:800;color:var(--navy);width:1.6rem}
-    .tool-panel .pct{font-weight:700;font-variant-numeric:tabular-nums}
-    .tool-bar{height:8px;border-radius:999px;background:#eef2f7;overflow:hidden;min-width:70px}
-    .tool-bar>i{display:block;height:100%;background:var(--sixers-blue);border-radius:999px}
-    .tool-btn{
-      display:inline-flex;align-items:center;border:0;border-radius:999px;padding:.6rem 1.05rem;
-      font:700 .8rem Lexend,sans-serif;cursor:pointer;background:var(--sixers-blue);color:#fff;
+    .create-card:hover{border-color:var(--sixers-blue);box-shadow:0 8px 24px rgba(0,107,182,.1);transform:translateY(-1px)}
+    .create-card.active{border-color:var(--sixers-blue);box-shadow:0 0 0 2px rgba(0,107,182,.2)}
+    .create-card .cc-icon{
+      width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+      font-size:1.1rem;margin-bottom:.55rem;background:rgba(0,107,182,.1);color:var(--sixers-blue);font-weight:800;
     }
-    .tool-btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--border)}
-    .tool-btn-row{display:flex;flex-wrap:wrap;gap:.45rem;margin:.35rem 0 0}
-    .tool-note{margin-top:.9rem;padding:.7rem .85rem;border-radius:10px;background:rgba(100,116,139,.08);color:var(--mid);font-size:.8rem;line-height:1.45}
-    .tool-game{
-      border:1px solid var(--border);border-radius:12px;padding:.8rem 1rem;margin-bottom:.55rem;
-      display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;
+    .create-card strong{display:block;font-size:.88rem;font-weight:800;margin-bottom:.2rem}
+    .create-card span{display:block;font-size:.75rem;color:var(--mid);line-height:1.35}
+    .studio{
+      display:none;border:1px solid var(--border);background:var(--card);border-radius:16px;
+      padding:1.15rem 1.2rem 1.3rem;margin-bottom:1.25rem;
     }
-    .tool-game .prob{font-size:1.1rem;font-weight:800;color:var(--navy)}
+    .studio.open{display:block}
+    .studio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+    .studio-head h3{margin:0;font-size:1.05rem;font-weight:800}
+    .studio-head p{margin:.25rem 0 0;color:var(--mid);font-size:.84rem}
+    .studio-close{border:0;background:#f1f5f9;width:34px;height:34px;border-radius:999px;cursor:pointer;font-size:1.15rem;flex-shrink:0}
+    .studio-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:1.15rem}
+    @media(max-width:800px){.studio-grid{grid-template-columns:1fr}}
+    .field-label{display:block;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin:0 0 .35rem}
+    .studio select,.studio input[type=text],.studio textarea{
+      width:100%;border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;
+      font:500 .9rem Lexend,sans-serif;background:var(--bg2,#fff);color:var(--ink);margin-bottom:.75rem;
+    }
+    .studio textarea{min-height:72px;resize:vertical}
+    .pick-list{display:flex;flex-direction:column;gap:.45rem;max-height:320px;overflow:auto;padding-right:.25rem}
+    .pick-row{
+      display:flex;align-items:center;gap:.5rem;border:1px solid var(--border);border-radius:10px;
+      padding:.45rem .55rem;background:var(--bg2,#fff);
+    }
+    .pick-row select{margin:0;flex:1}
+    .pick-row .pr-num{font-weight:800;color:var(--navy);width:1.4rem;text-align:center}
     .chip{
       display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:999px;
-      padding:.32rem .62rem;font-size:.76rem;font-weight:600;background:var(--card);cursor:grab;margin:.2rem;user-select:none;
+      padding:.32rem .62rem;font-size:.76rem;font-weight:600;background:var(--bg2,#fff);cursor:grab;margin:.2rem;user-select:none;
     }
-    .zone{min-height:110px;border:2px dashed var(--border);border-radius:12px;padding:.6rem;background:rgba(100,116,139,.04)}
-    .zone h3{margin:0 0 .45rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mid)}
-    .zone.start{border-color:rgba(22,163,74,.35)}
-    .zone.bench{border-color:rgba(0,107,182,.3)}
-    .zone.cut{border-color:rgba(237,23,76,.3)}
-    .tier-row{display:flex;gap:.55rem;margin-bottom:.5rem}
-    .tier-label{width:44px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
-    .tier-drop{flex:1;min-height:52px;border:1px solid var(--border);border-radius:10px;padding:.35rem;background:var(--card);display:flex;flex-wrap:wrap}
-    .tool-field{width:100%;border:1px solid var(--border);border-radius:10px;padding:.55rem .7rem;font:500 .9rem Lexend,sans-serif;background:var(--card);color:var(--ink);margin-bottom:.75rem}
+    .zone{min-height:100px;border:2px dashed var(--border);border-radius:12px;padding:.55rem;margin-bottom:.55rem}
+    .zone h4{margin:0 0 .4rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mid)}
+    .zone.start{border-color:rgba(22,163,74,.4);background:rgba(22,163,74,.04)}
+    .zone.bench{border-color:rgba(0,107,182,.35);background:rgba(0,107,182,.04)}
+    .zone.cut{border-color:rgba(237,23,76,.35);background:rgba(237,23,76,.04)}
+    .tier-row{display:flex;gap:.5rem;margin-bottom:.45rem}
+    .tier-label{width:42px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+    .tier-drop{flex:1;min-height:48px;border:1px solid var(--border);border-radius:10px;padding:.3rem;display:flex;flex-wrap:wrap;background:var(--bg2,#fff)}
+    .studio-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+    .studio-btn{
+      border:0;border-radius:999px;padding:.65rem 1.15rem;font:700 .82rem Lexend,sans-serif;cursor:pointer;
+    }
+    .studio-btn.primary{background:var(--sixers-blue);color:#fff}
+    .studio-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--ink)}
+    .studio-preview{
+      border:1px solid var(--border);border-radius:12px;background:#0b1220;padding:.75rem;min-height:200px;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .studio-preview img{max-width:100%;height:auto;border-radius:8px;display:block}
+    .studio-preview .ph{color:rgba(255,255,255,.55);font-size:.85rem;text-align:center;padding:1rem}
+
+    /* Trade of the Day — redesigned */
+    .totd-shell{margin:0 0 1.35rem}
+    .totd-as-card{
+      border:1px solid var(--border);border-radius:18px;overflow:hidden;background:var(--card);
+      box-shadow:0 10px 28px rgba(15,23,42,.06);
+    }
+    .totd-banner{
+      display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;
+      padding:.85rem 1.15rem;background:linear-gradient(105deg,#001a57 0%,#003d82 45%,#006BB6 100%);
+      color:#fff;
+    }
+    .totd-banner-left{display:flex;align-items:center;gap:.65rem}
+    .totd-badge{
+      font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+      background:rgba(255,255,255,.16);padding:.28rem .6rem;border-radius:999px;
+    }
+    .totd-banner h2{margin:0;font-size:.95rem;font-weight:800;letter-spacing:-.01em}
+    .totd-banner p{margin:.15rem 0 0;font-size:.75rem;opacity:.8}
+    .totd-inner{padding:0}
+    .totd-inner .card{
+      border:0;border-radius:0;box-shadow:none;margin:0;background:transparent;
+    }
+    .totd-inner .cbody{padding:1rem 1.15rem 1.15rem}
 
   </style>
 
@@ -356,97 +395,45 @@
     </div>
 
     
-    <div class="mode-tabs" id="communityModeTabs">
-      <button type="button" class="mode-tab active" data-mode="feed">Community feed</button>
-      <button type="button" class="mode-tab" data-mode="tools">Fan tools</button>
-    </div>
-
-    <div class="tools-wrap" id="toolsWrap">
-      <div class="tool-tabs" id="toolTabs">
-        <button type="button" class="tool-tab active" data-tool="standings">Standings predictor</button>
-        <button type="button" class="tool-tab" data-tool="games">Game predictor</button>
-        <button type="button" class="tool-tab" data-tool="playoffs">Playoff predictor</button>
-        <button type="button" class="tool-tab" data-tool="sbc">Start / Bench / Cut</button>
-        <button type="button" class="tool-tab" data-tool="tiers">Tier list</button>
+    
+    <div class="create-hub" id="createHub">
+      <div class="create-hub-head">
+        <h2>Create &amp; share</h2>
+        <p>Build a ranking, game pick, playoff board, Start/Bench/Cut, or tier list for any NBA team. Preview a graphic, then post it to the community.</p>
+      </div>
+      <div class="create-grid" id="createGrid">
+        <button type="button" class="create-card" data-studio="standings"><div class="cc-icon">1–15</div><strong>Standings board</strong><span>Rank the East or West how you see it</span></button>
+        <button type="button" class="create-card" data-studio="game"><div class="cc-icon">VS</div><strong>Game pick</strong><span>Pick a winner for any slate game</span></button>
+        <button type="button" class="create-card" data-studio="playoffs"><div class="cc-icon">PO</div><strong>Playoff bracket pick</strong><span>Your top 10 by conference</span></button>
+        <button type="button" class="create-card" data-studio="sbc"><div class="cc-icon">S/B/C</div><strong>Start / Bench / Cut</strong><span>Any team’s roster, your calls</span></button>
+        <button type="button" class="create-card" data-studio="tiers"><div class="cc-icon">S–F</div><strong>Tier list</strong><span>Rank any team’s players by tier</span></button>
       </div>
 
-      <div class="tool-panel active" id="tool-standings">
-        <h2>Standings predictor</h2>
-        <p class="sub">Projects final records from current ESPN standings with rest-of-season simulations.</p>
-        <div class="tool-btn-row">
-          <button type="button" class="tool-btn" id="runStandings">Run simulation</button>
-          <button type="button" class="tool-btn ghost" id="resetStandings">Reset</button>
-        </div>
-        <div class="tool-grid" style="margin-top:1rem">
+      <div class="studio" id="studio">
+        <div class="studio-head">
           <div>
-            <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">East</div>
-            <div style="overflow:auto"><table id="eastTable"><thead><tr><th>#</th><th>Team</th><th>W</th><th>L</th><th>Pct</th><th></th></tr></thead><tbody></tbody></table></div>
+            <h3 id="studioTitle">Studio</h3>
+            <p id="studioSub">Make your picks, then post to the feed.</p>
           </div>
+          <button type="button" class="studio-close" id="studioClose" aria-label="Close">&times;</button>
+        </div>
+        <div class="studio-grid">
+          <div id="studioForm"></div>
           <div>
-            <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">West</div>
-            <div style="overflow:auto"><table id="westTable"><thead><tr><th>#</th><th>Team</th><th>W</th><th>L</th><th>Pct</th><th></th></tr></thead><tbody></tbody></table></div>
+            <div class="field-label">Graphic preview</div>
+            <div class="studio-preview" id="studioPreview"><div class="ph">Your share graphic will show here</div></div>
+            <div class="studio-actions">
+              <button type="button" class="studio-btn primary" id="studioGraphic">Update graphic</button>
+              <button type="button" class="studio-btn primary" id="studioPost">Post to community</button>
+              <button type="button" class="studio-btn ghost" id="studioDownload">Download PNG</button>
+            </div>
           </div>
-        </div>
-        <p class="tool-note" id="standingsNote">Click Run simulation to project final records.</p>
-      </div>
-
-      <div class="tool-panel" id="tool-games">
-        <h2>Game predictor</h2>
-        <p class="sub">Win probabilities for today’s NBA slate (or the next available day). Sixers games are highlighted.</p>
-        <div class="tool-btn-row">
-          <button type="button" class="tool-btn" id="runGames">Load slate</button>
-        </div>
-        <div id="gamesList" style="margin-top:1rem"></div>
-        <p class="tool-note">Simple model for entertainment only. Not betting advice.</p>
-      </div>
-
-      <div class="tool-panel" id="tool-playoffs">
-        <h2>Playoff predictor</h2>
-        <p class="sub">Playoff, Play-In, and top-6 odds from the same simulation engine.</p>
-        <div class="tool-btn-row">
-          <button type="button" class="tool-btn" id="runPlayoffs">Simulate playoff odds</button>
-        </div>
-        <div class="tool-grid" style="margin-top:1rem">
-          <div style="overflow:auto"><table id="eastPo"><thead><tr><th>Team</th><th>Playoff %</th><th>Play-In %</th><th>Top 6 %</th></tr></thead><tbody></tbody></table></div>
-          <div style="overflow:auto"><table id="westPo"><thead><tr><th>Team</th><th>Playoff %</th><th>Play-In %</th><th>Top 6 %</th></tr></thead><tbody></tbody></table></div>
-        </div>
-      </div>
-
-      <div class="tool-panel" id="tool-sbc">
-        <h2>Start / Bench / Cut</h2>
-        <p class="sub">Drag Sixers players into Start (max 5), Bench, or Cut. Saves in this browser.</p>
-        <div class="tool-grid">
-          <div class="zone start" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'start')"><h3>Start (5)</h3><div id="zone-start"></div></div>
-          <div class="zone bench" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'bench')"><h3>Bench</h3><div id="zone-bench"></div></div>
-        </div>
-        <div class="zone cut" style="margin-top:.75rem" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'cut')"><h3>Cut</h3><div id="zone-cut"></div></div>
-        <div style="margin-top:.75rem">
-          <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">Player pool</div>
-          <div id="zone-pool" ondragover="window.shAllowDrop(event)" ondrop="window.shDropSbc(event,'pool')"></div>
-        </div>
-        <div class="tool-btn-row">
-          <button type="button" class="tool-btn" id="saveSbc">Save board</button>
-          <button type="button" class="tool-btn ghost" id="resetSbc">Reset</button>
-        </div>
-      </div>
-
-      <div class="tool-panel" id="tool-tiers">
-        <h2>Tier list</h2>
-        <p class="sub">Drag players into tiers. Title and board save locally.</p>
-        <input class="tool-field" id="tierTitle" maxlength="80" placeholder="Tier list title" value="Sixers roster tiers"/>
-        <div id="tierBoard"></div>
-        <div style="margin-top:.75rem">
-          <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:.35rem">Unranked</div>
-          <div id="tierPool" class="tier-drop" ondragover="window.shAllowDrop(event)" ondrop="window.shDropTier(event,'pool')"></div>
-        </div>
-        <div class="tool-btn-row">
-          <button type="button" class="tool-btn" id="saveTiers">Save tier list</button>
-          <button type="button" class="tool-btn ghost" id="resetTiers">Reset</button>
         </div>
       </div>
     </div>
 
     <div class="feed-wrap" id="feedWrap">
+
 <div id="tradeOfDay" class="totd-as-card" style="display:none" aria-label="Trade of the Day"></div>
 <div class="toolbar">
       <div class="tabs">
@@ -830,9 +817,15 @@
     var user=window.auth&&window.auth.currentUser;
     var uv=user&&top.voters?top.voters[user.uid]:null;
     var body = buildCardBody(top);
+    el.className = 'totd-as-card';
     el.innerHTML =
+      '<div class="totd-banner">'+
+        '<div class="totd-banner-left">'+
+          '<span class="totd-badge">Featured</span>'+
+          '<div><h2>Trade of the Day</h2><p>Top community trade from the last 48 hours</p></div>'+
+        '</div>'+
+      '</div>'+
       '<div class="totd-inner">'+
-      '<div class="totd-banner">★ Trade of the Day</div>'+
       '<article class="card" data-id="'+esc(top.id)+'" style="cursor:pointer" role="link" tabindex="0">'+
         '<div class="vcol">'+
           '<button type="button" class="vbtn vote-up'+(uv==='up'?' up':'')+'" data-id="'+esc(top.id)+'" aria-label="Upvote"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>'+
@@ -1159,213 +1152,295 @@
   });
 })();
   
-/* ── Fan tools (standings / games / playoffs / SBC / tiers) ── */
+
+/* Create & share studios */
 (function(){
   var EAST=["ATL","BOS","BKN","CHA","CHI","CLE","DET","IND","MIA","MIL","NYK","ORL","PHI","TOR","WAS"];
   var WEST=["DAL","DEN","GSW","HOU","LAC","LAL","MEM","MIN","NOP","OKC","PHX","POR","SAC","SAS","UTA"];
-  var NAMES={ATL:"Hawks",BOS:"Celtics",BKN:"Nets",CHA:"Hornets",CHI:"Bulls",CLE:"Cavs",DET:"Pistons",IND:"Pacers",MIA:"Heat",MIL:"Bucks",NYK:"Knicks",ORL:"Magic",PHI:"76ers",TOR:"Raptors",WAS:"Wizards",DAL:"Mavs",DEN:"Nuggets",GSW:"Warriors",HOU:"Rockets",LAC:"Clippers",LAL:"Lakers",MEM:"Grizzlies",MIN:"Wolves",NOP:"Pelicans",OKC:"Thunder",PHX:"Suns",POR:"Blazers",SAC:"Kings",SAS:"Spurs",UTA:"Jazz"};
-  var SIXERS_POOL=["Tyrese Maxey","Jaylen Brown","Joel Embiid","LeBron James","VJ Edgecombe","Anfernee Simons","Kentavious Caldwell-Pope","Dean Wade","Justin Edwards","Adem Bona","Labaron Philon Jr.","Jabari Walker","Dominick Barlow","Ariel Hukporti","Caleb Love","Rayan Rupert","Tacko Fall"];
+  var NAMES={ATL:"Hawks",BOS:"Celtics",BKN:"Nets",CHA:"Hornets",CHI:"Bulls",CLE:"Cavaliers",DET:"Pistons",IND:"Pacers",MIA:"Heat",MIL:"Bucks",NYK:"Knicks",ORL:"Magic",PHI:"76ers",TOR:"Raptors",WAS:"Wizards",DAL:"Mavericks",DEN:"Nuggets",GSW:"Warriors",HOU:"Rockets",LAC:"Clippers",LAL:"Lakers",MEM:"Grizzlies",MIN:"Timberwolves",NOP:"Pelicans",OKC:"Thunder",PHX:"Suns",POR:"Trail Blazers",SAC:"Kings",SAS:"Spurs",UTA:"Jazz"};
+  var ROSTERS={
+    PHI:["Tyrese Maxey","Jaylen Brown","Joel Embiid","LeBron James","VJ Edgecombe","Anfernee Simons","Kentavious Caldwell-Pope","Dean Wade","Justin Edwards","Adem Bona","Labaron Philon Jr.","Jabari Walker","Dominick Barlow","Ariel Hukporti","Caleb Love","Rayan Rupert","Tacko Fall"],
+    BOS:["Jayson Tatum","Jaylen Brown","Derrick White","Jrue Holiday","Kristaps Porzingis","Al Horford","Payton Pritchard"],
+    NYK:["Jalen Brunson","Karl-Anthony Towns","Mikal Bridges","OG Anunoby","Josh Hart","Mitchell Robinson"],
+    MIL:["Giannis Antetokounmpo","Damian Lillard","Khris Middleton","Brook Lopez","Bobby Portis"],
+    DEN:["Nikola Jokic","Jamal Murray","Aaron Gordon","Michael Porter Jr.","Kentavious Caldwell-Pope"],
+    OKC:["Shai Gilgeous-Alexander","Jalen Williams","Chet Holmgren","Josh Giddey","Luguentz Dort"],
+    DAL:["Luka Doncic","Kyrie Irving","P.J. Washington","Dereck Lively II","Daniel Gafford"],
+    LAL:["LeBron James","Anthony Davis","Austin Reaves","D'Angelo Russell","Rui Hachimura"],
+    GSW:["Stephen Curry","Klay Thompson","Draymond Green","Andrew Wiggins","Jonathan Kuminga"],
+    MIA:["Bam Adebayo","Jimmy Butler","Tyler Herro","Terry Rozier","Jaime Jaquez Jr."]
+  };
+  // default pool for any team without a custom list
+  var DEFAULT_POOL=["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6","Player 7","Player 8","Player 9","Player 10","Player 11","Player 12","Player 13","Player 14","Player 15"];
   var TIER_COLORS=["#ED174C","#f97316","#eab308","#22c55e","#006BB6","#64748b"];
   var TIER_LABELS=["S","A","B","C","D","F"];
-  var standingsBase=null;
+  var currentStudio=null;
+  var lastPng=null;
+  var lastPayload=null;
 
   function $(id){return document.getElementById(id);}
-  function teamStrength(t){var g=t.w+t.l;var pct=g>0?t.w/g:0.5;return 0.22+pct*0.56;}
-
-  document.querySelectorAll("#communityModeTabs .mode-tab").forEach(function(btn){
-    btn.addEventListener("click",function(){
-      document.querySelectorAll("#communityModeTabs .mode-tab").forEach(function(b){b.classList.remove("active");});
-      btn.classList.add("active");
-      var mode=btn.getAttribute("data-mode");
-      var tools=$("toolsWrap"); var feed=$("feedWrap");
-      if(mode==="tools"){
-        if(tools) tools.classList.add("active");
-        if(feed) feed.classList.add("hidden-mode");
-      } else {
-        if(tools) tools.classList.remove("active");
-        if(feed) feed.classList.remove("hidden-mode");
-      }
-    });
-  });
-
-  document.querySelectorAll("#toolTabs .tool-tab").forEach(function(btn){
-    btn.addEventListener("click",function(){
-      document.querySelectorAll("#toolTabs .tool-tab").forEach(function(b){b.classList.remove("active");});
-      document.querySelectorAll(".tool-panel").forEach(function(p){p.classList.remove("active");});
-      btn.classList.add("active");
-      var p=$("tool-"+btn.getAttribute("data-tool"));
-      if(p) p.classList.add("active");
-    });
-  });
-
-  async function fetchStandings(){
-    if(standingsBase) return standingsBase;
-    var teams={};
-    for(var g=5;g<=6;g++){
-      try{
-        var res=await fetch("https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?group="+g,{cache:"no-store"});
-        if(!res.ok) continue;
-        var data=await res.json();
-        var list=((((data||{}).children||[])[0]||{}).standings||{}).entries||[];
-        if(!list.length && data.standings) list=data.standings.entries||[];
-        (list||[]).forEach(function(e){
-          var t=e.team||{}; var abbr=t.abbreviation; if(!abbr) return;
-          var stats={}; (e.stats||[]).forEach(function(s){stats[s.name]=s.value;stats[s.abbreviation]=s.value;});
-          var w=Number(stats.wins!=null?stats.wins:stats.W)||0;
-          var l=Number(stats.losses!=null?stats.losses:stats.L)||0;
-          teams[abbr]={abbr:abbr,name:t.displayName||NAMES[abbr]||abbr,conf:EAST.indexOf(abbr)>=0?"East":"West",w:w,l:l,remaining:Math.max(0,82-w-l)};
-        });
-      }catch(err){}
-    }
-    if(!Object.keys(teams).length){
-      EAST.concat(WEST).forEach(function(a){teams[a]={abbr:a,name:NAMES[a]||a,conf:EAST.indexOf(a)>=0?"East":"West",w:0,l:0,remaining:82};});
-    }
-    standingsBase=teams; return teams;
-  }
-
-  function simRest(teams,noise){
-    var out={};
-    Object.keys(teams).forEach(function(a){
-      var t=teams[a],w=t.w,l=t.l,s=teamStrength(t);
-      for(var i=0;i<t.remaining;i++){
-        var p=Math.min(0.88,Math.max(0.12,s+(Math.random()-0.5)*(noise||0.12)));
-        if(Math.random()<p)w++; else l++;
-      }
-      out[a]={abbr:a,name:t.name,conf:t.conf,w:w,l:l,pct:(w+l)?w/(w+l):0};
-    });
-    return out;
-  }
-  function sortConf(map,conf){
-    return Object.keys(map).map(function(k){return map[k];}).filter(function(t){return t.conf===conf;})
-      .sort(function(a,b){return b.pct-a.pct||b.w-a.w;});
-  }
-  function fillTable(tbody,rows){
-    tbody.innerHTML=rows.map(function(t,i){
-      var pct=(t.pct*100).toFixed(1)+"%"; var w=Math.round(t.pct*100);
-      var hi=t.abbr==="PHI"?' style="background:rgba(0,107,182,.08)"':"";
-      return "<tr"+hi+"><td class='rank'>"+(i+1)+"</td><td><strong>"+t.abbr+"</strong></td><td>"+t.w+"</td><td>"+t.l+"</td><td class='pct'>"+pct+"</td><td><div class='tool-bar'><i style='width:"+w+"%'></i></div></td></tr>";
+  function teamOptions(selected){
+    return EAST.concat(WEST).map(function(a){
+      return '<option value="'+a+'"'+(a===(selected||"PHI")?" selected":"")+">"+a+" — "+(NAMES[a]||a)+"</option>";
     }).join("");
   }
-
-  var rs=$("runStandings");
-  if(rs) rs.addEventListener("click",async function(){
-    $("standingsNote").textContent="Simulating…";
-    var base=await fetchStandings(); var sims=200; var sum={};
-    Object.keys(base).forEach(function(a){sum[a]={abbr:a,name:base[a].name,conf:base[a].conf,w:0,l:0};});
-    for(var i=0;i<sims;i++){
-      var fin=simRest(base,0.14);
-      Object.keys(fin).forEach(function(a){sum[a].w+=fin[a].w;sum[a].l+=fin[a].l;});
-    }
-    Object.keys(sum).forEach(function(a){
-      sum[a].w=Math.round(sum[a].w/sims); sum[a].l=Math.round(sum[a].l/sims);
-      sum[a].pct=sum[a].w/Math.max(1,sum[a].w+sum[a].l);
-    });
-    fillTable($("eastTable").querySelector("tbody"),sortConf(sum,"East"));
-    fillTable($("westTable").querySelector("tbody"),sortConf(sum,"West"));
-    $("standingsNote").textContent="Projected finals from "+sims+" simulations using current ESPN standings.";
-  });
-  var xss=$("resetStandings");
-  if(xss) xss.addEventListener("click",function(){
-    $("eastTable").querySelector("tbody").innerHTML="";
-    $("westTable").querySelector("tbody").innerHTML="";
-    $("standingsNote").textContent="Click Run simulation to project final records.";
-  });
-
-  function winProb(hs,as){var p=hs/(hs+as);p=p*0.92+0.08;return Math.min(0.9,Math.max(0.1,p));}
-  var rg=$("runGames");
-  if(rg) rg.addEventListener("click",async function(){
-    var list=$("gamesList"); list.innerHTML="<p class='sub'>Loading…</p>";
-    var base=await fetchStandings();
-    var now=new Date(); var events=[];
-    for(var d=0;d<3;d++){
-      var x=new Date(now.getTime()+d*86400000);
-      var ds=x.toISOString().slice(0,10).replace(/-/g,"");
-      try{
-        var res=await fetch("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates="+ds,{cache:"no-store"});
-        if(!res.ok) continue;
-        var data=await res.json(); var ev=data.events||[];
-        if(ev.length){events=ev;break;}
-      }catch(e){}
-    }
-    if(!events.length){list.innerHTML="<p class='sub'>No games found on the upcoming slate.</p>";return;}
-    list.innerHTML=events.map(function(ev){
-      var comps=(((ev.competitions||[])[0]||{}).competitors)||[];
-      var home=comps.find(function(c){return c.homeAway==="home";})||comps[0]||{};
-      var away=comps.find(function(c){return c.homeAway==="away";})||comps[1]||{};
-      var ha=(home.team||{}).abbreviation||"HOME"; var aa=(away.team||{}).abbreviation||"AWAY";
-      var pHome=winProb(teamStrength(base[ha]||{w:1,l:1}),teamStrength(base[aa]||{w:1,l:1}));
-      var phi=ha==="PHI"||aa==="PHI";
-      var tip=ev.date?new Date(ev.date).toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:"America/New_York"})+" ET":"";
-      var fav=pHome>=0.5?ha:aa; var favP=Math.round((pHome>=0.5?pHome:1-pHome)*100);
-      return '<div class="tool-game"'+(phi?' style="border-color:#006BB6"':'')+"><div><strong>"+aa+" @ "+ha+"</strong><div style='color:var(--mid);font-size:.8rem;margin-top:.2rem'>"+tip+(phi?" · Sixers":"")+"</div><div style='margin-top:.3rem;font-size:.82rem;color:var(--mid)'>"+aa+" "+Math.round((1-pHome)*100)+"% · "+ha+" "+Math.round(pHome*100)+"%</div></div><div class='prob'>"+fav+" "+favP+"%</div></div>";
+  function confTeamOptions(conf, selected){
+    var list=conf==="West"?WEST:EAST;
+    return list.map(function(a,i){
+      return '<option value="'+a+'"'+(selected===a?" selected":"")+">"+a+" — "+(NAMES[a]||a)+"</option>";
     }).join("");
+  }
+  function rosterFor(abbr){
+    return (ROSTERS[abbr]||DEFAULT_POOL).slice();
+  }
+
+  document.querySelectorAll("#createGrid .create-card").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      document.querySelectorAll("#createGrid .create-card").forEach(function(b){b.classList.remove("active");});
+      btn.classList.add("active");
+      openStudio(btn.getAttribute("data-studio"));
+    });
+  });
+  if($("studioClose")) $("studioClose").addEventListener("click",function(){
+    $("studio").classList.remove("open");
+    document.querySelectorAll("#createGrid .create-card").forEach(function(b){b.classList.remove("active");});
   });
 
-  var rp=$("runPlayoffs");
-  if(rp) rp.addEventListener("click",async function(){
-    var base=await fetchStandings(); var sims=400; var stats={};
-    Object.keys(base).forEach(function(a){stats[a]={abbr:a,name:base[a].name,conf:base[a].conf,playoff:0,playin:0,top6:0};});
-    for(var i=0;i<sims;i++){
-      var fin=simRest(base,0.14);
-      ["East","West"].forEach(function(conf){
-        sortConf(fin,conf).forEach(function(t,idx){
-          if(idx<6){stats[t.abbr].playoff++;stats[t.abbr].top6++;}
-          else if(idx<10){stats[t.abbr].playoff++;stats[t.abbr].playin++;}
-        });
-      });
+  function openStudio(kind){
+    currentStudio=kind;
+    $("studio").classList.add("open");
+    lastPng=null; lastPayload=null;
+    $("studioPreview").innerHTML='<div class="ph">Build your board, then hit Update graphic</div>';
+    var titles={
+      standings:["Standings board","Rank every team in a conference — your order, your take."],
+      game:["Game pick","Choose a game and pick the winner. Add a short note if you want."],
+      playoffs:["Playoff board","Set your 1–10 order for a conference."],
+      sbc:["Start / Bench / Cut","Any NBA roster. Drag players into Start (5), Bench, or Cut."],
+      tiers:["Tier list","Tier any team’s players from S to F."]
+    };
+    $("studioTitle").textContent=(titles[kind]||["Studio",""])[0];
+    $("studioSub").textContent=(titles[kind]||["",""])[1];
+    var form=$("studioForm");
+    if(kind==="standings"){
+      form.innerHTML='<label class="field-label">Conference</label><select id="stConf"><option value="East">East</option><option value="West">West</option></select>'+
+        '<label class="field-label">Your order (1 = best)</label><div class="pick-list" id="stList"></div>'+
+        '<label class="field-label">Caption (optional)</label><textarea id="stNote" placeholder="Why this order?"></textarea>';
+      function fillSt(){
+        var conf=$("stConf").value; var list=conf==="West"?WEST:EAST;
+        $("stList").innerHTML=list.map(function(_,i){
+          return '<div class="pick-row"><span class="pr-num">'+(i+1)+'</span><select data-slot="'+i+'">'+confTeamOptions(conf,list[i])+'</select></div>';
+        }).join("");
+      }
+      $("stConf").onchange=fillSt; fillSt();
+    } else if(kind==="game"){
+      form.innerHTML='<label class="field-label">Away team</label><select id="gmAway">'+teamOptions("NYK")+'</select>'+
+        '<label class="field-label">Home team</label><select id="gmHome">'+teamOptions("PHI")+'</select>'+
+        '<label class="field-label">Your pick</label><select id="gmPick"><option value="away">Away wins</option><option value="home" selected>Home wins</option></select>'+
+        '<label class="field-label">Confidence</label><select id="gmConf"><option>Lean</option><option selected>Likely</option><option>Lock</option></select>'+
+        '<label class="field-label">Note</label><textarea id="gmNote" placeholder="Key to the game…"></textarea>';
+    } else if(kind==="playoffs"){
+      form.innerHTML='<label class="field-label">Conference</label><select id="poConf"><option value="East">East</option><option value="West">West</option></select>'+
+        '<label class="field-label">Your 1–10</label><div class="pick-list" id="poList"></div>'+
+        '<label class="field-label">Caption</label><textarea id="poNote" placeholder="Seed notes…"></textarea>';
+      function fillPo(){
+        var conf=$("poConf").value; var list=(conf==="West"?WEST:EAST).slice(0,10);
+        $("poList").innerHTML=list.map(function(a,i){
+          return '<div class="pick-row"><span class="pr-num">'+(i+1)+'</span><select data-slot="'+i+'">'+confTeamOptions(conf,a)+'</select></div>';
+        }).join("");
+      }
+      $("poConf").onchange=fillPo; fillPo();
+    } else if(kind==="sbc"){
+      form.innerHTML='<label class="field-label">Team</label><select id="sbcTeam">'+teamOptions("PHI")+'</select>'+
+        '<div class="zone start" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'start\')"><h4>Start (5)</h4><div id="zone-start"></div></div>'+
+        '<div class="zone bench" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'bench\')"><h4>Bench</h4><div id="zone-bench"></div></div>'+
+        '<div class="zone cut" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'cut\')"><h4>Cut</h4><div id="zone-cut"></div></div>'+
+        '<div class="field-label">Pool</div><div id="zone-pool" ondragover="shAllowDrop(event)" ondrop="shDropSbc(event,\'pool\')"></div>';
+      window._sbc={start:[],bench:[],cut:[],pool:[]};
+      function loadSbc(){
+        var abbr=$("sbcTeam").value;
+        window._sbc={start:[],bench:[],cut:[],pool:rosterFor(abbr)};
+        renderSbc();
+      }
+      $("sbcTeam").onchange=loadSbc; loadSbc();
+    } else if(kind==="tiers"){
+      form.innerHTML='<label class="field-label">Team</label><select id="tierTeam">'+teamOptions("PHI")+'</select>'+
+        '<label class="field-label">Title</label><input type="text" id="tierTitle" value="Roster tiers"/>'+
+        '<div id="tierBoard"></div>'+
+        '<div class="field-label">Unranked</div><div id="tierPool" class="tier-drop" ondragover="shAllowDrop(event)" ondrop="shDropTier(event,\'pool\')"></div>';
+      window._tiers={title:"Roster tiers",tiers:TIER_LABELS.map(function(){return [];}),pool:[]};
+      function loadTier(){
+        var abbr=$("tierTeam").value;
+        window._tiers={title:($("tierTitle")&&$("tierTitle").value)||((NAMES[abbr]||abbr)+" tiers"),tiers:TIER_LABELS.map(function(){return [];}),pool:rosterFor(abbr)};
+        if($("tierTitle")) $("tierTitle").value=window._tiers.title;
+        renderTiers();
+      }
+      $("tierTeam").onchange=loadTier; loadTier();
+      if($("tierTitle")) $("tierTitle").oninput=function(){window._tiers.title=this.value;};
     }
-    function fillPo(id,conf){
-      var rows=Object.keys(stats).map(function(k){return stats[k];}).filter(function(t){return t.conf===conf;})
-        .sort(function(a,b){return b.playoff-a.playoff;});
-      $(id).querySelector("tbody").innerHTML=rows.map(function(t){
-        var hi=t.abbr==="PHI"?' style="background:rgba(0,107,182,.08)"':"";
-        return "<tr"+hi+"><td><strong>"+t.abbr+"</strong></td><td class='pct'>"+Math.round(t.playoff/sims*100)+"%</td><td class='pct'>"+Math.round(t.playin/sims*100)+"%</td><td class='pct'>"+Math.round(t.top6/sims*100)+"%</td></tr>";
-      }).join("");
-    }
-    fillPo("eastPo","East"); fillPo("westPo","West");
-  });
+  }
 
-  /* SBC */
-  var sbc={start:[],bench:[],cut:[],pool:SIXERS_POOL.slice()};
-  try{var sv=JSON.parse(localStorage.getItem("sh_sbc_v1")||"null"); if(sv&&Array.isArray(sv.pool)) sbc=sv;}catch(e){}
   window.shAllowDrop=function(e){e.preventDefault();};
   window.shDrag=function(e){e.dataTransfer.setData("text/plain",e.target.getAttribute("data-name"));};
-  function rmSbc(name){["start","bench","cut","pool"].forEach(function(z){sbc[z]=(sbc[z]||[]).filter(function(n){return n!==name;});});}
+  function chip(name){return '<span class="chip" draggable="true" data-name="'+String(name).replace(/"/g,"&quot;")+'" ondragstart="shDrag(event)">'+name+"</span>";}
+  function rmSbc(name){["start","bench","cut","pool"].forEach(function(z){window._sbc[z]=(window._sbc[z]||[]).filter(function(n){return n!==name;});});}
   window.shDropSbc=function(e,zone){
     e.preventDefault(); var name=e.dataTransfer.getData("text/plain"); if(!name) return;
-    if(zone==="start"&&sbc.start.length>=5&&sbc.start.indexOf(name)<0) return;
-    rmSbc(name); sbc[zone].push(name); renderSbc();
+    if(zone==="start"&&window._sbc.start.length>=5&&window._sbc.start.indexOf(name)<0) return;
+    rmSbc(name); window._sbc[zone].push(name); renderSbc();
   };
-  function chip(name){return '<span class="chip" draggable="true" data-name="'+String(name).replace(/"/g,"&quot;")+'" ondragstart="shDrag(event)">'+name+"</span>";}
-  function renderSbc(){["start","bench","cut","pool"].forEach(function(z){var el=$("zone-"+z); if(el) el.innerHTML=(sbc[z]||[]).map(chip).join("");});}
-  if($("saveSbc")) $("saveSbc").addEventListener("click",function(){localStorage.setItem("sh_sbc_v1",JSON.stringify(sbc)); this.textContent="Saved"; var b=this; setTimeout(function(){b.textContent="Save board";},1200);});
-  if($("resetSbc")) $("resetSbc").addEventListener("click",function(){sbc={start:[],bench:[],cut:[],pool:SIXERS_POOL.slice()}; renderSbc();});
-  renderSbc();
-
-  /* Tiers */
-  var tiers={title:"Sixers roster tiers",tiers:TIER_LABELS.map(function(){return [];}),pool:SIXERS_POOL.slice()};
-  try{var ts=JSON.parse(localStorage.getItem("sh_tiers_v1")||"null"); if(ts&&Array.isArray(ts.tiers)) tiers=ts;}catch(e){}
-  function rmTier(name){tiers.pool=(tiers.pool||[]).filter(function(n){return n!==name;}); tiers.tiers=(tiers.tiers||[]).map(function(a){return (a||[]).filter(function(n){return n!==name;});});}
+  function renderSbc(){["start","bench","cut","pool"].forEach(function(z){var el=$("zone-"+z); if(el) el.innerHTML=(window._sbc[z]||[]).map(chip).join("");});}
+  function rmTier(name){window._tiers.pool=(window._tiers.pool||[]).filter(function(n){return n!==name;}); window._tiers.tiers=(window._tiers.tiers||[]).map(function(a){return (a||[]).filter(function(n){return n!==name;});});}
   window.shDropTier=function(e,key){
     e.preventDefault(); var name=e.dataTransfer.getData("text/plain"); if(!name) return;
     rmTier(name);
-    if(key==="pool") tiers.pool.push(name);
-    else {var idx=Number(key); if(!tiers.tiers[idx]) tiers.tiers[idx]=[]; tiers.tiers[idx].push(name);}
+    if(key==="pool") window._tiers.pool.push(name);
+    else {var i=Number(key); if(!window._tiers.tiers[i]) window._tiers.tiers[i]=[]; window._tiers.tiers[i].push(name);}
     renderTiers();
   };
   function renderTiers(){
-    if($("tierTitle")) $("tierTitle").value=tiers.title||"";
     var board=$("tierBoard"); if(!board) return;
     board.innerHTML=TIER_LABELS.map(function(lab,i){
-      return '<div class="tier-row"><div class="tier-label" style="background:'+TIER_COLORS[i]+'">'+lab+"</div>"+
-        '<div class="tier-drop" ondragover="shAllowDrop(event)" ondrop="shDropTier(event,\''+i+'\')">'+(tiers.tiers[i]||[]).map(chip).join("")+"</div></div>";
+      return '<div class="tier-row"><div class="tier-label" style="background:'+TIER_COLORS[i]+'">'+lab+'</div><div class="tier-drop" ondragover="shAllowDrop(event)" ondrop="shDropTier(event,\''+i+'\')">'+(window._tiers.tiers[i]||[]).map(chip).join("")+"</div></div>";
     }).join("");
-    if($("tierPool")) $("tierPool").innerHTML=(tiers.pool||[]).map(chip).join("");
+    if($("tierPool")) $("tierPool").innerHTML=(window._tiers.pool||[]).map(chip).join("");
   }
-  if($("tierTitle")) $("tierTitle").addEventListener("input",function(){tiers.title=this.value;});
-  if($("saveTiers")) $("saveTiers").addEventListener("click",function(){tiers.title=($("tierTitle")||{}).value||tiers.title; localStorage.setItem("sh_tiers_v1",JSON.stringify(tiers)); this.textContent="Saved"; var b=this; setTimeout(function(){b.textContent="Save tier list";},1200);});
-  if($("resetTiers")) $("resetTiers").addEventListener("click",function(){tiers={title:"Sixers roster tiers",tiers:TIER_LABELS.map(function(){return [];}),pool:SIXERS_POOL.slice()}; renderTiers();});
-  renderTiers();
+
+  function collectPayload(){
+    if(currentStudio==="standings"){
+      var conf=$("stConf").value;
+      var order=[].map.call(document.querySelectorAll("#stList select"),function(s){return s.value;});
+      return {kind:"standings",conf:conf,order:order,note:($("stNote")||{}).value||"",title:conf+" standings — my board"};
+    }
+    if(currentStudio==="game"){
+      var away=$("gmAway").value, home=$("gmHome").value, pick=$("gmPick").value;
+      var winner=pick==="home"?home:away;
+      return {kind:"game",away:away,home:home,pick:pick,winner:winner,confidence:($("gmConf")||{}).value||"Likely",note:($("gmNote")||{}).value||"",title:away+" @ "+home+" — "+winner+" ("+(($("gmConf")||{}).value||"Likely")+")"};
+    }
+    if(currentStudio==="playoffs"){
+      var conf=$("poConf").value;
+      var order=[].map.call(document.querySelectorAll("#poList select"),function(s){return s.value;});
+      return {kind:"playoffs",conf:conf,order:order,note:($("poNote")||{}).value||"",title:conf+" playoff board"};
+    }
+    if(currentStudio==="sbc"){
+      var team=$("sbcTeam").value;
+      return {kind:"sbc",team:team,start:(window._sbc.start||[]).slice(),bench:(window._sbc.bench||[]).slice(),cut:(window._sbc.cut||[]).slice(),title:(NAMES[team]||team)+" Start / Bench / Cut"};
+    }
+    if(currentStudio==="tiers"){
+      var team=$("tierTeam").value;
+      return {kind:"tiers",team:team,title:(($("tierTitle")||{}).value)||((NAMES[team]||team)+" tiers"),tiers:(window._tiers.tiers||[]).map(function(a){return (a||[]).slice();})};
+    }
+    return null;
+  }
+
+  function buildGraphic(payload){
+    if(!payload) return null;
+    var W=1080, PAD=48;
+    var NAVY="#001a57", BLUE="#006BB6", RED="#ED174C", WHITE="#fff", CREAM="#f6f8fc", INK="#0d0f1a", MID="#64748b";
+    var lines=[];
+    if(payload.kind==="standings"||payload.kind==="playoffs"){
+      lines=(payload.order||[]).map(function(a,i){return (i+1)+". "+a+" "+(NAMES[a]||"");});
+    } else if(payload.kind==="game"){
+      lines=[payload.away+" @ "+payload.home,"Pick: "+payload.winner,"Confidence: "+payload.confidence];
+      if(payload.note) lines.push(payload.note);
+    } else if(payload.kind==="sbc"){
+      lines=["START: "+(payload.start||[]).join(", ")||"—","BENCH: "+(payload.bench||[]).join(", ")||"—","CUT: "+(payload.cut||[]).join(", ")||"—"];
+    } else if(payload.kind==="tiers"){
+      (payload.tiers||[]).forEach(function(arr,i){
+        if(arr&&arr.length) lines.push(TIER_LABELS[i]+": "+arr.join(", "));
+      });
+    }
+    var rowH=42;
+    var H=Math.max(520, 200+lines.length*rowH+80);
+    var c=document.createElement("canvas"); c.width=W; c.height=H;
+    var ctx=c.getContext("2d");
+    ctx.fillStyle=CREAM; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=NAVY; ctx.fillRect(0,0,W,140);
+    ctx.fillStyle=RED; ctx.fillRect(0,140,W,5);
+    ctx.fillStyle="rgba(255,255,255,.7)"; ctx.font="800 16px Lexend,system-ui,sans-serif"; ctx.fillText("SIXERSHOOPS",PAD,42);
+    ctx.fillStyle=WHITE; ctx.font="800 34px Lexend,system-ui,sans-serif"; ctx.fillText(String(payload.title||"Community board").slice(0,42),PAD,92);
+    ctx.fillStyle="rgba(255,255,255,.85)"; ctx.font="600 16px Lexend,system-ui,sans-serif";
+    ctx.fillText(payload.kind==="game"?"Game pick":payload.kind==="sbc"?"Start / Bench / Cut":payload.kind==="tiers"?"Tier list":payload.conf?payload.conf+" · Fan board":"Fan board",PAD,122);
+    var y=180;
+    lines.forEach(function(line,i){
+      ctx.fillStyle=WHITE;
+      roundRect(ctx,PAD,y,W-PAD*2,rowH-8,10,true);
+      ctx.strokeStyle="#e4e8f0"; ctx.stroke();
+      ctx.fillStyle=INK; ctx.font="600 18px Lexend,system-ui,sans-serif";
+      ctx.fillText(String(line).slice(0,70),PAD+18,y+26);
+      y+=rowH;
+    });
+    ctx.fillStyle=MID; ctx.font="600 14px Lexend,system-ui,sans-serif"; ctx.textAlign="center";
+    ctx.fillText("sixershoops.com/community",W/2,H-28);
+    ctx.textAlign="left";
+    return c;
+    function roundRect(ctx,x,y,w,h,r,fill){
+      ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+      if(fill){ctx.fillStyle="#fff"; ctx.fill();}
+    }
+  }
+
+  if($("studioGraphic")) $("studioGraphic").onclick=function(){
+    var p=collectPayload(); if(!p) return;
+    lastPayload=p;
+    var canvas=buildGraphic(p);
+    if(!canvas) return;
+    lastPng=canvas.toDataURL("image/png");
+    $("studioPreview").innerHTML='<img alt="Preview" src="'+lastPng+'"/>';
+  };
+  if($("studioDownload")) $("studioDownload").onclick=function(){
+    if(!lastPng){ if($("studioGraphic")) $("studioGraphic").click(); }
+    if(!lastPng) return;
+    var a=document.createElement("a"); a.href=lastPng; a.download="sixershoops-community.png"; a.click();
+  };
+  if($("studioPost")) $("studioPost").onclick=async function(){
+    var user=window.auth&&window.auth.currentUser;
+    if(!user){ if(typeof triggerLogin==="function") triggerLogin(); else alert("Sign in to post."); return; }
+    if(!lastPayload){ if($("studioGraphic")) $("studioGraphic").click(); }
+    var p=lastPayload||collectPayload();
+    if(!p) return;
+    if(!lastPng){ var canvas=buildGraphic(p); if(canvas) lastPng=canvas.toDataURL("image/png"); }
+    if(!window.db){ alert("Could not connect."); return; }
+    var authorName=user.displayName||(user.email?user.email.split("@")[0]:"fan");
+    var bodyLines=[];
+    if(p.kind==="standings"||p.kind==="playoffs") bodyLines=(p.order||[]).map(function(a,i){return (i+1)+". "+a;});
+    if(p.kind==="game") bodyLines=[p.away+" @ "+p.home,"Pick: "+p.winner+(p.confidence?" ("+p.confidence+")":""),p.note||""];
+    if(p.kind==="sbc") bodyLines=["Start: "+(p.start||[]).join(", "),"Bench: "+(p.bench||[]).join(", "),"Cut: "+(p.cut||[]).join(", ")];
+    if(p.kind==="tiers") (p.tiers||[]).forEach(function(arr,i){ if(arr&&arr.length) bodyLines.push(TIER_LABELS[i]+": "+arr.join(", ")); });
+    var notes=bodyLines.filter(Boolean).join("\n");
+    if(p.note) notes=(notes?notes+"\n\n":"")+p.note;
+    var doc={
+      postType:"discussion",
+      title:String(p.title||"Community board").slice(0,120),
+      notes:notes.slice(0,2000),
+      summary:notes.slice(0,400),
+      author:"u/"+authorName,
+      authorId:user.uid,
+      authorPhoto:localStorage.getItem("photoURL")||user.photoURL||"",
+      image:lastPng||"",
+      votes:0,
+      voters:{},
+      comments:[],
+      poll:null,
+      sides:null,
+      teamAbbrs:p.team?[p.team]:(p.order||[]).slice(0,5),
+      machineHash:null,
+      isValid:null,
+      toolKind:p.kind,
+      createdAt:new Date().toISOString()
+    };
+    try{
+      await window.db.collection("community_trades").add(doc);
+      $("studioPost").textContent="Posted";
+      setTimeout(function(){ $("studioPost").textContent="Post to community"; },1500);
+      // switch to feed visually
+      $("studio").classList.remove("open");
+      document.querySelectorAll("#createGrid .create-card").forEach(function(b){b.classList.remove("active");});
+      window.scrollTo({top:($("feedWrap")||document.body).offsetTop-80,behavior:"smooth"});
+    }catch(err){
+      alert("Post failed. Try signing in again.");
+      console.warn(err);
+    }
+  };
 })();
 
 </script>

@@ -1,0 +1,182 @@
+/* ============================================================
+   Drop-in replacements for index.html
+   1) In renderInjuriesBlock, change the body join so teams sit in a grid.
+   2) Replace the entire buildInjuryShareCanvas function with the one below.
+   ============================================================ */
+
+/* ---- 1. In renderInjuriesBlock, replace the final return with: ----
+
+  const body = groups.map(function (g) {
+    const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
+    const items = (g.injuries || []).slice().sort(function (a, b) {
+      return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
+    });
+    if (!items.length) {
+      return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + ' injuries</div><p class="home-inj-empty">No injuries listed.</p></div>';
+    }
+    const rows = items.map(function (inj) {
+      const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
+      const st = displayStatus(inj);
+      const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
+      const comment = inj.shortComment || inj.longComment || "";
+      return '<li class="home-inj-row">' +
+        '<div class="home-inj-main">' +
+          '<span class="home-inj-name">' + name + '</span>' +
+          '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
+        '</div>' +
+        (injuryType ? '<div class="home-inj-meta">' + injuryType + '</div>' : '') +
+        (comment ? '<div class="home-inj-comment">' + comment + '</div>' : '') +
+        '</li>';
+    }).join("");
+    return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + ' injuries</div><ul class="home-inj-list">' + rows + '</ul></div>';
+  }).join("");
+
+  return '<div class="home-inj">' + head + '<div class="home-inj-grid">' + body + '</div></div>';
+*/
+
+/* ---- 2. Replace buildInjuryShareCanvas entirely ---- */
+function buildInjuryShareCanvas(payload) {
+  if (!payload) return null;
+  const W = 1200;
+  const PAD = 48;
+  const BLUE = "#006BB6";
+  const INK = "#0d0f1a";
+  const MID = "#64748b";
+  const BORDER = "#e4e8f0";
+  const CREAM = "#f6f8fc";
+  const WHITE = "#ffffff";
+  const BADGE = {
+    "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+    "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
+    "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
+    "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+    "DAY-TO-DAY": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+    "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
+  };
+
+  const teams = payload.teams || [];
+  // Estimate height
+  let contentH = 0;
+  teams.forEach(function (t) {
+    const n = Math.max((t.items || []).length, 1);
+    contentH += 52 + n * 92;
+  });
+  const headerH = 168;
+  const H = Math.max(headerH + contentH + 80, 640);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  function text(str, x, y, font, color, align) {
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = align || "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(str, x, y);
+  }
+  function wrap(str, maxW, font) {
+    ctx.font = font;
+    const words = String(str || "").split(/\s+/);
+    const lines = [];
+    let line = "";
+    words.forEach(function (w) {
+      const test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+      else line = test;
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+  function rr(x, y, w, h, r, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+  }
+
+  // Background
+  ctx.fillStyle = WHITE;
+  ctx.fillRect(0, 0, W, H);
+
+  // Header — same style as Future Draft Capital
+  const updated = payload.updatedLabel || new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  text("SIXERSHOOPS", W / 2, 62, "800 22px Lexend, system-ui, sans-serif", BLUE, "center");
+  text("Injury Report", W / 2, 118, "800 46px Lexend, system-ui, sans-serif", INK, "center");
+  text("Updated " + updated, W / 2, 148, "500 14px Lexend, system-ui, sans-serif", MID, "center");
+
+  // Matchup line under header
+  if (payload.matchup) {
+    text(payload.matchup, W / 2, 174, "600 15px Lexend, system-ui, sans-serif", MID, "center");
+  }
+
+  // Two columns
+  const colW = (W - PAD * 2 - 16) / 2;
+  const startY = payload.matchup ? 200 : 184;
+  let yLeft = startY, yRight = startY;
+
+  teams.forEach(function (team, ti) {
+    const isLeft = ti === 0;
+    const x = isLeft ? PAD : PAD + colW + 16;
+    let y = isLeft ? yLeft : yRight;
+    const items = team.items || [];
+    const cardH = 48 + Math.max(items.length, 1) * 92 + 8;
+
+    rr(x, y, colW, cardH, 12, WHITE, BORDER);
+
+    // Team header
+    text((team.team || "Team").toUpperCase() + " INJURIES", x + 16, y + 28, "700 11px Lexend, system-ui, sans-serif", MID);
+    ctx.strokeStyle = BORDER;
+    ctx.beginPath();
+    ctx.moveTo(x + 16, y + 40);
+    ctx.lineTo(x + colW - 16, y + 40);
+    ctx.stroke();
+
+    let py = y + 56;
+    if (!items.length) {
+      text("No injuries listed.", x + 16, py + 8, "500 14px Lexend, system-ui, sans-serif", MID);
+    } else {
+      items.forEach(function (item) {
+        // Name
+        text(item.name || "Player", x + 16, py + 8, "700 16px Lexend, system-ui, sans-serif", INK);
+
+        // Badge
+        const label = item.label || "Listed";
+        const b = BADGE[label] || BADGE["GTD"] || { bg: "#f1f5f9", text: "#475569", border: "#e2e8f0" };
+        const bw = Math.max(ctx.measureText(label).width + 18, 52);
+        ctx.font = "800 11px Lexend, system-ui, sans-serif";
+        const bw2 = ctx.measureText(label.toUpperCase()).width + 20;
+        rr(x + colW - 16 - bw2, py - 6, bw2, 22, 11, b.bg, b.border);
+        text(label.toUpperCase(), x + colW - 16 - bw2 / 2, py + 9, "800 11px Lexend, system-ui, sans-serif", b.text, "center");
+
+        // Injury type
+        if (item.injuryType) {
+          text(item.injuryType, x + 16, py + 28, "500 13px Lexend, system-ui, sans-serif", MID);
+        }
+
+        // Comment (wrap)
+        const sub = item.comment || "";
+        if (sub) {
+          const lines = wrap(sub, colW - 36, "500 13px Lexend, system-ui, sans-serif");
+          lines.slice(0, 3).forEach(function (ln, i) {
+            text(ln, x + 16, py + 48 + i * 16, "500 13px Lexend, system-ui, sans-serif", "#475569");
+          });
+        }
+        py += 92;
+      });
+    }
+
+    if (isLeft) yLeft = y + cardH + 12;
+    else yRight = y + cardH + 12;
+  });
+
+  // Footer
+  text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", BLUE, "center");
+  return canvas;
+}

@@ -1515,115 +1515,81 @@
     }
 
 
-    /* Standings-style share graphic (fixed canvas, compact cards) */
+    /* Picks / results share graphic: modern card, one row per question */
     #pickem-social-export {
       position: fixed; left: -10000px; top: 0; width: 900px;
-      background: #fff; color: #0d0f1a; font-family: 'Lexend', system-ui, sans-serif;
+      background: #f3f6fb; color: #0d0f1a; font-family: 'Lexend', system-ui, sans-serif;
       z-index: -1; pointer-events: none;
     }
-    #pickem-social-export .sg-page {
-      width: 900px;
-      box-sizing: border-box;
-      padding: 22px 28px 16px;
-      background: #fff;
+    #pickem-social-export .sg-page { width: 900px; box-sizing: border-box; padding: 0 0 18px; background: #f3f6fb; }
+    #pickem-social-export .sg-head {
+      background: linear-gradient(135deg, #0a1f44 0%, #0b4a8f 55%, #006BB6 100%);
+      padding: 24px 32px 20px; text-align: center;
     }
     #pickem-social-export .sg-wordmark {
-      margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.03em; color: #0d0f1a;
-      text-align: center;
+      margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: #ffffff; text-align: center;
     }
     #pickem-social-export .sg-subtitle {
-      margin: 4px 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
-      text-transform: uppercase; color: #64748b; text-align: center;
+      margin: 6px 0 14px; font-size: 11px; font-weight: 700; letter-spacing: .22em;
+      text-transform: uppercase; color: rgba(255,255,255,.78); text-align: center;
     }
-    #pickem-social-export .sg-stat-row {
-      display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; flex-wrap: wrap;
-    }
+    #pickem-social-export .sg-stat-row { display: flex; gap: 12px; margin: 0; justify-content: center; }
     #pickem-social-export .sg-stat {
-      flex: 1 1 120px; max-width: 160px; text-align: center;
-      background: #f6f8fc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 5px 8px;
+      flex: 0 1 190px; box-sizing: border-box; text-align: center;
+      background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.24);
+      border-radius: 12px; padding: 7px 10px 9px;
     }
     #pickem-social-export .sg-stat b {
-      display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; line-height: 1.1;
+      display: block; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: #ffffff; line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     #pickem-social-export .sg-stat span {
-      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #64748b;
+      font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.72);
     }
-    #pickem-social-export .sg-list {
-      list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px;
-    }
+    #pickem-social-export .sg-body { padding: 16px 28px 0; }
+    #pickem-social-export .sg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
     #pickem-social-export .sg-list li { display: block; margin: 0; padding: 0; border: none; }
-    /* One row per question (10 going down): question on the left, answer chips on the right */
-    #pickem-social-export .sg-list.sg-two-col { display: flex; flex-direction: column; gap: 6px; }
     #pickem-social-export .sg-q-card {
-      display: flex; align-items: center; gap: 14px;
-      border: 1px solid #e6eaf1;
-      border-radius: 10px;
-      padding: 7px 10px 7px 14px;
-      background: #ffffff;
-      text-align: left;
+      display: flex; align-items: center; gap: 14px; box-sizing: border-box;
+      min-height: 52px; padding: 7px 8px 7px 12px;
+      background: #ffffff; border: 1px solid #e2e8f1; border-radius: 12px;
     }
-    #pickem-social-export .sg-q-info { flex: 1 1 auto; min-width: 0; }
-    #pickem-social-export .sg-q-num {
-      font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-      color: #64748b; margin: 0 0 2px; line-height: 12px;
+    #pickem-social-export .sg-q-badge {
+      flex: 0 0 26px; width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #eaf2fb; color: #006BB6; font-size: 12px; font-weight: 800; padding-bottom: 3px;
     }
     #pickem-social-export .sg-q-text {
-      margin: 0; font-size: 14px; font-weight: 600; line-height: 1.25;
-      letter-spacing: -0.01em; color: #0d0f1a;
+      flex: 1 1 auto; min-width: 0; margin: 0; padding-bottom: 2px;
+      font-size: 15px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: #0d0f1a; text-align: left;
     }
     #pickem-social-export .sg-q-options {
-      flex: 0 0 400px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      box-sizing: border-box;
+      flex: 0 0 404px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; box-sizing: border-box;
     }
     #pickem-social-export .sg-q-options.sg-opts-1 { grid-template-columns: minmax(0, 1fr); }
     #pickem-social-export .sg-q-options.sg-opts-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     #pickem-social-export .sg-q-options.sg-opts-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    /* Answer chips. Lexend sits low in its line box, so the bottom padding is bigger than the top:
-       the text moves up by (11 - 3) / 2 = 4px so it looks centred in the box. */
+    /* Chips: Lexend sits low in its line box, so bottom padding > top padding lifts the text ~4px */
     #pickem-social-export .sg-chip {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      width: 100%;
-      min-height: 34px;
-      padding: 3px 10px 11px;
-      border-radius: 9px;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 18px;
-      letter-spacing: -0.005em;
-      color: #0d0f1a;
-      text-align: center;
+      display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 100%;
+      min-height: 36px; padding: 3px 10px 11px; border-radius: 10px;
+      border: 1px solid #dde4ee; background: #f5f8fc;
+      font-size: 12.5px; font-weight: 600; line-height: 18px; letter-spacing: -0.01em; color: #1e293b; text-align: center;
       overflow: visible;
     }
     #pickem-social-export .sg-chip .sg-chip-label {
-      display: block;
-      min-width: 0;
-      max-width: 100%;
-      text-align: center;
-      line-height: 18px;
-      white-space: normal;
-      overflow: visible;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-      font-size: 13px;
-      font-weight: inherit;
+      display: block; min-width: 0; max-width: 100%; text-align: center; line-height: 18px;
+      white-space: normal; overflow: visible; overflow-wrap: anywhere; word-break: break-word;
+      font-size: 12.5px; font-weight: inherit;
     }
     #pickem-social-export .sg-chip.sg-selected { background: #006BB6; border-color: #006BB6; color: #ffffff; }
     #pickem-social-export .sg-chip.sg-correct  { background: #16a34a; border-color: #16a34a; color: #ffffff; }
     #pickem-social-export .sg-chip.sg-wrong    { background: #dc2626; border-color: #dc2626; color: #ffffff; }
-    #pickem-social-export .sg-ok { color: #16a34a; }
-    #pickem-social-export .sg-no { color: #dc2626; }
-    #pickem-social-export .sg-bottom { text-align: center; margin-top: 10px; }
-    #pickem-social-export .sg-bottom-rule { width: 36px; height: 2px; background: #dbe3ee; margin: 0 auto 8px; }
-    #pickem-social-export .sg-bottom-mark { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
-    #pickem-social-export .sg-bottom-url { margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 500; }
+    #pickem-social-export .sg-chip.sg-key      { background: #ecfdf3; border-color: #16a34a; color: #15803d; }
+    #pickem-social-export .sg-bottom { text-align: center; margin-top: 14px; }
+    #pickem-social-export .sg-bottom-rule { display: none; }
+    #pickem-social-export .sg-bottom-mark { display: none; }
+    #pickem-social-export .sg-bottom-url { margin: 0; color: #64748b; font-size: 11px; font-weight: 600; letter-spacing: .08em; }
 
     /* Preview modal: always closable, fits viewport */
     .pickem-export-modal {
@@ -1643,7 +1609,7 @@
       background: #fff;
       border-radius: 16px;
       width: fit-content;
-      min-width: min(340px, calc(100vw - 24px));
+      min-width: min(360px, calc(100vw - 24px));
       max-width: calc(100vw - 24px);
       max-height: calc(100vh - 24px);
       max-height: calc(100dvh - 24px);
@@ -1717,6 +1683,7 @@
       border: 1px solid #e4e8f0;
       object-fit: contain;
       margin: 0 auto;
+      flex: 0 0 auto;
     }
     .pickem-export-modal .modal-actions {
       flex: 0 0 auto;
@@ -1729,7 +1696,8 @@
       position: sticky;
       bottom: 0;
     }
-    .pickem-export-modal .modal-actions .btn { flex: 1 1 0; min-width: 90px; }
+    .pickem-export-modal .modal-actions { flex-wrap: nowrap; }
+    .pickem-export-modal .modal-actions .btn { flex: 1 1 0; min-width: 0; padding-left: 0.5rem; padding-right: 0.5rem; white-space: nowrap; }
 
     /* Extra mobile stability */
     @media (max-width: 768px) {
@@ -1944,58 +1912,67 @@
     .lb-action-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 15px; }
     .lb-action-row .lb-share-btn { margin-left: 0; }
 
-    /* ── Leaderboard share graphic (matches the picks / results card) ── */
+    /* ── Leaderboard share graphic (same look as the picks / results card) ── */
     #pickem-lb-export {
       position: fixed; left: -10000px; top: 0; width: 900px;
-      background: #fff; color: #0d0f1a; font-family: 'Lexend', system-ui, sans-serif;
+      background: #f3f6fb; color: #0d0f1a; font-family: 'Lexend', system-ui, sans-serif;
       z-index: -1; pointer-events: none;
     }
-    #pickem-lb-export .lbg-page { width: 900px; box-sizing: border-box; padding: 28px 32px 22px; background: #fff; }
-    #pickem-lb-export .lbg-wordmark { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.03em; text-align: center; }
-    #pickem-lb-export .lbg-subtitle {
-      margin: 6px 0 14px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
-      text-transform: uppercase; color: #64748b; text-align: center;
+    #pickem-lb-export .lbg-page { width: 900px; box-sizing: border-box; padding: 0 0 18px; background: #f3f6fb; }
+    #pickem-lb-export .lbg-head {
+      background: linear-gradient(135deg, #0a1f44 0%, #0b4a8f 55%, #006BB6 100%);
+      padding: 24px 32px 20px; text-align: center;
     }
-    #pickem-lb-export .lbg-stats { display: flex; gap: 10px; margin-bottom: 14px; justify-content: center; }
+    #pickem-lb-export .lbg-wordmark { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: #ffffff; text-align: center; }
+    #pickem-lb-export .lbg-subtitle {
+      margin: 6px 0 14px; font-size: 11px; font-weight: 700; letter-spacing: .22em;
+      text-transform: uppercase; color: rgba(255,255,255,.78); text-align: center;
+    }
+    #pickem-lb-export .lbg-stats { display: flex; gap: 12px; margin: 0; justify-content: center; }
     #pickem-lb-export .lbg-stat {
-      flex: 1 1 0; max-width: 160px; text-align: center; box-sizing: border-box;
-      background: #f6f8fc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 8px 8px;
+      flex: 0 1 190px; box-sizing: border-box; text-align: center;
+      background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.24);
+      border-radius: 12px; padding: 7px 10px 9px;
     }
     #pickem-lb-export .lbg-stat b {
-      display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; line-height: 1.1;
+      display: block; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: #ffffff; line-height: 1.2;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    #pickem-lb-export .lbg-stat span { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #64748b; }
+    #pickem-lb-export .lbg-stat span { font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.72); }
+    #pickem-lb-export .lbg-body { padding: 16px 28px 0; }
     #pickem-lb-export .lbg-list {
       list-style: none; margin: 0; padding: 0; display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; gap: 7px 10px;
     }
     #pickem-lb-export .lbg-list.lbg-one { grid-template-columns: minmax(0, 1fr); }
     #pickem-lb-export .lbg-list li { margin: 0; padding: 0; }
     #pickem-lb-export .lbg-row {
-      display: flex; align-items: center; gap: 12px; box-sizing: border-box; height: 58px;
-      border: 1px solid #e6eaf1; border-radius: 12px; padding: 0 14px; background: #fff;
+      display: flex; align-items: center; gap: 12px; box-sizing: border-box; height: 54px;
+      border: 1px solid #e2e8f1; border-radius: 12px; padding: 0 14px 0 10px; background: #ffffff;
     }
-    #pickem-lb-export .lbg-row.lbg-you { border-color: #006BB6; background: #eef5fc; }
+    #pickem-lb-export .lbg-row.lbg-you { border-color: #006BB6; background: #eaf3fc; }
     #pickem-lb-export .lbg-rank {
-      flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%;
+      flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%; box-sizing: border-box;
       display: flex; align-items: center; justify-content: center;
-      background: #f1f5f9; color: #475569; font-size: 13px; font-weight: 800; padding-bottom: 3px; box-sizing: border-box;
+      background: #eef2f7; color: #475569; font-size: 13px; font-weight: 800; padding-bottom: 3px;
     }
-    #pickem-lb-export .lbg-rank.r1 { background: #c9a84c; color: #fff; }
-    #pickem-lb-export .lbg-rank.r2 { background: #94a3b8; color: #fff; }
-    #pickem-lb-export .lbg-rank.r3 { background: #b9784a; color: #fff; }
-    #pickem-lb-export .lbg-name { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-bottom: 3px; }
+    #pickem-lb-export .lbg-rank.r1 { background: #d4af37; color: #ffffff; }
+    #pickem-lb-export .lbg-rank.r2 { background: #9aa8ba; color: #ffffff; }
+    #pickem-lb-export .lbg-rank.r3 { background: #b9784a; color: #ffffff; }
+    #pickem-lb-export .lbg-name {
+      flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; letter-spacing: -.01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-bottom: 3px;
+    }
     #pickem-lb-export .lbg-name i { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: .1em; color: #006BB6; margin-left: 6px; }
     #pickem-lb-export .lbg-score { flex: 0 0 auto; text-align: right; line-height: 1.15; }
     #pickem-lb-export .lbg-score b { display: block; font-size: 16px; font-weight: 800; color: #006BB6; letter-spacing: -.02em; }
     #pickem-lb-export .lbg-score span { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #64748b; }
     #pickem-lb-export .lbg-more { margin: 10px 0 0; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; }
-    #pickem-lb-export .lbg-empty { border: 1px solid #e6eaf1; border-radius: 12px; padding: 28px; text-align: center; color: #64748b; font-size: 15px; font-weight: 600; }
+    #pickem-lb-export .lbg-empty { background: #fff; border: 1px solid #e2e8f1; border-radius: 12px; padding: 28px; text-align: center; color: #64748b; font-size: 15px; font-weight: 600; }
     #pickem-lb-export .lbg-bottom { text-align: center; margin-top: 14px; }
-    #pickem-lb-export .lbg-bottom-rule { width: 36px; height: 2px; background: #dbe3ee; margin: 0 auto 12px; }
-    #pickem-lb-export .lbg-bottom-mark { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
-    #pickem-lb-export .lbg-bottom-url { margin: 6px 0 0; color: #64748b; font-size: 12px; font-weight: 500; }
+    #pickem-lb-export .lbg-bottom-rule { display: none; }
+    #pickem-lb-export .lbg-bottom-mark { display: none; }
+    #pickem-lb-export .lbg-bottom-url { margin: 0; color: #64748b; font-size: 11px; font-weight: 600; letter-spacing: .08em; }
   </style>
 </head>
 <body>
@@ -2939,29 +2916,37 @@
   
   <div id="pickem-social-export" aria-hidden="true">
     <div class="sg-page">
-      <p class="sg-wordmark">SixersHoops</p>
-      <p class="sg-subtitle" id="pickemSgSubtitle">PICK'EM RECAP</p>
-      <div class="sg-stat-row" id="pickemSgStats"></div>
-      <ul class="sg-list" id="pickemSgList"></ul>
-      <div class="sg-bottom">
-        <div class="sg-bottom-rule"></div>
-        <p class="sg-bottom-mark">SixersHoops</p>
-        <p class="sg-bottom-url">sixershoops.com/pickem</p>
+      <div class="sg-head">
+        <p class="sg-wordmark">SixersHoops</p>
+        <p class="sg-subtitle" id="pickemSgSubtitle">PICK'EM RECAP</p>
+        <div class="sg-stat-row" id="pickemSgStats"></div>
+      </div>
+      <div class="sg-body">
+        <ul class="sg-list" id="pickemSgList"></ul>
+        <div class="sg-bottom">
+          <div class="sg-bottom-rule"></div>
+          <p class="sg-bottom-mark">SixersHoops</p>
+          <p class="sg-bottom-url">sixershoops.com/pickem</p>
+        </div>
       </div>
     </div>
   </div>
 
   <div id="pickem-lb-export" aria-hidden="true">
     <div class="lbg-page">
-      <p class="lbg-wordmark">SixersHoops</p>
-      <p class="lbg-subtitle" id="lbgSubtitle">LEADERBOARD</p>
-      <div class="lbg-stats" id="lbgStats"></div>
-      <ul class="lbg-list" id="lbgList"></ul>
-      <p class="lbg-more" id="lbgMore" style="display:none;"></p>
-      <div class="lbg-bottom">
-        <div class="lbg-bottom-rule"></div>
-        <p class="lbg-bottom-mark">SixersHoops</p>
-        <p class="lbg-bottom-url">sixershoops.com/pickem</p>
+      <div class="lbg-head">
+        <p class="lbg-wordmark">SixersHoops</p>
+        <p class="lbg-subtitle" id="lbgSubtitle">LEADERBOARD</p>
+        <div class="lbg-stats" id="lbgStats"></div>
+      </div>
+      <div class="lbg-body">
+        <ul class="lbg-list" id="lbgList"></ul>
+        <p class="lbg-more" id="lbgMore" style="display:none;"></p>
+        <div class="lbg-bottom">
+          <div class="lbg-bottom-rule"></div>
+          <p class="lbg-bottom-mark">SixersHoops</p>
+          <p class="lbg-bottom-url">sixershoops.com/pickem</p>
+        </div>
       </div>
     </div>
   </div>
@@ -9604,7 +9589,10 @@
       }
       if (e.target && e.target.id === 'grpMenuShare') {
         if (menu) menu.style.display = 'none';
-        try { await shareStandingsCard('group', _grpStandingsPeriod || 'overall', _activeGroupId); } catch (err) { console.warn(err); }
+        try {
+          if (window.shareLeaderboardGraphic && document.querySelector('#grpStandingsArea .leaderboard-table')) await window.shareLeaderboardGraphic('group');
+          else await shareStandingsCard('group', _grpStandingsPeriod || 'overall', _activeGroupId);
+        } catch (err) { console.warn(err); }
         return;
       }
       if (e.target && e.target.id === 'grpMenuDelete') {
@@ -10030,6 +10018,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
                 else if (selected && l.ok === false) chipCls += ' sg-wrong';
                 else if (selected) chipCls += ' sg-selected';
                 else if (noPick && isRight) chipCls += ' sg-correct';
+                else if (l.ok === false && isRight) chipCls += ' sg-key';
               }
               const mark = (mode === 'results' && selected)
                 ? (l.ok === true ? ' ✓' : (l.ok === false ? ' ✗' : ''))
@@ -10054,10 +10043,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             chips = '<div class="sg-q-options sg-opts-1"><span class="' + chipCls + '"><span class="sg-chip-label">' + val2 + '</span></span></div>';
           }
           return '<li><div class="sg-q-card' + cardCls + '">' +
-            '<div class="sg-q-info">' +
-              '<div class="sg-q-num">Question ' + (idx + 1) + '</div>' +
-              '<p class="sg-q-text">' + l.label + '</p>' +
-            '</div>' +
+            '<div class="sg-q-badge">' + (idx + 1) + '</div>' +
+            '<p class="sg-q-text">' + String(l.label).replace(/^who will win:\s*(.*?)\??\s*$/i, '$1') + '</p>' +
             chips +
             '</div></li>';
         }).join('') || '<li><div class="sg-q-card"><p class="sg-q-text">No picks for this date</p></div></li>';
@@ -10267,13 +10254,33 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
     function showPickemExport(url, name, title) {
       _pickemExport = { url: url, name: name || 'sixershoops-pickem.png' };
       const prev = document.getElementById('pickemExportPreview');
-      if (prev) prev.src = url;
+      if (prev) { prev.onload = fitPickemExportPreview; prev.src = url; }
       const t = document.getElementById('pickemExportTitle');
       if (t && title) t.textContent = title;
       const copyBtn = document.getElementById('pickemExportCopy');
       if (copyBtn) copyBtn.textContent = 'Copy';
       document.getElementById('pickemExportModal')?.classList.add('open');
+      fitPickemExportPreview();
+      requestAnimationFrame(fitPickemExportPreview);
     }
+    // Size the image from the real visible screen so the whole card and all three buttons always show
+    function fitPickemExportPreview() {
+      const modal = document.getElementById('pickemExportModal');
+      const img = document.getElementById('pickemExportPreview');
+      if (!modal || !img || !modal.classList.contains('open') || !img.naturalWidth) return;
+      const head = modal.querySelector('.modal-head');
+      const actions = modal.querySelector('.modal-actions');
+      const vh = window.innerHeight, vw = window.innerWidth;
+      const chrome = (head ? head.offsetHeight : 64) + (actions ? actions.offsetHeight : 72) + 18 + 24 + 8;
+      const maxH = Math.max(160, vh - chrome);
+      const maxW = Math.max(200, Math.min(620, vw - 52));
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const w = Math.min(maxW, maxH * ratio);
+      img.style.width = Math.round(w) + 'px';
+      img.style.height = Math.round(w / ratio) + 'px';
+    }
+    window.addEventListener('resize', fitPickemExportPreview);
+    window.addEventListener('orientationchange', function () { setTimeout(fitPickemExportPreview, 250); });
     function closePickemExportModal() {
       document.getElementById('pickemExportModal')?.classList.remove('open');
     }
@@ -10302,7 +10309,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })]);
         btn.textContent = 'Copied!';
       } catch (err) {
-        btn.textContent = 'Copy not supported';
+        btn.textContent = 'Use Download';
       }
       setTimeout(() => { btn.textContent = 'Copy'; }, 1800);
     });

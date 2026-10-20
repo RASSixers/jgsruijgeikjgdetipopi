@@ -1543,7 +1543,7 @@
     if(p.kind==="standings") notes=(p.order||[]).map(function(x,i){return (i+1)+". "+(x.abbr||x.label)+(x.record?" ("+x.record+")":"");}).join("\n");
     if(p.kind==="playoffs") notes=(p.order||[]).map(function(a,i){return (i+1)+". "+a;}).join("\n");
     if(p.kind==="game") notes=[p.away+" @ "+p.home,"Winner: "+p.winner+" ("+p.confidence+")", (p.scoreA||p.scoreH)?("Score "+p.scoreA+"-"+p.scoreH):"", p.stat||"", p.note||""].filter(Boolean).join("\n");
-    if(p.kind==="sbc") notes=["Start: "+(p.start||[]).join(", "),"Bench: "+(p.bench||[]).join(", "),"Cut: "+(p.cut||[]).join(", ""),"","Interactive list — reply with your own order."].join("\n");
+    if(p.kind==="sbc") notes=["Start: "+(p.start||[]).join(", "),"Bench: "+(p.bench||[]).join(", "),"Cut: "+(p.cut||[]).join(", "),"","Interactive list — reply with your own order."].join("\n");
     if(p.kind==="tiers"){ notes=""; (p.tiers||[]).forEach(function(a,i){ if(a&&a.length) notes+=TIER_LABELS[i]+": "+a.join(", ")+"\n"; }); notes+=("\nInteractive tier list — reply with your ranking."); }
     if(p.kind==="wordle") notes=[p.prompt, p.answerLen+" letters · "+p.maxGuesses+" guesses", "Reply with your guess. Please no spoilers.", p.note||""].filter(Boolean).join("\n");
     if(p.note && p.kind!=="game" && p.kind!=="wordle") notes=(notes?notes+"\n\n":"")+p.note;

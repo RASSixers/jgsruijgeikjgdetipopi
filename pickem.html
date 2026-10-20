@@ -1596,19 +1596,17 @@
       justify-content: center;
       box-sizing: border-box;
       width: 100%;
-      height: 36px;
-      min-height: 36px;
-      max-height: 36px;
-      padding: 0 8px;
+      min-height: 42px;
+      padding: 9px 10px;
       border-radius: 10px;
       border: 1.5px solid #dbe3ee;
       background: #fff;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      line-height: 1;
+      line-height: 20px;
       color: #475569;
       text-align: center;
-      overflow: hidden;
+      overflow: visible;
     }
     #pickem-social-export .sg-chip.sg-selected {
       border-color: #006BB6;
@@ -1621,17 +1619,25 @@
       background: rgba(22,163,74,0.12);
       color: #15803d;
     }
+    /* No fixed height, overflow clipping or ellipsis: html2canvas clips glyphs and
+       ignores text-overflow, so long answers wrap instead of getting cut off. */
     #pickem-social-export .sg-chip .sg-chip-label {
       display: block;
-      width: 100%;
+      min-width: 0;
       max-width: 100%;
       text-align: center;
-      line-height: 1.15;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 12px;
+      line-height: 20px;
+      white-space: normal;
+      overflow: visible;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      font-size: 13px;
       font-weight: 700;
+    }
+    #pickem-social-export .sg-chip .sg-mark {
+      font-family: system-ui, -apple-system, 'Segoe UI Symbol', 'Apple Symbols', sans-serif;
+      font-weight: 800;
+      margin-left: 5px;
     }
     #pickem-social-export .sg-chip.sg-wrong {
       border-color: #dc2626;
@@ -9863,8 +9869,9 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
                 ? (l.ok === true ? ' ✓' : (l.ok === false ? ' ✗' : ''))
                 : (selected ? ' ●' : '');
               let label = String(opt || '').trim();
-              if (label.length > 16) label = label.slice(0, 15) + '…';
-              return '<span class="' + chipCls + '"><span class="sg-chip-label">' + label + mark + '</span></span>';
+              if (label.length > 44) label = label.slice(0, 43) + '…';
+              const markHtml = mark ? '<span class="sg-mark">' + mark.trim() + '</span>' : '';
+              return '<span class="' + chipCls + '"><span class="sg-chip-label">' + label + markHtml + '</span></span>';
             }).join('') + '</div>';
           } else {
             // free-text / numeric
@@ -9894,9 +9901,19 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       await fillShareGraphic(mode, dateStr);
       const node = document.querySelector('#pickem-social-export .sg-page');
       if (!node) return;
+      // Make sure Lexend is loaded before html2canvas measures text, otherwise it lays out with a fallback font
+      try {
+        await Promise.all([
+          document.fonts.load('700 13px Lexend'),
+          document.fonts.load('800 13px Lexend'),
+          document.fonts.load('700 13px Lexend', '✓✗●')
+        ]);
+        await document.fonts.ready;
+      } catch (e) {}
+      await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
       const canvas = await html2canvas(node, {
         backgroundColor: '#ffffff',
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
         width: 900,
         windowWidth: 900,

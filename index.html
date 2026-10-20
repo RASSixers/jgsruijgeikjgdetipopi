@@ -956,6 +956,8 @@
     html.dark-mode .sh-inj-badge.doubtful, html.dark-mode .sh-inj-badge.questionable { background: rgba(180,83,9,.15); color: #fdba74; border-color: rgba(180,83,9,.3); }
     html.dark-mode .sh-inj-badge.gtd { background: rgba(29,78,216,.15); color: #93c5fd; border-color: rgba(29,78,216,.3); }
     html.dark-mode .sh-inj-badge.probable { background: rgba(21,128,61,.15); color: #86efac; border-color: rgba(21,128,61,.3); }
+
+    .sh-inj-pad { padding: 1rem 1.15rem 0.5rem; }
 </style>
 </head>
 <body>
@@ -1888,8 +1890,8 @@ listenToUpdates();
       }).join("");
       return '<div class="sh-inj-card"><div class="sh-inj-head">' + team + ' INJURIES</div>' + players + '</div>';
     }
-    if (!groups.length) return '<div class="sh-inj-grid"><p class="sh-inj-empty">No injuries listed.</p></div>';
-    return '<div class="sh-inj-grid">' + groups.map(card).join("") + '</div>';
+    if (!groups.length) return '<div class="sh-inj-pad"><div class="sh-inj-grid"><p class="sh-inj-empty">No injuries listed.</p></div></div>';
+    return '<div class="sh-inj-pad"><div class="sh-inj-grid">' + groups.map(card).join("") + '</div></div>';
   }
 
 

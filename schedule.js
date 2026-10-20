@@ -1025,20 +1025,39 @@ function updateSnapshot(events) {
     setText("stat-next-date", "No upcoming game");
   }
 }
-function injuryBlock(title, items) {
-  if (!items || !items.length) {
-    return `<p class="inj-title">${title}</p><p class="inj-empty">No injuries listed.</p>`;
+function statusClass(s) {
+  const t = String(s || "").toLowerCase();
+  if (t.includes("out")) return "out";
+  if (t.includes("doubt")) return "doubtful";
+  if (t.includes("question")) return "questionable";
+  if (t.includes("prob")) return "probable";
+  if (t.includes("gtd") || t.includes("day")) return "gtd";
+  return "other";
+}
+function injuryReport(phiItems, oppItems, oppName) {
+  function rows(items) {
+    if (!items || !items.length) return '<p class="sh-inj-empty">No injuries listed.</p>';
+    return items.map(item => `
+      <div class="sh-inj-row">
+        <div class="sh-inj-main">
+          <span class="sh-inj-name">${item.name}</span>
+          <span class="sh-inj-badge ${statusClass(item.status)}">${item.status}</span>
+        </div>
+        ${item.detail ? `<div class="sh-inj-detail">${item.detail}</div>` : ""}
+        ${item.comment ? `<div class="sh-inj-comment">${item.comment}</div>` : ""}
+      </div>`).join("");
   }
-  return `<p class="inj-title">${title}</p>
-    <ul class="inj-list">${items.map(item => {
-      const comment = item.comment ? `<div class="inj-comment">${item.comment}</div>` : "";
-      return `<li>
-        <span class="inj-name">${item.name}</span>
-        <span class="inj-status ${statusClass(item.status)}">${item.status}</span>
-        <span>${item.detail}</span>
-        ${comment}
-      </li>`;
-    }).join("")}</ul>`;
+  return `
+    <div class="sh-inj-wrap">
+      <div class="sh-inj-col">
+        <div class="sh-inj-team">76ers</div>
+        ${rows(phiItems)}
+      </div>
+      <div class="sh-inj-col">
+        <div class="sh-inj-team">${oppName || "Opponent"}</div>
+        ${rows(oppItems)}
+      </div>
+    </div>`;
 }
 function renderGameRow(event, allEvents) {
   const date = new Date(event.date);
@@ -1093,8 +1112,7 @@ function renderGameRow(event, allEvents) {
       <td colspan="6">
         <div class="game-detail">
           <p class="series-inline">${seriesLine(allEvents, event)}${event._b2b ? " · Back-to-back set." : ""}</p>
-          ${injuryBlock("76ers injuries", filterInjuriesForGame(injuryByAbbr.PHI || [], event))}
-          ${injuryBlock(`${opponentName} injuries`, filterInjuriesForGame(injuryByAbbr[oppAbbr] || [], event))}
+          ${injuryReport(injuryByAbbr.PHI || [], injuryByAbbr[oppAbbr] || [], opponentName)}
           <div class="inj-share-row">
             <button type="button" class="inj-share-btn" data-inj-share="${event.id}">Share injury graphic</button>
           </div>

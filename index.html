@@ -2156,6 +2156,14 @@ listenToUpdates();
     try {
       window.__homeGameShare = { event: event, summary: summary || {}, mode: mode };
     } catch (e) {}
+    var shareBtn = document.getElementById("homeGameShareBtn");
+    if (shareBtn) {
+      shareBtn.onclick = function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        window.openGameShareModal("final");
+      };
+    }
 
     note.textContent = mode === "live" ? "Updates automatically" : "Full box score & PBP";
   }
@@ -2463,11 +2471,11 @@ listenToUpdates();
 
   function __gsGet(obj, path, fb) {
     try {
-      return path.split(".").reduce(function (o, k) {
+      var v = path.split(".").reduce(function (o, k) {
         return o == null ? undefined : o[k];
       }, obj);
-    } catch (e) { return undefined; }
-    return fb;
+      return v == null ? fb : v;
+    } catch (e) { return fb; }
   }
 
   function __gsSide(c) {
@@ -2691,12 +2699,14 @@ listenToUpdates();
     return canvas;
   }
 
-  function openGameShareModal(defaultPeriod) {
+  window.openGameShareModal = function openGameShareModal(defaultPeriod) {
+    // exposed for homepage button
     var pack = window.__homeGameShare;
-    if (!pack || !pack.summary) {
-      alert("Game data not loaded yet.");
+    if (!pack) {
+      alert("Game data not loaded yet. Wait for the scoreboard to finish loading.");
       return;
     }
+    if (!pack.summary) pack.summary = {};
     var status = __gsGet(pack.summary, "header.competitions.0.status", {}) || {};
     var isFinal = pack.mode === "final" || (status.type && status.type.completed);
     var curP = Number(status.period) || 1;
@@ -2721,7 +2731,11 @@ listenToUpdates();
     var overlay = document.getElementById("gameShareOverlay");
     if (overlay) {
       overlay.classList.add("active");
+      overlay.style.display = "flex";
       overlay.setAttribute("aria-hidden", "false");
+    } else {
+      console.warn("gameShareOverlay missing from DOM");
+      alert("Share dialog missing. Hard-refresh the page.");
     }
   }
 
@@ -2737,31 +2751,67 @@ listenToUpdates();
     var overlay = document.getElementById("gameShareOverlay");
     if (overlay) {
       overlay.classList.remove("active");
+      overlay.style.display = "none";
       overlay.setAttribute("aria-hidden", "true");
     }
   }
 
   document.addEventListener("click", function (e) {
     if (!e.target) return;
-    if (e.target.id === "homeGameShareBtn") {
+    var tEl = e.target;
+    if (tEl.closest && tEl.closest("#homeGameShareBtn")) {
       e.preventDefault();
-      openGameShareModal("final");
+      e.stopPropagation();
+      try { window.openGameShareModal("final"); } catch (err) { console.warn(err); alert("Could not open share graphic."); }
+      return;
     }
-    if (e.target.id === "gameShareClose" || e.target.id === "gameShareClose2") {
+    if (tEl.id === "gameShareClose" || tEl.id === "gameShareClose2" || (tEl.closest && tEl.closest("#gameShareClose"))) {
       closeGameShareModal();
+      return;
     }
-    if (e.target.id === "gameShareOverlay") closeGameShareModal();
-    if (e.target.getAttribute && e.target.getAttribute("data-gs-period")) {
-      window.__gameSharePeriod = e.target.getAttribute("data-gs-period");
+    if (tEl.id === "gameShareOverlay") {
+      closeGameShareModal();
+      return;
+    }
+    var periodBtn = tEl.closest ? tEl.closest("[data-gs-period]") : null;
+    if (periodBtn) {
+      window.__gameSharePeriod = periodBtn.getAttribute("data-gs-period");
       openGameShareModal(window.__gameSharePeriod);
+      return;
     }
-    if (e.target.id === "gameShareDownload") {
+    if (tEl.id === "gameShareDownload" || (tEl.closest && tEl.closest("#gameShareDownload"))) {
       if (!window.__gameShareDataUrl) __renderGameSharePreview();
       if (!window.__gameShareDataUrl) return;
       var a = document.createElement("a");
       a.href = window.__gameShareDataUrl;
       a.download = "sixershoops-game-" + (window.__gameSharePeriod || "final") + ".png";
       a.click();
+      var st = document.getElementById("gameShareStatus");
+      if (st) st.textContent = "Downloaded.";
+      return;
+    }
+    if (tEl.id === "gameShareCopy" || (tEl.closest && tEl.closest("#gameShareCopy"))) {
+      (async function () {
+        var st = document.getElementById("gameShareStatus");
+        try {
+          if (!window.__gameShareDataUrl) __renderGameSharePreview();
+          var canvas = buildGameShareCanvas(window.__gameSharePeriod || "final");
+          if (!canvas) throw new Error("No graphic");
+          var blob = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/png"); });
+          if (!blob) throw new Error("No image data");
+          if (navigator.clipboard && window.ClipboardItem) {
+            await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+            if (st) st.textContent = "Copied — paste into your post.";
+          } else {
+            // fallback: copy data URL text is useless; offer download
+            if (st) st.textContent = "Copy not supported here. Use Download PNG.";
+          }
+        } catch (err) {
+          console.warn(err);
+          if (st) st.textContent = "Could not copy. Use Download PNG instead.";
+        }
+      })();
+      return;
     }
   });
 
@@ -3032,6 +3082,28 @@ listenToUpdates();
     <div class="inj-share-actions">
       <button type="button" class="inj-share-download" id="injShareDownload">Download PNG</button>
       <button type="button" class="inj-share-copy" id="injShareCopy">Copy image</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="inj-share-overlay" id="gameShareOverlay" aria-hidden="true">
+  <div class="inj-share-modal" role="dialog" aria-labelledby="gameShareTitle">
+    <div class="inj-share-head">
+      <h3 id="gameShareTitle">Share game graphic</h3>
+      <button type="button" class="inj-share-close" id="gameShareClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="inj-share-body">
+      <div id="gameSharePeriodBar" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.85rem"></div>
+      <div class="inj-share-preview-wrap">
+        <img id="gameSharePreview" alt="Game share preview" />
+      </div>
+      <p id="gameShareStatus" style="margin:0.65rem 0 0;font-size:0.8rem;font-weight:600;color:#64748b;min-height:1.2em"></p>
+    </div>
+    <div class="inj-share-actions">
+      <button type="button" class="inj-share-btn primary" id="gameShareDownload">Download PNG</button>
+      <button type="button" class="inj-share-btn primary" id="gameShareCopy">Copy image</button>
+      <button type="button" class="inj-share-btn" id="gameShareClose2">Close</button>
     </div>
   </div>
 </div>

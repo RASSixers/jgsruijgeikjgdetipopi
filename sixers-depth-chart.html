@@ -75,25 +75,27 @@ button{font-family:inherit}
 
 .offscreen{position:fixed;left:-10000px;top:0;pointer-events:none}
 .social-export{width:1200px;background:#fff;font-family:"Lexend",system-ui,sans-serif;color:var(--ink)}
-.social-topbar{height:8px;background:linear-gradient(90deg,var(--sixers-blue) 0%,#1e90d8 50%,var(--sixers-red) 100%)}
-.social-inner{padding:56px 60px 48px}
-.social-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid #e6eaf2}
-.social-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.social-eyebrow .pulse{width:8px;height:8px;border-radius:50%;background:var(--sixers-red)}
-.social-eyebrow .label{font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--mid)}
-.social-title h1{font-size:72px;font-weight:700;line-height:.95;letter-spacing:-.03em;color:var(--ink)}
-.social-title h1 .accent{color:var(--sixers-blue)}
-.social-branding{text-align:right;padding-top:6px}
-.social-branding .domain{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:.08em;text-transform:uppercase}
-.social-branding .accent-bar{width:42px;height:3px;background:var(--sixers-blue);margin:14px 0 0 auto;border-radius:2px}
-.social-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.social-col{display:flex;flex-direction:column;gap:10px}
-.social-pos-label{text-align:center;padding:14px 8px;border-radius:10px;font-weight:700;font-size:18px;color:#fff;text-transform:uppercase;letter-spacing:.2em;background:var(--navy)}
-.social-player{position:relative;background:#fff;border:1px solid #e6eaf2;padding:18px 10px;border-radius:10px;text-align:center;font-weight:600;font-size:16px;color:var(--ink);min-height:64px;display:flex;align-items:center;justify-content:center}
-.social-player.starter{border:1.5px solid var(--sixers-blue);color:var(--sixers-blue);box-shadow:0 4px 14px -8px rgba(0,107,182,.4)}
-.social-player.starter::before{content:'';position:absolute;left:0;top:12%;bottom:12%;width:3px;background:var(--sixers-blue);border-radius:0 2px 2px 0}
-.social-player.twoway{border:1.5px dashed var(--gold);background:#fffaf0;color:#6b4f10;font-size:14px}
-.social-footer{margin-top:36px;padding-top:22px;border-top:1px solid #e6eaf2;text-align:center;font-size:13px;font-weight:600;color:var(--mid);letter-spacing:.18em;text-transform:uppercase}
+.sx-inner{padding:52px 56px 44px;box-sizing:border-box}
+.sx-wordmark{margin:0;font-size:52px;font-weight:800;letter-spacing:-.02em;line-height:1.3;text-align:center;color:var(--ink)}
+.sx-sub{margin:10px 0 26px;font-size:14px;font-weight:700;letter-spacing:.14em;line-height:1.4;text-transform:uppercase;color:var(--mid);text-align:center}
+.sx-stats{display:flex;gap:12px;justify-content:center;align-items:stretch;margin-bottom:30px}
+.sx-stat{flex:0 0 auto;min-width:150px;box-sizing:border-box;text-align:center;background:#f6f8fc;border:1px solid #e4e8f0;border-radius:12px;padding:10px 22px 11px}
+.sx-stat b{display:block;font-size:22px;font-weight:800;line-height:1.35;color:var(--sixers-blue);white-space:nowrap}
+.sx-stat span{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;line-height:1.4;text-transform:uppercase;color:var(--mid)}
+.sx-head{display:flex;align-items:flex-end;margin-bottom:8px}
+.sx-head-pos{flex:0 0 86px;width:86px;text-align:center}
+.sx-head-cells{flex:1 1 auto;display:grid;gap:10px;padding:0 13px}
+.sx-head-pos,.sx-hc{font-size:11px;font-weight:700;letter-spacing:.1em;line-height:1.3;text-transform:uppercase;color:var(--mid);text-align:center}
+.sx-list{display:flex;flex-direction:column;gap:10px}
+.sx-row{display:flex;align-items:stretch;box-sizing:border-box;min-height:78px;border:1px solid #e1e7f0;border-radius:12px;background:#fff}
+.sx-pos{flex:0 0 86px;width:86px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#f4f7fb;border-right:1px solid #e1e7f0;border-radius:11px 0 0 11px;color:var(--sixers-blue);font-size:20px;font-weight:800;letter-spacing:.06em;line-height:1}
+.sx-cells{flex:1 1 auto;min-width:0;display:grid;gap:10px;padding:10px 12px;align-items:stretch}
+.sx-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:56px;padding:8px 10px;border-radius:9px;border:1px solid #dde4ee;background:#f8fafc;color:#475569;font-size:15px;font-weight:600;line-height:1.25;letter-spacing:-.01em;text-align:center}
+.sx-chip.starter{background:#fff;border:2px solid var(--sixers-blue);color:var(--sixers-blue);font-weight:700}
+.sx-inj{margin-top:3px;font-size:11px;font-weight:700;line-height:1.25;color:#b91c1c}
+.sx-bottom{margin-top:30px;text-align:center}
+.sx-bar{width:72px;height:3px;border-radius:2px;background:#e1e7f0;margin:0 auto}
+.sx-url{margin-top:14px;font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.4;color:var(--ink)}
 
 @media (max-width:1024px){.depth-grid{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:640px){.depth-grid{grid-template-columns:repeat(2,1fr)}.toolbar{flex-direction:column;align-items:stretch}.export-btn{margin-left:0;justify-content:center}}
@@ -132,20 +134,16 @@ button{font-family:inherit}
 
 <div class="offscreen" aria-hidden="true">
   <div id="exportRoot" class="social-export">
-    <div class="social-topbar"></div>
-    <div class="social-inner">
-      <div class="social-header">
-        <div>
-          <div class="social-eyebrow"><span class="pulse"></span><span class="label">2026–27 Season</span></div>
-          <div class="social-title"><h1>Sixers <span class="accent">Depth Chart</span></h1></div>
-        </div>
-        <div class="social-branding">
-          <div class="domain">SixersHoops.com</div>
-          <div class="accent-bar"></div>
-        </div>
+    <div class="sx-inner">
+      <h1 class="sx-wordmark">SixersHoops</h1>
+      <div class="sx-sub">Depth Chart · 2026–27 Season</div>
+      <div class="sx-stats" id="sxStats"></div>
+      <div class="sx-head" id="sxHead"></div>
+      <div class="sx-list" id="socialGrid"></div>
+      <div class="sx-bottom">
+        <div class="sx-bar"></div>
+        <div class="sx-url">sixershoops.com/sixers-depth-chart</div>
       </div>
-      <div class="social-grid" id="socialGrid"></div>
-      <div class="social-footer">sixershoops.com/sixers-depth-chart</div>
     </div>
   </div>
 </div>
@@ -284,19 +282,35 @@ function renderGrid(){
   });
 }
 function renderSocial(){
-  const g = document.getElementById("socialGrid");
-  if (!g) return;
-  g.innerHTML = "";
-  COLUMNS.forEach(col=>{
-    const c = document.createElement("div");
-    c.className = "social-col";
-    c.innerHTML = `<div class="social-pos-label">${col.pos}</div>` +
-      col.players.map(p=>{
-        const note = (typeof DEPTH_INJURY !== 'undefined' && DEPTH_INJURY[p.name]) ? ` · ${DEPTH_INJURY[p.name]}` : '';
-        return `<div class="social-player ${p.type==='starter'?'starter':''}">${p.name}${note}</div>`;
-      }).join("");
-    g.appendChild(c);
-  });
+  const list = document.getElementById("socialGrid");
+  if (!list) return;
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const cols = COLUMNS.filter(c => c.players.length);
+  const n = Math.max(4, ...cols.map(c => c.players.length));
+  const tpl = `repeat(${n}, minmax(0, 1fr))`;
+  const total = cols.reduce((a, c) => a + c.players.length, 0);
+  const starters = cols.filter(c => c.players.some(p => p.type === "starter")).length;
+
+  document.getElementById("sxStats").innerHTML =
+    `<div class="sx-stat"><b>${starters}</b><span>Starters</span></div>` +
+    `<div class="sx-stat"><b>${total}</b><span>Players</span></div>` +
+    `<div class="sx-stat"><b>2026–27</b><span>Season</span></div>`;
+
+  document.getElementById("sxHead").innerHTML =
+    `<div class="sx-head-pos">Pos</div>` +
+    `<div class="sx-head-cells" style="grid-template-columns:${tpl}">` +
+      `<div class="sx-hc">Starter</div><div class="sx-hc" style="grid-column:2 / -1">Rotation</div>` +
+    `</div>`;
+
+  list.innerHTML = cols.map(col => {
+    const chips = col.players.map(p => {
+      const inj = (typeof DEPTH_INJURY !== "undefined" && DEPTH_INJURY[p.name])
+        ? `<div class="sx-inj">${esc(DEPTH_INJURY[p.name])}</div>` : "";
+      return `<div class="sx-chip${p.type === "starter" ? " starter" : ""}"><div>${esc(p.name)}</div>${inj}</div>`;
+    }).join("");
+    return `<div class="sx-row"><div class="sx-pos">${esc(col.pos)}</div>` +
+           `<div class="sx-cells" style="grid-template-columns:${tpl}">${chips}</div></div>`;
+  }).join("");
 }
 
 (async function init(){

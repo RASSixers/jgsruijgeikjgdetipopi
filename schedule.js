@@ -1343,23 +1343,28 @@ function buildInjuryShareCanvas(payload) {
   if (!payload) return null;
   const W = 1080;
   const PAD = 48;
-  const NAVY = "#001a57", RED = "#ED174C";
-  const WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
-  const MID = "#64748b", BORDER = "#e4e8f0";
+  const BLUE = "#006BB6";
+  const INK = "#0d0f1a";
+  const MID = "#64748b";
+  const BORDER = "#e4e8f0";
+  const CARD = "#f6f8fc";
+  const WHITE = "#ffffff";
+  const RED = "#ED174C";
   const BADGE = {
     "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
     "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
     "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
     "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
-    "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
+    "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
+    "DAY-TO-DAY": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" }
   };
   const teams = payload.teams || [];
-  let rows = 0;
-  teams.forEach(function (t) { rows += Math.max((t.items || []).length, 1); });
-  const headerH = 168;
-  const rowH = 72;
-  const teamHeadH = 40;
-  const H = Math.max(headerH + teams.length * teamHeadH + rows * rowH + 90, 520);
+  const colW = (W - PAD * 2 - 24) / 2;
+  let maxRows = 1;
+  teams.forEach(t => { maxRows = Math.max(maxRows, (t.items || []).length || 1); });
+  const rowH = 88;
+  const cardH = 48 + maxRows * rowH;
+  const H = 220 + cardH + 80;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
@@ -1380,12 +1385,12 @@ function buildInjuryShareCanvas(payload) {
     ctx.textAlign = align || "left";
     ctx.fillText(str, x, y);
   }
-  function wrapText(str, maxW, font) {
+  function wrap(str, maxW, font) {
     ctx.font = font;
     const words = String(str || "").split(/\s+/);
     const lines = [];
     let line = "";
-    words.forEach(function (w) {
+    words.forEach(w => {
       const test = line ? line + " " + w : w;
       if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
       else line = test;
@@ -1393,57 +1398,52 @@ function buildInjuryShareCanvas(payload) {
     if (line) lines.push(line);
     return lines.slice(0, 2);
   }
-  ctx.fillStyle = CREAM;
+  ctx.fillStyle = WHITE;
   ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = NAVY;
-  ctx.fillRect(0, 0, W, 132);
-  ctx.fillStyle = RED;
-  ctx.fillRect(0, 132, W, 4);
-  text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
-  text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
-  // Accent bar matching site branding
-  ctx.fillStyle = "#ED174C";
-  ctx.fillRect(PAD, 100, 72, 4);
-  text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
-  let y = headerH;
-  teams.forEach(function (team) {
-    rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
-    text(String(team.team || "Team").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
-    y += teamHeadH;
+  // Header matching draft picks style
+  text("SIXERSHOOPS", W / 2, 48, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
+  text("Injury Report", W / 2, 100, "800 42px Lexend, system-ui, sans-serif", INK, "center");
+  const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  text("Updated " + today, W / 2, 128, "500 15px Lexend, system-ui, sans-serif", MID, "center");
+  text(payload.matchup || "", W / 2, 158, "600 16px Lexend, system-ui, sans-serif", MID, "center");
+  // Two cards
+  const startY = 190;
+  teams.slice(0, 2).forEach((team, idx) => {
+    const x = PAD + idx * (colW + 24);
+    rr(x, startY, colW, cardH, 14, CARD);
+    text(String(team.team || "TEAM").toUpperCase() + " INJURIES", x + 20, startY + 32, "800 13px Lexend, system-ui, sans-serif", MID);
     const items = team.items || [];
+    let ry = startY + 48;
     if (!items.length) {
-      text("No injuries listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
-      y += rowH;
+      text("No injuries listed.", x + 20, ry + 28, "500 15px Lexend, system-ui, sans-serif", MID);
       return;
     }
-    items.forEach(function (item) {
-      rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
-      ctx.strokeStyle = BORDER;
+    items.forEach(item => {
+      text(item.name, x + 20, ry + 24, "700 18px Lexend, system-ui, sans-serif", INK);
+      const label = String(item.label || "Listed").toUpperCase();
+      const badge = BADGE[label] || BADGE["DAY-TO-DAY"] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+      ctx.font = "800 11px Lexend, system-ui, sans-serif";
+      const bw = ctx.measureText(label).width + 20;
+      const bx = x + colW - 20 - bw;
+      rr(bx, ry + 8, bw, 24, 12, badge.bg);
+      ctx.strokeStyle = badge.border;
       ctx.lineWidth = 1;
       ctx.stroke();
-      text(item.name, PAD + 20, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
-      const badge = BADGE[item.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
-      const label = String(item.label || "Listed").toUpperCase();
-      ctx.font = "800 12px Lexend, system-ui, sans-serif";
-      const bw = ctx.measureText(label).width + 22;
-      const bx = W - PAD - 20 - bw;
-      rr(bx, y + 12, bw, 26, 13, badge.bg);
-      ctx.strokeStyle = badge.border;
-      ctx.stroke();
-      text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
-      const sub = item.injuryType || item.comment || "";
-      if (sub) {
-        const lines = wrapText(sub, W - PAD * 2 - 40, "500 13px Lexend, system-ui, sans-serif");
-        lines.forEach(function (ln, i) {
-          text(ln, PAD + 20, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
-        });
+      text(label, bx + bw / 2, ry + 24, "800 11px Lexend, system-ui, sans-serif", badge.text, "center");
+      if (item.injuryType) {
+        text(item.injuryType, x + 20, ry + 44, "500 13px Lexend, system-ui, sans-serif", MID);
       }
-      y += rowH;
+      if (item.comment) {
+        const lines = wrap(item.comment, colW - 40, "500 12px Lexend, system-ui, sans-serif");
+        lines.forEach((ln, i) => text(ln, x + 20, ry + 62 + i * 15, "500 12px Lexend, system-ui, sans-serif", "#475569"));
+      }
+      ry += rowH;
     });
   });
-  text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+  text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", BLUE, "center");
   return canvas;
 }
+
 
 window.__injuryShareByEvent = window.__injuryShareByEvent || {};
 

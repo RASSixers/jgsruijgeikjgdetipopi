@@ -2534,10 +2534,14 @@ listenToUpdates();
         var stats = a.stats || [];
         if (a.didNotPlay && !stats.length) return;
         var pts = pi >= 0 ? Number(stats[pi]) || 0 : 0;
-        var head = __gsGet(a, "athlete.headshot.href", null) ||
-          __gsGet(a, "athlete.headshot", null) ||
-          (__gsGet(a, "athlete.id", null) ? ("https://a.espncdn.com/i/headshots/nba/players/full/" + __gsGet(a, "athlete.id", "") + ".png") : null);
+        var id = __gsGet(a, "athlete.id", null);
+        var head = __gsGet(a, "athlete.headshot.href", null);
+        if (!head && id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
         if (typeof head === "object" && head && head.href) head = head.href;
+        // Prefer full-size ESPN headshot when possible
+        if (head && /headshot/i.test(String(head)) && id) {
+          head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
+        }
         all.push({
           team: abbr,
           name: __gsGet(a, "athlete.shortName", null) || __gsGet(a, "athlete.displayName", "Player"),
@@ -2554,6 +2558,7 @@ listenToUpdates();
   }
 
 
+  
   function buildGameShareCanvas(periodKey) {
     return __buildGameShareCanvasAsync(periodKey);
   }
@@ -2563,8 +2568,15 @@ listenToUpdates();
       if (!url) { resolve(null); return; }
       var img = new Image();
       img.crossOrigin = "anonymous";
-      img.onload = function () { resolve(img); };
-      img.onerror = function () { resolve(null); };
+      var done = false;
+      var finish = function (val) {
+        if (done) return;
+        done = true;
+        resolve(val);
+      };
+      img.onload = function () { finish(img); };
+      img.onerror = function () { finish(null); };
+      setTimeout(function () { finish(null); }, 2500);
       img.src = url;
     });
   }
@@ -2582,183 +2594,201 @@ listenToUpdates();
 
     var awayScore = __gsScoreThrough(teams.away, periodNum);
     var homeScore = __gsScoreThrough(teams.home, periodNum);
-    var subtitle = __gsPeriodLabel(periodKey, status.period, isFinal && periodKey === "final");
+    var periodTitle = __gsPeriodLabel(periodKey, status.period, isFinal && periodKey === "final");
     var matchup = String(teams.away.abbr) + " @ " + String(teams.home.abbr);
     var leaders = __gsBoxLeaders(summary, 10);
 
-    // logos from competitors
     var comps = __gsGet(summary, "header.competitions.0.competitors", null);
     if (!Array.isArray(comps) || !comps.length) comps = __gsGet(event, "competitions.0.competitors", null) || [];
     var homeC = comps.find(function (c) { return c && c.homeAway === "home"; }) || comps[0] || {};
     var awayC = comps.find(function (c) { return c && c.homeAway === "away"; }) || comps[1] || {};
     function logoUrl(c) {
-      return __gsGet(c, "team.logo", null) ||
-        (__gsGet(c, "team.logos.0.href", null)) ||
-        (__gsGet(c, "team.abbreviation", null) ? ("https://a.espncdn.com/i/teamlogos/nba/500/" + String(__gsGet(c, "team.abbreviation", "")).toLowerCase() + ".png") : null);
+      var ab = String(__gsGet(c, "team.abbreviation", "") || "").toLowerCase();
+      if (!ab) return null;
+      // team logos often work with CORS on espncdn
+      return "https://a.espncdn.com/i/teamlogos/nba/500/" + ab + ".png";
     }
     teams.away.logo = logoUrl(awayC);
     teams.home.logo = logoUrl(homeC);
 
-    var W = 1080;
-    var PAD = 48;
-    var NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
-    var WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a", MID = "#64748b", BORDER = "#e4e8f0";
-    var headerH = 168;
-    var scoreH = 140;
-    var rowH = 72;
-    var boxHeadH = 52;
-    var H = headerH + scoreH + boxHeadH + Math.max(leaders.length, 1) * rowH + 90;
+    // Preload (may fail CORS — null is fine)
+    var headUrls = leaders.map(function (r) { return r.headshot; });
+    var loadedHeads = await Promise.all(headUrls.map(__gsLoadImg));
+    var awayLogo = await __gsLoadImg(teams.away.logo);
+    var homeLogo = await __gsLoadImg(teams.home.logo);
 
-    var canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
-    var ctx = canvas.getContext("2d");
+    function draw(withImages) {
+      var W = 1080;
+      var PAD = 48;
+      var NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
+      var WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a", MID = "#64748b", BORDER = "#e4e8f0";
+      var headerH = 148;
+      var scoreH = 150;
+      var rowH = 76;
+      var boxPadTop = 36;
+      var H = headerH + scoreH + boxPadTop + Math.max(leaders.length, 1) * rowH + 88;
 
-    function rr(x, y, w, h, r, fill) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + w, y, x + w, y + h, r);
-      ctx.arcTo(x + w, y + h, x, y + h, r);
-      ctx.arcTo(x, y + h, x, y, r);
-      ctx.arcTo(x, y, x + w, y, r);
-      ctx.closePath();
-      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-    }
-    function text(str, x, y, font, color, align) {
-      ctx.font = font;
-      ctx.fillStyle = color;
-      ctx.textAlign = align || "left";
-      ctx.textBaseline = "alphabetic";
-      ctx.fillText(String(str == null ? "" : str), x, y);
-    }
-    function circleImg(img, cx, cy, r) {
-      if (!img) return;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
-      ctx.restore();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = BORDER;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
+      var canvas = document.createElement("canvas");
+      canvas.width = W;
+      canvas.height = H;
+      var ctx = canvas.getContext("2d");
 
-    // preload images
-    var imgUrls = leaders.map(function (r) { return r.headshot; });
-    imgUrls.push(teams.away.logo, teams.home.logo);
-    var loaded = await Promise.all(imgUrls.map(__gsLoadImg));
-    var headImgs = loaded.slice(0, leaders.length);
-    var awayLogo = loaded[leaders.length];
-    var homeLogo = loaded[leaders.length + 1];
-
-    // cream page + navy header + red rule (injury style)
-    ctx.fillStyle = CREAM;
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = NAVY;
-    ctx.fillRect(0, 0, W, 132);
-    ctx.fillStyle = RED;
-    ctx.fillRect(0, 132, W, 4);
-
-    text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
-    text(subtitle, PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
-    text(matchup + "  ·  Box score", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.85)");
-
-    // score card
-    var scoreY = headerH;
-    rr(PAD, scoreY, W - PAD * 2, scoreH - 16, 14, WHITE);
-    ctx.strokeStyle = BORDER;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // away logo + abbr
-    if (awayLogo) {
-      try { ctx.drawImage(awayLogo, PAD + 28, scoreY + 28, 56, 56); } catch (e) {}
-    }
-    text(teams.away.abbr, PAD + 100, scoreY + 48, "800 28px Lexend, system-ui, sans-serif", INK);
-    text("AWAY", PAD + 100, scoreY + 72, "700 12px Lexend, system-ui, sans-serif", MID);
-
-    // home
-    if (homeLogo) {
-      try { ctx.drawImage(homeLogo, W - PAD - 84, scoreY + 28, 56, 56); } catch (e) {}
-    }
-    text(teams.home.abbr, W - PAD - 100, scoreY + 48, "800 28px Lexend, system-ui, sans-serif", INK, "right");
-    text("HOME", W - PAD - 100, scoreY + 72, "700 12px Lexend, system-ui, sans-serif", MID, "right");
-
-    // score center
-    text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 58, "800 44px Lexend, system-ui, sans-serif", BLUE, "center");
-
-    // quarter lines
-    var maxQ = Math.max(teams.away.lines.length, teams.home.lines.length, periodNum || 0);
-    if (maxQ > 0) {
-      var qBits = [];
-      for (var q = 0; q < Math.min(maxQ, 4); q++) {
-        if (periodNum != null && q >= periodNum) break;
-        var a = teams.away.lines[q] != null ? teams.away.lines[q] : "–";
-        var h = teams.home.lines[q] != null ? teams.home.lines[q] : "–";
-        qBits.push("Q" + (q + 1) + " " + a + "-" + h);
+      function rr(x, y, w, h, r, fill) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
       }
-      if (qBits.length) {
-        text(qBits.join("   ·   "), W / 2, scoreY + 100, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+      function text(str, x, y, font, color, align) {
+        ctx.font = font;
+        ctx.fillStyle = color;
+        ctx.textAlign = align || "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(String(str == null ? "" : str), x, y);
       }
-    }
+      function circleImg(img, cx, cy, r) {
+        if (!img || !withImages) return false;
+        try {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+          ctx.restore();
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.strokeStyle = BORDER;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          return true;
+        } catch (e) {
+          ctx.restore();
+          return false;
+        }
+      }
 
-    // box header
-    var boxY = scoreY + scoreH;
-    text("BOX SCORE", PAD, boxY + 8, "800 15px Lexend, system-ui, sans-serif", MID);
-    text("MIN", W - PAD - 210, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MID, "right");
-    text("PTS", W - PAD - 140, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MID, "right");
-    text("REB", W - PAD - 70, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MID, "right");
-    text("AST", W - PAD, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MID, "right");
+      // Match injury report: cream page, navy header, red rule
+      ctx.fillStyle = CREAM;
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = NAVY;
+      ctx.fillRect(0, 0, W, 132);
+      ctx.fillStyle = RED;
+      ctx.fillRect(0, 132, W, 4);
 
-    var y = boxY + 28;
-    if (!leaders.length) {
-      rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+      text("SIXERSHOOPS", PAD, 40, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.72)");
+      text(periodTitle, PAD, 80, "800 36px Lexend, system-ui, sans-serif", WHITE);
+      text(matchup + "  ·  Game report", PAD, 114, "600 17px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
+
+      // Score card (white rounded like injury rows)
+      var scoreY = headerH;
+      rr(PAD, scoreY, W - PAD * 2, scoreH - 18, 12, WHITE);
       ctx.strokeStyle = BORDER;
       ctx.lineWidth = 1;
       ctx.stroke();
-      text("Box score will appear as stats post.", PAD + 20, y + 36, "500 15px Lexend, system-ui, sans-serif", MID);
-    } else {
-      leaders.forEach(function (row, i) {
+
+      // Away
+      if (withImages && awayLogo) {
+        try { ctx.drawImage(awayLogo, PAD + 28, scoreY + 26, 54, 54); } catch (e) {}
+      } else {
+        rr(PAD + 28, scoreY + 26, 54, 54, 8, "#e8eef5");
+        text(String(teams.away.abbr).slice(0, 3), PAD + 55, scoreY + 60, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
+      }
+      text(teams.away.abbr, PAD + 98, scoreY + 48, "800 26px Lexend, system-ui, sans-serif", INK);
+      text("AWAY", PAD + 98, scoreY + 70, "700 11px Lexend, system-ui, sans-serif", MID);
+
+      // Home
+      if (withImages && homeLogo) {
+        try { ctx.drawImage(homeLogo, W - PAD - 82, scoreY + 26, 54, 54); } catch (e) {}
+      } else {
+        rr(W - PAD - 82, scoreY + 26, 54, 54, 8, "#e8eef5");
+        text(String(teams.home.abbr).slice(0, 3), W - PAD - 55, scoreY + 60, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
+      }
+      text(teams.home.abbr, W - PAD - 98, scoreY + 48, "800 26px Lexend, system-ui, sans-serif", INK, "right");
+      text("HOME", W - PAD - 98, scoreY + 70, "700 11px Lexend, system-ui, sans-serif", MID, "right");
+
+      text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 58, "800 46px Lexend, system-ui, sans-serif", BLUE, "center");
+
+      var maxQ = Math.max(teams.away.lines.length, teams.home.lines.length, periodNum || 0);
+      if (maxQ > 0) {
+        var qBits = [];
+        for (var q = 0; q < Math.min(maxQ, 4); q++) {
+          if (periodNum != null && q >= periodNum) break;
+          var a = teams.away.lines[q] != null ? teams.away.lines[q] : "–";
+          var h = teams.home.lines[q] != null ? teams.home.lines[q] : "–";
+          qBits.push("Q" + (q + 1) + " " + a + "-" + h);
+        }
+        if (qBits.length) {
+          text(qBits.join("   ·   "), W / 2, scoreY + 108, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+        }
+      }
+
+      // Box score section title
+      var boxY = scoreY + scoreH;
+      text("BOX SCORE", PAD, boxY + 4, "800 14px Lexend, system-ui, sans-serif", MID);
+      text("MIN", W - PAD - 210, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
+      text("PTS", W - PAD - 140, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
+      text("REB", W - PAD - 70, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
+      text("AST", W - PAD, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
+
+      var y = boxY + 24;
+      if (!leaders.length) {
         rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
         ctx.strokeStyle = BORDER;
         ctx.lineWidth = 1;
         ctx.stroke();
+        text("Box score will appear as stats post.", PAD + 20, y + 40, "500 15px Lexend, system-ui, sans-serif", MID);
+      } else {
+        leaders.forEach(function (row, i) {
+          rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+          ctx.strokeStyle = BORDER;
+          ctx.lineWidth = 1;
+          ctx.stroke();
 
-        var cx = PAD + 40;
-        var cy = y + (rowH - 10) / 2;
-        if (headImgs[i]) {
-          circleImg(headImgs[i], cx, cy, 24);
-        } else {
-          ctx.beginPath();
-          ctx.arc(cx, cy, 24, 0, Math.PI * 2);
-          ctx.fillStyle = "#e2e8f0";
-          ctx.fill();
-          text((row.name || "?").charAt(0), cx, cy + 6, "800 16px Lexend, system-ui, sans-serif", MID, "center");
-        }
+          var cx = PAD + 42;
+          var cy = y + (rowH - 10) / 2;
+          var drew = withImages && circleImg(loadedHeads[i], cx, cy, 26);
+          if (!drew) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+            ctx.fillStyle = "#e8eef5";
+            ctx.fill();
+            ctx.strokeStyle = BORDER;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 7, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
+          }
 
-        text(row.team, PAD + 78, y + 26, "700 12px Lexend, system-ui, sans-serif", MID);
-        text(row.name, PAD + 78, y + 48, "700 18px Lexend, system-ui, sans-serif", INK);
+          text(row.team, PAD + 82, y + 28, "700 12px Lexend, system-ui, sans-serif", MID);
+          text(row.name, PAD + 82, y + 52, "700 18px Lexend, system-ui, sans-serif", INK);
 
-        text(String(row.min), W - PAD - 210, y + 40, "600 16px Lexend, system-ui, sans-serif", INK, "right");
-        text(String(row.pts), W - PAD - 140, y + 40, "800 18px Lexend, system-ui, sans-serif", BLUE, "right");
-        text(String(row.reb), W - PAD - 70, y + 40, "600 16px Lexend, system-ui, sans-serif", INK, "right");
-        text(String(row.ast), W - PAD, y + 40, "600 16px Lexend, system-ui, sans-serif", INK, "right");
-        y += rowH;
-      });
+          text(String(row.min), W - PAD - 210, y + 44, "600 16px Lexend, system-ui, sans-serif", INK, "right");
+          text(String(row.pts), W - PAD - 140, y + 44, "800 18px Lexend, system-ui, sans-serif", BLUE, "right");
+          text(String(row.reb), W - PAD - 70, y + 44, "600 16px Lexend, system-ui, sans-serif", INK, "right");
+          text(String(row.ast), W - PAD, y + 44, "600 16px Lexend, system-ui, sans-serif", INK, "right");
+          y += rowH;
+        });
+      }
+
+      text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+      return canvas;
     }
 
-    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
-    return canvas;
+    // Prefer with images; if export is tainted, fall back
+    var canvas = draw(true);
+    try {
+      canvas.toDataURL("image/png");
+      return canvas;
+    } catch (e) {
+      return draw(false);
+    }
   }
 
-  // patch leaders helper to include headshots - redefined below if needed
-
-
-  window.openGameShareModal = function openGameShareModal(defaultPeriod) {
+window.openGameShareModal = function openGameShareModal(defaultPeriod) {
     // exposed for homepage button
     var pack = window.__homeGameShare;
     if (!pack) {
@@ -2786,6 +2816,7 @@ listenToUpdates();
           (on ? "background:#006BB6;color:#fff;border-color:#006BB6" : "") + '">' + o.label + "</button>";
       }).join("");
     }
+    window.__gameShareDataUrl = null;
     __renderGameSharePreview();
     var overlay = document.getElementById("gameShareOverlay");
     if (overlay) {

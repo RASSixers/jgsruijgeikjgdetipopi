@@ -411,6 +411,97 @@
     }
     .totd-inner .cbody{padding:1rem 1.15rem 1.15rem}
 
+
+    /* Pick'em-matched share graphic (export only) */
+    #community-social-export {
+      position: fixed; left: -10000px; top: 0; pointer-events: none;
+    }
+    #community-social-export .sg-page {
+      width: 900px; box-sizing: border-box; padding: 36px 36px 28px; background: #fff;
+      font-family: Lexend, system-ui, sans-serif;
+    }
+    #community-social-export .sg-wordmark {
+      margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.03em; color: #0d0f1a; text-align: center;
+    }
+    #community-social-export .sg-subtitle {
+      margin: 8px 0 18px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: #64748b; text-align: center;
+    }
+    #community-social-export .sg-stat-row {
+      display: flex; gap: 10px; margin-bottom: 18px; justify-content: center; flex-wrap: wrap;
+    }
+    #community-social-export .sg-stat {
+      flex: 1 1 120px; max-width: 160px; text-align: center;
+      background: #f6f8fc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 10px 8px;
+    }
+    #community-social-export .sg-stat b {
+      display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; line-height: 1.1;
+    }
+    #community-social-export .sg-stat span {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #64748b;
+    }
+    #community-social-export .sg-list {
+      list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;
+    }
+    #community-social-export .sg-q-card {
+      border: 1px solid #e4e8f0; border-radius: 10px; padding: 10px 12px; background: #f8fafc; text-align: left;
+    }
+    #community-social-export .sg-q-num {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #006BB6; margin: 0 0 4px;
+    }
+    #community-social-export .sg-q-text {
+      margin: 0; font-size: 13px; font-weight: 700; line-height: 1.35; color: #0d0f1a;
+    }
+    #community-social-export .sg-q-meta {
+      margin: 6px 0 0; font-size: 12px; font-weight: 600; color: #64748b;
+    }
+    #community-social-export .sg-bottom { margin-top: 20px; text-align: center; }
+    #community-social-export .sg-bottom-rule {
+      height: 1px; background: #e4e8f0; margin: 0 0 12px;
+    }
+    #community-social-export .sg-bottom-mark {
+      margin: 0; font-size: 13px; font-weight: 800; color: #0d0f1a;
+    }
+    #community-social-export .sg-bottom-url {
+      margin: 4px 0 0; font-size: 11px; font-weight: 600; color: #64748b;
+    }
+
+    /* In-post Wordle */
+    .wd-game {
+      margin-top: .75rem; padding: .85rem; border: 1px solid var(--border); border-radius: 14px;
+      background: var(--bg2, #fff);
+    }
+    .wd-game-prompt {
+      font-size: .78rem; font-weight: 700; color: var(--mid); letter-spacing: .04em;
+      text-transform: uppercase; margin: 0 0 .55rem;
+    }
+    .wd-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: .65rem; }
+    .wd-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+    .wd-tile {
+      width: 36px; height: 36px; border-radius: 8px; border: 2px solid #cbd5e1;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: .95rem; text-transform: uppercase; color: var(--ink);
+      background: #fff;
+    }
+    .wd-tile.empty { background: #f8fafc; }
+    .wd-tile.correct { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .wd-tile.present { background: #ca8a04; border-color: #ca8a04; color: #fff; }
+    .wd-tile.absent { background: #64748b; border-color: #64748b; color: #fff; }
+    .wd-input-row { display: flex; gap: .45rem; align-items: center; }
+    .wd-input-row input {
+      flex: 1; border: 1px solid var(--border); border-radius: 10px; padding: .55rem .7rem;
+      font: 700 .9rem Lexend, sans-serif; text-transform: uppercase; letter-spacing: .08em;
+      background: var(--card); color: var(--ink);
+    }
+    .wd-input-row button {
+      border: 0; border-radius: 10px; padding: .55rem .9rem; font: 700 .8rem Lexend, sans-serif;
+      background: var(--sixers-blue); color: #fff; cursor: pointer;
+    }
+    .wd-input-row button:disabled { opacity: .5; cursor: default; }
+    .wd-status { margin: .45rem 0 0; font-size: .8rem; font-weight: 600; color: var(--mid); }
+    .wd-status.win { color: #16a34a; }
+    .wd-status.lose { color: #dc2626; }
+
   </style>
 
 </head>
@@ -538,6 +629,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="/nav.js"></script>
   <script>
 (function(){
@@ -800,7 +892,18 @@
       } else {
         if(t.notes||t.summary) html += '<p class="cexcerpt">'+esc(t.notes||t.summary)+'</p>';
       }
-      if(t.image) html += '<div style="margin-top:.5rem;"><img src="'+esc(t.image)+'" alt="" style="max-width:100%;max-height:220px;border-radius:12px;object-fit:cover;"></div>';
+      if(t.image && t.toolKind !== 'wordle') html += '<div style="margin-top:.5rem;"><img src="'+esc(t.image)+'" alt="" style="max-width:100%;max-height:220px;border-radius:12px;object-fit:cover;"></div>';
+      if(t.toolKind === 'wordle' && t.toolPayload){
+        html += '<div class="wd-game" data-wd-post="'+esc(t.id)+'" onclick="event.stopPropagation()">'
+          + '<p class="wd-game-prompt">'+esc((t.toolPayload.prompt)||'Sports Wordle')+'</p>'
+          + '<div class="wd-rows" data-wd-rows></div>'
+          + '<div class="wd-input-row">'
+          + '<input type="text" maxlength="'+(t.toolPayload.answerLen||12)+'" placeholder="Guess" autocomplete="off" data-wd-input />'
+          + '<button type="button" data-wd-guess>Guess</button>'
+          + '</div>'
+          + '<p class="wd-status" data-wd-status></p>'
+          + '</div>';
+      }
       if(isQuote || t.quotedPostId){
         html += '<a class="tw-quote-card" href="'+esc(qUrl)+'" onclick="event.stopPropagation()">';
         html += '<div class="tw-quote-head"><div class="tw-quote-avatar">'+esc(qInitial)+'</div><span class="tw-quote-name">'+esc(qAuthor)+'</span></div>';
@@ -1187,7 +1290,9 @@
     openPostFromQuery();
     function applySnap(snap){
       items=snap.docs.map(function(d){const x=d.data();x.id=d.id;return x;});
+      window.__communityItems=items;
       render();
+      if(typeof window.initCommunityWordles==='function') window.initCommunityWordles();
     }
     function failFeed(err){
       console.error(err);
@@ -1466,94 +1571,107 @@
     if(current==="wordle"){
       var ans=(($("wdAnswer")||{}).value||"").trim();
       if(!ans) return null;
-      return {kind:"wordle",prompt:(($("wdPrompt")||{}).value||"Guess the answer").trim(),answerHash:simpleHash(ans),answerLen:ans.replace(/\s+/g,"").length,maxGuesses:Number(($("wdMax")||{}).value||5),note:(($("wdNote")||{}).value||"").trim(),title:"Sports Wordle: "+(($("wdPrompt")||{}).value||"Challenge")};
+      return {kind:"wordle",prompt:(($("wdPrompt")||{}).value||"Guess the answer").trim(),answerHash:simpleHash(ans),answerEnc:btoa(unescape(encodeURIComponent(ans.trim().toUpperCase().replace(/\s+/g,"")))),answerLen:ans.replace(/\s+/g,"").length,maxGuesses:Number(($("wdMax")||{}).value||5),note:(($("wdNote")||{}).value||"").trim(),title:"Sports Wordle: "+(($("wdPrompt")||{}).value||"Challenge")};
     }
     return null;
   }
 
-  function buildGraphic(p){
-    if(!p) return null;
-    var W=1080, PAD=52;
-    var NAVY="#001a57", RED="#ED174C", WHITE="#ffffff", CREAM="#f4f6f9", INK="#0d0f1a", MID="#64748b", BLUE="#006BB6";
-    var rows=[];
+  
+  function fillCommShareDom(p){
+    var sub=$("commSgSubtitle");
+    var stats=$("commSgStats");
+    var list=$("commSgList");
+    if(!sub||!stats||!list) return;
+    var subtitle = p.kind==="standings" ? ((p.scope||"")+" STANDINGS") :
+      p.kind==="playoffs" ? ((p.conf||"")+" PLAYOFF ORDER") :
+      p.kind==="game" ? "GAME PICK" :
+      p.kind==="sbc" ? "START / BENCH / CUT" :
+      p.kind==="tiers" ? "TIER LIST" :
+      p.kind==="wordle" ? "SPORTS WORDLE" : "COMMUNITY BOARD";
+    sub.textContent = subtitle;
+    stats.innerHTML = "";
+    if(p.kind==="standings"||p.kind==="playoffs"){
+      stats.innerHTML = '<div class="sg-stat"><b>'+(p.order||[]).length+'</b><span>Ranked</span></div>';
+    } else if(p.kind==="game"){
+      stats.innerHTML = '<div class="sg-stat"><b>'+esc(p.winner||"—")+'</b><span>Pick</span></div>'
+        +'<div class="sg-stat"><b>'+esc(p.confidence||"")+'</b><span>Confidence</span></div>';
+    } else if(p.kind==="sbc"){
+      stats.innerHTML = '<div class="sg-stat"><b>'+(p.start||[]).length+'</b><span>Start</span></div>'
+        +'<div class="sg-stat"><b>'+(p.bench||[]).length+'</b><span>Bench</span></div>'
+        +'<div class="sg-stat"><b>'+(p.cut||[]).length+'</b><span>Cut</span></div>';
+    } else if(p.kind==="wordle"){
+      stats.innerHTML = '<div class="sg-stat"><b>'+(p.answerLen||"?")+'</b><span>Letters</span></div>'
+        +'<div class="sg-stat"><b>'+(p.maxGuesses||5)+'</b><span>Guesses</span></div>';
+    }
+    var rows = [];
     if(p.kind==="standings"){
-      rows=(p.order||[]).map(function(x,i){return {left:(i+1)+"", mid:x.abbr||x.label, right:x.record||""};});
+      rows=(p.order||[]).map(function(x,i){ return {num:(i+1), text:(x.abbr||x.label||"")+(x.record?"  ·  "+x.record:""), meta:""}; });
     } else if(p.kind==="playoffs"){
-      rows=(p.order||[]).map(function(a,i){return {left:(i+1)+"", mid:a+" "+(NAMES[a]||""), right:""};});
+      rows=(p.order||[]).map(function(a,i){ return {num:(i+1), text:a+" "+(NAMES[a]||""), meta:""}; });
     } else if(p.kind==="game"){
       rows=[
-        {left:"", mid:p.away+" @ "+p.home, right:""},
-        {left:"", mid:"Pick "+p.winner+" · "+p.confidence, right:""}
+        {num:"vs", text:(p.away||"")+" @ "+(p.home||""), meta:""},
+        {num:"pick", text:(p.winner||"")+" · "+(p.confidence||""), meta:""}
       ];
-      if(p.scoreA||p.scoreH) rows.push({left:"", mid:"Score "+(p.scoreA||"—")+" – "+(p.scoreH||"—"), right:""});
-      if(p.stat) rows.push({left:"", mid:p.stat, right:""});
-      if(p.note) rows.push({left:"", mid:p.note, right:""});
+      if(p.scoreA||p.scoreH) rows.push({num:"scr", text:(p.scoreA||"—")+" – "+(p.scoreH||"—"), meta:""});
+      if(p.stat) rows.push({num:"stat", text:p.stat, meta:""});
+      if(p.note) rows.push({num:"note", text:p.note, meta:""});
     } else if(p.kind==="sbc"){
-      rows=[{left:"ST",mid:(p.start||[]).join(", ")||"—",right:""},{left:"BN",mid:(p.bench||[]).join(", ")||"—",right:""},{left:"CUT",mid:(p.cut||[]).join(", ")||"—",right:""}];
+      rows=[
+        {num:"ST", text:(p.start||[]).join(", ")||"—", meta:""},
+        {num:"BN", text:(p.bench||[]).join(", ")||"—", meta:""},
+        {num:"CUT", text:(p.cut||[]).join(", ")||"—", meta:""}
+      ];
     } else if(p.kind==="tiers"){
-      (p.tiers||[]).forEach(function(arr,i){ if(arr&&arr.length) rows.push({left:TIER_LABELS[i], mid:arr.join(", "), right:"", tier:i}); });
+      (p.tiers||[]).forEach(function(arr,i){
+        if(arr&&arr.length) rows.push({num:TIER_LABELS[i], text:arr.join(", "), meta:""});
+      });
     } else if(p.kind==="wordle"){
-      rows=[{left:"",mid:p.prompt||"Sports Wordle",right:""},{left:"",mid:p.answerLen+" letters · "+p.maxGuesses+" guesses",right:""},{left:"",mid:"Guess on SixersHoops — no spoilers",right:""}];
+      rows=[
+        {num:"Q", text:p.prompt||"Sports Wordle", meta:""},
+        {num:"", text:(p.answerLen||"?")+" letters · play in the post", meta:""}
+      ];
     }
-    var rowH=56;
-    var H=Math.max(560, 190+rows.length*rowH+90);
-    var c=document.createElement("canvas"); c.width=W; c.height=H;
-    var ctx=c.getContext("2d");
-    ctx.fillStyle=CREAM; ctx.fillRect(0,0,W,H);
-    // pickem-like header bar
-    ctx.fillStyle=NAVY; ctx.fillRect(0,0,W,150);
-    ctx.fillStyle=RED; ctx.fillRect(0,150,W,6);
-    ctx.fillStyle="rgba(255,255,255,0.65)"; ctx.font="800 15px Lexend,system-ui,sans-serif";
-    ctx.fillText("SIXERSHOOPS  ·  COMMUNITY", PAD, 44);
-    ctx.fillStyle=WHITE; ctx.font="800 36px Lexend,system-ui,sans-serif";
-    ctx.fillText(String(p.title||"Board").slice(0,36), PAD, 92);
-    ctx.fillStyle="rgba(255,255,255,0.8)"; ctx.font="600 16px Lexend,system-ui,sans-serif";
-    var sub=p.kind==="standings"?((p.scope||"")+" · Fan standings"):p.kind==="game"?"Game pick":p.kind==="wordle"?"Sports Wordle":p.kind==="sbc"?"Start / Bench / Cut":p.kind==="tiers"?"Tier list":"Fan board";
-    ctx.fillText(sub, PAD, 126);
-    var y=180;
-    rows.forEach(function(r,idx){
-      // white card row like pickem options
-      ctx.fillStyle=WHITE;
-      round(ctx,PAD,y,W-PAD*2,rowH-10,12);
-      ctx.fill();
-      ctx.strokeStyle="#e2e8f0"; ctx.lineWidth=1; ctx.stroke();
-      if(r.left){
-        var badgeCol=r.tier!=null?TIER_COLORS[r.tier]:BLUE;
-        ctx.fillStyle=badgeCol;
-        round(ctx,PAD+12,y+10,42,rowH-30,8); ctx.fill();
-        ctx.fillStyle=WHITE; ctx.font="800 14px Lexend,system-ui,sans-serif"; ctx.textAlign="center";
-        ctx.fillText(String(r.left).slice(0,3), PAD+33, y+32);
-        ctx.textAlign="left";
-        ctx.fillStyle="#0d0f1a"; ctx.font="700 18px Lexend,system-ui,sans-serif";
-        ctx.fillText(String(r.mid).slice(0,52), PAD+68, y+34);
-      } else {
-        ctx.fillStyle="#0d0f1a"; ctx.font="700 18px Lexend,system-ui,sans-serif";
-        ctx.fillText(String(r.mid).slice(0,58), PAD+22, y+34);
-      }
-      if(r.right){
-        ctx.fillStyle=MID; ctx.font="700 16px Lexend,system-ui,sans-serif"; ctx.textAlign="right";
-        ctx.fillText(String(r.right), W-PAD-22, y+34); ctx.textAlign="left";
-      }
-      y+=rowH;
-    });
-    ctx.fillStyle=MID; ctx.font="600 14px Lexend,system-ui,sans-serif"; ctx.textAlign="center";
-    ctx.fillText("sixershoops.com/community", W/2, H-30);
-    ctx.textAlign="left";
-    return c;
-    function round(ctx,x,y,w,h,r){
-      ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
-    }
+    list.innerHTML = rows.map(function(r){
+      return '<li><div class="sg-q-card">'
+        +(r.num?('<p class="sg-q-num">'+esc(String(r.num))+"</p>"):"")
+        +'<p class="sg-q-text">'+esc(String(r.text||""))+"</p>"
+        +(r.meta?('<p class="sg-q-meta">'+esc(r.meta)+"</p>"):"")
+        +"</div></li>";
+    }).join("");
   }
 
-  if($("studioGraphic")) $("studioGraphic").onclick=function(){
+  function buildGraphic(p){
+    return new Promise(function(resolve){
+      if(!p){ resolve(null); return; }
+      fillCommShareDom(p);
+      var page = document.querySelector("#community-social-export .sg-page");
+      if(!page || typeof html2canvas !== "function"){
+        resolve(null); return;
+      }
+      html2canvas(page, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        width: 900,
+        windowWidth: 900
+      }).then(function(canvas){
+        resolve(canvas);
+      }).catch(function(){ resolve(null); });
+    });
+  }
+
+if($("studioGraphic")) $("studioGraphic").onclick=async function(){
     var p=collect(); if(!p){ alert("Finish the board first."); return; }
     lastPayload=p;
-    var canvas=buildGraphic(p); if(!canvas) return;
+    $("studioPreview").innerHTML='<div class="ph">Building graphic…</div>';
+    var canvas=await buildGraphic(p); if(!canvas){ $("studioPreview").innerHTML='<div class="ph">Could not build graphic.</div>'; return; }
     lastPng=canvas.toDataURL("image/png");
     $("studioPreview").innerHTML='<img alt="Preview" src="'+lastPng+'"/>';
   };
-  if($("studioDownload")) $("studioDownload").onclick=function(){
-    if(!lastPng && $("studioGraphic")) $("studioGraphic").click();
+  if($("studioDownload")) $("studioDownload").onclick=async function(){
+    if(!lastPng && $("studioGraphic")) await $("studioGraphic").onclick();
     if(!lastPng) return;
     var a=document.createElement("a"); a.href=lastPng; a.download="sixershoops-board.png"; a.click();
   };
@@ -1561,7 +1679,7 @@
     var user=window.auth&&window.auth.currentUser;
     if(!user){ if(typeof triggerLogin==="function") triggerLogin(); else alert("Sign in to post."); return; }
     var p=lastPayload||collect(); if(!p){ alert("Finish the board first."); return; }
-    if(!lastPng){ var canvas=buildGraphic(p); if(canvas) lastPng=canvas.toDataURL("image/png"); }
+    if(!lastPng){ var canvas=await buildGraphic(p); if(canvas) lastPng=canvas.toDataURL("image/png"); }
     if(!window.db){ alert("Could not connect."); return; }
     var authorName=user.displayName||(user.email?user.email.split("@")[0]:"fan");
     var notes="";
@@ -1585,7 +1703,7 @@
       teamAbbrs:p.order? (p.order.map(function(x){return x.abbr||x;}).slice(0,6)) : (p.away?[p.away,p.home]:[]),
       machineHash:null, isValid:null,
       toolKind:p.kind,
-      toolPayload:p.kind==="wordle"?{prompt:p.prompt,answerHash:p.answerHash,answerLen:p.answerLen,maxGuesses:p.maxGuesses}:(p.interactive?{interactive:true,kind:p.kind}:null),
+      toolPayload:p.kind==="wordle"?{prompt:p.prompt,answerHash:p.answerHash,answerEnc:p.answerEnc,answerLen:p.answerLen,maxGuesses:p.maxGuesses}:(p.interactive?{interactive:true,kind:p.kind}:null),
       createdAt:new Date().toISOString()
     };
     // never put raw wordle answer on the post
@@ -1596,6 +1714,117 @@
       $("studio").classList.remove("open");
       document.querySelectorAll("#createPills .create-pill").forEach(function(b){b.classList.remove("active");});
     }catch(err){ console.warn(err); alert("Post failed."); }
+  };
+})();
+
+
+/* In-post Sports Wordle */
+(function(){
+  function scoreGuess(guess, answer){
+    guess = String(guess||"").toUpperCase();
+    answer = String(answer||"").toUpperCase();
+    var n = answer.length;
+    var res = new Array(n);
+    var left = {};
+    for(var i=0;i<n;i++){
+      if(guess[i]===answer[i]){ res[i]="correct"; }
+      else { left[answer[i]]=(left[answer[i]]||0)+1; res[i]=null; }
+    }
+    for(var j=0;j<n;j++){
+      if(res[j]) continue;
+      var ch=guess[j];
+      if(left[ch]){ res[j]="present"; left[ch]--; }
+      else res[j]="absent";
+    }
+    return res;
+  }
+  function loadState(postId){
+    try{ return JSON.parse(localStorage.getItem("sh_wd_"+postId)||"null") || {guesses:[], done:false, won:false}; }
+    catch(e){ return {guesses:[], done:false, won:false}; }
+  }
+  function saveState(postId, st){
+    try{ localStorage.setItem("sh_wd_"+postId, JSON.stringify(st)); }catch(e){}
+  }
+  function decodeAnswer(enc){
+    try{ return decodeURIComponent(escape(atob(enc||""))); }catch(e){ return ""; }
+  }
+  function paint(root, st, answerLen, maxG){
+    var rows = root.querySelector("[data-wd-rows]");
+    var status = root.querySelector("[data-wd-status]");
+    var input = root.querySelector("[data-wd-input]");
+    var btn = root.querySelector("[data-wd-guess]");
+    if(!rows) return;
+    var html = "";
+    for(var r=0;r<maxG;r++){
+      var g = st.guesses[r];
+      html += '<div class="wd-row">';
+      for(var c=0;c<answerLen;c++){
+        if(g){
+          var ch = g.word[c]||"";
+          var cls = g.scores[c]||"absent";
+          html += '<div class="wd-tile '+cls+'">'+(ch||"")+"</div>";
+        } else {
+          html += '<div class="wd-tile empty"></div>';
+        }
+      }
+      html += "</div>";
+    }
+    rows.innerHTML = html;
+    if(st.won){
+      status.textContent = "Got it in "+st.guesses.length+"!";
+      status.className = "wd-status win";
+      if(input) input.disabled = true;
+      if(btn) btn.disabled = true;
+    } else if(st.done){
+      status.textContent = "Out of guesses";
+      status.className = "wd-status lose";
+      if(input) input.disabled = true;
+      if(btn) btn.disabled = true;
+    } else {
+      status.textContent = (maxG - st.guesses.length) + " guesses left";
+      status.className = "wd-status";
+    }
+  }
+  window.initCommunityWordles = function(){
+    document.querySelectorAll(".wd-game[data-wd-post]").forEach(function(root){
+      if(root.getAttribute("data-wd-bound")==="1") return;
+      root.setAttribute("data-wd-bound","1");
+      var postId = root.getAttribute("data-wd-post");
+      var item = (typeof items!=="undefined" ? items : []).find(function(x){ return x.id===postId; });
+      // items may be in outer scope - try window
+      if(!item && window.__communityItems) item = window.__communityItems.find(function(x){return x.id===postId;});
+      var payload = (item && item.toolPayload) || {};
+      var answer = decodeAnswer(payload.answerEnc);
+      var answerLen = payload.answerLen || (answer ? answer.length : 5);
+      var maxG = payload.maxGuesses || 5;
+      var st = loadState(postId);
+      paint(root, st, answerLen, maxG);
+      var input = root.querySelector("[data-wd-input]");
+      var btn = root.querySelector("[data-wd-guess]");
+      function submit(){
+        if(st.done || st.won) return;
+        if(!answer){
+          root.querySelector("[data-wd-status]").textContent = "This puzzle is missing data.";
+          return;
+        }
+        var guess = (input.value||"").trim().toUpperCase().replace(/\s+/g,"");
+        if(guess.length !== answerLen){
+          root.querySelector("[data-wd-status]").textContent = "Use exactly "+answerLen+" letters.";
+          return;
+        }
+        var scores = scoreGuess(guess, answer);
+        st.guesses.push({word:guess, scores:scores});
+        if(guess === answer){ st.won = true; st.done = true; }
+        else if(st.guesses.length >= maxG){ st.done = true; }
+        saveState(postId, st);
+        input.value = "";
+        paint(root, st, answerLen, maxG);
+      }
+      if(btn) btn.addEventListener("click", function(e){ e.preventDefault(); e.stopPropagation(); submit(); });
+      if(input) input.addEventListener("keydown", function(e){
+        if(e.key==="Enter"){ e.preventDefault(); e.stopPropagation(); submit(); }
+      });
+    });
   };
 })();
 

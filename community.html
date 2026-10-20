@@ -268,13 +268,24 @@
     @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
 
     /* Modal (unchanged structure, slightly cleaner) */
-    .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+    .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:1000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
     .overlay.open{display:flex}
-    .mbox{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 24px 48px rgba(0,0,0,.2)}
-    .mhead{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.15rem;border-bottom:1px solid var(--border)}
-    .mhead h3{margin:0;font-size:1rem;font-weight:800;letter-spacing:.04em}
-    .mbody{padding:1.15rem}
-    .mfoot{display:flex;justify-content:flex-end;gap:.5rem;padding:0 1.15rem 1.15rem}
+    .mbox{background:var(--card,#fff);border-radius:20px;max-width:640px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 28px 64px rgba(0,0,0,.28);border:1px solid var(--border)}
+    .mhead{display:flex;align-items:center;justify-content:space-between;padding:1.15rem 1.35rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card,#fff);z-index:2}
+    .mhead h3{margin:0;font-size:1.05rem;font-weight:800;letter-spacing:.04em;color:var(--navy)}
+    .mbody{padding:1.25rem 1.35rem}
+    .mfoot{display:flex;justify-content:flex-end;gap:.55rem;padding:0 1.35rem 1.25rem;position:sticky;bottom:0;background:var(--card,#fff)}
+
+    .studio-overlay{display:none;position:fixed;inset:0;background:rgba(11,15,26,.62);z-index:1100;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)}
+    .studio-overlay.open{display:flex}
+    .studio-panel{width:min(1120px,100%);max-height:94vh;overflow:auto;border-radius:20px;background:var(--card,#fff);border:1px solid var(--border);box-shadow:0 32px 80px rgba(0,0,0,.35);display:flex;flex-direction:column}
+    .studio-panel .studio-bar{position:sticky;top:0;z-index:3;background:var(--card,#fff)}
+    .studio-panel .studio-body{display:grid;grid-template-columns:1.2fr .9fr;gap:0;min-height:420px}
+    @media(max-width:900px){.studio-panel .studio-body{grid-template-columns:1fr}.studio-panel{max-height:96vh}}
+    .studio-preview{min-height:280px}
+    .drag-item .team-logo,.game-pick .team-logo{width:22px;height:22px;object-fit:contain;border-radius:4px;background:#fff;flex-shrink:0}
+    .sg-team-row{display:flex;align-items:center;gap:10px}
+    .sg-team-logo{width:28px;height:28px;object-fit:contain;border-radius:6px;background:#fff;flex-shrink:0}
     .fl{display:block;font-size:.68rem;font-weight:800;letter-spacing:.1em;color:var(--mid);margin:0 0 .35rem}
     .inp,.ta{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:.7rem .85rem;font-family:inherit;font-size:.9rem;margin-bottom:.85rem}
     .ta{min-height:100px;resize:vertical}
@@ -307,11 +318,8 @@
     }
     .create-pill:hover{border-color:var(--sixers-blue);color:var(--sixers-blue)}
     .create-pill.active{background:var(--navy);border-color:var(--navy);color:#fff}
-    .studio{
-      display:none;border:1px solid var(--border);background:var(--card);
-      border-radius:16px;overflow:hidden;
-    }
-    .studio.open{display:block}
+    .studio{display:none!important}
+    .studio.open{display:none!important}
     .studio-bar{
       display:flex;align-items:center;justify-content:space-between;gap:1rem;
       padding:.85rem 1.15rem;border-bottom:1px solid var(--border);background:rgba(0,26,87,.03);
@@ -530,28 +538,32 @@
         <button type="button" class="create-pill" data-studio="tiers">Tier list</button>
         <button type="button" class="create-pill" data-studio="wordle">Sports Wordle</button>
       </div>
-      <div class="studio" id="studio">
-        <div class="studio-bar">
-          <div>
-            <h3 id="studioTitle">Studio</h3>
-            <p id="studioSub">Drag items to reorder. Generate a graphic, then post.</p>
-          </div>
-          <button type="button" class="studio-close" id="studioClose" aria-label="Close">&times;</button>
+      <div class="studio" id="studio" aria-hidden="true"></div>
+    </div>
+
+  <div class="studio-overlay" id="studioOverlay" role="dialog" aria-modal="true" aria-labelledby="studioTitle">
+    <div class="studio-panel" onclick="event.stopPropagation()">
+      <div class="studio-bar">
+        <div>
+          <h3 id="studioTitle">Studio</h3>
+          <p id="studioSub">Drag items to reorder. Generate a graphic, then post.</p>
         </div>
-        <div class="studio-body">
-          <div class="studio-form" id="studioForm"></div>
-          <div class="studio-side">
-            <div class="side-label">Share graphic</div>
-            <div class="studio-preview" id="studioPreview"><div class="ph">Your board graphic appears here — same style family as Pick’em cards.</div></div>
-            <div class="studio-actions">
-              <button type="button" class="studio-btn primary" id="studioGraphic">Generate graphic</button>
-              <button type="button" class="studio-btn primary" id="studioPost">Post to community</button>
-              <button type="button" class="studio-btn ghost" id="studioDownload">Download</button>
-            </div>
+        <button type="button" class="studio-close" id="studioClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="studio-body">
+        <div class="studio-form" id="studioForm"></div>
+        <div class="studio-side">
+          <div class="side-label">Share graphic</div>
+          <div class="studio-preview" id="studioPreview"><div class="ph">Your board graphic appears here — same style family as Pick’em cards.</div></div>
+          <div class="studio-actions">
+            <button type="button" class="studio-btn primary" id="studioGraphic">Generate graphic</button>
+            <button type="button" class="studio-btn primary" id="studioPost">Post to community</button>
+            <button type="button" class="studio-btn ghost" id="studioDownload">Download</button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
     <div class="feed-wrap" id="feedWrap">
 
@@ -625,6 +637,20 @@
       <div class="mfoot">
         <button type="button" class="btn btn-ghost" id="cancelCreate">Cancel</button>
         <button type="button" class="btn btn-primary" id="submitCreate">Post</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="community-social-export" aria-hidden="true">
+    <div class="sg-page">
+      <p class="sg-wordmark">SixersHoops</p>
+      <p class="sg-subtitle" id="commSgSubtitle">COMMUNITY BOARD</p>
+      <div class="sg-stat-row" id="commSgStats"></div>
+      <ul class="sg-list" id="commSgList"></ul>
+      <div class="sg-bottom">
+        <div class="sg-bottom-rule"></div>
+        <p class="sg-bottom-mark">SixersHoops Community</p>
+        <p class="sg-bottom-url">sixershoops.com/community</p>
       </div>
     </div>
   </div>
@@ -1321,6 +1347,16 @@
   var WEST=["DAL","DEN","GSW","HOU","LAC","LAL","MEM","MIN","NOP","OKC","PHX","POR","SAC","SAS","UTA"];
   var ALL=EAST.concat(WEST);
   var NAMES={ATL:"Hawks",BOS:"Celtics",BKN:"Nets",CHA:"Hornets",CHI:"Bulls",CLE:"Cavaliers",DET:"Pistons",IND:"Pacers",MIA:"Heat",MIL:"Bucks",NYK:"Knicks",ORL:"Magic",PHI:"76ers",TOR:"Raptors",WAS:"Wizards",DAL:"Mavericks",DEN:"Nuggets",GSW:"Warriors",HOU:"Rockets",LAC:"Clippers",LAL:"Lakers",MEM:"Grizzlies",MIN:"Timberwolves",NOP:"Pelicans",OKC:"Thunder",PHX:"Suns",POR:"Trail Blazers",SAC:"Kings",SAS:"Spurs",UTA:"Jazz"};
+  var ESPN_CODE={ATL:"atl",BOS:"bos",BKN:"bkn",CHA:"cha",CHI:"chi",CLE:"cle",DAL:"dal",DEN:"den",DET:"det",GSW:"gs",HOU:"hou",IND:"ind",LAC:"lac",LAL:"lal",MEM:"mem",MIA:"mia",MIL:"mil",MIN:"min",NOP:"no",NYK:"ny",OKC:"okc",ORL:"orl",PHI:"phi",PHX:"phx",POR:"por",SAC:"sac",SAS:"sa",TOR:"tor",UTA:"utah",WAS:"wsh"};
+  function teamLogo(abbr){
+    if(!abbr) return "";
+    var code=ESPN_CODE[String(abbr).toUpperCase()]||String(abbr).toLowerCase();
+    return "https://a.espncdn.com/i/teamlogos/nba/500/"+code+".png";
+  }
+  function logoImg(abbr, cls){
+    if(!abbr) return "";
+    return '<img class="'+(cls||"team-logo")+'" src="'+teamLogo(abbr)+'" alt="'+esc(abbr)+'" loading="lazy" crossorigin="anonymous" onerror="this.style.visibility=\'hidden\'"/>';
+  }
   var TIER_COLORS=["#ED174C","#ea580c","#ca8a04","#16a34a","#006BB6","#64748b"];
   var TIER_LABELS=["S","A","B","C","D","F"];
   var current=null, lastPng=null, lastPayload=null;
@@ -1336,10 +1372,14 @@
       openStudio(btn.getAttribute("data-studio"));
     });
   });
-  if($("studioClose")) $("studioClose").onclick=function(){
-    $("studio").classList.remove("open");
+  function closeStudio(){
+    var ov=$("studioOverlay"); if(ov) ov.classList.remove("open");
+    document.body.style.overflow="";
     document.querySelectorAll("#createPills .create-pill").forEach(function(b){b.classList.remove("active");});
-  };
+  }
+  if($("studioClose")) $("studioClose").onclick=closeStudio;
+  if($("studioOverlay")) $("studioOverlay").onclick=function(e){ if(e.target===this) closeStudio(); };
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape" && $("studioOverlay") && $("studioOverlay").classList.contains("open")) closeStudio(); });
 
   /* shared drag for ordered lists */
   window.shListDragStart=function(e,listId,idx){
@@ -1366,18 +1406,19 @@
     var arr=window._lists[listId]||[];
     el.innerHTML=arr.map(function(item,i){
       var label=typeof item==="string"?item:(item.label||item.abbr||item.name||"");
+      var abbr=typeof item==="object"?(item.abbr||""):(NAMES[item]?item:"");
       var meta=typeof item==="object"&&item.record!=null?item.record:"";
       var recInput=typeof item==="object"&&item.allowRecord
         ? '<input class="rec" data-i="'+i+'" value="'+esc(item.record||"") +'" placeholder="52-30" onclick="event.stopPropagation()" oninput="window._lists[\''+listId+'\']['+i+'].record=this.value"/>'
         : (meta?'<span class="meta">'+esc(meta)+"</span>":"");
       return '<li class="drag-item" draggable="true" ondragstart="shListDragStart(event,\''+listId+'\','+i+')" ondragover="shAllow(event)" ondrop="shListDrop(event,\''+listId+'\','+i+')">'
-        +'<span class="h">☰</span><span class="n">'+(i+1)+'. '+esc(label)+"</span>"+recInput+"</li>";
+        +'<span class="h">☰</span>'+logoImg(abbr)+'<span class="n">'+(i+1)+'. '+esc(label)+"</span>"+recInput+"</li>";
     }).join("");
   }
 
   function openStudio(kind){
     current=kind; lastPng=null; lastPayload=null;
-    $("studio").classList.add("open");
+    var ov=$("studioOverlay"); if(ov){ ov.classList.add("open"); document.body.style.overflow="hidden"; }
     $("studioPreview").innerHTML='<div class="ph">Generate a graphic when your board is ready.</div>';
     var form=$("studioForm");
     var copy={
@@ -1491,7 +1532,7 @@
       var ha=(home.team||{}).abbreviation||"HOME";
       var aa=(away.team||{}).abbreviation||"AWAY";
       var tip=ev.date?new Date(ev.date).toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:"America/New_York"})+" ET":"";
-      return '<div class="game-pick" data-i="'+i+'" data-aa="'+aa+'" data-ha="'+ha+'"><span><strong>'+aa+' @ '+ha+'</strong> · '+tip+"</span><span>Select</span></div>";
+      return '<div class="game-pick" data-i="'+i+'" data-aa="'+aa+'" data-ha="'+ha+'"><span style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">'+logoImg(aa)+logoImg(ha)+'<strong>'+aa+' @ '+ha+'</strong> · '+tip+"</span><span>Select</span></div>";
     }).join("");
     window._gmEvents=events;
     box.querySelectorAll(".game-pick").forEach(function(row){
@@ -1605,13 +1646,13 @@
     }
     var rows = [];
     if(p.kind==="standings"){
-      rows=(p.order||[]).map(function(x,i){ return {num:(i+1), text:(x.abbr||x.label||"")+(x.record?"  ·  "+x.record:""), meta:""}; });
+      rows=(p.order||[]).map(function(x,i){ return {num:(i+1), text:(x.abbr||x.label||"")+(x.record?"  ·  "+x.record:""), meta:"", abbr:x.abbr||""}; });
     } else if(p.kind==="playoffs"){
-      rows=(p.order||[]).map(function(a,i){ return {num:(i+1), text:a+" "+(NAMES[a]||""), meta:""}; });
+      rows=(p.order||[]).map(function(a,i){ return {num:(i+1), text:a+" "+(NAMES[a]||""), meta:"", abbr:a}; });
     } else if(p.kind==="game"){
       rows=[
-        {num:"vs", text:(p.away||"")+" @ "+(p.home||""), meta:""},
-        {num:"pick", text:(p.winner||"")+" · "+(p.confidence||""), meta:""}
+        {num:"vs", text:(p.away||"")+" @ "+(p.home||""), meta:"", abbr:p.away, abbr2:p.home},
+        {num:"pick", text:(p.winner||"")+" · "+(p.confidence||""), meta:"", abbr:p.winner}
       ];
       if(p.scoreA||p.scoreH) rows.push({num:"scr", text:(p.scoreA||"—")+" – "+(p.scoreH||"—"), meta:""});
       if(p.stat) rows.push({num:"stat", text:p.stat, meta:""});
@@ -1633,9 +1674,15 @@
       ];
     }
     list.innerHTML = rows.map(function(r){
+      var logos="";
+      if(r.abbr) logos+=logoImg(r.abbr,"sg-team-logo");
+      if(r.abbr2) logos+=logoImg(r.abbr2,"sg-team-logo");
+      var textBlock = logos
+        ? ('<div class="sg-team-row">'+logos+'<p class="sg-q-text" style="margin:0">'+esc(String(r.text||""))+"</p></div>")
+        : ('<p class="sg-q-text">'+esc(String(r.text||""))+"</p>");
       return '<li><div class="sg-q-card">'
         +(r.num?('<p class="sg-q-num">'+esc(String(r.num))+"</p>"):"")
-        +'<p class="sg-q-text">'+esc(String(r.text||""))+"</p>"
+        +textBlock
         +(r.meta?('<p class="sg-q-meta">'+esc(r.meta)+"</p>"):"")
         +"</div></li>";
     }).join("");
@@ -1649,16 +1696,27 @@
       if(!page || typeof html2canvas !== "function"){
         resolve(null); return;
       }
-      html2canvas(page, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: 900,
-        windowWidth: 900
-      }).then(function(canvas){
-        resolve(canvas);
-      }).catch(function(){ resolve(null); });
+      var imgs = Array.prototype.slice.call(page.querySelectorAll("img"));
+      var wait = imgs.map(function(img){
+        return new Promise(function(r){
+          if(img.complete && img.naturalWidth){ r(); return; }
+          img.onload = function(){ r(); };
+          img.onerror = function(){ r(); };
+          setTimeout(r, 2500);
+        });
+      });
+      Promise.all(wait).then(function(){
+        html2canvas(page, {
+          backgroundColor: "#ffffff",
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          logging: false,
+          width: 900,
+          windowWidth: 900
+        }).then(function(canvas){ resolve(canvas); })
+          .catch(function(err){ console.warn("html2canvas", err); resolve(null); });
+      });
     });
   }
 
@@ -1711,8 +1769,12 @@ if($("studioGraphic")) $("studioGraphic").onclick=async function(){
       await window.db.collection("community_trades").add(doc);
       $("studioPost").textContent="Posted";
       setTimeout(function(){ $("studioPost").textContent="Post to community"; },1400);
-      $("studio").classList.remove("open");
-      document.querySelectorAll("#createPills .create-pill").forEach(function(b){b.classList.remove("active");});
+      if(typeof closeStudio==="function") closeStudio();
+      else {
+        var ov=$("studioOverlay"); if(ov) ov.classList.remove("open");
+        document.body.style.overflow="";
+        document.querySelectorAll("#createPills .create-pill").forEach(function(b){b.classList.remove("active");});
+      }
     }catch(err){ console.warn(err); alert("Post failed."); }
   };
 })();

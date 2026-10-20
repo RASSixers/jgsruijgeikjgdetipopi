@@ -552,7 +552,19 @@
   let postType = 'discussion';
   let unsub = null;
 
-  function waitForDb(cb,n){n=n||0;if(window.db){cb();return;}if(n>80){document.getElementById('feed').innerHTML='<div class="state">Could not connect.</div>';return;}setTimeout(function(){waitForDb(cb,n+1);},250);}
+  function waitForDb(cb,n){
+    n=n||0;
+    if(window.db){cb();return;}
+    var feed=document.getElementById('feed');
+    if(n===20 && feed){
+      feed.innerHTML='<div class="state">Connecting…</div>';
+    }
+    if(n>80){
+      if(feed) feed.innerHTML='<div class="state">Could not connect to the community feed. Refresh the page. If this keeps happening, sign out and back in.</div>';
+      return;
+    }
+    setTimeout(function(){waitForDb(cb,n+1);},250);
+  }
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function timeAgo(ts){
     if(!ts)return '';
@@ -1054,10 +1066,10 @@
     row.querySelector('.rm').onclick=function(){if(box.children.length>2)row.remove();};
   }
 
-    document.getElementById('closeCreate').onclick=closeCreate;
-  document.getElementById('cancelCreate').onclick=closeCreate;
+    var __el_closeCreate=document.getElementById('closeCreate'); if(__el_closeCreate) __el_closeCreate.onclick=closeCreate;
+  var __el_cancelCreate=document.getElementById('cancelCreate'); if(__el_cancelCreate) __el_cancelCreate.onclick=closeCreate;
   modal.onclick=function(e){if(e.target===modal)closeCreate();};
-  document.getElementById('addPollOpt').onclick=function(){addOpt('');};
+  var __el_addPollOpt=document.getElementById('addPollOpt'); if(__el_addPollOpt) __el_addPollOpt.onclick=function(){addOpt('');};
   document.querySelectorAll('.type-opt').forEach(function(el){
     el.onclick=function(){
       postType=el.getAttribute('data-type');
@@ -1081,7 +1093,8 @@
   const clrAll = document.getElementById('feedClearAll');
   if(clrAll) clrAll.onclick = function(){ feedFilterIds = new Set(); renderFollowList(); render(); };
 
-  document.getElementById('submitCreate').onclick=async function(){
+  var __submitBtn=document.getElementById('submitCreate');
+  if(__submitBtn) __submitBtn.onclick=async function(){
     const user=window.auth&&window.auth.currentUser;
     if(!user){triggerLogin();return;}
     const title=document.getElementById('cTitle').value.trim();
@@ -1171,15 +1184,27 @@
   });
 
   waitForDb(function(){
-    // Open detail view when ?post= or ?id= is present (from trade machine / card click)
     openPostFromQuery();
-    unsub=window.db.collection(COLLECTION).orderBy('createdAt','desc').limit(120).onSnapshot(function(snap){
+    function applySnap(snap){
       items=snap.docs.map(function(d){const x=d.data();x.id=d.id;return x;});
       render();
-    },function(err){
+    }
+    function failFeed(err){
       console.error(err);
-      document.getElementById('feed').innerHTML='<div class="state">Could not load feed.</div>';
-    });
+      var feed=document.getElementById('feed');
+      if(feed) feed.innerHTML='<div class="state">Could not load feed. <button type="button" class="btn btn-ghost" onclick="location.reload()">Retry</button></div>';
+    }
+    try{
+      unsub=window.db.collection(COLLECTION).orderBy('createdAt','desc').limit(120).onSnapshot(applySnap, function(err){
+        // Fallback without orderBy if index/rules issue
+        console.warn('orderBy snapshot failed, falling back', err);
+        window.db.collection(COLLECTION).limit(120).get().then(function(snap){
+          applySnap(snap);
+        }).catch(failFeed);
+      });
+    }catch(err){
+      failFeed(err);
+    }
   });
 })();
   

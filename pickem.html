@@ -1524,7 +1524,7 @@
     #pickem-social-export .sg-page {
       width: 900px;
       box-sizing: border-box;
-      padding: 28px 32px 22px;
+      padding: 36px 36px 28px;
       background: #fff;
     }
     #pickem-social-export .sg-wordmark {
@@ -1532,15 +1532,15 @@
       text-align: center;
     }
     #pickem-social-export .sg-subtitle {
-      margin: 6px 0 14px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
+      margin: 8px 0 18px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
       text-transform: uppercase; color: #64748b; text-align: center;
     }
     #pickem-social-export .sg-stat-row {
-      display: flex; gap: 10px; margin-bottom: 14px; justify-content: center; flex-wrap: wrap;
+      display: flex; gap: 10px; margin-bottom: 18px; justify-content: center; flex-wrap: wrap;
     }
     #pickem-social-export .sg-stat {
       flex: 1 1 120px; max-width: 160px; text-align: center;
-      background: #f6f8fc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 8px 8px;
+      background: #f6f8fc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 10px 8px;
     }
     #pickem-social-export .sg-stat b {
       display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #006BB6; line-height: 1.1;
@@ -1552,33 +1552,29 @@
       list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;
     }
     #pickem-social-export .sg-list li { display: block; margin: 0; padding: 0; border: none; }
-    /* Longer slates: two columns of cards so the image stays short */
-    #pickem-social-export .sg-list.sg-two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
-    #pickem-social-export .sg-list.sg-two-col li { display: flex; }
-    #pickem-social-export .sg-list.sg-two-col .sg-q-card { flex: 1 1 auto; min-width: 0; }
     #pickem-social-export .sg-q-card {
       border: 1px solid #e6eaf1;
       border-radius: 12px;
-      padding: 11px 14px 13px;
+      padding: 14px 16px 16px;
       background: #ffffff;
       text-align: left;
     }
     #pickem-social-export .sg-q-num {
       display: flex; align-items: center; justify-content: space-between;
       font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-      color: #64748b; margin: 0 0 4px; line-height: 14px;
+      color: #64748b; margin: 0 0 6px; line-height: 14px;
     }
     #pickem-social-export .sg-q-status { font-weight: 800; letter-spacing: 0.12em; }
     #pickem-social-export .sg-q-status.ok { color: #15803d; }
     #pickem-social-export .sg-q-status.no { color: #dc2626; }
     #pickem-social-export .sg-q-text {
-      margin: 0 0 9px; font-size: 15px; font-weight: 600; line-height: 1.3;
+      margin: 0 0 12px; font-size: 15px; font-weight: 600; line-height: 1.35;
       letter-spacing: -0.01em; color: #0d0f1a;
     }
     #pickem-social-export .sg-q-options {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
+      gap: 10px;
       width: 100%;
       box-sizing: border-box;
     }
@@ -1586,16 +1582,16 @@
     #pickem-social-export .sg-q-options.sg-opts-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     #pickem-social-export .sg-q-options.sg-opts-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     /* Answer choices: quiet neutral by default, one solid colour for the chosen answer.
-       Lexend sits low in its line box, so the bottom padding is larger than the top:
-       the text moves up by (bottom - top) / 2 = 3px to look optically centred. */
+       Lexend sits slightly low in its line box, so the bottom padding is a bit larger
+       than the top to optically centre the text vertically. */
     #pickem-social-export .sg-chip {
       display: flex;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
       width: 100%;
-      min-height: 40px;
-      padding: 5px 14px 11px;
+      min-height: 46px;
+      padding: 9px 14px 12px;
       border-radius: 10px;
       border: 1px solid #e2e8f0;
       background: #f8fafc;
@@ -1625,7 +1621,7 @@
     #pickem-social-export .sg-chip.sg-wrong    { background: #dc2626; border-color: #dc2626; color: #ffffff; }
     #pickem-social-export .sg-ok { color: #16a34a; }
     #pickem-social-export .sg-no { color: #dc2626; }
-    #pickem-social-export .sg-bottom { text-align: center; margin-top: 14px; }
+    #pickem-social-export .sg-bottom { text-align: center; margin-top: 20px; }
     #pickem-social-export .sg-bottom-rule { width: 36px; height: 2px; background: #dbe3ee; margin: 0 auto 12px; }
     #pickem-social-export .sg-bottom-mark { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
     #pickem-social-export .sg-bottom-url { margin: 6px 0 0; color: #64748b; font-size: 12px; font-weight: 500; }
@@ -1699,22 +1695,17 @@
     .pickem-export-modal .modal-close-x:hover { background: #e2e8f0; }
     .pickem-export-modal .modal-body {
       flex: 1 1 auto;
-      min-height: 0;
-      overflow: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 0.75rem 1rem 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       text-align: center;
     }
-    /* Scale the whole image to fit the screen so there is nothing to scroll */
     .pickem-export-modal #pickemExportPreview {
       display: block;
-      width: auto;
+      width: 100%;
       max-width: 100%;
       height: auto;
-      max-height: calc(100vh - 230px);
-      max-height: calc(100dvh - 230px);
+      max-height: none;
       border-radius: 10px;
       border: 1px solid #e4e8f0;
       object-fit: contain;
@@ -1731,7 +1722,7 @@
       position: sticky;
       bottom: 0;
     }
-    .pickem-export-modal .modal-actions .btn { flex: 1 1 0; min-width: 90px; }
+    .pickem-export-modal .modal-actions .btn { flex: 1 1 auto; min-width: 120px; }
 
     /* Extra mobile stability */
     @media (max-width: 768px) {
@@ -2820,7 +2811,6 @@
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-primary" id="pickemExportDownload">Download PNG</button>
-        <button type="button" class="btn btn-secondary" id="pickemExportCopy">Copy image</button>
         <button type="button" class="btn btn-secondary" id="pickemExportClose">Close</button>
       </div>
     </div>
@@ -9831,7 +9821,6 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       }
       const list = document.getElementById('pickemSgList');
       if (list) {
-        list.className = 'sg-list' + (lines.length > 6 ? ' sg-two-col' : '');
         list.innerHTML = lines.map((l, idx) => {
           const cardCls = mode === 'results'
             ? (l.ok === true ? ' sg-card-ok' : (l.ok === false ? ' sg-card-no' : ''))
@@ -9908,7 +9897,21 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         scrollY: 0
       });
       const url = canvas.toDataURL('image/png');
-      showPickemExport(url, 'sixershoops-' + mode + '-' + dateStr + '.png', mode === 'picks' ? 'Picks card ready' : 'Results card ready');
+      const prev = document.getElementById('pickemExportPreview');
+      if (prev) prev.src = url;
+      const modal = document.getElementById('pickemExportModal');
+      if (modal) modal.classList.add('open');
+      const title = document.getElementById('pickemExportTitle') || (modal && modal.querySelector('h2'));
+      if (title) title.textContent = mode === 'picks' ? 'Picks card ready' : 'Results card ready';
+      const dl = document.getElementById('pickemExportDownload');
+      if (dl) {
+        dl.onclick = () => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'sixershoops-' + mode + '-' + dateStr + '.png';
+          a.click();
+        };
+      }
     }
 
     document.getElementById('sharePicksBtn')?.addEventListener('click', () => exportShareGraphic('picks'));
@@ -9966,7 +9969,6 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       }
       const list = document.getElementById('pickemSgList');
       if (list) {
-        list.className = 'sg-list';
         list.innerHTML = entries.slice(0, 10).map((r, i) => {
           const you = String(r.username || '').toLowerCase() === myName.toLowerCase();
           return '<li><span>' + (i + 1) + '. ' + r.username + (you ? ' (you)' : '') + '</span><span>' + r.correct_count + '/' + r.total_count + '</span></li>';
@@ -9980,7 +9982,20 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       }
       const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 1.5, useCORS: true, width: 900, windowWidth: 900, scrollX: 0, scrollY: 0 });
       const url = canvas.toDataURL('image/png');
-      showPickemExport(url, 'sixershoops-' + scope + '-' + period + '.png', 'Standings card ready');
+      const prev = document.getElementById('pickemExportPreview');
+      if (prev) prev.src = url;
+      const modal = document.getElementById('pickemExportModal');
+      if (modal) modal.classList.add('open');
+      const dl = document.getElementById('pickemExportDownload');
+      if (dl) {
+        dl.onclick = () => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'sixershoops-' + scope + '-' + period + '.png';
+          a.click();
+        };
+      }
+      
     }
 
     async function buildRecapCard() {
@@ -10049,7 +10064,6 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       }
       const list = document.getElementById('pickemSgList');
       if (list) {
-        list.className = 'sg-list';
         list.innerHTML = lines.slice(0, 12).map(l => {
           const mark = l.ok === true ? '✓' : (l.ok === false ? '✗' : '·');
           const cls = l.ok === true ? 'sg-ok' : (l.ok === false ? 'sg-no' : '');
@@ -10061,7 +10075,10 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 1.5, useCORS: true, width: 900, windowWidth: 900, scrollX: 0, scrollY: 0 });
       const url = canvas.toDataURL('image/png');
       _lastRecapUrl = url;
-      showPickemExport(url, 'sixershoops-pickem-recap.png', 'Recap card ready');
+      const prev = document.getElementById('pickemExportPreview');
+      if (prev) prev.src = url;
+      const modal = document.getElementById('pickemExportModal');
+      if (modal) modal.classList.add('open');
       if (status) status.textContent = 'Ready';
     }
 
@@ -10078,17 +10095,6 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         if (status) status.textContent = 'Failed to build card';
       });
     });
-    var _pickemExport = { url: '', name: 'sixershoops-pickem.png' };
-    function showPickemExport(url, name, title) {
-      _pickemExport = { url: url, name: name || 'sixershoops-pickem.png' };
-      const prev = document.getElementById('pickemExportPreview');
-      if (prev) prev.src = url;
-      const t = document.getElementById('pickemExportTitle');
-      if (t && title) t.textContent = title;
-      const copyBtn = document.getElementById('pickemExportCopy');
-      if (copyBtn) copyBtn.textContent = 'Copy image';
-      document.getElementById('pickemExportModal')?.classList.add('open');
-    }
     function closePickemExportModal() {
       document.getElementById('pickemExportModal')?.classList.remove('open');
     }
@@ -10101,25 +10107,11 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       if (e.key === 'Escape') closePickemExportModal();
     });
     document.getElementById('pickemExportDownload')?.addEventListener('click', () => {
-      if (!_pickemExport.url) return;
+      if (!_lastRecapUrl) return;
       const a = document.createElement('a');
-      a.href = _pickemExport.url;
-      a.download = _pickemExport.name;
+      a.href = _lastRecapUrl;
+      a.download = 'sixershoops-pickem-recap.png';
       a.click();
-    });
-    document.getElementById('pickemExportCopy')?.addEventListener('click', async (e) => {
-      const btn = e.currentTarget;
-      if (!_pickemExport.url) return;
-      try {
-        if (!navigator.clipboard || !window.ClipboardItem) throw new Error('unsupported');
-        // Passing a promise keeps this inside the click gesture, which Safari requires
-        const blobPromise = fetch(_pickemExport.url).then(r => r.blob());
-        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })]);
-        btn.textContent = 'Copied!';
-      } catch (err) {
-        btn.textContent = 'Copy not supported';
-      }
-      setTimeout(() => { btn.textContent = 'Copy image'; }, 1800);
     });
 
     // Load season/leagues when those tabs open

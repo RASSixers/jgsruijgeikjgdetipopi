@@ -929,6 +929,30 @@
     .home-game-pbp .sc { grid-column: 2; justify-self: start; font-size: 0.7rem; }
   }
 
+
+    /* Modern injury report */
+    .sh-inj-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: .75rem 0; }
+    .sh-inj-col { background: var(--card-bg, #fff); border: 1px solid var(--border-light); border-radius: 12px; padding: .85rem 1rem; }
+    .sh-inj-team { font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); margin-bottom: .6rem; }
+    .sh-inj-row { padding: .55rem 0; border-bottom: 1px solid var(--border-light); }
+    .sh-inj-row:last-child { border-bottom: 0; }
+    .sh-inj-main { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .sh-inj-name { font-weight: 700; font-size: .88rem; color: var(--ink); }
+    .sh-inj-badge { font-size: .65rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: .18rem .5rem; border-radius: 999px; border: 1px solid transparent; flex-shrink: 0; }
+    .sh-inj-badge.out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .sh-inj-badge.doubtful { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .sh-inj-badge.questionable { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+    .sh-inj-badge.gtd { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .sh-inj-badge.probable { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .sh-inj-badge.other { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+    .sh-inj-detail { font-size: .76rem; color: var(--mid); margin-top: .2rem; }
+    .sh-inj-comment { font-size: .78rem; color: #475569; line-height: 1.4; margin-top: .3rem; }
+    .sh-inj-empty { color: var(--mid); font-size: .82rem; margin: 0; }
+    @media (max-width: 640px) { .sh-inj-wrap { grid-template-columns: 1fr; } }
+    html.dark-mode .sh-inj-badge.out { background: rgba(237,23,76,.15); color: #f87171; border-color: rgba(237,23,76,.3); }
+    html.dark-mode .sh-inj-badge.doubtful, html.dark-mode .sh-inj-badge.questionable { background: rgba(180,83,9,.15); color: #fdba74; border-color: rgba(180,83,9,.3); }
+    html.dark-mode .sh-inj-badge.gtd { background: rgba(29,78,216,.15); color: #93c5fd; border-color: rgba(29,78,216,.3); }
+    html.dark-mode .sh-inj-badge.probable { background: rgba(21,128,61,.15); color: #86efac; border-color: rgba(21,128,61,.3); }
 </style>
 </head>
 <body>
@@ -1831,148 +1855,42 @@ listenToUpdates();
   }
 
   function renderInjuriesBlock(summary, event) {
-    // Always apply the same filter again so only this tip's notes show
-    let groups = filterInjuriesForEvent(
-      (summary && Array.isArray(summary.injuries)) ? summary.injuries : [],
-      event
-    );
-    if (!groups.length) {
-      return '<div class="home-inj"><div class="home-inj-title">Injury report</div>' +
-        '<p class="home-game-empty" style="padding:0.4rem 0;margin:0;">No injuries listed for this game.</p></div>';
+    const groups = (summary && Array.isArray(summary.injuries)) ? summary.injuries : [];
+    function statusClass(s) {
+      const t = String(s || "").toLowerCase();
+      if (t.includes("out")) return "out";
+      if (t.includes("doubt")) return "doubtful";
+      if (t.includes("question")) return "questionable";
+      if (t.includes("prob")) return "probable";
+      if (t.includes("gtd") || t.includes("day")) return "gtd";
+      return "other";
     }
-
-    function resolveGameDate(ev) {
-      if (!ev) return null;
-      const candidates = [ev.date, get(ev, "competitions.0.date", null), get(ev, "competitions.0.startDate", null)];
-      for (let i = 0; i < candidates.length; i++) {
-        if (!candidates[i]) continue;
-        const d = new Date(candidates[i]);
-        if (!isNaN(d.getTime())) return d;
-      }
-      return null;
-    }
-    const gameDate = resolveGameDate(event);
-    const gameWeekday = gameDate
-      ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long" }).toLowerCase()
-      : "";
-
-    function collectText(inj) {
-      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status,
-        get(inj, "type.description", ""), get(inj, "details.type", ""), get(inj, "details.detail", "")]
-        .filter(Boolean).join(" ");
-    }
-
-    function displayStatus(inj) {
-      const text = collectText(inj);
-      const official = String(inj.status || "").toLowerCase();
-      const outFromWriteup = (
-        /\bis out\b/i.test(text) ||
-        /\bremains out\b/i.test(text) ||
-        /\bwonn'?t play\b/i.test(text) ||
-        /\bwill not play\b/i.test(text) ||
-        /\bwon'?t be available\b/i.test(text) ||
-        /\bwon'?t suit up\b/i.test(text) ||
-        /\bruled out\b/i.test(text) ||
-        /\bout for (the )?season\b/i.test(text) ||
-        /\bseason-ending\b/i.test(text)
-      );
-      if (outFromWriteup || official === "out" || official.includes("out for season")) {
-        return { label: "OUT", cls: "inj-out" };
-      }
-      if (/\bdoubtful\b/i.test(text) || official.includes("doubtful")) return { label: "Doubtful", cls: "inj-doubt" };
-      if (/\bquestionable\b/i.test(text) || official.includes("questionable")) return { label: "Questionable", cls: "inj-q" };
-      if (official.includes("day-to-day") || official.includes("day to day") || /\bgtd\b/i.test(text)) {
-        return { label: "GTD", cls: "inj-gtd" };
-      }
-      return { label: inj.status || "Listed", cls: "inj-other" };
-    }
-
-    function formatInjDate(iso) {
-      if (!iso) return null;
-      try {
-        const d = new Date(iso);
-        if (isNaN(d.getTime())) return null;
-        return d.toLocaleString("en-US", {
-          timeZone: "America/New_York",
-          month: "short", day: "numeric", year: "numeric",
-          hour: "numeric", minute: "2-digit"
-        }) + " ET";
-      } catch (_) { return null; }
-    }
-
-    let latestMs = 0;
-    groups.forEach(function (g) {
-      (g.injuries || []).forEach(function (inj) {
-        const ms = inj.date ? new Date(inj.date).getTime() : 0;
-        if (ms && ms > latestMs) latestMs = ms;
-      });
-    });
-    const updatedLabel = latestMs ? formatInjDate(new Date(latestMs).toISOString()) : null;
-    const dayNote = gameWeekday ? (gameWeekday.charAt(0).toUpperCase() + gameWeekday.slice(1)) : "this game";
-
-    const sharePayload = {
-      updatedLabel: updatedLabel,
-      dayNote: dayNote,
-      gameDate: gameDate ? gameDate.toISOString() : null,
-      matchup: (function () {
-        try {
-          const comps = get(event, "competitions.0.competitors", []) || [];
-          const home = comps.find(function (c) { return c && c.homeAway === "home"; }) || comps[0];
-          const away = comps.find(function (c) { return c && c.homeAway === "away"; }) || comps[1];
-          const h = get(home, "team.abbreviation", "") || get(home, "team.shortDisplayName", "HOME");
-          const a = get(away, "team.abbreviation", "") || get(away, "team.shortDisplayName", "AWAY");
-          return a + " @ " + h;
-        } catch (e) { return "Injury Report"; }
-      })(),
-      teams: groups.map(function (g) {
-        const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-        const items = (g.injuries || []).map(function (inj) {
-          const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
-          const st = displayStatus(inj);
-          const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
-          const comment = inj.shortComment || inj.longComment || "";
-          return { name: name, label: st.label, cls: st.cls, injuryType: injuryType, comment: comment };
-        });
-        return { team: team, items: items };
-      })
-    };
-    try { window.__injurySharePayload = sharePayload; } catch (e) {}
-
-    const head = '<div class="home-inj-head-row">' +
-        '<div class="home-inj-title" style="margin:0;">Injury report</div>' +
-        '<button type="button" class="home-inj-share-btn" id="homeInjShareBtn">Share graphic</button>' +
-      '</div>' +
-      '<div class="home-inj-updated">' +
-        (updatedLabel ? ('Last ESPN update: <strong>' + updatedLabel + '</strong> · ') : '') +
-        'Only <strong>' + dayNote + '</strong> game notes' +
-      '</div>';
-
-    const body = groups.map(function (g) {
+    function teamBlock(g) {
       const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");
-      const items = (g.injuries || []).slice().sort(function (a, b) {
-        return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
-      });
+      const items = g.injuries || [];
+      if (!items.length) return '<div class="sh-inj-col"><div class="sh-inj-team">' + team + '</div><p class="sh-inj-empty">No injuries listed.</p></div>';
       const rows = items.map(function (inj) {
         const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
-        const st = displayStatus(inj);
-        const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
+        const status = inj.status || get(inj, "type.description", "—");
+        const detail = get(inj, "details.type", "") || get(inj, "details.detail", "") || "";
         const comment = inj.shortComment || inj.longComment || "";
-        const playerUpdated = formatInjDate(inj.date);
-        return '<li class="home-inj-row">' +
-          '<div class="home-inj-main">' +
-            '<span class="home-inj-name">' + name + '</span>' +
-            '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
+        return '<div class="sh-inj-row">' +
+          '<div class="sh-inj-main">' +
+            '<span class="sh-inj-name">' + name + '</span>' +
+            '<span class="sh-inj-badge ' + statusClass(status) + '">' + status + '</span>' +
           '</div>' +
-          (injuryType ? '<div class="home-inj-meta">' + injuryType + '</div>' : '') +
-          (comment ? '<div class="home-inj-comment">' + comment + '</div>' : '') +
-          (playerUpdated ? '<div class="home-inj-player-updated">Updated ' + playerUpdated + '</div>' : '') +
-          '</li>';
+          (detail ? '<div class="sh-inj-detail">' + detail + '</div>' : '') +
+          (comment ? '<div class="sh-inj-comment">' + comment + '</div>' : '') +
+        '</div>';
       }).join("");
-      return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
-    }).join("");
-
-    return '<div class="home-inj">' + head + body + '</div>';
+      return '<div class="sh-inj-col"><div class="sh-inj-team">' + team + '</div>' + rows + '</div>';
+    }
+    if (!groups.length) {
+      return '<div class="sh-inj-wrap"><p class="sh-inj-empty">No injuries listed.</p></div>';
+    }
+    return '<div class="sh-inj-wrap">' + groups.map(teamBlock).join("") + '</div>';
   }
+
 
   function renderBoard(event, summary, mode) {
 

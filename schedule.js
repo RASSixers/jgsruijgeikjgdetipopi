@@ -1038,23 +1038,23 @@ function injuryReport(phiItems, oppItems, oppName) {
   function rows(items) {
     if (!items || !items.length) return '<p class="sh-inj-empty">No injuries listed.</p>';
     return items.map(item => `
-      <div class="sh-inj-row">
-        <div class="sh-inj-main">
+      <div class="sh-inj-player">
+        <div class="sh-inj-top">
           <span class="sh-inj-name">${item.name}</span>
           <span class="sh-inj-badge ${statusClass(item.status)}">${item.status}</span>
         </div>
-        ${item.detail ? `<div class="sh-inj-detail">${item.detail}</div>` : ""}
-        ${item.comment ? `<div class="sh-inj-comment">${item.comment}</div>` : ""}
+        ${item.detail ? `<div class="sh-inj-type">${item.detail}</div>` : ""}
+        ${item.comment ? `<div class="sh-inj-note">${item.comment}</div>` : ""}
       </div>`).join("");
   }
   return `
-    <div class="sh-inj-wrap">
-      <div class="sh-inj-col">
-        <div class="sh-inj-team">76ers</div>
+    <div class="sh-inj-grid">
+      <div class="sh-inj-card">
+        <div class="sh-inj-head">76ERS INJURIES</div>
         ${rows(phiItems)}
       </div>
-      <div class="sh-inj-col">
-        <div class="sh-inj-team">${oppName || "Opponent"}</div>
+      <div class="sh-inj-card">
+        <div class="sh-inj-head">${(oppName || "OPPONENT").toUpperCase()} INJURIES</div>
         ${rows(oppItems)}
       </div>
     </div>`;
@@ -1120,7 +1120,19 @@ function renderGameRow(event, allEvents) {
       </td>
     </tr>`;
 }
+function autoOpenNextGame(root) {
+  const rows = [...root.querySelectorAll(".game-row")];
+  for (const row of rows) {
+    const isFinal = row.getAttribute("data-event-final") === "1";
+    if (!isFinal) {
+      row.classList.add("open");
+      break;
+    }
+  }
+}
+
 function bindRowToggles(root) {
+  autoOpenNextGame(root);
   root.querySelectorAll(".game-row").forEach(row => {
     const toggle = () => {
       root.querySelectorAll(".game-row.open").forEach(open => {

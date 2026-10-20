@@ -1359,9 +1359,9 @@ function buildInjuryShareCanvas(payload) {
     "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
     "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
     "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
-    "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+    "GTD": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
     "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
-    "DAY-TO-DAY": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" }
+    "DAY-TO-DAY": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" }
   };
   const teams = payload.teams || [];
   const colW = (W - PAD * 2 - 24) / 2;

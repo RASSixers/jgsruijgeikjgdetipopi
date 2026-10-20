@@ -1309,7 +1309,7 @@ function normalizeInjStatus(status) {
   if (s.includes("out")) return "OUT";
   if (s.includes("doubt")) return "Doubtful";
   if (s.includes("question")) return "Questionable";
-  if (s.includes("gtd") || s.includes("day")) return "GTD";
+  if (s.includes("gtd") || s.includes("day")) return "Questionable";
   if (s.includes("prob")) return "Probable";
   return status || "Listed";
 }
@@ -1329,12 +1329,17 @@ function buildInjurySharePayload(event, injuryByAbbr) {
   });
   const date = new Date(event.date);
   const dateStr = isNaN(date) ? "" : date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
+  const now = new Date();
+  const updateTime = now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }) + " ET";
+  const phiName = "76ers";
+  const oppFull = get(opp, "team.displayName", "") || oppName;
   return {
-    matchup: (get(opp, "team.abbreviation", oppName) || oppName) + " vs PHI · " + dateStr,
-    updatedLabel: null,
+    matchup: phiName + " vs " + oppFull,
+    dateStr: dateStr,
+    updatedLabel: updateTime,
     teams: [
-      { team: "PHI", items: phiItems },
-      { team: oppAbbr || oppName, items: oppItems }
+      { team: "76ers", items: phiItems },
+      { team: oppFull, items: oppItems }
     ]
   };
 }
@@ -1403,9 +1408,11 @@ function buildInjuryShareCanvas(payload) {
   // Header matching draft picks style
   text("SIXERSHOOPS", W / 2, 48, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
   text("Injury Report", W / 2, 100, "800 42px Lexend, system-ui, sans-serif", INK, "center");
-  const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-  text("Updated " + today, W / 2, 128, "500 15px Lexend, system-ui, sans-serif", MID, "center");
-  text(payload.matchup || "", W / 2, 158, "600 16px Lexend, system-ui, sans-serif", MID, "center");
+  text(payload.matchup || "", W / 2, 138, "700 20px Lexend, system-ui, sans-serif", INK, "center");
+  const dateLine = payload.dateStr ? payload.dateStr : "";
+  const updateLine = payload.updatedLabel ? "Updated " + payload.updatedLabel : "";
+  const sub = [dateLine, updateLine].filter(Boolean).join(" · ");
+  text(sub, W / 2, 164, "500 15px Lexend, system-ui, sans-serif", MID, "center");
   // Two cards
   const startY = 190;
   teams.slice(0, 2).forEach((team, idx) => {

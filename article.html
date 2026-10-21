@@ -8,7 +8,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Sixers Hoops — Article</title>
 <meta name="description" content="News and analysis for Philadelphia 76ers fans." />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+<meta name="googlebot" content="index, follow" />
+<link rel="canonical" href="https://sixershoops.com/article/" id="article-canonical" />
+<meta property="og:site_name" content="SixersHoops" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Sixers Hoops — Article" />
+<meta property="og:description" content="News and analysis for Philadelphia 76ers fans." />
+<meta property="og:url" content="https://sixershoops.com/article/" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Sixers Hoops — Article" />
+<meta name="twitter:description" content="News and analysis for Philadelphia 76ers fans." />
 <link rel="icon" href="/favicon.ico" />
+<script>
+/* Early canonical from path so crawlers see a stable URL before JS article load */
+(function () {
+  try {
+    var path = (location.pathname || '').replace(/\/+$/, '');
+    var m = path.match(/^\/article\/(.+)$/i);
+    if (m && m[1] && m[1].toLowerCase() !== 'article.html') {
+      var url = 'https://sixershoops.com/article/' + decodeURIComponent(m[1]).split('/').map(encodeURIComponent).join('/');
+      var c = document.getElementById('article-canonical');
+      if (c) c.setAttribute('href', url);
+      var og = document.querySelector('meta[property="og:url"]');
+      if (og) og.setAttribute('content', url);
+    }
+  } catch (e) {}
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -587,6 +614,12 @@ function renderBodyHtml(raw) {
 
 
 function renderError(message) {
+  try {
+    document.title = (message || 'Article') + ' — Sixers Hoops';
+    var r = document.querySelector('meta[name="robots"]');
+    if (!r) { r = document.createElement('meta'); r.setAttribute('name', 'robots'); document.head.appendChild(r); }
+    r.setAttribute('content', 'noindex, follow');
+  } catch (e) {}
   document.getElementById('article-root').innerHTML =
     '<a href="/" class="article-back">← Back to Sixers Hoops</a>' +
     '<div class="article-state"><h2>' + escapeHtml(message) + '</h2><p>Head back to the homepage for the latest news.</p></div>';
@@ -610,6 +643,11 @@ function renderArticle(a, more) {
   // Private articles are not shown publicly
   if (a.visibility === 'private') {
     document.title = 'Private article — Sixers Hoops';
+    try {
+      var r = document.querySelector('meta[name="robots"]');
+      if (!r) { r = document.createElement('meta'); r.setAttribute('name', 'robots'); document.head.appendChild(r); }
+      r.setAttribute('content', 'noindex, nofollow');
+    } catch (e) {}
     document.getElementById('article-root').innerHTML =
       '<a href="/" class="article-back">&larr; Back to Sixers Hoops</a>' +
       '<div class="article-locked">' +
@@ -645,9 +683,43 @@ function renderArticle(a, more) {
     setMeta('og:image', a.imageUrl, true);
     setMeta('twitter:image', a.imageUrl);
   }
-  let canonEl = document.querySelector('link[rel="canonical"]');
+  let canonEl = document.querySelector('link[rel="canonical"]') || document.getElementById('article-canonical');
   if (!canonEl) { canonEl = document.createElement('link'); canonEl.setAttribute('rel', 'canonical'); document.head.appendChild(canonEl); }
   canonEl.setAttribute('href', canonical);
+
+  // JSON-LD Article — helps Google understand the page in live testing / rich results
+  try {
+    var oldLd = document.getElementById('article-jsonld');
+    if (oldLd) oldLd.remove();
+    var ld = {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": a.title || "",
+      "description": desc,
+      "datePublished": dateObj ? dateObj.toISOString() : undefined,
+      "dateModified": (a.updatedAt && toDate(a.updatedAt)) ? toDate(a.updatedAt).toISOString() : (dateObj ? dateObj.toISOString() : undefined),
+      "author": { "@type": "Person", "name": a.author || "SixersHoops Staff" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "SixersHoops",
+        "url": "https://sixershoops.com/",
+        "logo": { "@type": "ImageObject", "url": "https://sixershoops.com/sixershoopslogonew.png" }
+      },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+      "url": canonical,
+      "articleSection": a.category || "News",
+      "isAccessibleForFree": true
+    };
+    if (a.imageUrl) ld.image = [a.imageUrl];
+    var s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.id = 'article-jsonld';
+    s.textContent = JSON.stringify(ld);
+    document.head.appendChild(s);
+  } catch (e) {}
+
+  // Ensure robots stays indexable for public articles
+  setMeta('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
 
   let html = '<a href="/" class="article-back">← Back to Sixers Hoops</a>';
 

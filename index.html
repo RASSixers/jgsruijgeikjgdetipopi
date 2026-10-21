@@ -1881,11 +1881,11 @@ listenToUpdates();
         if (!key || seen.has(key)) return;
         seen.add(key);
         const name = String(t.displayName || ((t.location || "") + " " + (t.name || t.nickname || ""))).trim().toLowerCase();
-        out.push({ id: id, abbr: abbr, name: name });
+        out.push({ id: id, abbr: abbr, name: name, display: String(t.displayName || "") });
       });
     });
     if (!out.some(function (t) { return normAbbr(t.abbr) === "PHI"; })) {
-      out.push({ id: "20", abbr: "PHI", name: "philadelphia 76ers" });
+      out.push({ id: "20", abbr: "PHI", name: "philadelphia 76ers", display: "Philadelphia 76ers" });
     }
     return out;
   }
@@ -1935,7 +1935,7 @@ listenToUpdates();
         }
       }
       return {
-        team: { id: team.id, abbreviation: team.abbr, displayName: team.name },
+        team: { id: team.id, abbreviation: team.abbr, displayName: team.display || team.name },
         injuries: idx >= 0 ? (blocks[idx].injuries || []) : []
       };
     });
@@ -1949,7 +1949,7 @@ listenToUpdates();
       if (lg && lg.injuries && lg.injuries.length) return lg;
       const sg = (summaryGroups || []).find(function (g) { return groupMatchesTeam(team, g); });
       return {
-        team: { id: team.id, abbreviation: team.abbr, displayName: team.name },
+        team: { id: team.id, abbreviation: team.abbr, displayName: team.display || team.name },
         injuries: (sg && Array.isArray(sg.injuries)) ? sg.injuries : []
       };
     });
@@ -2265,7 +2265,16 @@ listenToUpdates();
     const updatedLabel = latestMs ? formatInjDate(new Date(latestMs).toISOString()) : null;
     const dayNote = gameWeekday ? (gameWeekday.charAt(0).toUpperCase() + gameWeekday.slice(1)) : "this game";
 
+    function teamNiceName(g) {
+      const abbr = String(get(g, "team.abbreviation", "") || "").toUpperCase();
+      if (abbr === "PHI") return "76ers";
+      const comps = get(event, "competitions.0.competitors", []) || [];
+      const c = comps.find(function (x) { return String(get(x, "team.abbreviation", "")).toUpperCase() === abbr; });
+      return get(c, "team.displayName", "") || get(g, "team.displayName", "") || abbr;
+    }
     const sharePayload = {
+      dateShort: gameDate ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" }) : "",
+      updatedTime: latestMs ? (new Date(latestMs).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }) + " ET") : "",
       updatedLabel: updatedLabel,
       dayNote: dayNote,
       gameDate: gameDate ? gameDate.toISOString() : null,
@@ -2288,7 +2297,7 @@ listenToUpdates();
           const comment = inj.shortComment || inj.longComment || "";
           return { name: name, label: st.label, cls: st.cls, injuryType: injuryType, comment: comment };
         });
-        return { team: team, items: items };
+        return { team: team, name: teamNiceName(g), items: items };
       })
     };
     try { window.__injurySharePayload = sharePayload; } catch (e) {}
@@ -3488,11 +3497,9 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
 
   function buildInjuryShareCanvas(payload) {
     if (!payload) return null;
-    const W = 1080;
-    const PAD = 48;
-    const NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
-    const WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
-    const MID = "#64748b", BORDER = "#e4e8f0";
+    const W = 1080, PAD = 48, GAP = 24;
+    const BLUE = "#006BB6", INK = "#0d0f1a", MID = "#64748b", CARD = "#f6f8fc", BODY = "#475569";
+    const FONT = "Lexend, system-ui, sans-serif";
     const BADGE = {
       "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
       "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
@@ -3500,14 +3507,39 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
       "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
       "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
     };
+    const teams = (payload.teams || []).slice(0, 2);
+    const n = Math.max(teams.length, 1);
+    const colW = (W - PAD * 2 - GAP * (n - 1)) / n;
+    const innerW = colW - 40;
+    const CARD_TOP = 192;
 
-    const teams = payload.teams || [];
-    let rows = 0;
-    teams.forEach(function (t) { rows += Math.max((t.items || []).length, 1); });
-    const headerH = 168;
-    const rowH = 72;
-    const teamHeadH = 40;
-    const H = headerH + teams.length * teamHeadH + rows * rowH + 90;
+    const mctx = document.createElement("canvas").getContext("2d");
+    function wrap(ctx, str, maxW, font, maxLines) {
+      ctx.font = font;
+      const words = String(str || "").split(/\s+/).filter(Boolean);
+      const lines = [];
+      let line = "";
+      words.forEach(function (w) {
+        const test = line ? line + " " + w : w;
+        if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+        else line = test;
+      });
+      if (line) lines.push(line);
+      return lines.slice(0, maxLines || 5);
+    }
+
+    // Layout pass
+    const cols = teams.map(function (t) {
+      const items = (t.items || []).map(function (it) {
+        const lines = it.comment ? wrap(mctx, it.comment, innerW, "600 13px " + FONT, 5) : [];
+        const rh = Math.max(80, 30 + (it.injuryType ? 22 : 0) + lines.length * 17 + 20);
+        return { it: it, lines: lines, rh: rh };
+      });
+      const h = 44 + (items.length ? items.reduce(function (a, r) { return a + r.rh; }, 0) : 64) + 12;
+      return { t: t, items: items, h: h };
+    });
+    const cardH = Math.max(150, cols.reduce(function (m, c) { return Math.max(m, c.h); }, 0));
+    const H = CARD_TOP + cardH + 100;
 
     const canvas = document.createElement("canvas");
     canvas.width = W;
@@ -3530,74 +3562,63 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
       ctx.textAlign = align || "left";
       ctx.fillText(str, x, y);
     }
-    function wrapText(str, maxW, font) {
-      ctx.font = font;
-      const words = String(str || "").split(/\s+/);
-      const lines = [];
-      let line = "";
-      words.forEach(function (w) {
-        const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > maxW && line) {
-          lines.push(line);
-          line = w;
-        } else line = test;
-      });
-      if (line) lines.push(line);
-      return lines.slice(0, 2);
+    function spaced(str, x, y, font, color, px) {
+      try { ctx.letterSpacing = px + "px"; } catch (e) {}
+      text(str, x, y, font, color, "left");
+      try { ctx.letterSpacing = "0px"; } catch (e) {}
     }
 
-    ctx.fillStyle = CREAM;
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = NAVY;
-    ctx.fillRect(0, 0, W, 132);
-    ctx.fillStyle = RED;
-    ctx.fillRect(0, 132, W, 4);
 
-    text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
-    text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
-    text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
-    if (payload.updatedLabel) {
-      text("Updated " + payload.updatedLabel, W - PAD, 116, "500 14px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.65)", "right");
-    }
+    // Centered header
+    try { ctx.letterSpacing = "0.5px"; } catch (e) {}
+    text("SIXERSHOOPS", W / 2, 48, "800 16px " + FONT, BLUE, "center");
+    try { ctx.letterSpacing = "0px"; } catch (e) {}
+    text("Injury Report", W / 2, 104, "800 50px " + FONT, INK, "center");
+    const names = teams.map(function (t) { return t.name || t.team; }).filter(Boolean);
+    const matchupLine = names.length === 2 ? names.join(" vs ") : (payload.matchup || "Game report");
+    text(matchupLine, W / 2, 142, "700 22px " + FONT, INK, "center");
+    const dateLine = [payload.dateShort, payload.updatedTime ? "Updated " + payload.updatedTime : (payload.updatedLabel ? "Updated " + payload.updatedLabel : "")]
+      .filter(Boolean).join(" · ");
+    if (dateLine) text(dateLine, W / 2, 168, "600 16px " + FONT, MID, "center");
 
-    let y = headerH;
-    teams.forEach(function (team) {
-      rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
-      text(String(team.team || "Team").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
-      y += teamHeadH;
-      const items = team.items || [];
-      if (!items.length) {
-        text("No injuries listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
-        y += rowH;
+    // Two team cards
+    cols.forEach(function (col, ci) {
+      const x = PAD + ci * (colW + GAP);
+      rr(x, CARD_TOP, colW, cardH, 18, CARD);
+      spaced(String(col.t.name || col.t.team || "Team").toUpperCase() + " INJURIES", x + 20, CARD_TOP + 28, "800 13px " + FONT, MID, 0.6);
+      let y = CARD_TOP + 44;
+      if (!col.items.length) {
+        text("No injuries listed.", x + 20, y + 30, "600 17px " + FONT, MID);
         return;
       }
-      items.forEach(function (item) {
-        rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        text(item.name, PAD + 20, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
-        const badge = BADGE[item.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
-        const label = String(item.label || "Listed").toUpperCase();
-        ctx.font = "800 12px Lexend, system-ui, sans-serif";
-        const bw = ctx.measureText(label).width + 22;
-        const bx = W - PAD - 20 - bw;
-        rr(bx, y + 12, bw, 26, 13, badge.bg);
+      col.items.forEach(function (r) {
+        const it = r.it;
+        text(it.name, x + 20, y + 22, "700 20px " + FONT, INK);
+        const badge = BADGE[it.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+        const label = String(it.label || "Listed").toUpperCase();
+        ctx.font = "800 12px " + FONT;
+        const bw = ctx.measureText(label).width + 26;
+        const bx = x + colW - 20 - bw;
+        rr(bx, y + 4, bw, 26, 13, badge.bg);
         ctx.strokeStyle = badge.border;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
-        text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
-        const sub = item.injuryType || item.comment || "";
-        if (sub) {
-          const lines = wrapText(sub, W - PAD * 2 - 40, "500 13px Lexend, system-ui, sans-serif");
-          lines.forEach(function (ln, i) {
-            text(ln, PAD + 20, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
-          });
+        text(label, bx + bw / 2, y + 22, "800 12px " + FONT, badge.text, "center");
+        let ty = y + 22;
+        if (it.injuryType) {
+          ty += 22;
+          text(it.injuryType, x + 20, ty, "500 14px " + FONT, MID);
         }
-        y += rowH;
+        r.lines.forEach(function (ln, i) {
+          text(ln, x + 20, ty + 20 + i * 17, "600 13px " + FONT, BODY);
+        });
+        y += r.rh;
       });
     });
 
-    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+    text("sixershoops.com", W / 2, CARD_TOP + cardH + 76, "800 15px " + FONT, BLUE, "center");
     return canvas;
   }
 

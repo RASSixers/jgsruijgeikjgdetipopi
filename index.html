@@ -938,7 +938,27 @@
     margin: 0 0 0.75rem;
   }
   .home-inj-updated strong { color: var(--ink); font-weight: 700; }
-  .home-inj-team { margin-bottom: 0.75rem; }
+  .home-inj-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.35rem;
+  }
+  @media (max-width: 720px) {
+    .home-inj-grid { grid-template-columns: 1fr; }
+  }
+  .home-inj-team {
+    margin-bottom: 0;
+    padding: 0.75rem 0.85rem;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-light, #e4e8f0);
+    border-radius: 10px;
+  }
+  .home-inj-empty {
+    color: var(--mid, #64748b);
+    font-size: 0.82rem;
+    margin: 0.4rem 0 0;
+  }
   .home-inj-team-name {
     font-size: 0.8rem;
     font-weight: 800;
@@ -1809,30 +1829,48 @@ listenToUpdates();
       const out = [];
       (data.injuries || []).forEach(function (teamBlock) {
         const sample = ((teamBlock.injuries || [])[0] || {}).athlete || {};
-        // teamBlock has displayName; map via first injury team links is messy — match by known abbr from athlete team? 
-        // League payload uses team id + displayName at top level
-        const name = String(teamBlock.displayName || "").toLowerCase();
-        let abbr = "";
-        if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
-        else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
-        else {
-          // try parse from links href /name/phi/
-          const links = teamBlock.links || [];
-          for (let i = 0; i < links.length; i++) {
-            const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
-            if (m) { abbr = m[1].toUpperCase(); break; }
+        const sampleTeam = sample.team || {};
+        // Prefer athlete.team.abbreviation (reliable on current ESPN payload).
+        // Links often lack /name/{abbr}; id maps drift across seasons.
+        let abbr = String(sampleTeam.abbreviation || "").toUpperCase();
+        if (!abbr) {
+          const name = String(teamBlock.displayName || "").toLowerCase();
+          if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
+          else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
+          else if (name.includes("cavaliers") || name.includes("cleveland")) abbr = "CLE";
+          else {
+            const links = teamBlock.links || [];
+            for (let i = 0; i < links.length; i++) {
+              const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
+              if (m) { abbr = m[1].toUpperCase(); break; }
+            }
           }
         }
-        // Fallback: id map common NBA
         if (!abbr && teamBlock.id) {
-          const ID_ABBR = { "20": "PHI", "2": "BOS", "1": "ATL", "17": "BKN", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN", "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL", "14": "MEM", "15": "MIA", "16": "MIL", "18": "MIN", "3": "NO", "19": "NY", "21": "OKC", "22": "ORL", "23": "PHX", "24": "POR", "25": "SAC", "26": "SA", "27": "TOR", "28": "UTAH", "29": "WSH", "30": "CHA" };
+          const ID_ABBR = {
+            "1": "ATL", "2": "BOS", "3": "NO", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN",
+            "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL",
+            "14": "MIA", "15": "MIL", "16": "MIN", "17": "BKN", "18": "NY", "19": "ORL",
+            "20": "PHI", "21": "PHX", "22": "POR", "23": "SAC", "24": "SA", "25": "OKC",
+            "26": "UTAH", "27": "WSH", "28": "TOR", "29": "MEM", "30": "CHA"
+          };
           abbr = ID_ABBR[String(teamBlock.id)] || "";
         }
         if (!want.has(abbr)) return;
         out.push({
-          team: { abbreviation: abbr, displayName: teamBlock.displayName || abbr },
+          team: {
+            abbreviation: abbr,
+            displayName: teamBlock.displayName || sampleTeam.displayName || abbr
+          },
           injuries: teamBlock.injuries || []
         });
+      });
+      // Ensure every requested abbr has a group (so opponent column always exists)
+      const have = new Set(out.map(function (g) { return g.team.abbreviation; }));
+      want.forEach(function (a) {
+        if (!have.has(a)) {
+          out.push({ team: { abbreviation: a, displayName: a }, injuries: [] });
+        }
       });
       return out;
     } catch (_) { return []; }
@@ -1966,20 +2004,9 @@ listenToUpdates();
     }
 
     const gameWeekday = resolveGameWeekday(event);
-    if (!gameWeekday) {
-      // If we cannot tell the tip day, only show season-long absences
-      return (groups || []).map(function (g) {
-        const items = (g.injuries || []).filter(function (inj) {
-          const text = [inj.shortComment, inj.longComment].filter(Boolean).join(" ").toLowerCase();
-          return /season-ending|out for (the )?season|out indefinitely/.test(text) ||
-            (/achilles/.test(text) && /rupture/.test(text));
-        });
-        return { team: g.team, injuries: items };
-      }).filter(function (g) { return g.injuries.length; });
-    }
 
     function textOf(inj) {
-      return [inj.shortComment, inj.longComment, inj.comment, inj.description]
+      return [inj.shortComment, inj.longComment, inj.comment, inj.description, inj.status]
         .filter(Boolean).join(" ").toLowerCase();
     }
 
@@ -1993,30 +2020,44 @@ listenToUpdates();
     function keep(inj) {
       const text = textOf(inj);
       if (isSeasonLong(text)) return true;
-      if (!text || text.length < 8) return false;
 
-      // Drop notes about a *different* weekday
-      for (let i = 0; i < WEEKDAYS.length; i++) {
-        const d = WEEKDAYS[i];
-        if (d === gameWeekday) continue;
-        if (text.indexOf(d) !== -1) return false;
+      // Official status from ESPN (even when write-up is thin)
+      const official = String(inj.status || "").toLowerCase();
+      const hasStatus = /^(out|doubtful|questionable|probable|day-to-day|gtd|out for season)/i.test(official) ||
+        official.indexOf("out") !== -1;
+
+      // Drop notes clearly about a *different* weekday (e.g. "won't play Tuesday" when tip is Wed)
+      if (gameWeekday && text) {
+        for (let i = 0; i < WEEKDAYS.length; i++) {
+          const d = WEEKDAYS[i];
+          if (d === gameWeekday) continue;
+          // whole-word-ish: "tuesday" / "tue" but not false positives
+          if (text.indexOf(d) !== -1) return false;
+          if (new RegExp("\\b" + d.slice(0, 3) + "\\b", "i").test(text) && d.slice(0, 3) !== gameWeekday.slice(0, 3)) {
+            return false;
+          }
+        }
       }
 
-      // Keep if note names this tip's weekday
-      if (text.indexOf(gameWeekday) !== -1) return true;
-
-      // Same-day language when we know the tip day
+      // Keep if note names this tip's weekday or same-day language
+      if (gameWeekday && text.indexOf(gameWeekday) !== -1) return true;
       if (/\b(tonight|today|this game|tip-?off)\b/.test(text)) return true;
+
+      // Keep active injury statuses that don't conflict with another weekday
+      // (covers Day-To-Day / Out notes that never mention a day — previously dropped)
+      if (hasStatus) return true;
+      if (text && text.length >= 8) return true;
 
       return false;
     }
 
+    // Keep team groups even when empty so both matchup sides always render
     return (groups || []).map(function (g) {
       return {
         team: g.team,
         injuries: (Array.isArray(g.injuries) ? g.injuries : []).filter(keep)
       };
-    }).filter(function (g) { return g.injuries && g.injuries.length; });
+    });
   }
 
   function renderInjuriesBlock(summary, event) {
@@ -2027,6 +2068,46 @@ listenToUpdates();
     );
     // Merge admin overrides (if loaded for this event)
     groups = window.__mergeInjuryOverrides(groups, event) || groups;
+
+    // Always show both sides of the matchup (PHI + opponent), even if one has 0 injuries
+    try {
+      const comps = get(event, "competitions.0.competitors", []) || [];
+      const matchupAbbrs = comps.map(function (c) {
+        return String(get(c, "team.abbreviation", "") || "").toUpperCase();
+      }).filter(Boolean);
+      if (matchupAbbrs.length) {
+        const byAbbr = {};
+        (groups || []).forEach(function (g) {
+          const a = String(get(g, "team.abbreviation", "") || "").toUpperCase();
+          if (a) byAbbr[a] = g;
+        });
+        groups = matchupAbbrs.map(function (a) {
+          if (byAbbr[a]) return byAbbr[a];
+          const comp = comps.find(function (c) {
+            return String(get(c, "team.abbreviation", "") || "").toUpperCase() === a;
+          });
+          return {
+            team: {
+              abbreviation: a,
+              displayName: get(comp, "team.displayName", a)
+            },
+            injuries: []
+          };
+        });
+        // Prefer PHI on the left when present
+        groups.sort(function (a, b) {
+          const aa = String(get(a, "team.abbreviation", "")).toUpperCase();
+          const bb = String(get(b, "team.abbreviation", "")).toUpperCase();
+          if (aa === "PHI") return -1;
+          if (bb === "PHI") return 1;
+          return 0;
+        });
+      }
+    } catch (_) {}
+
+    const totalListed = (groups || []).reduce(function (n, g) {
+      return n + ((g.injuries && g.injuries.length) || 0);
+    }, 0);
 
     if (!groups.length) {
       var emptyAdmin = window.__isHomeInjAdmin && window.__isHomeInjAdmin()
@@ -2156,6 +2237,10 @@ listenToUpdates();
       const items = (g.injuries || []).slice().sort(function (a, b) {
         return (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime());
       });
+      if (!items.length) {
+        return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div>' +
+          '<p class="home-inj-empty">No injuries listed.</p></div>';
+      }
       const rows = items.map(function (inj) {
         const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
         const st = displayStatus(inj);
@@ -2175,7 +2260,7 @@ listenToUpdates();
       return '<div class="home-inj-team"><div class="home-inj-team-name">' + team + '</div><ul class="home-inj-list">' + rows + '</ul></div>';
     }).join("");
 
-    return '<div class="home-inj">' + head + body + '</div>';
+    return '<div class="home-inj">' + head + '<div class="home-inj-grid">' + body + '</div></div>';
   }
 
   function renderBoard(event, summary, mode) {

@@ -2642,14 +2642,15 @@ listenToUpdates();
   }
 
   function __gsScoreThrough(side, throughQ) {
-    // throughQ: 1..4 or null for full score
-    if (throughQ == null) return side.score;
+    if (!side) return 0;
+    var score = Number(side.score) || 0;
+    var lines = Array.isArray(side.lines) ? side.lines : [];
+    if (throughQ == null) return score;
+    if (!lines.length) return score;
     var sum = 0;
     for (var i = 0; i < throughQ; i++) {
-      if (side.lines[i] != null) sum += side.lines[i];
+      if (lines[i] != null) sum += Number(lines[i]) || 0;
     }
-    // if lines incomplete but we have full score and through is current max, prefer full
-    if (!side.lines.length) return side.score;
     return sum;
   }
 
@@ -2769,6 +2770,12 @@ function __gsLoadImg(url) {
       img.src = url;
     });
   }
+
+  
+  function buildGameShareCanvas(periodKey) {
+    return __buildGameShareCanvasAsync(periodKey);
+  }
+  window.buildGameShareCanvas = buildGameShareCanvas;
 
   async function __buildGameShareCanvasAsync(periodKey) {
     var pack = window.__homeGameShare || {};
@@ -3135,8 +3142,22 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
       if (img) img.src = window.__gameShareDataUrl;
       if (st) st.textContent = "";
     } catch (err) {
-      console.warn(err);
-      if (st) st.textContent = "Could not build graphic.";
+      console.warn("game share graphic", err);
+      if (st) st.textContent = "Could not build graphic. Try Download again in a moment.";
+      try {
+        // Fallback: retry without images
+        if (typeof __buildGameShareCanvasAsync === "function") {
+          var canvas2 = await __buildGameShareCanvasAsync(window.__gameSharePeriod || "final");
+          if (canvas2) {
+            window.__gameShareDataUrl = canvas2.toDataURL("image/png");
+            var img2 = document.getElementById("gameSharePreview");
+            if (img2) img2.src = window.__gameShareDataUrl;
+            if (st) st.textContent = "";
+          }
+        }
+      } catch (err2) {
+        console.warn("game share fallback", err2);
+      }
     }
   }
 

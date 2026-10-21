@@ -2518,47 +2518,66 @@ listenToUpdates();
   }
 
   
-  function __gsBoxLeaders(summary, limit) {
-    limit = limit || 5;
+
+  /** Full Sixers box only (PHI), players who logged minutes, sorted by points */
+  function __gsSixersBox(summary) {
     var groups = __gsGet(summary, "boxscore.players", []) || [];
-    var all = [];
+    var rows = [];
     groups.forEach(function (g) {
-      var abbr = __gsGet(g, "team.abbreviation", "TM");
+      var abbr = String(__gsGet(g, "team.abbreviation", "") || "").toUpperCase();
+      if (abbr !== "PHI") return;
       var st = (g.statistics || [])[0] || {};
       var keys = st.keys || [];
-      var pi = keys.indexOf("points");
-      var ri = keys.indexOf("rebounds");
-      var ai = keys.indexOf("assists");
-      var mi = keys.indexOf("minutes");
+      function idx(k) { return keys.indexOf(k); }
+      var pi = idx("points"), ri = idx("rebounds"), ai = idx("assists"), mi = idx("minutes");
+      var fgi = idx("fieldGoalsMade-fieldGoalsAttempted");
+      var tpi = idx("threePointFieldGoalsMade-threePointFieldGoalsAttempted");
+      var fti = idx("freeThrowsMade-freeThrowsAttempted");
+      var sti = idx("steals"), bli = idx("blocks"), toi = idx("turnovers");
       (st.athletes || []).forEach(function (a) {
         var stats = a.stats || [];
         if (a.didNotPlay && !stats.length) return;
-        var pts = pi >= 0 ? Number(stats[pi]) || 0 : 0;
+        function val(i) {
+          if (i < 0 || stats[i] == null || stats[i] === "") return "—";
+          return stats[i];
+        }
+        var minRaw = val(mi);
+        // skip pure DNP with no minutes
+        if (minRaw === "—" || minRaw === "0" || minRaw === "00" || minRaw === "0:00") {
+          var ptsCheck = pi >= 0 ? Number(stats[pi]) || 0 : 0;
+          if (!ptsCheck) return;
+        }
         var id = __gsGet(a, "athlete.id", null);
         var head = __gsGet(a, "athlete.headshot.href", null);
-        if (!head && id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
         if (typeof head === "object" && head && head.href) head = head.href;
-        // Prefer full-size ESPN headshot when possible
-        if (head && /headshot/i.test(String(head)) && id) {
-          head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
-        }
-        all.push({
-          team: abbr,
+        if (id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
+        rows.push({
+          team: "PHI",
           name: __gsGet(a, "athlete.shortName", null) || __gsGet(a, "athlete.displayName", "Player"),
-          pts: pts,
-          reb: ri >= 0 ? (stats[ri] != null ? stats[ri] : "—") : "—",
-          ast: ai >= 0 ? (stats[ai] != null ? stats[ai] : "—") : "—",
-          min: mi >= 0 ? (stats[mi] != null ? stats[mi] : "—") : "—",
+          pts: pi >= 0 ? (Number(stats[pi]) || 0) : 0,
+          reb: val(ri),
+          ast: val(ai),
+          min: minRaw,
+          fg: val(fgi),
+          tp: val(tpi),
+          ft: val(fti),
+          stl: val(sti),
+          blk: val(bli),
+          to: val(toi),
           headshot: head
         });
       });
     });
-    all.sort(function (a, b) { return b.pts - a.pts; });
-    return all.slice(0, limit);
+    rows.sort(function (a, b) { return b.pts - a.pts; });
+    return rows;
   }
 
+  // legacy alias used nowhere critical
+  function __gsBoxLeaders(summary, limit) {
+    var rows = __gsSixersBox(summary);
+    return rows.slice(0, limit || 20);
+  }
 
-  
   function buildGameShareCanvas(periodKey) {
     return __buildGameShareCanvasAsync(periodKey);
   }
@@ -2567,7 +2586,6 @@ listenToUpdates();
     return new Promise(function (resolve) {
       if (!url) { resolve(null); return; }
       var attempts = [url];
-      // Alternate ESPN headshot path sometimes serves CORS-friendlier assets
       try {
         var m = String(url).match(/\/players\/full\/(\d+)\.png/i);
         if (m) {
@@ -2612,7 +2630,7 @@ listenToUpdates();
     var homeScore = __gsScoreThrough(teams.home, periodNum);
     var periodTitle = __gsPeriodLabel(periodKey, status.period, isFinal && periodKey === "final");
     var matchup = String(teams.away.abbr) + " @ " + String(teams.home.abbr);
-    var leaders = __gsBoxLeaders(summary, 10);
+    var boxRows = __gsSixersBox(summary);
 
     var comps = __gsGet(summary, "header.competitions.0.competitors", null);
     if (!Array.isArray(comps) || !comps.length) comps = __gsGet(event, "competitions.0.competitors", null) || [];
@@ -2621,14 +2639,12 @@ listenToUpdates();
     function logoUrl(c) {
       var ab = String(__gsGet(c, "team.abbreviation", "") || "").toLowerCase();
       if (!ab) return null;
-      // team logos often work with CORS on espncdn
       return "https://a.espncdn.com/i/teamlogos/nba/500/" + ab + ".png";
     }
     teams.away.logo = logoUrl(awayC);
     teams.home.logo = logoUrl(homeC);
 
-    // Preload (may fail CORS — null is fine)
-    var headUrls = leaders.map(function (r) { return r.headshot; });
+    var headUrls = boxRows.map(function (r) { return r.headshot; });
     var loadedHeads = await Promise.all(headUrls.map(__gsLoadImg));
     var awayLogo = await __gsLoadImg(teams.away.logo);
     var homeLogo = await __gsLoadImg(teams.home.logo);
@@ -2638,11 +2654,17 @@ listenToUpdates();
       var PAD = 48;
       var NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
       var WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a", MID = "#64748b", BORDER = "#e4e8f0";
-      var headerH = 148;
-      var scoreH = 150;
-      var rowH = 88;
-      var boxPadTop = 36;
-      var H = headerH + scoreH + boxPadTop + Math.max(leaders.length, 1) * rowH + 88;
+
+      // Fixed compact row height — never stretch
+      var ROW_H = 64;
+      var ROW_GAP = 8;
+      var headerH = 168;
+      var scoreBlockH = 132;
+      var sectionHeadH = 40;
+      var colHeadH = 28;
+      var footerH = 72;
+      var n = Math.max(boxRows.length, 1);
+      var H = headerH + scoreBlockH + sectionHeadH + colHeadH + n * (ROW_H + ROW_GAP) + footerH;
 
       var canvas = document.createElement("canvas");
       canvas.width = W;
@@ -2667,7 +2689,7 @@ listenToUpdates();
         ctx.fillText(String(str == null ? "" : str), x, y);
       }
       function circleImg(img, cx, cy, r) {
-        if (!img || !withImages) return false;
+        if (!img) return false;
         try {
           ctx.save();
           ctx.beginPath();
@@ -2679,16 +2701,26 @@ listenToUpdates();
           ctx.beginPath();
           ctx.arc(cx, cy, r, 0, Math.PI * 2);
           ctx.strokeStyle = BORDER;
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 1.5;
           ctx.stroke();
           return true;
-        } catch (e) {
+        } catch (e) { return false; }
+      }
+      function drawTeamLogo(img, cx, cy, r) {
+        if (!img) return false;
+        try {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
           ctx.restore();
-          return false;
-        }
+          return true;
+        } catch (e) { return false; }
       }
 
-      // Match injury report: cream page, navy header, red rule
+      // Background + injury-report header
       ctx.fillStyle = CREAM;
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = NAVY;
@@ -2696,97 +2728,103 @@ listenToUpdates();
       ctx.fillStyle = RED;
       ctx.fillRect(0, 132, W, 4);
 
-      text("SIXERSHOOPS", PAD, 40, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.72)");
-      text(periodTitle, PAD, 80, "800 36px Lexend, system-ui, sans-serif", WHITE);
-      text(matchup + "  ·  Game report", PAD, 114, "600 17px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
+      text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
+      text(periodTitle, PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
+      text(matchup, PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
+      text("Box score", W - PAD, 116, "500 14px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.65)", "right");
 
-      // Score card (white rounded like injury rows)
+      // Score card (compact, fixed height — not stretched)
       var scoreY = headerH;
-      rr(PAD, scoreY, W - PAD * 2, scoreH - 18, 12, WHITE);
+      rr(PAD, scoreY, W - PAD * 2, scoreBlockH - 16, 14, WHITE);
       ctx.strokeStyle = BORDER;
       ctx.lineWidth = 1;
       ctx.stroke();
 
+      var midX = W / 2;
+      var logoY = scoreY + 48;
       // Away
-      if (withImages && awayLogo) {
-        try { ctx.drawImage(awayLogo, PAD + 28, scoreY + 26, 54, 54); } catch (e) {}
-      } else {
-        rr(PAD + 28, scoreY + 26, 54, 54, 8, "#e8eef5");
-        text(String(teams.away.abbr).slice(0, 3), PAD + 55, scoreY + 60, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
-      }
-      text(teams.away.abbr, PAD + 98, scoreY + 48, "800 26px Lexend, system-ui, sans-serif", INK);
-      text("AWAY", PAD + 98, scoreY + 70, "700 11px Lexend, system-ui, sans-serif", MID);
-
+      if (withImages) drawTeamLogo(awayLogo, PAD + 72, logoY, 28);
+      text(teams.away.abbr, PAD + 112, logoY + 8, "800 22px Lexend, system-ui, sans-serif", INK);
+      // Score
+      text(String(awayScore) + "  –  " + String(homeScore), midX, logoY + 10, "800 42px Lexend, system-ui, sans-serif", NAVY, "center");
       // Home
-      if (withImages && homeLogo) {
-        try { ctx.drawImage(homeLogo, W - PAD - 82, scoreY + 26, 54, 54); } catch (e) {}
-      } else {
-        rr(W - PAD - 82, scoreY + 26, 54, 54, 8, "#e8eef5");
-        text(String(teams.home.abbr).slice(0, 3), W - PAD - 55, scoreY + 60, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
-      }
-      text(teams.home.abbr, W - PAD - 98, scoreY + 48, "800 26px Lexend, system-ui, sans-serif", INK, "right");
-      text("HOME", W - PAD - 98, scoreY + 70, "700 11px Lexend, system-ui, sans-serif", MID, "right");
+      text(teams.home.abbr, W - PAD - 112, logoY + 8, "800 22px Lexend, system-ui, sans-serif", INK, "right");
+      if (withImages) drawTeamLogo(homeLogo, W - PAD - 72, logoY, 28);
 
-      text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 58, "800 46px Lexend, system-ui, sans-serif", BLUE, "center");
-
-      var maxQ = Math.max(teams.away.lines.length, teams.home.lines.length, periodNum || 0);
-      if (maxQ > 0) {
-        var qBits = [];
-        for (var q = 0; q < Math.min(maxQ, 4); q++) {
-          if (periodNum != null && q >= periodNum) break;
-          var a = teams.away.lines[q] != null ? teams.away.lines[q] : "–";
-          var h = teams.home.lines[q] != null ? teams.home.lines[q] : "–";
-          qBits.push("Q" + (q + 1) + " " + a + "-" + h);
-        }
-        if (qBits.length) {
-          text(qBits.join("   ·   "), W / 2, scoreY + 108, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+      // Quarter lines
+      var qBits = [];
+      for (var q = 0; q < 4; q++) {
+        var a = teams.away.lines[q];
+        var h = teams.home.lines[q];
+        if (a != null || h != null) {
+          qBits.push("Q" + (q + 1) + " " + (a != null ? a : "–") + "-" + (h != null ? h : "–"));
         }
       }
+      if (qBits.length) {
+        text(qBits.join("   ·   "), midX, scoreY + scoreBlockH - 36, "600 13px Lexend, system-ui, sans-serif", MID, "center");
+      }
 
-      // Box score section title
-      var boxY = scoreY + scoreH;
-      text("BOX SCORE", PAD, boxY + 4, "800 14px Lexend, system-ui, sans-serif", MID);
-      text("MIN", W - PAD - 210, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
-      text("PTS", W - PAD - 140, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
-      text("REB", W - PAD - 70, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
-      text("AST", W - PAD, boxY + 4, "700 12px Lexend, system-ui, sans-serif", MID, "right");
+      // Section head — Sixers only
+      var secY = scoreY + scoreBlockH;
+      rr(PAD, secY, W - PAD * 2, sectionHeadH - 8, 8, "#eef2f7");
+      text("PHILADELPHIA 76ERS — FULL BOX", PAD + 16, secY + 24, "800 13px Lexend, system-ui, sans-serif", NAVY);
 
-      var y = boxY + 24;
-      if (!leaders.length) {
-        rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+      // Column headers
+      var colY = secY + sectionHeadH;
+      var colBase = colY + 18;
+      text("PLAYER", PAD + 72, colBase, "700 11px Lexend, system-ui, sans-serif", MID);
+      // stats columns from right
+      var cols = [
+        { key: "min", label: "MIN", x: W - PAD - 320 },
+        { key: "fg", label: "FG", x: W - PAD - 250 },
+        { key: "pts", label: "PTS", x: W - PAD - 180 },
+        { key: "reb", label: "REB", x: W - PAD - 120 },
+        { key: "ast", label: "AST", x: W - PAD - 60 },
+        { key: "stl", label: "STL", x: W - PAD }
+      ];
+      cols.forEach(function (c) {
+        text(c.label, c.x, colBase, "700 11px Lexend, system-ui, sans-serif", MID, "right");
+      });
+
+      var y = colY + colHeadH;
+      if (!boxRows.length) {
+        rr(PAD, y, W - PAD * 2, ROW_H, 10, WHITE);
         ctx.strokeStyle = BORDER;
         ctx.lineWidth = 1;
         ctx.stroke();
-        text("Box score will appear as stats post.", PAD + 20, y + 40, "500 15px Lexend, system-ui, sans-serif", MID);
+        text("Sixers box score will appear as stats post.", PAD + 20, y + 38, "500 15px Lexend, system-ui, sans-serif", MID);
       } else {
-        leaders.forEach(function (row, i) {
-          rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+        boxRows.forEach(function (row, i) {
+          // Fixed card height — never overstretched
+          rr(PAD, y, W - PAD * 2, ROW_H, 10, WHITE);
           ctx.strokeStyle = BORDER;
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          var cx = PAD + 48;
-          var cy = y + (rowH - 10) / 2;
-          var drew = withImages && circleImg(loadedHeads[i], cx, cy, 32);
+          var cy = y + ROW_H / 2;
+          var cx = PAD + 36;
+          var drew = withImages && circleImg(loadedHeads[i], cx, cy, 22);
           if (!drew) {
             ctx.beginPath();
-            ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+            ctx.arc(cx, cy, 22, 0, Math.PI * 2);
             ctx.fillStyle = "#e8eef5";
             ctx.fill();
             ctx.strokeStyle = BORDER;
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1.5;
             ctx.stroke();
-            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 8, "800 18px Lexend, system-ui, sans-serif", BLUE, "center");
+            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 6, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
           }
 
-          text(row.team, PAD + 96, y + 26, "700 12px Lexend, system-ui, sans-serif", MID);
-          text(row.name, PAD + 96, y + 52, "700 19px Lexend, system-ui, sans-serif", INK);
+          text(row.name, PAD + 68, cy + 6, "700 16px Lexend, system-ui, sans-serif", INK);
 
-          text(String(row.min), W - PAD - 210, y + 44, "600 16px Lexend, system-ui, sans-serif", INK, "right");
-          text(String(row.pts), W - PAD - 140, y + 44, "800 18px Lexend, system-ui, sans-serif", BLUE, "right");
-          text(String(row.reb), W - PAD - 70, y + 44, "600 16px Lexend, system-ui, sans-serif", INK, "right");
-          text(String(row.ast), W - PAD, y + 44, "600 16px Lexend, system-ui, sans-serif", INK, "right");
-          y += rowH;
+          text(String(row.min), W - PAD - 320, cy + 6, "600 14px Lexend, system-ui, sans-serif", INK, "right");
+          text(String(row.fg), W - PAD - 250, cy + 6, "600 13px Lexend, system-ui, sans-serif", MID, "right");
+          text(String(row.pts), W - PAD - 180, cy + 6, "800 16px Lexend, system-ui, sans-serif", BLUE, "right");
+          text(String(row.reb), W - PAD - 120, cy + 6, "600 14px Lexend, system-ui, sans-serif", INK, "right");
+          text(String(row.ast), W - PAD - 60, cy + 6, "600 14px Lexend, system-ui, sans-serif", INK, "right");
+          text(String(row.stl), W - PAD, cy + 6, "600 14px Lexend, system-ui, sans-serif", INK, "right");
+
+          y += ROW_H + ROW_GAP;
         });
       }
 
@@ -2794,7 +2832,6 @@ listenToUpdates();
       return canvas;
     }
 
-    // Prefer with images; if export is tainted, fall back
     var canvas = draw(true);
     try {
       canvas.toDataURL("image/png");

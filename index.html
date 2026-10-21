@@ -3081,7 +3081,9 @@ function __gsLoadImg(url) {
           ctx.restore();
 
           if (row.dnp) {
-            text(String(row.reason || "DNP"), cols[cols.length - 1].x, y + 36, "600 13px Lexend, system-ui, sans-serif", INK, "center");
+            // Center DNP / Coaches Decision across the stats area
+            var dnpX = (nameEnd + (W - PAD)) / 2;
+            text(String(row.reason || "DNP"), dnpX, y + 36, "600 14px Lexend, system-ui, sans-serif", INK, "center");
           } else {
             cols.forEach(function (c) {
               var val = row[c.key];

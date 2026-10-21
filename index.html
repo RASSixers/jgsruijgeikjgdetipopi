@@ -997,6 +997,100 @@
     .home-game-pbp .sc { grid-column: 2; justify-self: start; font-size: 0.7rem; }
   }
 
+
+  .game-share-modal {
+    max-width: min(640px, 100%) !important;
+    color: #0f172a;
+  }
+  .game-share-head {
+    align-items: flex-start !important;
+  }
+  .game-share-kicker {
+    margin: 0 0 0.2rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #006BB6;
+  }
+  .game-share-head h3 {
+    margin: 0;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+  }
+  .game-share-hint {
+    margin: 0 0 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.4;
+  }
+  .game-share-periods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .game-share-periods .home-inj-share-btn,
+  .game-share-periods button {
+    padding: 0.5rem 0.9rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    border: 1px solid #dbe3ef !important;
+    background: #fff !important;
+    border-radius: 999px !important;
+  }
+  .game-share-periods button.is-on,
+  .game-share-periods .home-inj-share-btn.is-on {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #fff !important;
+  }
+  .game-share-preview {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem;
+    overflow: auto;
+    max-height: 55vh;
+  }
+  .game-share-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+  .game-share-status {
+    margin: 0.75rem 0 0 !important;
+    min-height: 1.2em;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+  }
+  .game-share-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    padding: 1rem 1.15rem 1.15rem !important;
+  }
+  .game-share-actions .inj-share-btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+    padding: 0.7rem 1rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    border: 1px solid #dbe3ef !important;
+    background: #fff !important;
+  }
+  .game-share-actions .inj-share-btn.primary {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #fff !important;
+  }
+
 </style>
 </head>
 <body>
@@ -2718,30 +2812,33 @@ listenToUpdates();
     var homeLogo = await __gsLoadImg(teams.home.logo);
 
     // Date line
+
     var dateLine = "";
     try {
       var d = event.date ? new Date(event.date) : new Date();
       dateLine = d.toLocaleDateString("en-US", {
-        timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric"
+        timeZone: "America/New_York",
+        weekday: "short",
+        month: "short",
+        day: "numeric"
       });
-      dateLine += " · " + periodTitle;
     } catch (e) {
-      dateLine = periodTitle;
+      dateLine = "";
     }
 
     function draw(withImages) {
-      var W = 1080;
-      var PAD = 56;
-      var BLUE = "#006BB6", RED = "#c81e1e";
+      var W = 1200;
+      var PAD = 48;
+      var BLUE = "#006BB6";
       var WHITE = "#ffffff", CARD = "#f4f6fa", INK = "#0f172a";
-      var MID = "#64748b", MUTED = "#94a3b8", BORDER = "#e8edf5";
-      var rowH = 88;
-      var scoreH = 168;
-      var headerH = 200;
-      var boxTitleH = 44;
-      var footerH = 72;
+      var BORDER = "#e8edf5";
+      var rowH = 70;
+      var scoreH = 150;
+      var headerH = 168;
+      var boxTitleH = 40;
+      var footerH = 64;
       var nRows = Math.max(leaders.length, 1);
-      var H = headerH + scoreH + boxTitleH + nRows * rowH + footerH + 24;
+      var H = headerH + scoreH + boxTitleH + nRows * rowH + footerH + 16;
 
       var canvas = document.createElement("canvas");
       canvas.width = W;
@@ -2760,12 +2857,11 @@ listenToUpdates();
       }
       function text(str, x, y, font, color, align) {
         ctx.font = font;
-        ctx.fillStyle = color;
+        ctx.fillStyle = color || INK;
         ctx.textAlign = align || "left";
         ctx.textBaseline = "alphabetic";
         ctx.fillText(String(str == null ? "" : str), x, y);
       }
-      // Cover-fit circle (no stretch)
       function circleImgCover(img, cx, cy, r) {
         if (!img || !withImages) return false;
         try {
@@ -2808,41 +2904,50 @@ listenToUpdates();
         } catch (e) { return false; }
       }
 
-      // White page — same language as injury report screenshot
       ctx.fillStyle = WHITE;
       ctx.fillRect(0, 0, W, H);
 
-      // Brand + title (centered)
-      text("SIXERSHOOPS", W / 2, 48, "800 18px Lexend, system-ui, sans-serif", BLUE, "center");
-      text(periodTitle, W / 2, 100, "800 52px Lexend, system-ui, sans-serif", INK, "center");
-      text(matchup, W / 2, 142, "700 24px Lexend, system-ui, sans-serif", INK, "center");
-      text(dateLine, W / 2, 172, "500 16px Lexend, system-ui, sans-serif", MID, "center");
+      // Header — black text, clean hierarchy
+      text("SIXERSHOOPS", W / 2, 42, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
+      text(periodTitle, W / 2, 88, "800 44px Lexend, system-ui, sans-serif", INK, "center");
+      text(matchup, W / 2, 126, "700 22px Lexend, system-ui, sans-serif", INK, "center");
+      if (dateLine) {
+        text(dateLine, W / 2, 152, "600 15px Lexend, system-ui, sans-serif", INK, "center");
+      }
 
-      // Score card
+      // Score card — balanced three columns
       var scoreY = headerH;
-      rr(PAD, scoreY, W - PAD * 2, scoreH - 16, 20, CARD);
+      var cardW = W - PAD * 2;
+      var cardH = scoreH - 16;
+      rr(PAD, scoreY, cardW, cardH, 18, CARD);
 
-      // Aligned logo + name columns
-      var logoBox = 56;
-      var awayLogoX = PAD + 36;
-      var homeLogoX = W - PAD - 36 - logoBox;
-      var logoY = scoreY + 40;
-      if (!logoFit(awayLogo, awayLogoX, logoY, logoBox)) {
-        rr(awayLogoX, logoY, logoBox, logoBox, 12, "#e8eef5");
-        text(String(teams.away.abbr).slice(0, 3), awayLogoX + logoBox / 2, logoY + 34, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
+      var logoBox = 52;
+      var midX = W / 2;
+      var leftColX = PAD + 28;
+      var rightColX = W - PAD - 28;
+      var logoY = scoreY + 28;
+      var nameY = scoreY + 52;
+      var subY = scoreY + 76;
+
+      // Away (left): logo then name
+      if (!logoFit(awayLogo, leftColX, logoY, logoBox)) {
+        rr(leftColX, logoY, logoBox, logoBox, 10, "#e8eef5");
+        text(String(teams.away.abbr).slice(0, 3), leftColX + logoBox / 2, logoY + 32, "800 13px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      if (!logoFit(homeLogo, homeLogoX, logoY, logoBox)) {
-        rr(homeLogoX, logoY, logoBox, logoBox, 12, "#e8eef5");
-        text(String(teams.home.abbr).slice(0, 3), homeLogoX + logoBox / 2, logoY + 34, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
+      text(awayShort, leftColX + logoBox + 14, nameY, "800 24px Lexend, system-ui, sans-serif", INK, "left");
+      text("AWAY", leftColX + logoBox + 14, subY, "700 11px Lexend, system-ui, sans-serif", INK, "left");
+
+      // Home (right): name then logo (mirror)
+      if (!logoFit(homeLogo, rightColX - logoBox, logoY, logoBox)) {
+        rr(rightColX - logoBox, logoY, logoBox, logoBox, 10, "#e8eef5");
+        text(String(teams.home.abbr).slice(0, 3), rightColX - logoBox / 2, logoY + 32, "800 13px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      text(__gsTeamShort(teams.away.abbr, teams.away.name), awayLogoX + logoBox + 16, scoreY + 62, "800 24px Lexend, system-ui, sans-serif", INK);
-      text("AWAY", awayLogoX + logoBox + 16, scoreY + 86, "700 12px Lexend, system-ui, sans-serif", MUTED);
-      text(__gsTeamShort(teams.home.abbr, teams.home.name), homeLogoX - 16, scoreY + 62, "800 24px Lexend, system-ui, sans-serif", INK, "right");
-      text("HOME", homeLogoX - 16, scoreY + 86, "700 12px Lexend, system-ui, sans-serif", MUTED, "right");
+      text(homeShort, rightColX - logoBox - 14, nameY, "800 24px Lexend, system-ui, sans-serif", INK, "right");
+      text("HOME", rightColX - logoBox - 14, subY, "700 11px Lexend, system-ui, sans-serif", INK, "right");
 
-      text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 74, "800 48px Lexend, system-ui, sans-serif", BLUE, "center");
+      // Score center
+      text(String(awayScore) + "  –  " + String(homeScore), midX, scoreY + 58, "800 44px Lexend, system-ui, sans-serif", BLUE, "center");
 
-      // Quarter lines
       var maxQ = Math.max(teams.away.lines.length, teams.home.lines.length, periodNum || 0);
       if (maxQ > 0) {
         var qBits = [];
@@ -2853,57 +2958,77 @@ listenToUpdates();
           qBits.push("Q" + (q + 1) + " " + a + "-" + h);
         }
         if (qBits.length) {
-          text(qBits.join("   ·   "), W / 2, scoreY + 118, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+          text(qBits.join("   ·   "), midX, scoreY + 108, "600 14px Lexend, system-ui, sans-serif", INK, "center");
         }
       }
 
-      // Sixers-only full box score
+      // Full Sixers box — all columns visible
       var boxY = scoreY + scoreH;
-      text("SIXERS BOX SCORE", PAD, boxY + 8, "800 13px Lexend, system-ui, sans-serif", MUTED);
-      // columns from right: PTS AST REB FG MIN
-      var col = { min: W - PAD - 320, fg: W - PAD - 230, reb: W - PAD - 150, ast: W - PAD - 80, pts: W - PAD };
-      text("MIN", col.min, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
-      text("FG", col.fg, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
-      text("REB", col.reb, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
-      text("AST", col.ast, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
-      text("PTS", col.pts, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
+      text("SIXERS BOX SCORE", PAD, boxY + 6, "800 13px Lexend, system-ui, sans-serif", INK);
 
-      var y = boxY + boxTitleH - 8;
+      // Fixed columns across 1200 width (right-aligned stats)
+      // Name area ends ~ 340; then MIN FG 3PT FT REB AST STL BLK TO PTS
+      var cols = [
+        { key: "min", label: "MIN", x: 400 },
+        { key: "fg", label: "FG", x: 480 },
+        { key: "tp", label: "3PT", x: 560 },
+        { key: "ft", label: "FT", x: 640 },
+        { key: "reb", label: "REB", x: 720 },
+        { key: "ast", label: "AST", x: 800 },
+        { key: "stl", label: "STL", x: 880 },
+        { key: "blk", label: "BLK", x: 960 },
+        { key: "to", label: "TO", x: 1040 },
+        { key: "pts", label: "PTS", x: W - PAD }
+      ];
+      cols.forEach(function (c) {
+        text(c.label, c.x, boxY + 6, "700 11px Lexend, system-ui, sans-serif", INK, "right");
+      });
+
+      var y = boxY + boxTitleH - 6;
       if (!leaders.length) {
-        rr(PAD, y, W - PAD * 2, rowH - 12, 16, CARD);
-        text("Box score will appear as stats post.", PAD + 24, y + 44, "500 16px Lexend, system-ui, sans-serif", MID);
+        rr(PAD, y, W - PAD * 2, rowH - 10, 14, CARD);
+        text("Box score will appear as stats post.", PAD + 20, y + 40, "600 15px Lexend, system-ui, sans-serif", INK);
       } else {
         leaders.forEach(function (row, i) {
-          rr(PAD, y, W - PAD * 2, rowH - 12, 16, CARD);
-
-          var cx = PAD + 44;
-          var cy = y + (rowH - 12) / 2;
-          var drew = circleImgCover(loadedHeads[i], cx, cy, 28);
+          rr(PAD, y, W - PAD * 2, rowH - 10, 14, CARD);
+          var cx = PAD + 36;
+          var cy = y + (rowH - 10) / 2;
+          var drew = circleImgCover(loadedHeads[i], cx, cy, 24);
           if (!drew) {
             ctx.beginPath();
-            ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+            ctx.arc(cx, cy, 24, 0, Math.PI * 2);
             ctx.fillStyle = "#e8eef5";
             ctx.fill();
-            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 7, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
+            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 6, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
           }
 
-          text("Sixers", PAD + 88, y + 28, "700 12px Lexend, system-ui, sans-serif", MUTED);
-          text(row.name, PAD + 88, y + 54, "700 18px Lexend, system-ui, sans-serif", INK);
+          // Clip name width so it never overlaps stats
+          var nameX = PAD + 72;
+          var nameMax = 310 - nameX;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(nameX - 2, y, nameMax, rowH - 10);
+          ctx.clip();
+          text(row.name, nameX, y + 42, "700 16px Lexend, system-ui, sans-serif", INK, "left");
+          ctx.restore();
 
           if (row.dnp) {
-            text(String(row.reason || "DNP"), col.pts, y + 46, "600 14px Lexend, system-ui, sans-serif", MID, "right");
+            text(String(row.reason || "DNP"), W - PAD, y + 42, "600 14px Lexend, system-ui, sans-serif", INK, "right");
           } else {
-            text(String(row.min), col.min, y + 46, "600 15px Lexend, system-ui, sans-serif", INK, "right");
-            text(String(row.fg), col.fg, y + 46, "600 14px Lexend, system-ui, sans-serif", INK, "right");
-            text(String(row.reb), col.reb, y + 46, "600 15px Lexend, system-ui, sans-serif", INK, "right");
-            text(String(row.ast), col.ast, y + 46, "600 15px Lexend, system-ui, sans-serif", INK, "right");
-            text(String(row.pts), col.pts, y + 46, "800 18px Lexend, system-ui, sans-serif", BLUE, "right");
+            cols.forEach(function (c) {
+              var val = row[c.key];
+              if (c.key === "pts") {
+                text(String(val != null ? val : "—"), c.x, y + 42, "800 16px Lexend, system-ui, sans-serif", BLUE, "right");
+              } else {
+                text(String(val != null ? val : "—"), c.x, y + 42, "600 13px Lexend, system-ui, sans-serif", INK, "right");
+              }
+            });
           }
           y += rowH;
         });
       }
 
-      text("sixershoops.com", W / 2, H - 28, "700 16px Lexend, system-ui, sans-serif", BLUE, "center");
+      text("sixershoops.com", W / 2, H - 24, "700 15px Lexend, system-ui, sans-serif", BLUE, "center");
       return canvas;
     }
 
@@ -2940,8 +3065,7 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
     if (bar) {
       bar.innerHTML = opts.map(function (o) {
         var on = o.key === window.__gameSharePeriod;
-        return '<button type="button" class="home-inj-share-btn" data-gs-period="' + o.key + '" style="' +
-          (on ? "background:#006BB6;color:#fff;border-color:#006BB6" : "") + '">' + o.label + "</button>";
+        return '<button type="button" data-gs-period="' + o.key + '" class="' + (on ? "is-on" : "") + '">' + o.label + "</button>";
       }).join("");
     }
     window.__gameShareDataUrl = null;
@@ -3316,19 +3440,23 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
 
 
 <div class="inj-share-overlay" id="gameShareOverlay" aria-hidden="true">
-  <div class="inj-share-modal" role="dialog" aria-labelledby="gameShareTitle">
-    <div class="inj-share-head">
-      <h3 id="gameShareTitle">Share game graphic</h3>
+  <div class="inj-share-modal game-share-modal" role="dialog" aria-labelledby="gameShareTitle">
+    <div class="inj-share-head game-share-head">
+      <div>
+        <p class="game-share-kicker">SixersHoops</p>
+        <h3 id="gameShareTitle">Share game graphic</h3>
+      </div>
       <button type="button" class="inj-share-close" id="gameShareClose" aria-label="Close">&times;</button>
     </div>
-    <div class="inj-share-body">
-      <div id="gameSharePeriodBar" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.85rem"></div>
-      <div class="inj-share-preview-wrap">
+    <div class="inj-share-body game-share-body">
+      <p class="game-share-hint">Choose a moment, then download or copy the image for your post.</p>
+      <div id="gameSharePeriodBar" class="game-share-periods"></div>
+      <div class="inj-share-preview-wrap game-share-preview">
         <img id="gameSharePreview" alt="Game share preview" />
       </div>
-      <p id="gameShareStatus" style="margin:0.65rem 0 0;font-size:0.8rem;font-weight:600;color:#64748b;min-height:1.2em"></p>
+      <p id="gameShareStatus" class="game-share-status"></p>
     </div>
-    <div class="inj-share-actions">
+    <div class="inj-share-actions game-share-actions">
       <button type="button" class="inj-share-btn primary" id="gameShareDownload">Download PNG</button>
       <button type="button" class="inj-share-btn primary" id="gameShareCopy">Copy image</button>
       <button type="button" class="inj-share-btn" id="gameShareClose2">Close</button>

@@ -2566,18 +2566,34 @@ listenToUpdates();
   function __gsLoadImg(url) {
     return new Promise(function (resolve) {
       if (!url) { resolve(null); return; }
-      var img = new Image();
-      img.crossOrigin = "anonymous";
-      var done = false;
-      var finish = function (val) {
-        if (done) return;
-        done = true;
-        resolve(val);
-      };
-      img.onload = function () { finish(img); };
-      img.onerror = function () { finish(null); };
-      setTimeout(function () { finish(null); }, 2500);
-      img.src = url;
+      var attempts = [url];
+      // Alternate ESPN headshot path sometimes serves CORS-friendlier assets
+      try {
+        var m = String(url).match(/\/players\/full\/(\d+)\.png/i);
+        if (m) {
+          attempts.push("https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/" + m[1] + ".png&w=200&h=146");
+          attempts.push("https://cdn.nba.com/headshots/nba/latest/260x190/" + m[1] + ".png");
+        }
+      } catch (_) {}
+      var i = 0;
+      function tryNext() {
+        if (i >= attempts.length) { resolve(null); return; }
+        var src = attempts[i++];
+        var img = new Image();
+        img.crossOrigin = "anonymous";
+        var done = false;
+        var finish = function (val) {
+          if (done) return;
+          done = true;
+          if (val) resolve(val);
+          else tryNext();
+        };
+        img.onload = function () { finish(img); };
+        img.onerror = function () { finish(null); };
+        setTimeout(function () { finish(null); }, 2200);
+        img.src = src;
+      }
+      tryNext();
     });
   }
 
@@ -2624,7 +2640,7 @@ listenToUpdates();
       var WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a", MID = "#64748b", BORDER = "#e4e8f0";
       var headerH = 148;
       var scoreH = 150;
-      var rowH = 76;
+      var rowH = 88;
       var boxPadTop = 36;
       var H = headerH + scoreH + boxPadTop + Math.max(leaders.length, 1) * rowH + 88;
 
@@ -2749,22 +2765,22 @@ listenToUpdates();
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          var cx = PAD + 42;
+          var cx = PAD + 48;
           var cy = y + (rowH - 10) / 2;
-          var drew = withImages && circleImg(loadedHeads[i], cx, cy, 26);
+          var drew = withImages && circleImg(loadedHeads[i], cx, cy, 32);
           if (!drew) {
             ctx.beginPath();
-            ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+            ctx.arc(cx, cy, 32, 0, Math.PI * 2);
             ctx.fillStyle = "#e8eef5";
             ctx.fill();
             ctx.strokeStyle = BORDER;
             ctx.lineWidth = 2;
             ctx.stroke();
-            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 7, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
+            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 8, "800 18px Lexend, system-ui, sans-serif", BLUE, "center");
           }
 
-          text(row.team, PAD + 82, y + 28, "700 12px Lexend, system-ui, sans-serif", MID);
-          text(row.name, PAD + 82, y + 52, "700 18px Lexend, system-ui, sans-serif", INK);
+          text(row.team, PAD + 96, y + 26, "700 12px Lexend, system-ui, sans-serif", MID);
+          text(row.name, PAD + 96, y + 52, "700 19px Lexend, system-ui, sans-serif", INK);
 
           text(String(row.min), W - PAD - 210, y + 44, "600 16px Lexend, system-ui, sans-serif", INK, "right");
           text(String(row.pts), W - PAD - 140, y + 44, "800 18px Lexend, system-ui, sans-serif", BLUE, "right");

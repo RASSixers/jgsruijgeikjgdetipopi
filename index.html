@@ -1054,13 +1054,16 @@
     border-radius: 12px;
     padding: 0.75rem;
     overflow: auto;
-    max-height: 55vh;
+    max-height: min(70vh, 900px);
   }
   .game-share-preview img {
     width: 100%;
     height: auto;
     display: block;
     border-radius: 8px;
+  }
+  .game-share-modal {
+    max-width: min(720px, 96vw) !important;
   }
   .game-share-status {
     margin: 0.75rem 0 0 !important;
@@ -2652,7 +2655,7 @@ listenToUpdates();
 
   
   function __gsBoxLeaders(summary, limit) {
-    // Full Sixers box score only (all players + DNPs)
+    // Full Sixers box score only (every player in ESPN boxscore + DNPs)
     var groups = __gsGet(summary, "boxscore.players", []) || [];
     var sixers = null;
     groups.forEach(function (g) {
@@ -2660,7 +2663,6 @@ listenToUpdates();
       if (abbr === "PHI") sixers = g;
     });
     if (!sixers) {
-      // fallback: any group that looks like PHI
       groups.forEach(function (g) {
         var n = String(__gsGet(g, "team.displayName", "") || "");
         if (/76ers|philadelphia/i.test(n)) sixers = g;
@@ -2668,62 +2670,72 @@ listenToUpdates();
     }
     if (!sixers) return [];
 
-    var st = (sixers.statistics || [])[0] || {};
-    var keys = st.keys || [];
-    var labels = st.labels || st.names || [];
-    var pi = keys.indexOf("points");
-    var ri = keys.indexOf("rebounds");
-    var ai = keys.indexOf("assists");
-    var mi = keys.indexOf("minutes");
-    var si = keys.indexOf("steals");
-    var bi = keys.indexOf("blocks");
-    var ti = keys.indexOf("turnovers");
-    var fi = keys.indexOf("fouls");
-    var pmi = keys.indexOf("plusMinus");
-    var fgm = keys.indexOf("fieldGoalsMade-fieldGoalsAttempted");
-    if (fgm < 0) fgm = keys.indexOf("fgMade-fgAttempted");
-    var tpm = keys.indexOf("threePointFieldGoalsMade-threePointFieldGoalsAttempted");
-    if (tpm < 0) tpm = keys.indexOf("3ptMade-3ptAttempted");
-    var ftm = keys.indexOf("freeThrowsMade-freeThrowsAttempted");
-    if (ftm < 0) ftm = keys.indexOf("ftMade-ftAttempted");
-
-    function statAt(stats, idx) {
-      if (idx < 0 || !stats) return "—";
-      return stats[idx] != null && stats[idx] !== "" ? stats[idx] : "—";
+    // Prefer the main player stats table; fall back to merging all
+    var statsList = sixers.statistics || [];
+    var st = statsList[0] || {};
+    for (var si0 = 0; si0 < statsList.length; si0++) {
+      var cand = statsList[si0] || {};
+      var ks = cand.keys || [];
+      if (ks.indexOf("points") >= 0 || ks.indexOf("minutes") >= 0) {
+        st = cand;
+        break;
+      }
     }
 
-    var active = [];
-    var dnps = [];
-    (st.athletes || []).forEach(function (a) {
-      var stats = a.stats || [];
-      var isDnp = !!(a.didNotPlay || a.reason);
-      if (isDnp && !stats.length) {
-        dnps.push({
-          team: "PHI",
-          name: __gsGet(a, "athlete.shortName", null) || __gsGet(a, "athlete.displayName", "Player"),
-          pts: 0, reb: "—", ast: "—", min: "—", stl: "—", blk: "—", to: "—",
-          fg: "—", tp: "—", ft: "—", pm: "—",
-          dnp: true,
-          reason: a.reason || "DNP",
-          headshot: (function () {
-            var id = __gsGet(a, "athlete.id", null);
-            var head = __gsGet(a, "athlete.headshot.href", null);
-            if (!head && id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
-            if (typeof head === "object" && head && head.href) head = head.href;
-            return head;
-          })()
-        });
-        return;
+    var keys = st.keys || [];
+    function idx() {
+      var names = Array.prototype.slice.call(arguments);
+      for (var i = 0; i < names.length; i++) {
+        var j = keys.indexOf(names[i]);
+        if (j >= 0) return j;
       }
-      var pts = pi >= 0 ? Number(stats[pi]) || 0 : 0;
+      return -1;
+    }
+    var pi = idx("points");
+    var ri = idx("rebounds");
+    var ai = idx("assists");
+    var mi = idx("minutes");
+    var si = idx("steals");
+    var bi = idx("blocks");
+    var ti = idx("turnovers");
+    var fgm = idx("fieldGoalsMade-fieldGoalsAttempted", "fgMade-fgAttempted", "fieldGoalsMade");
+    var tpm = idx("threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3ptMade-3ptAttempted", "threePointFieldGoalsMade");
+    var ftm = idx("freeThrowsMade-freeThrowsAttempted", "ftMade-ftAttempted", "freeThrowsMade");
+
+    function statAt(stats, i) {
+      if (i < 0 || !stats) return "—";
+      return stats[i] != null && stats[i] !== "" ? stats[i] : "—";
+    }
+    function headFor(a) {
       var id = __gsGet(a, "athlete.id", null);
       var head = __gsGet(a, "athlete.headshot.href", null);
       if (!head && id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
       if (typeof head === "object" && head && head.href) head = head.href;
+      return head;
+    }
+
+    var active = [];
+    var dnps = [];
+    var seen = {};
+    (st.athletes || []).forEach(function (a) {
+      var id = String(__gsGet(a, "athlete.id", "") || __gsGet(a, "athlete.displayName", ""));
+      if (id && seen[id]) return;
+      if (id) seen[id] = true;
+      var stats = a.stats || [];
+      var isDnp = !!(a.didNotPlay || a.reason);
+      var name = __gsGet(a, "athlete.shortName", null) || __gsGet(a, "athlete.displayName", "Player");
+      if (isDnp && !stats.length) {
+        dnps.push({
+          team: "PHI", name: name, pts: 0, reb: "—", ast: "—", min: "—",
+          stl: "—", blk: "—", to: "—", fg: "—", tp: "—", ft: "—",
+          dnp: true, reason: a.reason || "DNP", headshot: headFor(a)
+        });
+        return;
+      }
       active.push({
         team: "PHI",
-        name: __gsGet(a, "athlete.shortName", null) || __gsGet(a, "athlete.displayName", "Player"),
-        pts: pts,
+        name: name,
+        pts: pi >= 0 ? Number(stats[pi]) || 0 : 0,
         reb: statAt(stats, ri),
         ast: statAt(stats, ai),
         min: statAt(stats, mi),
@@ -2733,23 +2745,14 @@ listenToUpdates();
         fg: statAt(stats, fgm),
         tp: statAt(stats, tpm),
         ft: statAt(stats, ftm),
-        pm: statAt(stats, pmi),
         dnp: false,
-        headshot: head
+        headshot: headFor(a)
       });
     });
-    // Keep ESPN order for active (usually starters then bench); DNPs at end
     return active.concat(dnps);
   }
 
-
-  
-  
-  function buildGameShareCanvas(periodKey) {
-    return __buildGameShareCanvasAsync(periodKey);
-  }
-
-  function __gsLoadImg(url) {
+function __gsLoadImg(url) {
     return new Promise(function (resolve) {
       if (!url) { resolve(null); return; }
       var img = new Image();
@@ -2813,6 +2816,7 @@ listenToUpdates();
 
     // Date line
 
+
     var dateLine = "";
     try {
       var d = event.date ? new Date(event.date) : new Date();
@@ -2827,18 +2831,18 @@ listenToUpdates();
     }
 
     function draw(withImages) {
-      var W = 1200;
-      var PAD = 48;
+      var W = 1400;
+      var PAD = 40;
       var BLUE = "#006BB6";
       var WHITE = "#ffffff", CARD = "#f4f6fa", INK = "#0f172a";
-      var BORDER = "#e8edf5";
-      var rowH = 70;
-      var scoreH = 150;
-      var headerH = 168;
-      var boxTitleH = 40;
-      var footerH = 64;
+      var BORDER = "#e2e8f0", LINE = "#cbd5e1";
+      var rowH = 56;
+      var headerH = 150;
+      var scoreBlockH = 210;
+      var boxTitleH = 36;
+      var footerH = 56;
       var nRows = Math.max(leaders.length, 1);
-      var H = headerH + scoreH + boxTitleH + nRows * rowH + footerH + 16;
+      var H = headerH + scoreBlockH + boxTitleH + nRows * rowH + footerH + 12;
 
       var canvas = document.createElement("canvas");
       canvas.width = W;
@@ -2882,7 +2886,7 @@ listenToUpdates();
           ctx.beginPath();
           ctx.arc(cx, cy, r, 0, Math.PI * 2);
           ctx.strokeStyle = BORDER;
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 1.5;
           ctx.stroke();
           return true;
         } catch (e) {
@@ -2907,120 +2911,159 @@ listenToUpdates();
       ctx.fillStyle = WHITE;
       ctx.fillRect(0, 0, W, H);
 
-      // Header — black text, clean hierarchy
-      text("SIXERSHOOPS", W / 2, 42, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
-      text(periodTitle, W / 2, 88, "800 44px Lexend, system-ui, sans-serif", INK, "center");
-      text(matchup, W / 2, 126, "700 22px Lexend, system-ui, sans-serif", INK, "center");
+      // Header
+      text("SIXERSHOOPS", W / 2, 36, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
+      text(periodTitle, W / 2, 78, "800 40px Lexend, system-ui, sans-serif", INK, "center");
+      text(matchup, W / 2, 112, "700 20px Lexend, system-ui, sans-serif", INK, "center");
       if (dateLine) {
-        text(dateLine, W / 2, 152, "600 15px Lexend, system-ui, sans-serif", INK, "center");
+        text(dateLine, W / 2, 136, "600 14px Lexend, system-ui, sans-serif", INK, "center");
       }
 
-      // Score card — balanced three columns
+      // Score + professional linescore card
       var scoreY = headerH;
       var cardW = W - PAD * 2;
-      var cardH = scoreH - 16;
-      rr(PAD, scoreY, cardW, cardH, 18, CARD);
+      rr(PAD, scoreY, cardW, scoreBlockH - 16, 16, CARD);
 
-      var logoBox = 52;
-      var midX = W / 2;
-      var leftColX = PAD + 28;
-      var rightColX = W - PAD - 28;
-      var logoY = scoreY + 28;
-      var nameY = scoreY + 52;
-      var subY = scoreY + 76;
+      var logoBox = 48;
+      var leftX = PAD + 24;
+      var rightX = W - PAD - 24;
+      var logoY = scoreY + 22;
 
-      // Away (left): logo then name
-      if (!logoFit(awayLogo, leftColX, logoY, logoBox)) {
-        rr(leftColX, logoY, logoBox, logoBox, 10, "#e8eef5");
-        text(String(teams.away.abbr).slice(0, 3), leftColX + logoBox / 2, logoY + 32, "800 13px Lexend, system-ui, sans-serif", BLUE, "center");
+      if (!logoFit(awayLogo, leftX, logoY, logoBox)) {
+        rr(leftX, logoY, logoBox, logoBox, 10, "#e8eef5");
+        text(String(teams.away.abbr).slice(0, 3), leftX + logoBox / 2, logoY + 30, "800 12px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      text(awayShort, leftColX + logoBox + 14, nameY, "800 24px Lexend, system-ui, sans-serif", INK, "left");
-      text("AWAY", leftColX + logoBox + 14, subY, "700 11px Lexend, system-ui, sans-serif", INK, "left");
+      text(awayShort, leftX + logoBox + 12, scoreY + 42, "800 22px Lexend, system-ui, sans-serif", INK, "left");
+      text("AWAY", leftX + logoBox + 12, scoreY + 64, "700 11px Lexend, system-ui, sans-serif", INK, "left");
 
-      // Home (right): name then logo (mirror)
-      if (!logoFit(homeLogo, rightColX - logoBox, logoY, logoBox)) {
-        rr(rightColX - logoBox, logoY, logoBox, logoBox, 10, "#e8eef5");
-        text(String(teams.home.abbr).slice(0, 3), rightColX - logoBox / 2, logoY + 32, "800 13px Lexend, system-ui, sans-serif", BLUE, "center");
+      if (!logoFit(homeLogo, rightX - logoBox, logoY, logoBox)) {
+        rr(rightX - logoBox, logoY, logoBox, logoBox, 10, "#e8eef5");
+        text(String(teams.home.abbr).slice(0, 3), rightX - logoBox / 2, logoY + 30, "800 12px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      text(homeShort, rightColX - logoBox - 14, nameY, "800 24px Lexend, system-ui, sans-serif", INK, "right");
-      text("HOME", rightColX - logoBox - 14, subY, "700 11px Lexend, system-ui, sans-serif", INK, "right");
+      text(homeShort, rightX - logoBox - 12, scoreY + 42, "800 22px Lexend, system-ui, sans-serif", INK, "right");
+      text("HOME", rightX - logoBox - 12, scoreY + 64, "700 11px Lexend, system-ui, sans-serif", INK, "right");
 
-      // Score center
-      text(String(awayScore) + "  –  " + String(homeScore), midX, scoreY + 58, "800 44px Lexend, system-ui, sans-serif", BLUE, "center");
+      text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 52, "800 40px Lexend, system-ui, sans-serif", BLUE, "center");
 
-      var maxQ = Math.max(teams.away.lines.length, teams.home.lines.length, periodNum || 0);
-      if (maxQ > 0) {
-        var qBits = [];
-        for (var q = 0; q < Math.min(maxQ, 4); q++) {
-          if (periodNum != null && q >= periodNum) break;
-          var a = teams.away.lines[q] != null ? teams.away.lines[q] : "–";
-          var h = teams.home.lines[q] != null ? teams.home.lines[q] : "–";
-          qBits.push("Q" + (q + 1) + " " + a + "-" + h);
-        }
-        if (qBits.length) {
-          text(qBits.join("   ·   "), midX, scoreY + 108, "600 14px Lexend, system-ui, sans-serif", INK, "center");
-        }
+      // Linescore table (professional)
+      var qCount = Math.max(teams.away.lines.length, teams.home.lines.length, 4);
+      if (periodNum != null) qCount = Math.max(periodNum, 1);
+      qCount = Math.min(Math.max(qCount, 1), 6); // allow OT columns
+      // Build column labels 1 2 3 4 (OT) T
+      var qLabels = [];
+      for (var qi = 0; qi < qCount; qi++) {
+        if (qi < 4) qLabels.push(String(qi + 1));
+        else qLabels.push("OT" + (qi === 4 ? "" : String(qi - 3)));
       }
+      qLabels.push("T");
 
-      // Full Sixers box — all columns visible
-      var boxY = scoreY + scoreH;
-      text("SIXERS BOX SCORE", PAD, boxY + 6, "800 13px Lexend, system-ui, sans-serif", INK);
+      var tableTop = scoreY + 92;
+      var tableLeft = PAD + 48;
+      var tableWidth = cardW - 96;
+      var colW = tableWidth / (qLabels.length + 1); // +1 for team name col
+      var row1Y = tableTop + 22;
+      var row2Y = tableTop + 50;
+      var row3Y = tableTop + 78;
 
-      // Fixed columns across 1200 width (right-aligned stats)
-      // Name area ends ~ 340; then MIN FG 3PT FT REB AST STL BLK TO PTS
-      var cols = [
-        { key: "min", label: "MIN", x: 400 },
-        { key: "fg", label: "FG", x: 480 },
-        { key: "tp", label: "3PT", x: 560 },
-        { key: "ft", label: "FT", x: 640 },
-        { key: "reb", label: "REB", x: 720 },
-        { key: "ast", label: "AST", x: 800 },
-        { key: "stl", label: "STL", x: 880 },
-        { key: "blk", label: "BLK", x: 960 },
-        { key: "to", label: "TO", x: 1040 },
-        { key: "pts", label: "PTS", x: W - PAD }
-      ];
-      cols.forEach(function (c) {
-        text(c.label, c.x, boxY + 6, "700 11px Lexend, system-ui, sans-serif", INK, "right");
+      // header row background strip
+      rr(tableLeft, tableTop, tableWidth, 88, 10, WHITE);
+      ctx.strokeStyle = BORDER;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // column headers
+      text("", tableLeft + 8, row1Y, "700 12px Lexend, system-ui, sans-serif", INK, "left");
+      qLabels.forEach(function (lab, i) {
+        var x = tableLeft + colW * (i + 1) + colW * 0.5;
+        text(lab, x, row1Y, "800 12px Lexend, system-ui, sans-serif", INK, "center");
       });
 
-      var y = boxY + boxTitleH - 6;
+      // divider under headers
+      ctx.strokeStyle = LINE;
+      ctx.beginPath();
+      ctx.moveTo(tableLeft + 12, tableTop + 30);
+      ctx.lineTo(tableLeft + tableWidth - 12, tableTop + 30);
+      ctx.stroke();
+
+      function lineVal(side, i) {
+        if (periodNum != null && i >= periodNum) return "–";
+        if (side.lines[i] != null) return String(side.lines[i]);
+        return "–";
+      }
+
+      // Away row
+      text(awayShort, tableLeft + 14, row2Y, "700 14px Lexend, system-ui, sans-serif", INK, "left");
+      for (var ai2 = 0; ai2 < qCount; ai2++) {
+        var ax = tableLeft + colW * (ai2 + 1) + colW * 0.5;
+        text(lineVal(teams.away, ai2), ax, row2Y, "600 14px Lexend, system-ui, sans-serif", INK, "center");
+      }
+      text(String(awayScore), tableLeft + colW * (qCount + 1) + colW * 0.5, row2Y, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
+
+      // Home row
+      text(homeShort, tableLeft + 14, row3Y, "700 14px Lexend, system-ui, sans-serif", INK, "left");
+      for (var hi2 = 0; hi2 < qCount; hi2++) {
+        var hx = tableLeft + colW * (hi2 + 1) + colW * 0.5;
+        text(lineVal(teams.home, hi2), hx, row3Y, "600 14px Lexend, system-ui, sans-serif", INK, "center");
+      }
+      text(String(homeScore), tableLeft + colW * (qCount + 1) + colW * 0.5, row3Y, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
+
+      // Full Sixers box score — compact so every row fits on the PNG
+      var boxY = scoreY + scoreBlockH;
+      text("SIXERS BOX SCORE", PAD, boxY + 4, "800 12px Lexend, system-ui, sans-serif", INK);
+
+      // Columns spaced across full width
+      var nameRight = 320;
+      var keys = ["min", "fg", "tp", "ft", "reb", "ast", "stl", "blk", "to", "pts"];
+      var labels = ["MIN", "FG", "3PT", "FT", "REB", "AST", "STL", "BLK", "TO", "PTS"];
+      var statLeft = nameRight + 20;
+      var statRight = W - PAD;
+      var span = statRight - statLeft;
+      var cols = labels.map(function (lab, i) {
+        return {
+          key: keys[i],
+          label: lab,
+          x: statLeft + (span * (i + 1) / keys.length)
+        };
+      });
+      cols.forEach(function (c) {
+        text(c.label, c.x, boxY + 4, "700 11px Lexend, system-ui, sans-serif", INK, "right");
+      });
+
+      var y = boxY + boxTitleH - 4;
       if (!leaders.length) {
-        rr(PAD, y, W - PAD * 2, rowH - 10, 14, CARD);
-        text("Box score will appear as stats post.", PAD + 20, y + 40, "600 15px Lexend, system-ui, sans-serif", INK);
+        rr(PAD, y, W - PAD * 2, rowH - 8, 12, CARD);
+        text("Box score will appear as stats post.", PAD + 16, y + 32, "600 14px Lexend, system-ui, sans-serif", INK);
       } else {
         leaders.forEach(function (row, i) {
-          rr(PAD, y, W - PAD * 2, rowH - 10, 14, CARD);
-          var cx = PAD + 36;
-          var cy = y + (rowH - 10) / 2;
-          var drew = circleImgCover(loadedHeads[i], cx, cy, 24);
+          rr(PAD, y, W - PAD * 2, rowH - 8, 12, CARD);
+          var cx = PAD + 30;
+          var cy = y + (rowH - 8) / 2;
+          var drew = circleImgCover(loadedHeads[i], cx, cy, 20);
           if (!drew) {
             ctx.beginPath();
-            ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+            ctx.arc(cx, cy, 20, 0, Math.PI * 2);
             ctx.fillStyle = "#e8eef5";
             ctx.fill();
-            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 6, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
+            text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 5, "800 12px Lexend, system-ui, sans-serif", BLUE, "center");
           }
 
-          // Clip name width so it never overlaps stats
-          var nameX = PAD + 72;
-          var nameMax = 310 - nameX;
+          var nameX = PAD + 60;
           ctx.save();
           ctx.beginPath();
-          ctx.rect(nameX - 2, y, nameMax, rowH - 10);
+          ctx.rect(nameX - 2, y, nameRight - nameX, rowH - 8);
           ctx.clip();
-          text(row.name, nameX, y + 42, "700 16px Lexend, system-ui, sans-serif", INK, "left");
+          text(row.name, nameX, y + 34, "700 14px Lexend, system-ui, sans-serif", INK, "left");
           ctx.restore();
 
           if (row.dnp) {
-            text(String(row.reason || "DNP"), W - PAD, y + 42, "600 14px Lexend, system-ui, sans-serif", INK, "right");
+            text(String(row.reason || "DNP"), W - PAD, y + 34, "600 12px Lexend, system-ui, sans-serif", INK, "right");
           } else {
             cols.forEach(function (c) {
               var val = row[c.key];
               if (c.key === "pts") {
-                text(String(val != null ? val : "—"), c.x, y + 42, "800 16px Lexend, system-ui, sans-serif", BLUE, "right");
+                text(String(val != null ? val : "—"), c.x, y + 34, "800 14px Lexend, system-ui, sans-serif", BLUE, "right");
               } else {
-                text(String(val != null ? val : "—"), c.x, y + 42, "600 13px Lexend, system-ui, sans-serif", INK, "right");
+                text(String(val != null ? val : "—"), c.x, y + 34, "600 12px Lexend, system-ui, sans-serif", INK, "right");
               }
             });
           }
@@ -3028,7 +3071,7 @@ listenToUpdates();
         });
       }
 
-      text("sixershoops.com", W / 2, H - 24, "700 15px Lexend, system-ui, sans-serif", BLUE, "center");
+      text("sixershoops.com", W / 2, H - 20, "700 14px Lexend, system-ui, sans-serif", BLUE, "center");
       return canvas;
     }
 

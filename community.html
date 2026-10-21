@@ -1618,106 +1618,297 @@
   }
 
   
+
+
+  /* Share graphic — identical visual system to homepage injury report */
+  function loadImg(url){
+    return new Promise(function(resolve){
+      if(!url){ resolve(null); return; }
+      var img = new Image();
+      img.crossOrigin = "anonymous";
+      var done = false;
+      function finish(v){ if(done) return; done = true; resolve(v); }
+      img.onload = function(){ finish(img); };
+      img.onerror = function(){ finish(null); };
+      setTimeout(function(){ finish(null); }, 2800);
+      img.src = url;
+    });
+  }
+
   function fillCommShareDom(p){
-    var sub=$("commSgSubtitle");
-    var stats=$("commSgStats");
-    var list=$("commSgList");
+    var sub=$("commSgSubtitle"), stats=$("commSgStats"), list=$("commSgList");
     if(!sub||!stats||!list) return;
-    var subtitle = p.kind==="standings" ? ((p.scope||"")+" STANDINGS") :
-      p.kind==="playoffs" ? ((p.conf||"")+" PLAYOFF ORDER") :
-      p.kind==="game" ? "GAME PICK" :
-      p.kind==="sbc" ? "START / BENCH / CUT" :
-      p.kind==="tiers" ? "TIER LIST" :
-      p.kind==="wordle" ? "SPORTS WORDLE" : "COMMUNITY BOARD";
-    sub.textContent = subtitle;
+    sub.textContent = p && p.kind ? String(p.kind).toUpperCase() : "COMMUNITY BOARD";
     stats.innerHTML = "";
-    if(p.kind==="standings"||p.kind==="playoffs"){
-      stats.innerHTML = '<div class="sg-stat"><b>'+(p.order||[]).length+'</b><span>Ranked</span></div>';
-    } else if(p.kind==="game"){
-      stats.innerHTML = '<div class="sg-stat"><b>'+esc(p.winner||"—")+'</b><span>Pick</span></div>'
-        +'<div class="sg-stat"><b>'+esc(p.confidence||"")+'</b><span>Confidence</span></div>';
-    } else if(p.kind==="sbc"){
-      stats.innerHTML = '<div class="sg-stat"><b>'+(p.start||[]).length+'</b><span>Start</span></div>'
-        +'<div class="sg-stat"><b>'+(p.bench||[]).length+'</b><span>Bench</span></div>'
-        +'<div class="sg-stat"><b>'+(p.cut||[]).length+'</b><span>Cut</span></div>';
-    } else if(p.kind==="wordle"){
-      stats.innerHTML = '<div class="sg-stat"><b>'+(p.answerLen||"?")+'</b><span>Letters</span></div>'
-        +'<div class="sg-stat"><b>'+(p.maxGuesses||5)+'</b><span>Guesses</span></div>';
-    }
-    var rows = [];
-    if(p.kind==="standings"){
-      rows=(p.order||[]).map(function(x,i){ return {num:(i+1), text:(x.abbr||x.label||"")+(x.record?"  ·  "+x.record:""), meta:"", abbr:x.abbr||""}; });
-    } else if(p.kind==="playoffs"){
-      rows=(p.order||[]).map(function(a,i){ return {num:(i+1), text:a+" "+(NAMES[a]||""), meta:"", abbr:a}; });
-    } else if(p.kind==="game"){
-      rows=[
-        {num:"vs", text:(p.away||"")+" @ "+(p.home||""), meta:"", abbr:p.away, abbr2:p.home},
-        {num:"pick", text:(p.winner||"")+" · "+(p.confidence||""), meta:"", abbr:p.winner}
-      ];
-      if(p.scoreA||p.scoreH) rows.push({num:"scr", text:(p.scoreA||"—")+" – "+(p.scoreH||"—"), meta:""});
-      if(p.stat) rows.push({num:"stat", text:p.stat, meta:""});
-      if(p.note) rows.push({num:"note", text:p.note, meta:""});
-    } else if(p.kind==="sbc"){
-      rows=[
-        {num:"ST", text:(p.start||[]).join(", ")||"—", meta:""},
-        {num:"BN", text:(p.bench||[]).join(", ")||"—", meta:""},
-        {num:"CUT", text:(p.cut||[]).join(", ")||"—", meta:""}
-      ];
-    } else if(p.kind==="tiers"){
-      (p.tiers||[]).forEach(function(arr,i){
-        if(arr&&arr.length) rows.push({num:TIER_LABELS[i], text:arr.join(", "), meta:""});
-      });
-    } else if(p.kind==="wordle"){
-      rows=[
-        {num:"Q", text:p.prompt||"Sports Wordle", meta:""},
-        {num:"", text:(p.answerLen||"?")+" letters · play in the post", meta:""}
-      ];
-    }
-    list.innerHTML = rows.map(function(r){
-      var logos="";
-      if(r.abbr) logos+=logoImg(r.abbr,"sg-team-logo");
-      if(r.abbr2) logos+=logoImg(r.abbr2,"sg-team-logo");
-      var textBlock = logos
-        ? ('<div class="sg-team-row">'+logos+'<p class="sg-q-text" style="margin:0">'+esc(String(r.text||""))+"</p></div>")
-        : ('<p class="sg-q-text">'+esc(String(r.text||""))+"</p>");
-      return '<li><div class="sg-q-card">'
-        +(r.num?('<p class="sg-q-num">'+esc(String(r.num))+"</p>"):"")
-        +textBlock
-        +(r.meta?('<p class="sg-q-meta">'+esc(r.meta)+"</p>"):"")
-        +"</div></li>";
-    }).join("");
+    list.innerHTML = "";
   }
 
   function buildGraphic(p){
-    return new Promise(function(resolve){
+    return new Promise(async function(resolve){
       if(!p){ resolve(null); return; }
-      fillCommShareDom(p);
-      var page = document.querySelector("#community-social-export .sg-page");
-      if(!page || typeof html2canvas !== "function"){
-        resolve(null); return;
-      }
-      var imgs = Array.prototype.slice.call(page.querySelectorAll("img"));
-      var wait = imgs.map(function(img){
-        return new Promise(function(r){
-          if(img.complete && img.naturalWidth){ r(); return; }
-          img.onload = function(){ r(); };
-          img.onerror = function(){ r(); };
-          setTimeout(r, 2500);
+      try { resolve(await drawCommunityShareCanvas(p)); }
+      catch(err){ console.warn("community graphic", err); resolve(null); }
+    });
+  }
+
+  async function drawCommunityShareCanvas(p){
+    /* Match buildInjuryShareCanvas in index.html pixel-for-pixel style */
+    var W = 1080;
+    var PAD = 48;
+    var NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
+    var WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
+    var MID = "#64748b", BORDER = "#e4e8f0";
+
+    var kindTitle = {
+      standings: "Standings Board",
+      playoffs: "Playoff Order",
+      game: "Game Pick",
+      sbc: "Start / Bench / Cut",
+      tiers: "Tier List",
+      wordle: "Sports Wordle"
+    };
+    var title = kindTitle[p.kind] || "Community Board";
+    var matchup = "";
+    if(p.kind === "standings") matchup = (p.scope || "East") + " · Projected order";
+    else if(p.kind === "playoffs") matchup = (p.conf || "East") + " · Seeds 1–10";
+    else if(p.kind === "game") matchup = (p.away || "?") + " @ " + (p.home || "?");
+    else if(p.kind === "sbc") matchup = "Interactive board";
+    else if(p.kind === "tiers") matchup = p.title || "Community tier list";
+    else if(p.kind === "wordle") matchup = p.prompt || "Guess the answer";
+    else matchup = "SixersHoops Community";
+
+    // Row model: { name, badge, badgeKey, sub, logo, logo2 }
+    var BADGE = {
+      "1":  { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "2":  { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "3":  { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "ST": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
+      "BN": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "CUT":{ bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+      "S":  { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+      "A":  { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
+      "B":  { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
+      "C":  { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "D":  { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" },
+      "F":  { bg: "#f1f5f9", text: "#64748b", border: "#e2e8f0" },
+      "PICK":{ bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
+      "VS": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "SCR":{ bg: "#f8fafc", text: "#475569", border: "#e2e8f0" },
+      "STAT":{ bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "NOTE":{ bg: "#f8fafc", text: "#475569", border: "#e2e8f0" },
+      "Q":  { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "LOCK":{ bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
+      "LIKELY":{ bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      "LEAN":{ bg: "#fffbeb", text: "#b45309", border: "#fde68a" }
+    };
+
+    var sections = []; // { head, items:[{name,badge,sub,logo,logo2}] }
+
+    if(p.kind === "standings"){
+      var items = (p.order || []).map(function(x, i){
+        return {
+          name: (x.abbr || x.label || "Team") + (NAMES[x.abbr] ? "  " + NAMES[x.abbr] : ""),
+          badge: String(i + 1),
+          sub: x.record ? ("Projected " + x.record) : "",
+          logo: teamLogo(x.abbr)
+        };
+      });
+      sections.push({ head: (p.scope || "East").toUpperCase(), items: items });
+    } else if(p.kind === "playoffs"){
+      var items = (p.order || []).map(function(a, i){
+        return {
+          name: a + "  " + (NAMES[a] || ""),
+          badge: String(i + 1),
+          sub: i < 6 ? "Play-in / playoff seed" : "Play-in territory",
+          logo: teamLogo(a)
+        };
+      });
+      sections.push({ head: (p.conf || "East").toUpperCase() + " SEEDS", items: items });
+    } else if(p.kind === "game"){
+      var conf = String(p.confidence || "Likely").toUpperCase();
+      var items = [
+        { name: (p.away || "?") + "  @  " + (p.home || "?"), badge: "VS", sub: "Matchup", logo: teamLogo(p.away), logo2: teamLogo(p.home) },
+        { name: (p.winner || "—") + " wins", badge: conf, sub: "Confidence · " + (p.confidence || "Likely"), logo: teamLogo(p.winner) }
+      ];
+      if(p.scoreA || p.scoreH) items.push({ name: "Score  " + (p.scoreA || "—") + " – " + (p.scoreH || "—"), badge: "SCR", sub: "Predicted final" });
+      if(p.stat) items.push({ name: p.stat, badge: "STAT", sub: "Key stat call" });
+      if(p.note) items.push({ name: p.note, badge: "NOTE", sub: "" });
+      sections.push({ head: "YOUR PICK", items: items });
+    } else if(p.kind === "sbc"){
+      sections.push({ head: "START (5)", items: (p.start || []).map(function(n){ return { name: n, badge: "ST", sub: "Starter" }; }) });
+      sections.push({ head: "BENCH", items: (p.bench || []).map(function(n){ return { name: n, badge: "BN", sub: "Bench" }; }) });
+      sections.push({ head: "CUT", items: (p.cut || []).map(function(n){ return { name: n, badge: "CUT", sub: "Cut" }; }) });
+      sections = sections.filter(function(s){ return s.items.length; });
+      if(!sections.length) sections.push({ head: "BOARD", items: [{ name: "Add players to Start, Bench, or Cut", badge: "—", sub: "" }] });
+    } else if(p.kind === "tiers"){
+      (p.tiers || []).forEach(function(arr, i){
+        if(!arr || !arr.length) return;
+        sections.push({
+          head: "TIER " + TIER_LABELS[i],
+          items: arr.map(function(n){ return { name: n, badge: TIER_LABELS[i], sub: "" }; })
         });
       });
-      Promise.all(wait).then(function(){
-        html2canvas(page, {
-          backgroundColor: "#ffffff",
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          logging: false,
-          width: 900,
-          windowWidth: 900
-        }).then(function(canvas){ resolve(canvas); })
-          .catch(function(err){ console.warn("html2canvas", err); resolve(null); });
+      if(!sections.length) sections.push({ head: "TIERS", items: [{ name: "Add items to tiers", badge: "—", sub: "" }] });
+    } else if(p.kind === "wordle"){
+      sections.push({
+        head: "CHALLENGE",
+        items: [
+          { name: p.prompt || "Sports Wordle", badge: "Q", sub: (p.answerLen || "?") + " letters · " + (p.maxGuesses || 5) + " guesses" },
+          { name: "Play inside the post — no spoilers", badge: "NOTE", sub: "" }
+        ]
+      });
+    } else {
+      sections.push({ head: "BOARD", items: [{ name: "Community board", badge: "—", sub: "" }] });
+    }
+
+    var rows = 0;
+    sections.forEach(function(s){ rows += Math.max((s.items || []).length, 1); });
+    var headerH = 168;
+    var rowH = 72;
+    var teamHeadH = 40;
+    var H = headerH + sections.length * teamHeadH + rows * rowH + 90;
+
+    // Preload logos
+    var logoUrls = [];
+    sections.forEach(function(s){
+      (s.items || []).forEach(function(it){
+        if(it.logo) logoUrls.push(it.logo);
+        if(it.logo2) logoUrls.push(it.logo2);
       });
     });
+    var loaded = await Promise.all(logoUrls.map(loadImg));
+    var logoMap = {};
+    logoUrls.forEach(function(u, i){ if(u) logoMap[u] = loaded[i]; });
+
+    var canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    var ctx = canvas.getContext("2d");
+
+    function rr(x, y, w, h, r, fill) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    }
+    function text(str, x, y, font, color, align) {
+      ctx.font = font;
+      ctx.fillStyle = color;
+      ctx.textAlign = align || "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(String(str == null ? "" : str), x, y);
+    }
+    function wrapText(str, maxW, font) {
+      ctx.font = font;
+      var words = String(str || "").split(/\s+/);
+      var lines = [], line = "";
+      words.forEach(function(w){
+        var test = line ? line + " " + w : w;
+        if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+        else line = test;
+      });
+      if (line) lines.push(line);
+      return lines.slice(0, 2);
+    }
+    function drawLogo(img, cx, cy, r) {
+      if (!img) return false;
+      try {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+        ctx.restore();
+        // ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = BORDER;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        return true;
+      } catch (e) { return false; }
+    }
+
+    // === identical to injury report layout ===
+    ctx.fillStyle = CREAM;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = NAVY;
+    ctx.fillRect(0, 0, W, 132);
+    ctx.fillStyle = RED;
+    ctx.fillRect(0, 132, W, 4);
+
+    text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
+    text(title, PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
+    text(matchup, PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
+    text("Community", W - PAD, 116, "500 14px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.65)", "right");
+
+    var y = headerH;
+    sections.forEach(function(sec){
+      rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
+      text(String(sec.head || "").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
+      y += teamHeadH;
+
+      var items = sec.items || [];
+      if (!items.length) {
+        text("Nothing listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
+        y += rowH;
+        return;
+      }
+      items.forEach(function(item){
+        rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
+        ctx.strokeStyle = BORDER;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        var textLeft = PAD + 20;
+        var cy = y + (rowH - 10) / 2;
+        if (item.logo && logoMap[item.logo]) {
+          drawLogo(logoMap[item.logo], textLeft + 18, cy, 18);
+          textLeft += 44;
+        }
+        if (item.logo2 && logoMap[item.logo2]) {
+          drawLogo(logoMap[item.logo2], textLeft + 18, cy, 18);
+          textLeft += 44;
+        }
+
+        // Name
+        text(item.name, textLeft, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
+
+        // Badge (right) — same chip style as injury status
+        var label = String(item.badge || "").toUpperCase();
+        if (label && label !== "—") {
+          var badge = BADGE[label] || BADGE[String(item.badge)] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+          // numeric ranks 4+
+          if (/^\d+$/.test(label) && !BADGE[label]) {
+            badge = { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+          }
+          ctx.font = "800 12px Lexend, system-ui, sans-serif";
+          var bw = Math.max(ctx.measureText(label).width + 22, 36);
+          var bx = W - PAD - 20 - bw;
+          rr(bx, y + 12, bw, 26, 13, badge.bg);
+          ctx.strokeStyle = badge.border;
+          ctx.stroke();
+          text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
+        }
+
+        // Sub line
+        if (item.sub) {
+          var lines = wrapText(item.sub, W - PAD * 2 - 40 - (label ? 70 : 0), "500 13px Lexend, system-ui, sans-serif");
+          lines.forEach(function(ln, i){
+            text(ln, textLeft, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
+          });
+        }
+        y += rowH;
+      });
+    });
+
+    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+    return canvas;
   }
 
 if($("studioGraphic")) $("studioGraphic").onclick=async function(){

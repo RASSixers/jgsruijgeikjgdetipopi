@@ -2496,13 +2496,52 @@ listenToUpdates();
     return { home: __gsSide(home), away: __gsSide(away) };
   }
 
-  function __gsPeriodLabel(periodKey, statusPeriod, isFinal) {
-    if (periodKey === "final" || isFinal) return "FINAL";
+  function __gsTeamShort(abbr, displayName) {
+    var map = {
+      ATL: "Hawks", BOS: "Celtics", BKN: "Nets", CHA: "Hornets", CHI: "Bulls",
+      CLE: "Cavaliers", DAL: "Mavericks", DEN: "Nuggets", DET: "Pistons", GSW: "Warriors",
+      HOU: "Rockets", IND: "Pacers", LAC: "Clippers", LAL: "Lakers", MEM: "Grizzlies",
+      MIA: "Heat", MIL: "Bucks", MIN: "Timberwolves", NOP: "Pelicans", NYK: "Knicks",
+      OKC: "Thunder", ORL: "Magic", PHI: "Sixers", PHX: "Suns", POR: "Trail Blazers",
+      SAC: "Kings", SAS: "Spurs", TOR: "Raptors", UTA: "Jazz", WAS: "Wizards"
+    };
+    var a = String(abbr || "").toUpperCase();
+    if (map[a]) return map[a];
+    var n = String(displayName || "");
+    if (n) {
+      // last word of display name as fallback
+      var parts = n.split(/\s+/);
+      return parts[parts.length - 1] || a || "Team";
+    }
+    return a || "Team";
+  }
+
+  function __gsPeriodLabel(periodKey, status, isFinal) {
+    // Only say FINAL when the game is actually over
+    if (periodKey === "final") {
+      if (isFinal) return "FINAL";
+      var detail = "";
+      try {
+        detail = (status && status.type && (status.type.detail || status.type.shortDetail)) || "";
+        if (!detail && status && status.displayClock) {
+          var p = Number(status.period) || 0;
+          detail = (p ? ("Q" + p + " ") : "") + String(status.displayClock);
+        }
+      } catch (e) {}
+      if (detail) return String(detail).toUpperCase();
+      var p2 = Number(status && status.period) || 0;
+      if (p2 === 1) return "1ST QUARTER";
+      if (p2 === 2) return "2ND QUARTER";
+      if (p2 === 3) return "3RD QUARTER";
+      if (p2 === 4) return "4TH QUARTER";
+      if (p2 > 4) return "OVERTIME";
+      return "IN PROGRESS";
+    }
     if (periodKey === "q1") return "END OF 1ST";
     if (periodKey === "q2") return "HALFTIME";
     if (periodKey === "q3") return "END OF 3RD";
     if (periodKey === "q4") return "END OF 4TH";
-    return "LIVE";
+    return "IN PROGRESS";
   }
 
   function __gsScoreThrough(side, throughQ) {
@@ -2519,42 +2558,94 @@ listenToUpdates();
 
   
   function __gsBoxLeaders(summary, limit) {
-    limit = limit || 5;
+    // Full Sixers box score only (all players + DNPs)
     var groups = __gsGet(summary, "boxscore.players", []) || [];
-    var all = [];
+    var sixers = null;
     groups.forEach(function (g) {
-      var abbr = __gsGet(g, "team.abbreviation", "TM");
-      var st = (g.statistics || [])[0] || {};
-      var keys = st.keys || [];
-      var pi = keys.indexOf("points");
-      var ri = keys.indexOf("rebounds");
-      var ai = keys.indexOf("assists");
-      var mi = keys.indexOf("minutes");
-      (st.athletes || []).forEach(function (a) {
-        var stats = a.stats || [];
-        if (a.didNotPlay && !stats.length) return;
-        var pts = pi >= 0 ? Number(stats[pi]) || 0 : 0;
-        var id = __gsGet(a, "athlete.id", null);
-        var head = __gsGet(a, "athlete.headshot.href", null);
-        if (!head && id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
-        if (typeof head === "object" && head && head.href) head = head.href;
-        // Prefer full-size ESPN headshot when possible
-        if (head && /headshot/i.test(String(head)) && id) {
-          head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
-        }
-        all.push({
-          team: abbr,
+      var abbr = String(__gsGet(g, "team.abbreviation", "") || "").toUpperCase();
+      if (abbr === "PHI") sixers = g;
+    });
+    if (!sixers) {
+      // fallback: any group that looks like PHI
+      groups.forEach(function (g) {
+        var n = String(__gsGet(g, "team.displayName", "") || "");
+        if (/76ers|philadelphia/i.test(n)) sixers = g;
+      });
+    }
+    if (!sixers) return [];
+
+    var st = (sixers.statistics || [])[0] || {};
+    var keys = st.keys || [];
+    var labels = st.labels || st.names || [];
+    var pi = keys.indexOf("points");
+    var ri = keys.indexOf("rebounds");
+    var ai = keys.indexOf("assists");
+    var mi = keys.indexOf("minutes");
+    var si = keys.indexOf("steals");
+    var bi = keys.indexOf("blocks");
+    var ti = keys.indexOf("turnovers");
+    var fi = keys.indexOf("fouls");
+    var pmi = keys.indexOf("plusMinus");
+    var fgm = keys.indexOf("fieldGoalsMade-fieldGoalsAttempted");
+    if (fgm < 0) fgm = keys.indexOf("fgMade-fgAttempted");
+    var tpm = keys.indexOf("threePointFieldGoalsMade-threePointFieldGoalsAttempted");
+    if (tpm < 0) tpm = keys.indexOf("3ptMade-3ptAttempted");
+    var ftm = keys.indexOf("freeThrowsMade-freeThrowsAttempted");
+    if (ftm < 0) ftm = keys.indexOf("ftMade-ftAttempted");
+
+    function statAt(stats, idx) {
+      if (idx < 0 || !stats) return "—";
+      return stats[idx] != null && stats[idx] !== "" ? stats[idx] : "—";
+    }
+
+    var active = [];
+    var dnps = [];
+    (st.athletes || []).forEach(function (a) {
+      var stats = a.stats || [];
+      var isDnp = !!(a.didNotPlay || a.reason);
+      if (isDnp && !stats.length) {
+        dnps.push({
+          team: "PHI",
           name: __gsGet(a, "athlete.shortName", null) || __gsGet(a, "athlete.displayName", "Player"),
-          pts: pts,
-          reb: ri >= 0 ? (stats[ri] != null ? stats[ri] : "—") : "—",
-          ast: ai >= 0 ? (stats[ai] != null ? stats[ai] : "—") : "—",
-          min: mi >= 0 ? (stats[mi] != null ? stats[mi] : "—") : "—",
-          headshot: head
+          pts: 0, reb: "—", ast: "—", min: "—", stl: "—", blk: "—", to: "—",
+          fg: "—", tp: "—", ft: "—", pm: "—",
+          dnp: true,
+          reason: a.reason || "DNP",
+          headshot: (function () {
+            var id = __gsGet(a, "athlete.id", null);
+            var head = __gsGet(a, "athlete.headshot.href", null);
+            if (!head && id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
+            if (typeof head === "object" && head && head.href) head = head.href;
+            return head;
+          })()
         });
+        return;
+      }
+      var pts = pi >= 0 ? Number(stats[pi]) || 0 : 0;
+      var id = __gsGet(a, "athlete.id", null);
+      var head = __gsGet(a, "athlete.headshot.href", null);
+      if (!head && id) head = "https://a.espncdn.com/i/headshots/nba/players/full/" + id + ".png";
+      if (typeof head === "object" && head && head.href) head = head.href;
+      active.push({
+        team: "PHI",
+        name: __gsGet(a, "athlete.shortName", null) || __gsGet(a, "athlete.displayName", "Player"),
+        pts: pts,
+        reb: statAt(stats, ri),
+        ast: statAt(stats, ai),
+        min: statAt(stats, mi),
+        stl: statAt(stats, si),
+        blk: statAt(stats, bi),
+        to: statAt(stats, ti),
+        fg: statAt(stats, fgm),
+        tp: statAt(stats, tpm),
+        ft: statAt(stats, ftm),
+        pm: statAt(stats, pmi),
+        dnp: false,
+        headshot: head
       });
     });
-    all.sort(function (a, b) { return b.pts - a.pts; });
-    return all.slice(0, limit);
+    // Keep ESPN order for active (usually starters then bench); DNPs at end
+    return active.concat(dnps);
   }
 
 
@@ -2595,20 +2686,13 @@ listenToUpdates();
 
     var awayScore = __gsScoreThrough(teams.away, periodNum);
     var homeScore = __gsScoreThrough(teams.home, periodNum);
-    var periodTitle = __gsPeriodLabel(periodKey, status.period, isFinal && periodKey === "final");
-    // Prefer full names in subtitle
-    var awayName = teams.away.name || teams.away.abbr;
-    var homeName = teams.home.name || teams.home.abbr;
-    var matchup = String(teams.away.abbr === "PHI" ? "76ers" : teams.away.abbr) + " vs " +
-      String(teams.home.abbr === "PHI" ? "76ers" : (teams.home.name || teams.home.abbr));
-    // cleaner matchup from team display names
-    try {
-      matchup = (teams.away.abbr === "PHI" ? "76ers" : (teams.away.name || teams.away.abbr)) +
-        " vs " +
-        (teams.home.abbr === "PHI" ? "76ers" : (teams.home.name || teams.home.abbr));
-    } catch (e) {}
+    var periodTitle = __gsPeriodLabel(periodKey, status, isFinal);
+    // matchup set after leaders
 
-    var leaders = __gsBoxLeaders(summary, 10);
+    var leaders = __gsBoxLeaders(summary, 99);
+    var awayShort = __gsTeamShort(teams.away.abbr, teams.away.name);
+    var homeShort = __gsTeamShort(teams.home.abbr, teams.home.name);
+    var matchup = awayShort + " vs " + homeShort;
 
     var comps = __gsGet(summary, "header.competitions.0.competitors", null);
     if (!Array.isArray(comps) || !comps.length) comps = __gsGet(event, "competitions.0.competitors", null) || [];
@@ -2624,9 +2708,9 @@ listenToUpdates();
     // better display names
     teams.away.name = __gsGet(awayC, "team.displayName", teams.away.name);
     teams.home.name = __gsGet(homeC, "team.displayName", teams.home.name);
-    matchup = (teams.away.abbr === "PHI" ? "76ers" : (teams.away.name || teams.away.abbr).replace("Philadelphia ", "")) +
-      " vs " +
-      (teams.home.abbr === "PHI" ? "76ers" : (teams.home.name || teams.home.abbr).replace("Philadelphia ", ""));
+    awayShort = __gsTeamShort(teams.away.abbr, teams.away.name);
+    homeShort = __gsTeamShort(teams.home.abbr, teams.home.name);
+    matchup = awayShort + " vs " + homeShort;
 
     var headUrls = leaders.map(function (r) { return r.headshot; });
     var loadedHeads = await Promise.all(headUrls.map(__gsLoadImg));
@@ -2640,7 +2724,7 @@ listenToUpdates();
       dateLine = d.toLocaleDateString("en-US", {
         timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric"
       });
-      dateLine += " · " + (isFinal ? "Final" : periodTitle);
+      dateLine += " · " + periodTitle;
     } catch (e) {
       dateLine = periodTitle;
     }
@@ -2738,23 +2822,25 @@ listenToUpdates();
       var scoreY = headerH;
       rr(PAD, scoreY, W - PAD * 2, scoreH - 16, 20, CARD);
 
-      // Away block
-      if (!logoFit(awayLogo, PAD + 40, scoreY + 36, 56)) {
-        rr(PAD + 40, scoreY + 36, 56, 56, 12, "#e8eef5");
-        text(String(teams.away.abbr).slice(0, 3), PAD + 68, scoreY + 72, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
+      // Aligned logo + name columns
+      var logoBox = 56;
+      var awayLogoX = PAD + 36;
+      var homeLogoX = W - PAD - 36 - logoBox;
+      var logoY = scoreY + 40;
+      if (!logoFit(awayLogo, awayLogoX, logoY, logoBox)) {
+        rr(awayLogoX, logoY, logoBox, logoBox, 12, "#e8eef5");
+        text(String(teams.away.abbr).slice(0, 3), awayLogoX + logoBox / 2, logoY + 34, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      text(teams.away.abbr, PAD + 112, scoreY + 58, "800 28px Lexend, system-ui, sans-serif", INK);
-      text("AWAY", PAD + 112, scoreY + 82, "700 12px Lexend, system-ui, sans-serif", MUTED);
-
-      // Home block
-      if (!logoFit(homeLogo, W - PAD - 96, scoreY + 36, 56)) {
-        rr(W - PAD - 96, scoreY + 36, 56, 56, 12, "#e8eef5");
-        text(String(teams.home.abbr).slice(0, 3), W - PAD - 68, scoreY + 72, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
+      if (!logoFit(homeLogo, homeLogoX, logoY, logoBox)) {
+        rr(homeLogoX, logoY, logoBox, logoBox, 12, "#e8eef5");
+        text(String(teams.home.abbr).slice(0, 3), homeLogoX + logoBox / 2, logoY + 34, "800 14px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      text(teams.home.abbr, W - PAD - 112, scoreY + 58, "800 28px Lexend, system-ui, sans-serif", INK, "right");
-      text("HOME", W - PAD - 112, scoreY + 82, "700 12px Lexend, system-ui, sans-serif", MUTED, "right");
+      text(__gsTeamShort(teams.away.abbr, teams.away.name), awayLogoX + logoBox + 16, scoreY + 62, "800 24px Lexend, system-ui, sans-serif", INK);
+      text("AWAY", awayLogoX + logoBox + 16, scoreY + 86, "700 12px Lexend, system-ui, sans-serif", MUTED);
+      text(__gsTeamShort(teams.home.abbr, teams.home.name), homeLogoX - 16, scoreY + 62, "800 24px Lexend, system-ui, sans-serif", INK, "right");
+      text("HOME", homeLogoX - 16, scoreY + 86, "700 12px Lexend, system-ui, sans-serif", MUTED, "right");
 
-      text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 70, "800 48px Lexend, system-ui, sans-serif", BLUE, "center");
+      text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 74, "800 48px Lexend, system-ui, sans-serif", BLUE, "center");
 
       // Quarter lines
       var maxQ = Math.max(teams.away.lines.length, teams.home.lines.length, periodNum || 0);
@@ -2771,13 +2857,16 @@ listenToUpdates();
         }
       }
 
-      // Box score header
+      // Sixers-only full box score
       var boxY = scoreY + scoreH;
-      text("BOX SCORE", PAD, boxY + 8, "800 13px Lexend, system-ui, sans-serif", MUTED);
-      text("MIN", W - PAD - 210, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MUTED, "right");
-      text("PTS", W - PAD - 140, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MUTED, "right");
-      text("REB", W - PAD - 70, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MUTED, "right");
-      text("AST", W - PAD, boxY + 8, "700 12px Lexend, system-ui, sans-serif", MUTED, "right");
+      text("SIXERS BOX SCORE", PAD, boxY + 8, "800 13px Lexend, system-ui, sans-serif", MUTED);
+      // columns from right: PTS AST REB FG MIN
+      var col = { min: W - PAD - 320, fg: W - PAD - 230, reb: W - PAD - 150, ast: W - PAD - 80, pts: W - PAD };
+      text("MIN", col.min, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
+      text("FG", col.fg, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
+      text("REB", col.reb, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
+      text("AST", col.ast, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
+      text("PTS", col.pts, boxY + 8, "700 11px Lexend, system-ui, sans-serif", MUTED, "right");
 
       var y = boxY + boxTitleH - 8;
       if (!leaders.length) {
@@ -2798,13 +2887,18 @@ listenToUpdates();
             text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 7, "800 16px Lexend, system-ui, sans-serif", BLUE, "center");
           }
 
-          text(row.team, PAD + 88, y + 30, "700 12px Lexend, system-ui, sans-serif", MUTED);
-          text(row.name, PAD + 88, y + 56, "700 20px Lexend, system-ui, sans-serif", INK);
+          text("Sixers", PAD + 88, y + 28, "700 12px Lexend, system-ui, sans-serif", MUTED);
+          text(row.name, PAD + 88, y + 54, "700 18px Lexend, system-ui, sans-serif", INK);
 
-          text(String(row.min), W - PAD - 210, y + 48, "600 17px Lexend, system-ui, sans-serif", INK, "right");
-          text(String(row.pts), W - PAD - 140, y + 48, "800 20px Lexend, system-ui, sans-serif", BLUE, "right");
-          text(String(row.reb), W - PAD - 70, y + 48, "600 17px Lexend, system-ui, sans-serif", INK, "right");
-          text(String(row.ast), W - PAD, y + 48, "600 17px Lexend, system-ui, sans-serif", INK, "right");
+          if (row.dnp) {
+            text(String(row.reason || "DNP"), col.pts, y + 46, "600 14px Lexend, system-ui, sans-serif", MID, "right");
+          } else {
+            text(String(row.min), col.min, y + 46, "600 15px Lexend, system-ui, sans-serif", INK, "right");
+            text(String(row.fg), col.fg, y + 46, "600 14px Lexend, system-ui, sans-serif", INK, "right");
+            text(String(row.reb), col.reb, y + 46, "600 15px Lexend, system-ui, sans-serif", INK, "right");
+            text(String(row.ast), col.ast, y + 46, "600 15px Lexend, system-ui, sans-serif", INK, "right");
+            text(String(row.pts), col.pts, y + 46, "800 18px Lexend, system-ui, sans-serif", BLUE, "right");
+          }
           y += rowH;
         });
       }

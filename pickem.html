@@ -6216,8 +6216,40 @@
       }
     }
 
+    function clearConsensusBadges() {
+      document.querySelectorAll('.consensus-badge').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
+      });
+    }
+
+    // % picked is hidden until the user has submitted picks for this date.
+    // SixersHoops admins (isCurrentUserAdmin) can always see consensus.
     async function renderConsensus(date) {
       try {
+        clearConsensusBadges();
+
+        const isAdmin = typeof isUserAdmin === 'function' ? isUserAdmin() : !!isCurrentUserAdmin;
+        let userHasPicked = false;
+
+        if (auth.currentUser) {
+          try {
+            const mine = await db.collection('picks')
+              .where('userId', '==', auth.currentUser.uid)
+              .where('date', '==', date)
+              .limit(1)
+              .get();
+            userHasPicked = !mine.empty;
+          } catch (e) {
+            console.warn('renderConsensus user pick check', e);
+          }
+        }
+
+        if (!isAdmin && !userHasPicked) {
+          // Regular users must pick first before seeing % of fans
+          return;
+        }
+
         const picksSnapshot = await db.collection('picks').where('date', '==', date).get();
         if (picksSnapshot.empty) return;
 
@@ -6270,6 +6302,7 @@
               badge.className = 'consensus-badge';
               label.appendChild(badge);
             }
+            badge.style.display = '';
             badge.textContent = percent + '% of fans';
           });
         });

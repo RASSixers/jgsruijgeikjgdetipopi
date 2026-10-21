@@ -1000,10 +1000,10 @@
 
 
   .game-share-modal {
-    max-width: min(760px, 96vw) !important;
+    max-width: min(900px, 96vw) !important;
     width: 100% !important;
     color: #0f172a;
-    overflow: hidden;
+    overflow: auto;
     box-sizing: border-box;
   }
   .game-share-head.inj-share-head,
@@ -1083,7 +1083,6 @@
   }
   .game-share-preview img {
     width: 100%;
-    max-width: none;
     height: auto;
     display: block;
     border-radius: 8px;
@@ -2862,19 +2861,21 @@ function __gsLoadImg(url) {
       dateLine = "";
     }
 
+
     function draw(withImages) {
-      var W = 1400;
-      var PAD = 40;
+      // Wide canvas so every box-score column has room (no right-edge clipping)
+      var W = 1600;
+      var PAD = 48;
       var BLUE = "#006BB6";
       var WHITE = "#ffffff", CARD = "#f4f6fa", INK = "#0f172a";
       var BORDER = "#e2e8f0", LINE = "#cbd5e1";
-      var rowH = 56;
+      var rowH = 58;
       var headerH = 150;
-      var scoreBlockH = 210;
-      var boxTitleH = 36;
+      var scoreBlockH = 220;
+      var boxTitleH = 40;
       var footerH = 56;
       var nRows = Math.max(leaders.length, 1);
-      var H = headerH + scoreBlockH + boxTitleH + nRows * rowH + footerH + 12;
+      var H = headerH + scoreBlockH + boxTitleH + nRows * rowH + footerH + 16;
 
       var canvas = document.createElement("canvas");
       canvas.width = W;
@@ -2951,7 +2952,7 @@ function __gsLoadImg(url) {
         text(dateLine, W / 2, 136, "600 14px Lexend, system-ui, sans-serif", INK, "center");
       }
 
-      // Score + professional linescore card
+      // Score card + linescore
       var scoreY = headerH;
       var cardW = W - PAD * 2;
       rr(PAD, scoreY, cardW, scoreBlockH - 16, 16, CARD);
@@ -2977,44 +2978,38 @@ function __gsLoadImg(url) {
 
       text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 52, "800 40px Lexend, system-ui, sans-serif", BLUE, "center");
 
-      // Linescore table (professional)
+      // Linescore
       var qCount = Math.max(teams.away.lines.length, teams.home.lines.length, 4);
       if (periodNum != null) qCount = Math.max(periodNum, 1);
-      qCount = Math.min(Math.max(qCount, 1), 6); // allow OT columns
-      // Build column labels 1 2 3 4 (OT) T
+      qCount = Math.min(Math.max(qCount, 1), 6);
       var qLabels = [];
       for (var qi = 0; qi < qCount; qi++) {
         if (qi < 4) qLabels.push(String(qi + 1));
-        else qLabels.push("OT" + (qi === 4 ? "" : String(qi - 3)));
+        else qLabels.push(qi === 4 ? "OT" : ("OT" + String(qi - 3)));
       }
       qLabels.push("T");
 
-      var tableTop = scoreY + 92;
-      var tableLeft = PAD + 48;
-      var tableWidth = cardW - 96;
-      var colW = tableWidth / (qLabels.length + 1); // +1 for team name col
-      var row1Y = tableTop + 22;
-      var row2Y = tableTop + 50;
-      var row3Y = tableTop + 78;
+      var tableTop = scoreY + 96;
+      var tableLeft = PAD + 40;
+      var tableWidth = cardW - 80;
+      var colW = tableWidth / (qLabels.length + 1);
+      var row1Y = tableTop + 24;
+      var row2Y = tableTop + 52;
+      var row3Y = tableTop + 80;
 
-      // header row background strip
-      rr(tableLeft, tableTop, tableWidth, 88, 10, WHITE);
+      rr(tableLeft, tableTop, tableWidth, 92, 10, WHITE);
       ctx.strokeStyle = BORDER;
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // column headers
-      text("", tableLeft + 8, row1Y, "700 12px Lexend, system-ui, sans-serif", INK, "left");
       qLabels.forEach(function (lab, i) {
         var x = tableLeft + colW * (i + 1) + colW * 0.5;
         text(lab, x, row1Y, "800 12px Lexend, system-ui, sans-serif", INK, "center");
       });
-
-      // divider under headers
       ctx.strokeStyle = LINE;
       ctx.beginPath();
-      ctx.moveTo(tableLeft + 12, tableTop + 30);
-      ctx.lineTo(tableLeft + tableWidth - 12, tableTop + 30);
+      ctx.moveTo(tableLeft + 12, tableTop + 32);
+      ctx.lineTo(tableLeft + tableWidth - 12, tableTop + 32);
       ctx.stroke();
 
       function lineVal(side, i) {
@@ -3023,54 +3018,46 @@ function __gsLoadImg(url) {
         return "–";
       }
 
-      // Away row
       text(awayShort, tableLeft + 14, row2Y, "700 14px Lexend, system-ui, sans-serif", INK, "left");
       for (var ai2 = 0; ai2 < qCount; ai2++) {
-        var ax = tableLeft + colW * (ai2 + 1) + colW * 0.5;
-        text(lineVal(teams.away, ai2), ax, row2Y, "600 14px Lexend, system-ui, sans-serif", INK, "center");
+        text(lineVal(teams.away, ai2), tableLeft + colW * (ai2 + 1) + colW * 0.5, row2Y, "600 14px Lexend, system-ui, sans-serif", INK, "center");
       }
       text(String(awayScore), tableLeft + colW * (qCount + 1) + colW * 0.5, row2Y, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
 
-      // Home row
       text(homeShort, tableLeft + 14, row3Y, "700 14px Lexend, system-ui, sans-serif", INK, "left");
       for (var hi2 = 0; hi2 < qCount; hi2++) {
-        var hx = tableLeft + colW * (hi2 + 1) + colW * 0.5;
-        text(lineVal(teams.home, hi2), hx, row3Y, "600 14px Lexend, system-ui, sans-serif", INK, "center");
+        text(lineVal(teams.home, hi2), tableLeft + colW * (hi2 + 1) + colW * 0.5, row3Y, "600 14px Lexend, system-ui, sans-serif", INK, "center");
       }
       text(String(homeScore), tableLeft + colW * (qCount + 1) + colW * 0.5, row3Y, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
 
-      // Full Sixers box score — columns anchored from the right so nothing clips
+      // ---- BOX SCORE: explicit left-to-right column centers, large right margin ----
       var boxY = scoreY + scoreBlockH;
-      text("SIXERS BOX SCORE", PAD, boxY + 4, "800 12px Lexend, system-ui, sans-serif", INK);
+      text("SIXERS BOX SCORE", PAD, boxY + 6, "800 13px Lexend, system-ui, sans-serif", INK);
 
-      // Fixed widths (right edge = W - PAD). FG/3PT/FT need extra room for "12-20"
-      var colDefs = [
-        { key: "pts", label: "PTS", w: 52 },
-        { key: "to", label: "TO", w: 44 },
-        { key: "blk", label: "BLK", w: 48 },
-        { key: "stl", label: "STL", w: 48 },
-        { key: "ast", label: "AST", w: 48 },
-        { key: "reb", label: "REB", w: 52 },
-        { key: "ft", label: "FT", w: 70 },
-        { key: "tp", label: "3PT", w: 70 },
-        { key: "fg", label: "FG", w: 70 },
-        { key: "min", label: "MIN", w: 56 }
-      ];
-      var cols = [];
-      var cursor = W - PAD;
-      colDefs.forEach(function (d) {
-        cols.unshift({ key: d.key, label: d.label, x: cursor });
-        cursor -= d.w;
+      // Player name zone ends at nameEnd. Stats use equal slots from nameEnd to (W - PAD).
+      var nameEnd = 380;
+      var statKeys = ["min", "fg", "tp", "ft", "reb", "ast", "stl", "blk", "to", "pts"];
+      var statLabels = ["MIN", "FG", "3PT", "FT", "REB", "AST", "STL", "BLK", "TO", "PTS"];
+      var statStart = nameEnd + 10;
+      var statEnd = W - PAD - 8; // hard right margin so nothing clips
+      var slot = (statEnd - statStart) / statKeys.length;
+      var cols = statKeys.map(function (k, i) {
+        // center of each slot; text is drawn centered so wide values like 12-20 stay inside slot
+        return {
+          key: k,
+          label: statLabels[i],
+          x: statStart + slot * i + slot / 2
+        };
       });
-      var nameMaxX = cursor - 16; // name must end before first stat
+
       cols.forEach(function (c) {
-        text(c.label, c.x, boxY + 4, "700 11px Lexend, system-ui, sans-serif", INK, "right");
+        text(c.label, c.x, boxY + 6, "700 11px Lexend, system-ui, sans-serif", INK, "center");
       });
 
-      var y = boxY + boxTitleH - 4;
+      var y = boxY + boxTitleH - 2;
       if (!leaders.length) {
         rr(PAD, y, W - PAD * 2, rowH - 8, 12, CARD);
-        text("Box score will appear as stats post.", PAD + 16, y + 32, "600 14px Lexend, system-ui, sans-serif", INK);
+        text("Box score will appear as stats post.", PAD + 16, y + 34, "600 14px Lexend, system-ui, sans-serif", INK);
       } else {
         leaders.forEach(function (row, i) {
           rr(PAD, y, W - PAD * 2, rowH - 8, 12, CARD);
@@ -3085,23 +3072,24 @@ function __gsLoadImg(url) {
             text(String(row.name || "?").charAt(0).toUpperCase(), cx, cy + 5, "800 12px Lexend, system-ui, sans-serif", BLUE, "center");
           }
 
-          var nameX = PAD + 60;
+          var nameX = PAD + 58;
           ctx.save();
           ctx.beginPath();
-          ctx.rect(nameX - 2, y, Math.max(40, nameMaxX - nameX), rowH - 8);
+          ctx.rect(nameX - 2, y, Math.max(40, nameEnd - nameX), rowH - 8);
           ctx.clip();
-          text(row.name, nameX, y + 34, "700 14px Lexend, system-ui, sans-serif", INK, "left");
+          text(row.name, nameX, y + 36, "700 15px Lexend, system-ui, sans-serif", INK, "left");
           ctx.restore();
 
           if (row.dnp) {
-            text(String(row.reason || "DNP"), W - PAD, y + 34, "600 12px Lexend, system-ui, sans-serif", INK, "right");
+            text(String(row.reason || "DNP"), cols[cols.length - 1].x, y + 36, "600 13px Lexend, system-ui, sans-serif", INK, "center");
           } else {
             cols.forEach(function (c) {
               var val = row[c.key];
+              var s = String(val != null ? val : "—");
               if (c.key === "pts") {
-                text(String(val != null ? val : "—"), c.x, y + 34, "800 14px Lexend, system-ui, sans-serif", BLUE, "right");
+                text(s, c.x, y + 36, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
               } else {
-                text(String(val != null ? val : "—"), c.x, y + 34, "600 12px Lexend, system-ui, sans-serif", INK, "right");
+                text(s, c.x, y + 36, "600 13px Lexend, system-ui, sans-serif", INK, "center");
               }
             });
           }

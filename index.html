@@ -998,15 +998,31 @@
   }
 
 
+
   .game-share-modal {
-    max-width: min(640px, 100%) !important;
+    max-width: min(760px, 96vw) !important;
+    width: 100% !important;
     color: #0f172a;
+    overflow: hidden;
+    box-sizing: border-box;
   }
+  .game-share-head.inj-share-head,
   .game-share-head {
+    display: flex !important;
     align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 0.75rem;
+    padding: 1rem 1.15rem !important;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .game-share-head > div {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 0.5rem;
   }
   .game-share-kicker {
-    margin: 0 0 0.2rem;
+    margin: 0 0 0.25rem;
     font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -1014,10 +1030,19 @@
     color: #006BB6;
   }
   .game-share-head h3 {
-    margin: 0;
-    font-size: 1.15rem !important;
+    margin: 0 !important;
+    font-size: 1.1rem !important;
     font-weight: 800 !important;
     color: #0f172a !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+  }
+  .game-share-body.inj-share-body,
+  .game-share-body {
+    padding: 0.85rem 1.15rem 0.5rem !important;
+    box-sizing: border-box;
   }
   .game-share-hint {
     margin: 0 0 0.75rem;
@@ -1032,7 +1057,6 @@
     gap: 0.5rem;
     margin-bottom: 1rem;
   }
-  .game-share-periods .home-inj-share-btn,
   .game-share-periods button {
     padding: 0.5rem 0.9rem !important;
     font-size: 0.8rem !important;
@@ -1041,9 +1065,9 @@
     border: 1px solid #dbe3ef !important;
     background: #fff !important;
     border-radius: 999px !important;
+    cursor: pointer;
   }
-  .game-share-periods button.is-on,
-  .game-share-periods .home-inj-share-btn.is-on {
+  .game-share-periods button.is-on {
     background: #0f172a !important;
     border-color: #0f172a !important;
     color: #fff !important;
@@ -1052,18 +1076,17 @@
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    padding: 0.75rem;
+    padding: 0.65rem;
     overflow: auto;
-    max-height: min(70vh, 900px);
+    max-height: min(72vh, 920px);
+    -webkit-overflow-scrolling: touch;
   }
   .game-share-preview img {
     width: 100%;
+    max-width: none;
     height: auto;
     display: block;
     border-radius: 8px;
-  }
-  .game-share-modal {
-    max-width: min(720px, 96vw) !important;
   }
   .game-share-status {
     margin: 0.75rem 0 0 !important;
@@ -1076,7 +1099,8 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.65rem;
-    padding: 1rem 1.15rem 1.15rem !important;
+    padding: 1rem 1.15rem 1.2rem !important;
+    box-sizing: border-box;
   }
   .game-share-actions .inj-share-btn {
     flex: 1 1 auto;
@@ -1093,6 +1117,7 @@
     border-color: #0f172a !important;
     color: #fff !important;
   }
+
 
 </style>
 </head>
@@ -3014,24 +3039,30 @@ function __gsLoadImg(url) {
       }
       text(String(homeScore), tableLeft + colW * (qCount + 1) + colW * 0.5, row3Y, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
 
-      // Full Sixers box score — compact so every row fits on the PNG
+      // Full Sixers box score — columns anchored from the right so nothing clips
       var boxY = scoreY + scoreBlockH;
       text("SIXERS BOX SCORE", PAD, boxY + 4, "800 12px Lexend, system-ui, sans-serif", INK);
 
-      // Columns spaced across full width
-      var nameRight = 320;
-      var keys = ["min", "fg", "tp", "ft", "reb", "ast", "stl", "blk", "to", "pts"];
-      var labels = ["MIN", "FG", "3PT", "FT", "REB", "AST", "STL", "BLK", "TO", "PTS"];
-      var statLeft = nameRight + 20;
-      var statRight = W - PAD;
-      var span = statRight - statLeft;
-      var cols = labels.map(function (lab, i) {
-        return {
-          key: keys[i],
-          label: lab,
-          x: statLeft + (span * (i + 1) / keys.length)
-        };
+      // Fixed widths (right edge = W - PAD). FG/3PT/FT need extra room for "12-20"
+      var colDefs = [
+        { key: "pts", label: "PTS", w: 52 },
+        { key: "to", label: "TO", w: 44 },
+        { key: "blk", label: "BLK", w: 48 },
+        { key: "stl", label: "STL", w: 48 },
+        { key: "ast", label: "AST", w: 48 },
+        { key: "reb", label: "REB", w: 52 },
+        { key: "ft", label: "FT", w: 70 },
+        { key: "tp", label: "3PT", w: 70 },
+        { key: "fg", label: "FG", w: 70 },
+        { key: "min", label: "MIN", w: 56 }
+      ];
+      var cols = [];
+      var cursor = W - PAD;
+      colDefs.forEach(function (d) {
+        cols.unshift({ key: d.key, label: d.label, x: cursor });
+        cursor -= d.w;
       });
+      var nameMaxX = cursor - 16; // name must end before first stat
       cols.forEach(function (c) {
         text(c.label, c.x, boxY + 4, "700 11px Lexend, system-ui, sans-serif", INK, "right");
       });
@@ -3057,7 +3088,7 @@ function __gsLoadImg(url) {
           var nameX = PAD + 60;
           ctx.save();
           ctx.beginPath();
-          ctx.rect(nameX - 2, y, nameRight - nameX, rowH - 8);
+          ctx.rect(nameX - 2, y, Math.max(40, nameMaxX - nameX), rowH - 8);
           ctx.clip();
           text(row.name, nameX, y + 34, "700 14px Lexend, system-ui, sans-serif", INK, "left");
           ctx.restore();

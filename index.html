@@ -688,6 +688,30 @@
     overflow: hidden;
   }
   .home-game-card.is-live { border-color: rgba(237,23,76,.35); }
+
+  /* Game center: prev / next arrows */
+  .home-game-row { display: flex; align-items: center; gap: 0.5rem; }
+  .home-game-row .home-game-card { flex: 1 1 auto; min-width: 0; }
+  .home-game-arrow {
+    flex: 0 0 auto; width: 40px; height: 40px; padding: 0; border-radius: 50%;
+    border: 1px solid var(--border-light); background: var(--card-bg);
+    color: var(--sixers-blue, #006BB6); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, border-color .15s, color .15s, opacity .15s, transform .15s;
+  }
+  .home-game-arrow svg { width: 20px; height: 20px; }
+  .home-game-arrow:hover:not(:disabled) {
+    background: var(--sixers-blue, #006BB6); border-color: var(--sixers-blue, #006BB6); color: #fff;
+  }
+  .home-game-arrow:active:not(:disabled) { transform: scale(.93); }
+  .home-game-arrow:disabled { opacity: .25; cursor: default; }
+  .home-game-arrow:focus-visible { outline: 2px solid var(--sixers-blue, #006BB6); outline-offset: 2px; }
+  #home-game-body { transition: opacity .15s; }
+  @media (max-width: 720px) {
+    .home-game-row { gap: 0.3rem; }
+    .home-game-arrow { width: 30px; height: 30px; }
+    .home-game-arrow svg { width: 16px; height: 16px; }
+  }
   .home-game-head {
     display: flex; align-items: center; justify-content: space-between;
     gap: 1rem; padding: 0.85rem 1.15rem; background: var(--surface-soft, rgba(0,0,0,.02));
@@ -1181,18 +1205,26 @@
   </header>
 
   <section id="game-center" class="home-game" aria-live="polite">
-    <div class="home-game-card" id="home-game-card">
-      <div class="home-game-head">
-        <span class="home-game-kicker" id="home-game-kicker">Loading</span>
-        <span class="home-game-clock" id="home-game-clock">—</span>
+    <div class="home-game-row">
+      <button type="button" class="home-game-arrow" id="home-game-prev" aria-label="Previous game" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div class="home-game-card" id="home-game-card">
+        <div class="home-game-head">
+          <span class="home-game-kicker" id="home-game-kicker">Loading</span>
+          <span class="home-game-clock" id="home-game-clock">—</span>
+        </div>
+        <div id="home-game-body">
+          <p class="home-game-empty">Loading game center…</p>
+        </div>
+        <div class="home-game-foot">
+          <span id="home-game-note" style="color:var(--mid);font-size:0.78rem;"></span>
+          <a href="/schedule">Full schedule →</a>
+        </div>
       </div>
-      <div id="home-game-body">
-        <p class="home-game-empty">Loading game center…</p>
-      </div>
-      <div class="home-game-foot">
-        <span id="home-game-note" style="color:var(--mid);font-size:0.78rem;"></span>
-        <a href="/schedule">Full schedule →</a>
-      </div>
+      <button type="button" class="home-game-arrow" id="home-game-next" aria-label="Next game" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
     </div>
   </section>
 
@@ -1563,8 +1595,17 @@ listenToUpdates();
 
   let panel = "pbp";
   let lastSummary = null;
+  let lastSummaryId = null;
   let featured = null;
   let timer = null;
+  // Game navigation state
+  let sorted = [];        // all games, oldest -> newest
+  let eventsCache = [];
+  let eventsAt = 0;
+  let viewId = null;      // game currently shown
+  let autoId = null;      // game the page would show by default
+  let pinned = false;     // true once the user arrows away from the default game
+  let reqSeq = 0;
 
   function get(obj, path, fb) {
     const v = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
@@ -1767,21 +1808,17 @@ listenToUpdates();
         if (e && e.id) byId.set(String(e.id), e);
       });
     }
-    // Team schedule (season slate)
-    try {
-      const res = await fetch(SCHEDULE + "?seasontype=2", { cache: "no-store" });
-      if (res.ok) {
+    // Team schedule (all season types, so past + future games are available)
+    const schedUrls = [SCHEDULE + "?seasontype=2", SCHEDULE, SCHEDULE + "?seasontype=1", SCHEDULE + "?seasontype=3"];
+    const schedResults = await Promise.all(schedUrls.map(async function (u) {
+      try {
+        const res = await fetch(u, { cache: "no-store" });
+        if (!res.ok) return [];
         const data = await res.json();
-        addAll(data.events || []);
-      }
-    } catch (_) {}
-    try {
-      const res = await fetch(SCHEDULE, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        addAll(data.events || []);
-      }
-    } catch (_) {}
+        return data.events || [];
+      } catch (_) { return []; }
+    }));
+    schedResults.forEach(addAll);
     // Scoreboard for today / nearby days (catches preseason & tip-soon games)
     try {
       const res = await fetch(SCOREBOARD + "?limit=100", { cache: "no-store" });
@@ -1818,68 +1855,104 @@ listenToUpdates();
     } catch (_) { return null; }
   }
 
-  // Full injury notes (shortComment / longComment) live on the league injuries feed
-  async function fetchLeagueInjuriesByAbbr(abbrs) {
-    const want = new Set((abbrs || []).map(function (a) { return String(a || "").toUpperCase(); }).filter(Boolean));
-    if (!want.size) return [];
+  // ---- Injuries -------------------------------------------------------
+  const ABBR_ALIAS = { GSW: "GS", NYK: "NY", NOP: "NO", NOR: "NO", SAS: "SA", WAS: "WSH", UTA: "UTAH", PHO: "PHX", BK: "BKN", CHO: "CHA", CHH: "CHA" };
+  function normAbbr(a) {
+    a = String(a || "").toUpperCase();
+    return ABBR_ALIAS[a] || a;
+  }
+  function groupMatchesTeam(team, g) {
+    const t = (g && g.team) || {};
+    if (team.id && t.id && String(t.id) === team.id) return true;
+    if (team.abbr && t.abbreviation && normAbbr(t.abbreviation) === normAbbr(team.abbr)) return true;
+    const n = String(t.displayName || t.name || "").toLowerCase();
+    return !!(team.name && n && n === team.name);
+  }
+  function matchupTeams(ev, summary) {
+    const out = [];
+    const seen = new Set();
+    [get(ev, "competitions.0.competitors", []), get(summary, "header.competitions.0.competitors", [])].forEach(function (list) {
+      (list || []).forEach(function (c) {
+        const t = c && c.team;
+        if (!t) return;
+        const abbr = String(t.abbreviation || "").toUpperCase();
+        const id = String(t.id || "");
+        const key = id || abbr;
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        const name = String(t.displayName || ((t.location || "") + " " + (t.name || t.nickname || ""))).trim().toLowerCase();
+        out.push({ id: id, abbr: abbr, name: name });
+      });
+    });
+    if (!out.some(function (t) { return normAbbr(t.abbr) === "PHI"; })) {
+      out.push({ id: "20", abbr: "PHI", name: "philadelphia 76ers" });
+    }
+    return out;
+  }
+
+  // League injuries feed (has shortComment / longComment). Match each team of the
+  // matchup by name, abbreviation (with aliases) or team id so the opponent is never lost.
+  async function fetchLeagueInjuries(teams) {
+    if (!teams || !teams.length) return [];
+    let blocks = [];
     try {
       const res = await fetch(INJURIES_LEAGUE, { cache: "no-store" });
       if (!res.ok) return [];
       const data = await res.json();
-      const out = [];
-      (data.injuries || []).forEach(function (teamBlock) {
-        const sample = ((teamBlock.injuries || [])[0] || {}).athlete || {};
-        const sampleTeam = sample.team || {};
-        // Prefer athlete.team.abbreviation (reliable on current ESPN payload).
-        // Links often lack /name/{abbr}; id maps drift across seasons.
-        let abbr = String(sampleTeam.abbreviation || "").toUpperCase();
-        if (!abbr) {
-          const name = String(teamBlock.displayName || "").toLowerCase();
-          if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
-          else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
-          else if (name.includes("cavaliers") || name.includes("cleveland")) abbr = "CLE";
-          else {
-            const links = teamBlock.links || [];
-            for (let i = 0; i < links.length; i++) {
-              const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
-              if (m) { abbr = m[1].toUpperCase(); break; }
-            }
-          }
-        }
-        if (!abbr && teamBlock.id) {
-          const ID_ABBR = {
-            "1": "ATL", "2": "BOS", "3": "NO", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN",
-            "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL",
-            "14": "MIA", "15": "MIL", "16": "MIN", "17": "BKN", "18": "NY", "19": "ORL",
-            "20": "PHI", "21": "PHX", "22": "POR", "23": "SAC", "24": "SA", "25": "OKC",
-            "26": "UTAH", "27": "WSH", "28": "TOR", "29": "MEM", "30": "CHA"
-          };
-          abbr = ID_ABBR[String(teamBlock.id)] || "";
-        }
-        if (!want.has(abbr)) return;
-        out.push({
-          team: {
-            abbreviation: abbr,
-            displayName: teamBlock.displayName || sampleTeam.displayName || abbr
-          },
-          injuries: teamBlock.injuries || []
-        });
-      });
-      // Ensure every requested abbr has a group (so opponent column always exists)
-      const have = new Set(out.map(function (g) { return g.team.abbreviation; }));
-      want.forEach(function (a) {
-        if (!have.has(a)) {
-          out.push({ team: { abbreviation: a, displayName: a }, injuries: [] });
-        }
-      });
-      return out;
+      blocks = data.injuries || [];
     } catch (_) { return []; }
+
+    function blockInfo(b) {
+      const list = b.injuries || [];
+      const ats = list.map(function (i) { return (i.athlete || {}).team || {}; });
+      let linkAbbr = "";
+      (b.links || []).forEach(function (l) {
+        const m = String((l && l.href) || "").match(/\/name\/([a-z]+)\b/i);
+        if (m && !linkAbbr) linkAbbr = normAbbr(m[1]);
+      });
+      return {
+        id: String(b.id || ""),
+        name: String(b.displayName || "").toLowerCase(),
+        abbrs: ats.map(function (t) { return normAbbr(t.abbreviation); }).filter(Boolean).concat(linkAbbr ? [linkAbbr] : []),
+        teamIds: ats.map(function (t) { return String(t.id || ""); }).filter(Boolean)
+      };
+    }
+    const infos = blocks.map(blockInfo);
+
+    return teams.map(function (team) {
+      let idx = -1;
+      // pass 1: strong signals (name, abbreviation, athlete team id)
+      for (let i = 0; i < blocks.length && idx < 0; i++) {
+        const info = infos[i];
+        if (team.name && info.name && info.name === team.name) idx = i;
+        else if (team.abbr && info.abbrs.indexOf(normAbbr(team.abbr)) !== -1) idx = i;
+        else if (team.id && info.teamIds.indexOf(team.id) !== -1) idx = i;
+      }
+      // pass 2: block id (last resort)
+      if (idx < 0 && team.id) {
+        for (let i = 0; i < blocks.length && idx < 0; i++) {
+          if (infos[i].id === team.id) idx = i;
+        }
+      }
+      return {
+        team: { id: team.id, abbreviation: team.abbr, displayName: team.name },
+        injuries: idx >= 0 ? (blocks[idx].injuries || []) : []
+      };
+    });
   }
 
-  function mergeInjuryGroups(summaryGroups, leagueGroups) {
-    // Prefer league feed (has shortComment). Fall back to summary.
-    if (leagueGroups && leagueGroups.length) return leagueGroups;
-    return summaryGroups || [];
+  // Prefer league write-ups; if the league feed has nothing for a team, fall back to the
+  // game's own summary injuries so the opponent column is never blank when ESPN lists players.
+  function combineInjuries(teams, leagueGroups, summaryGroups) {
+    return teams.map(function (team) {
+      const lg = (leagueGroups || []).find(function (g) { return groupMatchesTeam(team, g); });
+      if (lg && lg.injuries && lg.injuries.length) return lg;
+      const sg = (summaryGroups || []).find(function (g) { return groupMatchesTeam(team, g); });
+      return {
+        team: { id: team.id, abbreviation: team.abbr, displayName: team.name },
+        injuries: (sg && Array.isArray(sg.injuries)) ? sg.injuries : []
+      };
+    });
   }
 
   function isUpcoming(ev) {
@@ -2026,16 +2099,22 @@ listenToUpdates();
       const hasStatus = /^(out|doubtful|questionable|probable|day-to-day|gtd|out for season)/i.test(official) ||
         official.indexOf("out") !== -1;
 
-      // Drop notes clearly about a *different* weekday (e.g. "won't play Tuesday" when tip is Wed)
+      // Drop game-specific tags (GTD / questionable / etc.) that are clearly about a *different*
+      // weekday's game. Official "Out" listings carry over, and any note naming this game's day stays.
       if (gameWeekday && text) {
-        for (let i = 0; i < WEEKDAYS.length; i++) {
-          const d = WEEKDAYS[i];
-          if (d === gameWeekday) continue;
-          // whole-word-ish: "tuesday" / "tue" but not false positives
-          if (text.indexOf(d) !== -1) return false;
-          if (new RegExp("\\b" + d.slice(0, 3) + "\\b", "i").test(text) && d.slice(0, 3) !== gameWeekday.slice(0, 3)) {
-            return false;
+        const mentionsGameDay = text.indexOf(gameWeekday) !== -1 ||
+          new RegExp("\\b" + gameWeekday.slice(0, 3) + "\\b", "i").test(text);
+        if (!mentionsGameDay) {
+          let mentionsOther = false;
+          for (let i = 0; i < WEEKDAYS.length; i++) {
+            const d = WEEKDAYS[i];
+            if (d === gameWeekday) continue;
+            if (text.indexOf(d) !== -1 || new RegExp("\\b" + d.slice(0, 3) + "\\b", "i").test(text)) {
+              mentionsOther = true;
+              break;
+            }
           }
+          if (mentionsOther && official.indexOf("out") !== 0) return false;
         }
       }
 
@@ -2273,7 +2352,8 @@ listenToUpdates();
     if (!card || !body) return;
 
     card.classList.toggle("is-live", mode === "live");
-    kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : "Up next");
+    body.style.opacity = "";
+    kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : (String(event.id) === autoId ? "Up next" : "Upcoming"));
 
     let comps = get(summary, "header.competitions.0.competitors", null);
     if (!Array.isArray(comps) || !comps.length) {
@@ -2319,9 +2399,13 @@ listenToUpdates();
       return;
     }
 
-    clockEl.textContent = mode === "final"
-      ? (get(status, "type.shortDetail", "Final") || "Final")
-      : fmtClock(status);
+    if (mode === "final") {
+      const fd = new Date(event.date);
+      const fdStr = isNaN(fd) ? "" : fd.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+      clockEl.textContent = (get(status, "type.shortDetail", "Final") || "Final") + (fdStr ? " · " + fdStr : "");
+    } else {
+      clockEl.textContent = fmtClock(status);
+    }
 
     const awayScore = get(away, "score", "0");
     const homeScore = get(home, "score", "0");
@@ -2374,52 +2458,104 @@ listenToUpdates();
     note.textContent = mode === "live" ? "Updates automatically" : "Full box score & PBP";
   }
 
+  async function loadEvents(force) {
+    if (!force && eventsCache.length && Date.now() - eventsAt < 2 * 60 * 1000) return eventsCache;
+    const list = await fetchEvents();
+    if (list.length) { eventsCache = list; eventsAt = Date.now(); }
+    return eventsCache;
+  }
+  function modeOf(ev, liveEv) {
+    if (liveEv && String(ev.id) === String(liveEv.id)) return "live";
+    if (isLive(ev)) return "live";
+    if (isFinal(ev)) return "final";
+    return "upcoming";
+  }
+  function updateArrows() {
+    const i = sorted.findIndex(function (e) { return String(e.id) === viewId; });
+    const prev = document.getElementById("home-game-prev");
+    const next = document.getElementById("home-game-next");
+    if (prev) prev.disabled = !(i > 0);
+    if (next) next.disabled = !(i >= 0 && i < sorted.length - 1);
+  }
+  function step(dir) {
+    const i = sorted.findIndex(function (e) { return String(e.id) === viewId; });
+    if (i < 0) return;
+    const j = i + dir;
+    if (j < 0 || j >= sorted.length) return;
+    viewId = String(sorted[j].id);
+    pinned = viewId !== autoId;
+    updateArrows();
+    const body = document.getElementById("home-game-body");
+    if (body) body.style.opacity = "0.45";
+    refresh();
+  }
+
   async function refresh() {
+    const seq = ++reqSeq;
+    clearTimeout(timer);
     try {
       const live = await findLive();
-      let chosen;
-      if (live) chosen = { event: live, mode: "live" };
-      else {
-        const events = await fetchEvents();
-        chosen = pickFeatured(events);
-      }
-      if (!chosen) {
+      let evs = await loadEvents(false);
+      if (!live && evs.some(isLive) && Date.now() - eventsAt > 20000) evs = await loadEvents(true);
+      evs = evs.filter(function (e) { return e && e.id && !isNaN(new Date(e.date).getTime()); });
+      if (live) evs = evs.filter(function (e) { return String(e.id) !== String(live.id); }).concat([live]);
+      evs.sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+      if (seq !== reqSeq) return;
+      sorted = evs;
+
+      const pick = pickFeatured(evs);
+      if (!pick) {
         document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">No Sixers games to show right now.</p>';
+        updateArrows();
         return;
       }
-      featured = chosen.event;
-      let summary = await fetchSummary(featured.id);
-      if (summary) lastSummary = summary;
-      else if (chosen.mode !== "upcoming") summary = lastSummary;
+      autoId = String(pick.event.id);
+      let ev = pinned && viewId ? evs.find(function (e) { return String(e.id) === viewId; }) : null;
+      if (!ev) { ev = pick.event; pinned = false; }
+      viewId = String(ev.id);
+      featured = ev;
+      const mode = modeOf(ev, live);
+      updateArrows();
+
+      let summary = await fetchSummary(ev.id);
+      if (seq !== reqSeq) return;
+      if (summary) { lastSummary = summary; lastSummaryId = viewId; }
+      else if (mode !== "upcoming" && lastSummaryId === viewId) summary = lastSummary;
       summary = summary || {};
-      // Enrich with league injury writeups (shortComment) for PHI + opponent
-      // Injury report: ONLY ESPN league write-ups (have shortComment), filtered to this tip
-      try {
-        const comps = get(featured, "competitions.0.competitors", []) ||
-          get(summary, "header.competitions.0.competitors", []) || [];
-        let abbrs = comps.map(function (c) { return get(c, "team.abbreviation", ""); }).filter(Boolean);
-        if (!abbrs.length) abbrs = ["PHI"];
-        if (abbrs.indexOf("PHI") === -1) abbrs.push("PHI");
-        const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
-        // Never use summary.injuries fallback — those lack shortComment and list every GTD
-        summary.injuries = filterInjuriesForEvent(leagueInj || [], featured);
-      } catch (injErr) {
-        console.warn("injuries", injErr);
-        summary.injuries = [];
+
+      // Injury report (shown on upcoming games): both teams, league write-ups first,
+      // game-summary injuries as a fallback for any team the league feed has nothing on.
+      if (mode === "upcoming") {
+        const summaryInj = Array.isArray(summary.injuries) ? summary.injuries : [];
+        try {
+          const teams = matchupTeams(ev, summary);
+          const leagueInj = await fetchLeagueInjuries(teams);
+          summary.injuries = filterInjuriesForEvent(combineInjuries(teams, leagueInj, summaryInj), ev);
+        } catch (injErr) {
+          console.warn("injuries", injErr);
+          summary.injuries = filterInjuriesForEvent(summaryInj, ev);
+        }
+        await __loadInjuryOverride(ev);
+        if (seq !== reqSeq) return;
       }
-      await __loadInjuryOverride(featured);
       window.__homeInjSummary = summary;
       window.__refreshHomeGame = function () { refresh(); };
-      renderBoard(featured, summary, chosen.mode);
+      renderBoard(ev, summary, mode);
 
-
-      clearTimeout(timer);
-      timer = setTimeout(refresh, chosen.mode === "live" ? 2000 : 60000);
+      timer = setTimeout(refresh, mode === "live" ? 2000 : 60000);
     } catch (err) {
       console.warn("home game", err);
-      document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">Could not load game center.</p>';
+      if (seq === reqSeq) {
+        document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">Could not load game center.</p>';
+        timer = setTimeout(refresh, 60000);
+      }
     }
   }
+
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("#home-game-prev")) step(-1);
+    else if (e.target.closest("#home-game-next")) step(1);
+  });
 
   document.addEventListener("click", e => {
     const btn = e.target.closest("[data-hg-panel]");
@@ -2466,9 +2602,11 @@ listenToUpdates();
     var key = __injEventKey(event);
     var ov = key && window.__injuryOverrideCache[key];
     if (!ov || !Array.isArray(ov.players) || !ov.players.length) return groups;
+    var ALIAS = { GSW: "GS", NYK: "NY", NOP: "NO", SAS: "SA", WAS: "WSH", UTA: "UTAH", PHO: "PHX" };
+    function norm(a) { a = String(a || "").toUpperCase(); return ALIAS[a] || a; }
     var byTeam = {};
     ov.players.forEach(function (p) {
-      var team = p.team || "PHI";
+      var team = norm(p.team || "PHI");
       if (!byTeam[team]) byTeam[team] = [];
       byTeam[team].push({
         status: p.status || "Listed",
@@ -2478,9 +2616,20 @@ listenToUpdates();
         details: { type: p.injuryType || "", detail: "" }
       });
     });
-    return Object.keys(byTeam).map(function (team) {
-      return { team: { abbreviation: team, displayName: team }, injuries: byTeam[team] };
+    // Override only the teams the admin actually entered; keep ESPN data for the rest
+    var out = (groups || []).map(function (g) {
+      var a = norm(g && g.team && g.team.abbreviation);
+      if (byTeam[a]) {
+        var rep = { team: g.team, injuries: byTeam[a] };
+        delete byTeam[a];
+        return rep;
+      }
+      return g;
     });
+    Object.keys(byTeam).forEach(function (team) {
+      out.push({ team: { abbreviation: team, displayName: team }, injuries: byTeam[team] });
+    });
+    return out;
   };
 
   async function __loadInjuryOverride(event) {

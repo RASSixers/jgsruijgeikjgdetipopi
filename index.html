@@ -3653,39 +3653,67 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
       closeInjuryShareModal();
     }
   });
-  const injOverlay = document.getElementById("injShareOverlay");
-  if (injOverlay) {
-    injOverlay.addEventListener("click", function (e) {
-      if (e.target === injOverlay) closeInjuryShareModal();
-    });
+  // Delegated handlers: the modal markup sits below this script, so look elements up at click time.
+  function injPngHref() {
+    const overlay = document.getElementById("injShareOverlay");
+    return (overlay && overlay.dataset.png) || "";
   }
-  const injDl = document.getElementById("injShareDownload");
-  if (injDl) {
-    injDl.addEventListener("click", function () {
-      const overlay = document.getElementById("injShareOverlay");
-      const href = overlay && overlay.dataset.png;
-      if (!href) return;
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = "sixershoops-injury-report.png";
-      a.click();
-    });
+  function injFlash(btn, msg, orig) {
+    btn.textContent = msg;
+    setTimeout(function () { btn.textContent = orig; }, 1800);
   }
-  const injCopy = document.getElementById("injShareCopy");
-  if (injCopy) {
-    injCopy.addEventListener("click", async function () {
+  async function injPngBlob() {
+    const res = await fetch(injPngHref());
+    return await res.blob();
+  }
+  document.addEventListener("click", async function (e) {
+    const t = e.target;
+    if (!t || !t.closest) return;
+
+    const dl = t.closest("#injShareDownload");
+    if (dl) {
+      e.preventDefault();
+      if (!injPngHref()) return;
       try {
-        const overlay = document.getElementById("injShareOverlay");
-        const href = overlay && overlay.dataset.png;
-        if (!href || !navigator.clipboard || !window.ClipboardItem) return;
-        const res = await fetch(href);
-        const blob = await res.blob();
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        injCopy.textContent = "Copied";
-        setTimeout(function () { injCopy.textContent = "Copy image"; }, 1600);
-      } catch (err) {}
-    });
-  }
+        const blob = await injPngBlob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "sixershoops-injury-report.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      } catch (err) {
+        const a = document.createElement("a");
+        a.href = injPngHref();
+        a.download = "sixershoops-injury-report.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+      return;
+    }
+
+    const cp = t.closest("#injShareCopy");
+    if (cp) {
+      e.preventDefault();
+      const orig = "Copy image";
+      if (!injPngHref()) return;
+      if (!navigator.clipboard || !window.ClipboardItem) {
+        injFlash(cp, "Copy not supported — use Download", orig);
+        return;
+      }
+      try {
+        // Promise form keeps the user-gesture valid in Safari
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": injPngBlob() })]);
+        injFlash(cp, "Copied", orig);
+      } catch (err) {
+        console.warn("copy image", err);
+        injFlash(cp, "Copy failed — use Download", orig);
+      }
+    }
+  });
 
 </script>
 

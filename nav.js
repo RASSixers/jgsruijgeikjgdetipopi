@@ -1,5 +1,31 @@
 // Navbar Injection Script
 
+// Google Analytics 4 (site-wide — covers every page that loads nav.js)
+(function () {
+    try {
+        var GA_ID = 'G-T1V9Q0MNEM';
+        if (window.__shGaLoaded) return;
+        window.__shGaLoaded = true;
+        // Avoid double-loading if a page already inlined the same tag
+        if (document.querySelector('script[src*="googletagmanager.com/gtag/js?id=' + GA_ID + '"]')) {
+            window.dataLayer = window.dataLayer || [];
+            if (typeof window.gtag !== 'function') {
+                window.gtag = function () { window.dataLayer.push(arguments); };
+            }
+            return;
+        }
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ window.dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', GA_ID, { send_page_view: true });
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+        (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+})();
+
 // Google AdSense (backup for SPA routes like /article/slug)
 (function () {
     try {

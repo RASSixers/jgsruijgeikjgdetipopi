@@ -679,21 +679,24 @@ body {
   }
 
   function loadUsers() {
-    if (unsub) unsub();
-    unsub = window.db.collection('users').limit(500).onSnapshot(function (snap) {
-      users = snap.docs.map(function (d) {
-        var data = d.data() || {};
-        data.id = d.id;
-        return data;
-      }).sort(function (a, b) {
-        return displayName(a).localeCompare(displayName(b));
+    if (unsub) { try { unsub(); } catch (e) {} unsub = null; }
+    // Free-tier: one-shot get capped at 200 (not live 500-doc listener)
+    window.db.collection('users').limit(200).get()
+      .then(function (snap) {
+        users = snap.docs.map(function (d) {
+          var data = d.data() || {};
+          data.id = d.id;
+          return data;
+        }).sort(function (a, b) {
+          return displayName(a).localeCompare(displayName(b));
+        });
+        updateStats();
+        renderList();
+        if (selectedId) renderDetail();
+      })
+      .catch(function (err) {
+        document.getElementById('user-list').innerHTML = '<div class="empty">Load error: ' + esc(err.message) + '</div>';
       });
-      updateStats();
-      renderList();
-      if (selectedId) renderDetail();
-    }, function (err) {
-      document.getElementById('user-list').innerHTML = '<div class="empty">Load error: ' + esc(err.message) + '</div>';
-    });
   }
 
   document.getElementById('search').addEventListener('input', renderList);

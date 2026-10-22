@@ -414,6 +414,20 @@
 
         /* ── Sidebar ── */
         .profile-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        .achieve-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.35rem; }
+        .achieve-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.4rem 0.65rem; border-radius: 999px;
+            background: linear-gradient(135deg, rgba(0,107,182,0.12), rgba(237,23,76,0.1));
+            border: 1px solid rgba(0,107,182,0.22);
+            font-size: 0.78rem; font-weight: 700; color: var(--ink);
+        }
+        :root.dark-mode .achieve-badge, html.dark-mode .achieve-badge {
+            background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #f1f5f9;
+        }
+        .achieve-badge span { font-size: 0.95rem; }
+        .achieve-empty { font-size: 0.8rem; color: var(--mid); opacity: 0.8; }
+
 
         .sidebar-card {
             background: var(--card-bg); border: 1px solid var(--border-light);
@@ -1183,6 +1197,13 @@
             const joinDate = fmtDate(ud.createdAt);
             const el = document.getElementById('sidebarContent');
             if (!el) return;
+            const ach = Array.isArray(ud.pickemAchievements) ? ud.pickemAchievements : [];
+            const achHtml = ach.length
+                ? `<div class="achieve-grid">${ach.slice(0, 12).map(a => {
+                    const label = (a && a.label) ? a.label : (a && a.type === 'pickem_week_win' ? ('Week ' + (a.week || '') + ' Champion') : 'Achievement');
+                    return `<div class="achieve-badge" title="${esc(label)}"><span>🏆</span>${esc(label)}</div>`;
+                  }).join('')}</div>`
+                : `<div class="achieve-empty">No Pick'em trophies yet</div>`;
             el.innerHTML = `
             <div class="sidebar-card">
                 <div class="sidebar-card-title">About u/${esc(ud.usernameLower || ud.username || '')}</div>
@@ -1202,6 +1223,10 @@
                     </div>
                 </div>
                 ${isOwn ? `<a href="/" class="btn-create-post">+ Create Post</a>` : ''}
+            </div>
+            <div class="sidebar-card">
+                <div class="sidebar-card-title">Pick'em achievements</div>
+                ${achHtml}
             </div>`;
         }
 

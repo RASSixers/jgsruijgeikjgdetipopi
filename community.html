@@ -1326,13 +1326,13 @@
       if(feed) feed.innerHTML='<div class="state">Could not load feed. <button type="button" class="btn btn-ghost" onclick="location.reload()">Retry</button></div>';
     }
     try{
-      unsub=window.db.collection(COLLECTION).orderBy('createdAt','desc').limit(120).onSnapshot(applySnap, function(err){
-        // Fallback without orderBy if index/rules issue
-        console.warn('orderBy snapshot failed, falling back', err);
-        window.db.collection(COLLECTION).limit(120).get().then(function(snap){
-          applySnap(snap);
-        }).catch(failFeed);
-      });
+      // Free-tier: one-shot get (40 posts) instead of permanent onSnapshot of 120
+      window.db.collection(COLLECTION).orderBy('createdAt','desc').limit(40).get()
+        .then(applySnap)
+        .catch(function(err){
+          console.warn('orderBy get failed, falling back', err);
+          window.db.collection(COLLECTION).limit(40).get().then(applySnap).catch(failFeed);
+        });
     }catch(err){
       failFeed(err);
     }

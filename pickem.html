@@ -3046,6 +3046,45 @@
     let selectedPickDate = null;
     let isCurrentUserAdmin = false;
 
+    /* ── Firestore read budget: never scan the full picks collection ── */
+    const __picksRangeCache = Object.create(null);
+    async function fetchPicksDateRange(startDate, endDate) {
+      const s = String(startDate || '');
+      const e = String(endDate || s);
+      if (!s) return { docs: [], empty: true, size: 0 };
+      const key = s + '|' + e;
+      const hit = __picksRangeCache[key];
+      if (hit && (Date.now() - hit.t) < 90000) return hit.snap;
+      let q = db.collection('picks').where('date', '>=', s);
+      if (e) q = q.where('date', '<=', e);
+      const snap = await q.get();
+      __picksRangeCache[key] = { t: Date.now(), snap: snap };
+      return snap;
+    }
+    async function fetchPicksOnOrBefore(beforeDate) {
+      const b = String(beforeDate || '');
+      if (!b) return { docs: [], empty: true, size: 0 };
+      const key = '<=' + b;
+      const hit = __picksRangeCache[key];
+      if (hit && (Date.now() - hit.t) < 90000) return hit.snap;
+      const snap = await db.collection('picks').where('date', '<=', b).get();
+      __picksRangeCache[key] = { t: Date.now(), snap: snap };
+      return snap;
+    }
+    function datesFromPicksSnap(snap, startDate, endDate) {
+      const set = new Set();
+      const s = startDate ? String(startDate) : null;
+      const e = endDate ? String(endDate) : null;
+      (snap.docs || []).forEach(function (doc) {
+        const d = (doc.data() || {}).date;
+        if (!d) return;
+        if (s && d < s) return;
+        if (e && d > e) return;
+        set.add(d);
+      });
+      return set;
+    }
+
     // === Authentication ===
     function initAuth() {
       auth.onAuthStateChanged(async (user) => {
@@ -4947,15 +4986,9 @@
           return [];
         }
 
-        // Get all picks for this date
+        // Get all picks for this date only (never scan the full collection)
         const picksSnapshot = await db.collection('picks').where('date', '==', date).get();
         console.log(`   Found ${picksSnapshot.size} pick documents for date ${date}`);
-        console.log(`   [DEBUG] Checking all picks in database...`);
-        const allPicksSnapshot = await db.collection('picks').get();
-        console.log(`   [DEBUG] Total picks in database: ${allPicksSnapshot.size}`);
-        if (allPicksSnapshot.size > 0) {
-          console.log(`   [DEBUG] Sample dates from picks:`, allPicksSnapshot.docs.slice(0, 5).map(d => d.data().date));
-        }
         
         if (picksSnapshot.empty) {
           console.warn(`   No user picks found for date ${date}`);
@@ -7244,13 +7277,9 @@
             endDate = schedData.endDate;
           }
 
-          // Find all pick dates that fall within the range
-          const picksSnap = await db.collection('picks').get();
-          const datesInRange = new Set();
-          picksSnap.docs.forEach(doc => {
-            const d = doc.data().date;
-            if (d && d >= startDate && d <= endDate) datesInRange.add(d);
-          });
+          // Find all pick dates that fall within the range (ranged query — not full collection)
+          const picksSnap = await fetchPicksDateRange(startDate, endDate);
+          const datesInRange = datesFromPicksSnap(picksSnap, startDate, endDate);
 
           if (datesInRange.size === 0) {
             renderLeaderboard(period, []);
@@ -7289,12 +7318,8 @@
           const startDateStr = formatDateForComparison(new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1));
           const endDateStr = formatDateForComparison(new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0));
           
-          const picksSnapshot = await db.collection('picks').get();
-          const datesInRange = new Set();
-          picksSnapshot.docs.forEach(doc => {
-            const d = doc.data().date;
-            if (d >= startDateStr && d <= endDateStr) datesInRange.add(d);
-          });
+          const picksSnapshot = await fetchPicksDateRange(startDateStr, endDateStr);
+          const datesInRange = datesFromPicksSnap(picksSnapshot, startDateStr, endDateStr);
           
           const userScoresMap = {};
           for (const date of datesInRange) {
@@ -7847,7 +7872,7 @@
 
       try {
         showMessage('Step 1/3: Collecting dates…', 'info', msgId);
-        const snap = await db.collection('picks').get();
+        const snap = await fetchPicksOnOrBefore(before);
         const dates = Array.from(new Set(
           snap.docs.map(d => (d.data() || {}).date).filter(date => date && String(date) <= before)
         )).sort();
@@ -8701,19 +8726,41 @@
 
     async function aggregateSeasonStats(seasonIdFilter) {
       const targetSeason = seasonIdFilter || (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27';
-      const picksSnap = await db.collection('picks').get();
+      // Prefer questions docs (1/day) over scanning every pick for unique dates
       const dates = new Set();
+      try {
+        const qSnap = await db.collection('questions').get();
+        qSnap.docs.forEach(doc => {
+          const d = doc.data() || {};
+          const sid = d.seasonId || null;
+          if (seasonIdFilter) {
+            if (sid && sid !== targetSeason) return;
+          } else {
+            if (sid && sid !== targetSeason) return;
+          }
+          if (d.date) dates.add(d.date);
+        });
+      } catch (e) {
+        console.warn('aggregateSeasonStats questions', e);
+      }
+      // Fallback: ranged picks only if questions empty
+      if (!dates.size) {
+        const seasonStart = '2025-10-01';
+        const seasonEnd = '2027-06-30';
+        const picksSnap = await fetchPicksDateRange(seasonStart, seasonEnd);
+        picksSnap.docs.forEach(doc => {
+          const d = doc.data() || {};
+          const sid = d.seasonId || null;
+          if (seasonIdFilter) {
+            if (sid !== targetSeason) return;
+          } else {
+            if (sid && sid !== targetSeason) return;
+          }
+          if (d.date) dates.add(d.date);
+        });
+      }
       const allowedUsers = null; // optional filter later for groups
-      picksSnap.docs.forEach(doc => {
-        const d = doc.data() || {};
-        const sid = d.seasonId || null;
-        if (seasonIdFilter) {
-          if (sid !== targetSeason) return;
-        } else {
-          if (sid && sid !== targetSeason) return;
-        }
-        if (d.date) dates.add(d.date);
-      });
+      // no-op: dates already collected
 
       const byUser = {};
       for (const date of dates) {
@@ -9506,12 +9553,8 @@
         const weekNumber = opts.week != null ? Number(opts.week) : getCurrentWeekNumber();
         const range = getWeekRangeFromSchedule(weekNumber);
         if (!range) return [];
-        const picksSnap = await db.collection('picks').get();
-        const datesInRange = new Set();
-        picksSnap.docs.forEach(doc => {
-          const d = doc.data().date;
-          if (d && d >= range.startDate && d <= range.endDate) datesInRange.add(d);
-        });
+        const picksSnap = await fetchPicksDateRange(range.startDate, range.endDate);
+        const datesInRange = datesFromPicksSnap(picksSnap, range.startDate, range.endDate);
         const userScoresMap = {};
         for (const date of datesInRange) {
           const dailyScores = await calculateScoresForDate(date, null);
@@ -9544,12 +9587,8 @@
         }
         const startDateStr = formatDateForComparison(new Date(y, m, 1));
         const endDateStr = formatDateForComparison(new Date(y, m + 1, 0));
-        const picksSnap = await db.collection('picks').get();
-        const datesInRange = new Set();
-        picksSnap.docs.forEach(doc => {
-          const d = doc.data().date;
-          if (d && d >= startDateStr && d <= endDateStr) datesInRange.add(d);
-        });
+        const picksSnap = await fetchPicksDateRange(startDateStr, endDateStr);
+        const datesInRange = datesFromPicksSnap(picksSnap, startDateStr, endDateStr);
         const userScoresMap = {};
         for (const date of datesInRange) {
           const dailyScores = await calculateScoresForDate(date, null);

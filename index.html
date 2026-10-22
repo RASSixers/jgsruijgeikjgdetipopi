@@ -688,6 +688,30 @@
     overflow: hidden;
   }
   .home-game-card.is-live { border-color: rgba(237,23,76,.35); }
+
+  /* Game center: prev / next arrows */
+  .home-game-row { display: flex; align-items: center; gap: 0.5rem; }
+  .home-game-row .home-game-card { flex: 1 1 auto; min-width: 0; }
+  .home-game-arrow {
+    flex: 0 0 auto; width: 40px; height: 40px; padding: 0; border-radius: 50%;
+    border: 1px solid var(--border-light); background: var(--card-bg);
+    color: var(--sixers-blue, #006BB6); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, border-color .15s, color .15s, opacity .15s, transform .15s;
+  }
+  .home-game-arrow svg { width: 20px; height: 20px; }
+  .home-game-arrow:hover:not(:disabled) {
+    background: var(--sixers-blue, #006BB6); border-color: var(--sixers-blue, #006BB6); color: #fff;
+  }
+  .home-game-arrow:active:not(:disabled) { transform: scale(.93); }
+  .home-game-arrow:disabled { opacity: .25; cursor: default; }
+  .home-game-arrow:focus-visible { outline: 2px solid var(--sixers-blue, #006BB6); outline-offset: 2px; }
+  #home-game-body { transition: opacity .15s; }
+  @media (max-width: 720px) {
+    .home-game-row { gap: 0.3rem; }
+    .home-game-arrow { width: 30px; height: 30px; }
+    .home-game-arrow svg { width: 16px; height: 16px; }
+  }
   .home-game-head {
     display: flex; align-items: center; justify-content: space-between;
     gap: 1rem; padding: 0.85rem 1.15rem; background: var(--surface-soft, rgba(0,0,0,.02));
@@ -1181,18 +1205,26 @@
   </header>
 
   <section id="game-center" class="home-game" aria-live="polite">
-    <div class="home-game-card" id="home-game-card">
-      <div class="home-game-head">
-        <span class="home-game-kicker" id="home-game-kicker">Loading</span>
-        <span class="home-game-clock" id="home-game-clock">—</span>
+    <div class="home-game-row">
+      <button type="button" class="home-game-arrow" id="home-game-prev" aria-label="Previous game" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div class="home-game-card" id="home-game-card">
+        <div class="home-game-head">
+          <span class="home-game-kicker" id="home-game-kicker">Loading</span>
+          <span class="home-game-clock" id="home-game-clock">—</span>
+        </div>
+        <div id="home-game-body">
+          <p class="home-game-empty">Loading game center…</p>
+        </div>
+        <div class="home-game-foot">
+          <span id="home-game-note" style="color:var(--mid);font-size:0.78rem;"></span>
+          <a href="/schedule">Full schedule →</a>
+        </div>
       </div>
-      <div id="home-game-body">
-        <p class="home-game-empty">Loading game center…</p>
-      </div>
-      <div class="home-game-foot">
-        <span id="home-game-note" style="color:var(--mid);font-size:0.78rem;"></span>
-        <a href="/schedule">Full schedule →</a>
-      </div>
+      <button type="button" class="home-game-arrow" id="home-game-next" aria-label="Next game" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
     </div>
   </section>
 
@@ -1348,43 +1380,17 @@ function renderNews(articles) {
     '<div class="news-stack"><div class="news-stack-label">Featured Posts</div>' + stackBody + '</div>';
 }
 
-function __fsCacheGet(key, maxAgeMs) {
-  try {
-    const raw = sessionStorage.getItem('fs:' + key);
-    if (!raw) return null;
-    const o = JSON.parse(raw);
-    if (!o || !o.t || (Date.now() - o.t) > maxAgeMs) return null;
-    return o.v;
-  } catch (_) { return null; }
-}
-function __fsCacheSet(key, val) {
-  try { sessionStorage.setItem('fs:' + key, JSON.stringify({ t: Date.now(), v: val })); } catch (_) {}
-}
-
 function listenToNews() {
   waitForDb(function () {
-    // One-shot + session cache (avoids permanent onSnapshot billing on every homepage visitor)
-    const cached = __fsCacheGet('news12', 5 * 60 * 1000);
-    if (cached) {
-      try { renderNews(cached); } catch (_) {}
-    }
-    window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(12).get()
-      .then(function (snap) {
-        const rows = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        __fsCacheSet('news12', rows.map(function (r) {
-          // strip non-serializable timestamps for cache
-          const copy = Object.assign({}, r);
-          if (copy.createdAt && copy.createdAt.toDate) copy.createdAt = copy.createdAt.toDate().toISOString();
-          return copy;
-        }));
-        renderNews(rows);
-      })
-      .catch(function (err) {
+    window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(12).onSnapshot(
+      function (snap) {
+        renderNews(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }));
+      },
+      function (err) {
         console.error(err);
-        if (!cached) {
-          document.getElementById('news-grid').innerHTML = '<div class="news-empty">Couldn\'t load news right now.</div>';
-        }
-      });
+        document.getElementById('news-grid').innerHTML = '<div class="news-empty">Couldn\'t load news right now.</div>';
+      }
+    );
   });
 }
 
@@ -1433,25 +1439,16 @@ async function votePoll(id, idx) {
 }
 function listenToPoll() {
   waitForDb(function () {
-    const cached = __fsCacheGet('polls8', 3 * 60 * 1000);
-    if (cached && cached.length) {
-      activePoll = cached[0];
-      try { renderPoll(activePoll); } catch (_) {}
-    }
-    window.db.collection(POLLS_COLLECTION).where('isActive', '==', true).limit(8).get()
-      .then(function (snap) {
+    window.db.collection(POLLS_COLLECTION).where('isActive', '==', true).limit(8).onSnapshot(
+      function (snap) {
         const polls = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
         activePoll = polls[0] || null;
-        __fsCacheSet('polls8', polls.map(function (p) {
-          const c = Object.assign({}, p);
-          if (c.createdAt && c.createdAt.toDate) c.createdAt = c.createdAt.toDate().toISOString();
-          return c;
-        }));
         renderPoll(activePoll);
-      })
-      .catch(function () {
-        if (!cached) document.getElementById('poll-box').innerHTML = '';
-      });
+      },
+      function () {
+        document.getElementById('poll-box').innerHTML = '';
+      }
+    );
   });
 }
 
@@ -1548,30 +1545,17 @@ function renderUpdatesPage() {
 }
 function listenToUpdates() {
   waitForDb(function () {
-    const cached = __fsCacheGet('updates24', 5 * 60 * 1000);
-    if (cached && cached.length) {
-      allUpdates = cached;
-      updatesPage = 0;
-      try { renderUpdatesPage(); } catch (_) {}
-    }
-    // One-shot get (not onSnapshot) — 24 docs max per homepage load
-    window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(24).get()
-      .then(function (snap) {
+    window.db.collection(UPDATES_COLLECTION).orderBy('createdAt', 'desc').limit(60).onSnapshot(
+      function (snap) {
         allUpdates = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        __fsCacheSet('updates24', allUpdates.map(function (p) {
-          const c = Object.assign({}, p);
-          if (c.createdAt && c.createdAt.toDate) c.createdAt = c.createdAt.toDate().toISOString();
-          return c;
-        }));
         updatesPage = 0;
         renderUpdatesPage();
-      })
-      .catch(function (err) {
+      },
+      function (err) {
         console.error(err);
-        if (!cached) {
-          document.getElementById('updates-feed').innerHTML = '<div class="updates-empty">Couldn\'t load updates right now.</div>';
-        }
-      });
+        document.getElementById('updates-feed').innerHTML = '<div class="updates-empty">Couldn\'t load updates right now.</div>';
+      }
+    );
   });
 }
 
@@ -1611,8 +1595,17 @@ listenToUpdates();
 
   let panel = "pbp";
   let lastSummary = null;
+  let lastSummaryId = null;
   let featured = null;
   let timer = null;
+  // Game navigation state
+  let sorted = [];        // all games, oldest -> newest
+  let eventsCache = [];
+  let eventsAt = 0;
+  let viewId = null;      // game currently shown
+  let autoId = null;      // game the page would show by default
+  let pinned = false;     // true once the user arrows away from the default game
+  let reqSeq = 0;
 
   function get(obj, path, fb) {
     const v = String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
@@ -1815,21 +1808,17 @@ listenToUpdates();
         if (e && e.id) byId.set(String(e.id), e);
       });
     }
-    // Team schedule (season slate)
-    try {
-      const res = await fetch(SCHEDULE + "?seasontype=2", { cache: "no-store" });
-      if (res.ok) {
+    // Team schedule (all season types, so past + future games are available)
+    const schedUrls = [SCHEDULE + "?seasontype=2", SCHEDULE, SCHEDULE + "?seasontype=1", SCHEDULE + "?seasontype=3"];
+    const schedResults = await Promise.all(schedUrls.map(async function (u) {
+      try {
+        const res = await fetch(u, { cache: "no-store" });
+        if (!res.ok) return [];
         const data = await res.json();
-        addAll(data.events || []);
-      }
-    } catch (_) {}
-    try {
-      const res = await fetch(SCHEDULE, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        addAll(data.events || []);
-      }
-    } catch (_) {}
+        return data.events || [];
+      } catch (_) { return []; }
+    }));
+    schedResults.forEach(addAll);
     // Scoreboard for today / nearby days (catches preseason & tip-soon games)
     try {
       const res = await fetch(SCOREBOARD + "?limit=100", { cache: "no-store" });
@@ -1866,68 +1855,104 @@ listenToUpdates();
     } catch (_) { return null; }
   }
 
-  // Full injury notes (shortComment / longComment) live on the league injuries feed
-  async function fetchLeagueInjuriesByAbbr(abbrs) {
-    const want = new Set((abbrs || []).map(function (a) { return String(a || "").toUpperCase(); }).filter(Boolean));
-    if (!want.size) return [];
+  // ---- Injuries -------------------------------------------------------
+  const ABBR_ALIAS = { GSW: "GS", NYK: "NY", NOP: "NO", NOR: "NO", SAS: "SA", WAS: "WSH", UTA: "UTAH", PHO: "PHX", BK: "BKN", CHO: "CHA", CHH: "CHA" };
+  function normAbbr(a) {
+    a = String(a || "").toUpperCase();
+    return ABBR_ALIAS[a] || a;
+  }
+  function groupMatchesTeam(team, g) {
+    const t = (g && g.team) || {};
+    if (team.id && t.id && String(t.id) === team.id) return true;
+    if (team.abbr && t.abbreviation && normAbbr(t.abbreviation) === normAbbr(team.abbr)) return true;
+    const n = String(t.displayName || t.name || "").toLowerCase();
+    return !!(team.name && n && n === team.name);
+  }
+  function matchupTeams(ev, summary) {
+    const out = [];
+    const seen = new Set();
+    [get(ev, "competitions.0.competitors", []), get(summary, "header.competitions.0.competitors", [])].forEach(function (list) {
+      (list || []).forEach(function (c) {
+        const t = c && c.team;
+        if (!t) return;
+        const abbr = String(t.abbreviation || "").toUpperCase();
+        const id = String(t.id || "");
+        const key = id || abbr;
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        const name = String(t.displayName || ((t.location || "") + " " + (t.name || t.nickname || ""))).trim().toLowerCase();
+        out.push({ id: id, abbr: abbr, name: name, display: String(t.displayName || "") });
+      });
+    });
+    if (!out.some(function (t) { return normAbbr(t.abbr) === "PHI"; })) {
+      out.push({ id: "20", abbr: "PHI", name: "philadelphia 76ers", display: "Philadelphia 76ers" });
+    }
+    return out;
+  }
+
+  // League injuries feed (has shortComment / longComment). Match each team of the
+  // matchup by name, abbreviation (with aliases) or team id so the opponent is never lost.
+  async function fetchLeagueInjuries(teams) {
+    if (!teams || !teams.length) return [];
+    let blocks = [];
     try {
       const res = await fetch(INJURIES_LEAGUE, { cache: "no-store" });
       if (!res.ok) return [];
       const data = await res.json();
-      const out = [];
-      (data.injuries || []).forEach(function (teamBlock) {
-        const sample = ((teamBlock.injuries || [])[0] || {}).athlete || {};
-        const sampleTeam = sample.team || {};
-        // Prefer athlete.team.abbreviation (reliable on current ESPN payload).
-        // Links often lack /name/{abbr}; id maps drift across seasons.
-        let abbr = String(sampleTeam.abbreviation || "").toUpperCase();
-        if (!abbr) {
-          const name = String(teamBlock.displayName || "").toLowerCase();
-          if (name.includes("76ers") || name.includes("philadelphia")) abbr = "PHI";
-          else if (name.includes("celtics") || name.includes("boston")) abbr = "BOS";
-          else if (name.includes("cavaliers") || name.includes("cleveland")) abbr = "CLE";
-          else {
-            const links = teamBlock.links || [];
-            for (let i = 0; i < links.length; i++) {
-              const m = String(links[i].href || "").match(/\/name\/([a-z]+)\b/i);
-              if (m) { abbr = m[1].toUpperCase(); break; }
-            }
-          }
-        }
-        if (!abbr && teamBlock.id) {
-          const ID_ABBR = {
-            "1": "ATL", "2": "BOS", "3": "NO", "4": "CHI", "5": "CLE", "6": "DAL", "7": "DEN",
-            "8": "DET", "9": "GS", "10": "HOU", "11": "IND", "12": "LAC", "13": "LAL",
-            "14": "MIA", "15": "MIL", "16": "MIN", "17": "BKN", "18": "NY", "19": "ORL",
-            "20": "PHI", "21": "PHX", "22": "POR", "23": "SAC", "24": "SA", "25": "OKC",
-            "26": "UTAH", "27": "WSH", "28": "TOR", "29": "MEM", "30": "CHA"
-          };
-          abbr = ID_ABBR[String(teamBlock.id)] || "";
-        }
-        if (!want.has(abbr)) return;
-        out.push({
-          team: {
-            abbreviation: abbr,
-            displayName: teamBlock.displayName || sampleTeam.displayName || abbr
-          },
-          injuries: teamBlock.injuries || []
-        });
-      });
-      // Ensure every requested abbr has a group (so opponent column always exists)
-      const have = new Set(out.map(function (g) { return g.team.abbreviation; }));
-      want.forEach(function (a) {
-        if (!have.has(a)) {
-          out.push({ team: { abbreviation: a, displayName: a }, injuries: [] });
-        }
-      });
-      return out;
+      blocks = data.injuries || [];
     } catch (_) { return []; }
+
+    function blockInfo(b) {
+      const list = b.injuries || [];
+      const ats = list.map(function (i) { return (i.athlete || {}).team || {}; });
+      let linkAbbr = "";
+      (b.links || []).forEach(function (l) {
+        const m = String((l && l.href) || "").match(/\/name\/([a-z]+)\b/i);
+        if (m && !linkAbbr) linkAbbr = normAbbr(m[1]);
+      });
+      return {
+        id: String(b.id || ""),
+        name: String(b.displayName || "").toLowerCase(),
+        abbrs: ats.map(function (t) { return normAbbr(t.abbreviation); }).filter(Boolean).concat(linkAbbr ? [linkAbbr] : []),
+        teamIds: ats.map(function (t) { return String(t.id || ""); }).filter(Boolean)
+      };
+    }
+    const infos = blocks.map(blockInfo);
+
+    return teams.map(function (team) {
+      let idx = -1;
+      // pass 1: strong signals (name, abbreviation, athlete team id)
+      for (let i = 0; i < blocks.length && idx < 0; i++) {
+        const info = infos[i];
+        if (team.name && info.name && info.name === team.name) idx = i;
+        else if (team.abbr && info.abbrs.indexOf(normAbbr(team.abbr)) !== -1) idx = i;
+        else if (team.id && info.teamIds.indexOf(team.id) !== -1) idx = i;
+      }
+      // pass 2: block id (last resort)
+      if (idx < 0 && team.id) {
+        for (let i = 0; i < blocks.length && idx < 0; i++) {
+          if (infos[i].id === team.id) idx = i;
+        }
+      }
+      return {
+        team: { id: team.id, abbreviation: team.abbr, displayName: team.display || team.name },
+        injuries: idx >= 0 ? (blocks[idx].injuries || []) : []
+      };
+    });
   }
 
-  function mergeInjuryGroups(summaryGroups, leagueGroups) {
-    // Prefer league feed (has shortComment). Fall back to summary.
-    if (leagueGroups && leagueGroups.length) return leagueGroups;
-    return summaryGroups || [];
+  // Prefer league write-ups; if the league feed has nothing for a team, fall back to the
+  // game's own summary injuries so the opponent column is never blank when ESPN lists players.
+  function combineInjuries(teams, leagueGroups, summaryGroups) {
+    return teams.map(function (team) {
+      const lg = (leagueGroups || []).find(function (g) { return groupMatchesTeam(team, g); });
+      if (lg && lg.injuries && lg.injuries.length) return lg;
+      const sg = (summaryGroups || []).find(function (g) { return groupMatchesTeam(team, g); });
+      return {
+        team: { id: team.id, abbreviation: team.abbr, displayName: team.display || team.name },
+        injuries: (sg && Array.isArray(sg.injuries)) ? sg.injuries : []
+      };
+    });
   }
 
   function isUpcoming(ev) {
@@ -2074,16 +2099,22 @@ listenToUpdates();
       const hasStatus = /^(out|doubtful|questionable|probable|day-to-day|gtd|out for season)/i.test(official) ||
         official.indexOf("out") !== -1;
 
-      // Drop notes clearly about a *different* weekday (e.g. "won't play Tuesday" when tip is Wed)
+      // Drop game-specific tags (GTD / questionable / etc.) that are clearly about a *different*
+      // weekday's game. Official "Out" listings carry over, and any note naming this game's day stays.
       if (gameWeekday && text) {
-        for (let i = 0; i < WEEKDAYS.length; i++) {
-          const d = WEEKDAYS[i];
-          if (d === gameWeekday) continue;
-          // whole-word-ish: "tuesday" / "tue" but not false positives
-          if (text.indexOf(d) !== -1) return false;
-          if (new RegExp("\\b" + d.slice(0, 3) + "\\b", "i").test(text) && d.slice(0, 3) !== gameWeekday.slice(0, 3)) {
-            return false;
+        const mentionsGameDay = text.indexOf(gameWeekday) !== -1 ||
+          new RegExp("\\b" + gameWeekday.slice(0, 3) + "\\b", "i").test(text);
+        if (!mentionsGameDay) {
+          let mentionsOther = false;
+          for (let i = 0; i < WEEKDAYS.length; i++) {
+            const d = WEEKDAYS[i];
+            if (d === gameWeekday) continue;
+            if (text.indexOf(d) !== -1 || new RegExp("\\b" + d.slice(0, 3) + "\\b", "i").test(text)) {
+              mentionsOther = true;
+              break;
+            }
           }
+          if (mentionsOther && official.indexOf("out") !== 0) return false;
         }
       }
 
@@ -2234,7 +2265,16 @@ listenToUpdates();
     const updatedLabel = latestMs ? formatInjDate(new Date(latestMs).toISOString()) : null;
     const dayNote = gameWeekday ? (gameWeekday.charAt(0).toUpperCase() + gameWeekday.slice(1)) : "this game";
 
+    function teamNiceName(g) {
+      const abbr = String(get(g, "team.abbreviation", "") || "").toUpperCase();
+      if (abbr === "PHI") return "76ers";
+      const comps = get(event, "competitions.0.competitors", []) || [];
+      const c = comps.find(function (x) { return String(get(x, "team.abbreviation", "")).toUpperCase() === abbr; });
+      return get(c, "team.displayName", "") || get(g, "team.displayName", "") || abbr;
+    }
     const sharePayload = {
+      dateShort: gameDate ? gameDate.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" }) : "",
+      updatedTime: latestMs ? (new Date(latestMs).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }) + " ET") : "",
       updatedLabel: updatedLabel,
       dayNote: dayNote,
       gameDate: gameDate ? gameDate.toISOString() : null,
@@ -2257,7 +2297,7 @@ listenToUpdates();
           const comment = inj.shortComment || inj.longComment || "";
           return { name: name, label: st.label, cls: st.cls, injuryType: injuryType, comment: comment };
         });
-        return { team: team, items: items };
+        return { team: team, name: teamNiceName(g), items: items };
       })
     };
     try { window.__injurySharePayload = sharePayload; } catch (e) {}
@@ -2321,7 +2361,8 @@ listenToUpdates();
     if (!card || !body) return;
 
     card.classList.toggle("is-live", mode === "live");
-    kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : "Up next");
+    body.style.opacity = "";
+    kicker.textContent = mode === "live" ? "Live" : (mode === "final" ? "Final" : (String(event.id) === autoId ? "Up next" : "Upcoming"));
 
     let comps = get(summary, "header.competitions.0.competitors", null);
     if (!Array.isArray(comps) || !comps.length) {
@@ -2367,9 +2408,13 @@ listenToUpdates();
       return;
     }
 
-    clockEl.textContent = mode === "final"
-      ? (get(status, "type.shortDetail", "Final") || "Final")
-      : fmtClock(status);
+    if (mode === "final") {
+      const fd = new Date(event.date);
+      const fdStr = isNaN(fd) ? "" : fd.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+      clockEl.textContent = (get(status, "type.shortDetail", "Final") || "Final") + (fdStr ? " · " + fdStr : "");
+    } else {
+      clockEl.textContent = fmtClock(status);
+    }
 
     const awayScore = get(away, "score", "0");
     const homeScore = get(home, "score", "0");
@@ -2422,52 +2467,104 @@ listenToUpdates();
     note.textContent = mode === "live" ? "Updates automatically" : "Full box score & PBP";
   }
 
+  async function loadEvents(force) {
+    if (!force && eventsCache.length && Date.now() - eventsAt < 2 * 60 * 1000) return eventsCache;
+    const list = await fetchEvents();
+    if (list.length) { eventsCache = list; eventsAt = Date.now(); }
+    return eventsCache;
+  }
+  function modeOf(ev, liveEv) {
+    if (liveEv && String(ev.id) === String(liveEv.id)) return "live";
+    if (isLive(ev)) return "live";
+    if (isFinal(ev)) return "final";
+    return "upcoming";
+  }
+  function updateArrows() {
+    const i = sorted.findIndex(function (e) { return String(e.id) === viewId; });
+    const prev = document.getElementById("home-game-prev");
+    const next = document.getElementById("home-game-next");
+    if (prev) prev.disabled = !(i > 0);
+    if (next) next.disabled = !(i >= 0 && i < sorted.length - 1);
+  }
+  function step(dir) {
+    const i = sorted.findIndex(function (e) { return String(e.id) === viewId; });
+    if (i < 0) return;
+    const j = i + dir;
+    if (j < 0 || j >= sorted.length) return;
+    viewId = String(sorted[j].id);
+    pinned = viewId !== autoId;
+    updateArrows();
+    const body = document.getElementById("home-game-body");
+    if (body) body.style.opacity = "0.45";
+    refresh();
+  }
+
   async function refresh() {
+    const seq = ++reqSeq;
+    clearTimeout(timer);
     try {
       const live = await findLive();
-      let chosen;
-      if (live) chosen = { event: live, mode: "live" };
-      else {
-        const events = await fetchEvents();
-        chosen = pickFeatured(events);
-      }
-      if (!chosen) {
+      let evs = await loadEvents(false);
+      if (!live && evs.some(isLive) && Date.now() - eventsAt > 20000) evs = await loadEvents(true);
+      evs = evs.filter(function (e) { return e && e.id && !isNaN(new Date(e.date).getTime()); });
+      if (live) evs = evs.filter(function (e) { return String(e.id) !== String(live.id); }).concat([live]);
+      evs.sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+      if (seq !== reqSeq) return;
+      sorted = evs;
+
+      const pick = pickFeatured(evs);
+      if (!pick) {
         document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">No Sixers games to show right now.</p>';
+        updateArrows();
         return;
       }
-      featured = chosen.event;
-      let summary = await fetchSummary(featured.id);
-      if (summary) lastSummary = summary;
-      else if (chosen.mode !== "upcoming") summary = lastSummary;
+      autoId = String(pick.event.id);
+      let ev = pinned && viewId ? evs.find(function (e) { return String(e.id) === viewId; }) : null;
+      if (!ev) { ev = pick.event; pinned = false; }
+      viewId = String(ev.id);
+      featured = ev;
+      const mode = modeOf(ev, live);
+      updateArrows();
+
+      let summary = await fetchSummary(ev.id);
+      if (seq !== reqSeq) return;
+      if (summary) { lastSummary = summary; lastSummaryId = viewId; }
+      else if (mode !== "upcoming" && lastSummaryId === viewId) summary = lastSummary;
       summary = summary || {};
-      // Enrich with league injury writeups (shortComment) for PHI + opponent
-      // Injury report: ONLY ESPN league write-ups (have shortComment), filtered to this tip
-      try {
-        const comps = get(featured, "competitions.0.competitors", []) ||
-          get(summary, "header.competitions.0.competitors", []) || [];
-        let abbrs = comps.map(function (c) { return get(c, "team.abbreviation", ""); }).filter(Boolean);
-        if (!abbrs.length) abbrs = ["PHI"];
-        if (abbrs.indexOf("PHI") === -1) abbrs.push("PHI");
-        const leagueInj = await fetchLeagueInjuriesByAbbr(abbrs);
-        // Never use summary.injuries fallback — those lack shortComment and list every GTD
-        summary.injuries = filterInjuriesForEvent(leagueInj || [], featured);
-      } catch (injErr) {
-        console.warn("injuries", injErr);
-        summary.injuries = [];
+
+      // Injury report (shown on upcoming games): both teams, league write-ups first,
+      // game-summary injuries as a fallback for any team the league feed has nothing on.
+      if (mode === "upcoming") {
+        const summaryInj = Array.isArray(summary.injuries) ? summary.injuries : [];
+        try {
+          const teams = matchupTeams(ev, summary);
+          const leagueInj = await fetchLeagueInjuries(teams);
+          summary.injuries = filterInjuriesForEvent(combineInjuries(teams, leagueInj, summaryInj), ev);
+        } catch (injErr) {
+          console.warn("injuries", injErr);
+          summary.injuries = filterInjuriesForEvent(summaryInj, ev);
+        }
+        await __loadInjuryOverride(ev);
+        if (seq !== reqSeq) return;
       }
-      await __loadInjuryOverride(featured);
       window.__homeInjSummary = summary;
       window.__refreshHomeGame = function () { refresh(); };
-      renderBoard(featured, summary, chosen.mode);
+      renderBoard(ev, summary, mode);
 
-
-      clearTimeout(timer);
-      timer = setTimeout(refresh, chosen.mode === "live" ? 2000 : 60000);
+      timer = setTimeout(refresh, mode === "live" ? 2000 : 60000);
     } catch (err) {
       console.warn("home game", err);
-      document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">Could not load game center.</p>';
+      if (seq === reqSeq) {
+        document.getElementById("home-game-body").innerHTML = '<p class="home-game-empty">Could not load game center.</p>';
+        timer = setTimeout(refresh, 60000);
+      }
     }
   }
+
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("#home-game-prev")) step(-1);
+    else if (e.target.closest("#home-game-next")) step(1);
+  });
 
   document.addEventListener("click", e => {
     const btn = e.target.closest("[data-hg-panel]");
@@ -2514,9 +2611,11 @@ listenToUpdates();
     var key = __injEventKey(event);
     var ov = key && window.__injuryOverrideCache[key];
     if (!ov || !Array.isArray(ov.players) || !ov.players.length) return groups;
+    var ALIAS = { GSW: "GS", NYK: "NY", NOP: "NO", SAS: "SA", WAS: "WSH", UTA: "UTAH", PHO: "PHX" };
+    function norm(a) { a = String(a || "").toUpperCase(); return ALIAS[a] || a; }
     var byTeam = {};
     ov.players.forEach(function (p) {
-      var team = p.team || "PHI";
+      var team = norm(p.team || "PHI");
       if (!byTeam[team]) byTeam[team] = [];
       byTeam[team].push({
         status: p.status || "Listed",
@@ -2526,9 +2625,20 @@ listenToUpdates();
         details: { type: p.injuryType || "", detail: "" }
       });
     });
-    return Object.keys(byTeam).map(function (team) {
-      return { team: { abbreviation: team, displayName: team }, injuries: byTeam[team] };
+    // Override only the teams the admin actually entered; keep ESPN data for the rest
+    var out = (groups || []).map(function (g) {
+      var a = norm(g && g.team && g.team.abbreviation);
+      if (byTeam[a]) {
+        var rep = { team: g.team, injuries: byTeam[a] };
+        delete byTeam[a];
+        return rep;
+      }
+      return g;
     });
+    Object.keys(byTeam).forEach(function (team) {
+      out.push({ team: { abbreviation: team, displayName: team }, injuries: byTeam[team] });
+    });
+    return out;
   };
 
   async function __loadInjuryOverride(event) {
@@ -3387,11 +3497,9 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
 
   function buildInjuryShareCanvas(payload) {
     if (!payload) return null;
-    const W = 1080;
-    const PAD = 48;
-    const NAVY = "#001a57", BLUE = "#006BB6", RED = "#ED174C";
-    const WHITE = "#ffffff", CREAM = "#f6f8fc", INK = "#0d0f1a";
-    const MID = "#64748b", BORDER = "#e4e8f0";
+    const W = 1080, PAD = 48, GAP = 24;
+    const BLUE = "#006BB6", INK = "#0d0f1a", MID = "#64748b", CARD = "#f6f8fc", BODY = "#475569";
+    const FONT = "Lexend, system-ui, sans-serif";
     const BADGE = {
       "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
       "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
@@ -3399,14 +3507,39 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
       "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
       "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
     };
+    const teams = (payload.teams || []).slice(0, 2);
+    const n = Math.max(teams.length, 1);
+    const colW = (W - PAD * 2 - GAP * (n - 1)) / n;
+    const innerW = colW - 40;
+    const CARD_TOP = 192;
 
-    const teams = payload.teams || [];
-    let rows = 0;
-    teams.forEach(function (t) { rows += Math.max((t.items || []).length, 1); });
-    const headerH = 168;
-    const rowH = 72;
-    const teamHeadH = 40;
-    const H = headerH + teams.length * teamHeadH + rows * rowH + 90;
+    const mctx = document.createElement("canvas").getContext("2d");
+    function wrap(ctx, str, maxW, font, maxLines) {
+      ctx.font = font;
+      const words = String(str || "").split(/\s+/).filter(Boolean);
+      const lines = [];
+      let line = "";
+      words.forEach(function (w) {
+        const test = line ? line + " " + w : w;
+        if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+        else line = test;
+      });
+      if (line) lines.push(line);
+      return lines.slice(0, maxLines || 5);
+    }
+
+    // Layout pass
+    const cols = teams.map(function (t) {
+      const items = (t.items || []).map(function (it) {
+        const lines = it.comment ? wrap(mctx, it.comment, innerW, "600 13px " + FONT, 5) : [];
+        const rh = Math.max(80, 30 + (it.injuryType ? 22 : 0) + lines.length * 17 + 20);
+        return { it: it, lines: lines, rh: rh };
+      });
+      const h = 44 + (items.length ? items.reduce(function (a, r) { return a + r.rh; }, 0) : 64) + 12;
+      return { t: t, items: items, h: h };
+    });
+    const cardH = Math.max(150, cols.reduce(function (m, c) { return Math.max(m, c.h); }, 0));
+    const H = CARD_TOP + cardH + 100;
 
     const canvas = document.createElement("canvas");
     canvas.width = W;
@@ -3429,74 +3562,63 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
       ctx.textAlign = align || "left";
       ctx.fillText(str, x, y);
     }
-    function wrapText(str, maxW, font) {
-      ctx.font = font;
-      const words = String(str || "").split(/\s+/);
-      const lines = [];
-      let line = "";
-      words.forEach(function (w) {
-        const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > maxW && line) {
-          lines.push(line);
-          line = w;
-        } else line = test;
-      });
-      if (line) lines.push(line);
-      return lines.slice(0, 2);
+    function spaced(str, x, y, font, color, px) {
+      try { ctx.letterSpacing = px + "px"; } catch (e) {}
+      text(str, x, y, font, color, "left");
+      try { ctx.letterSpacing = "0px"; } catch (e) {}
     }
 
-    ctx.fillStyle = CREAM;
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = NAVY;
-    ctx.fillRect(0, 0, W, 132);
-    ctx.fillStyle = RED;
-    ctx.fillRect(0, 132, W, 4);
 
-    text("SIXERSHOOPS", PAD, 42, "800 15px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.7)");
-    text("Injury Report", PAD, 82, "800 36px Lexend, system-ui, sans-serif", WHITE);
-    text(payload.matchup || "Game report", PAD, 116, "600 18px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.88)");
-    if (payload.updatedLabel) {
-      text("Updated " + payload.updatedLabel, W - PAD, 116, "500 14px Lexend, system-ui, sans-serif", "rgba(255,255,255,0.65)", "right");
-    }
+    // Centered header
+    try { ctx.letterSpacing = "0.5px"; } catch (e) {}
+    text("SIXERSHOOPS", W / 2, 48, "800 16px " + FONT, BLUE, "center");
+    try { ctx.letterSpacing = "0px"; } catch (e) {}
+    text("Injury Report", W / 2, 104, "800 50px " + FONT, INK, "center");
+    const names = teams.map(function (t) { return t.name || t.team; }).filter(Boolean);
+    const matchupLine = names.length === 2 ? names.join(" vs ") : (payload.matchup || "Game report");
+    text(matchupLine, W / 2, 142, "700 22px " + FONT, INK, "center");
+    const dateLine = [payload.dateShort, payload.updatedTime ? "Updated " + payload.updatedTime : (payload.updatedLabel ? "Updated " + payload.updatedLabel : "")]
+      .filter(Boolean).join(" · ");
+    if (dateLine) text(dateLine, W / 2, 168, "600 16px " + FONT, MID, "center");
 
-    let y = headerH;
-    teams.forEach(function (team) {
-      rr(PAD, y, W - PAD * 2, teamHeadH - 8, 8, "#eef2f7");
-      text(String(team.team || "Team").toUpperCase(), PAD + 16, y + 26, "800 14px Lexend, system-ui, sans-serif", NAVY);
-      y += teamHeadH;
-      const items = team.items || [];
-      if (!items.length) {
-        text("No injuries listed", PAD + 16, y + 28, "500 15px Lexend, system-ui, sans-serif", MID);
-        y += rowH;
+    // Two team cards
+    cols.forEach(function (col, ci) {
+      const x = PAD + ci * (colW + GAP);
+      rr(x, CARD_TOP, colW, cardH, 18, CARD);
+      spaced(String(col.t.name || col.t.team || "Team").toUpperCase() + " INJURIES", x + 20, CARD_TOP + 28, "800 13px " + FONT, MID, 0.6);
+      let y = CARD_TOP + 44;
+      if (!col.items.length) {
+        text("No injuries listed.", x + 20, y + 30, "600 17px " + FONT, MID);
         return;
       }
-      items.forEach(function (item) {
-        rr(PAD, y, W - PAD * 2, rowH - 10, 10, WHITE);
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        text(item.name, PAD + 20, y + 28, "700 18px Lexend, system-ui, sans-serif", INK);
-        const badge = BADGE[item.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
-        const label = String(item.label || "Listed").toUpperCase();
-        ctx.font = "800 12px Lexend, system-ui, sans-serif";
-        const bw = ctx.measureText(label).width + 22;
-        const bx = W - PAD - 20 - bw;
-        rr(bx, y + 12, bw, 26, 13, badge.bg);
+      col.items.forEach(function (r) {
+        const it = r.it;
+        text(it.name, x + 20, y + 22, "700 20px " + FONT, INK);
+        const badge = BADGE[it.label] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0" };
+        const label = String(it.label || "Listed").toUpperCase();
+        ctx.font = "800 12px " + FONT;
+        const bw = ctx.measureText(label).width + 26;
+        const bx = x + colW - 20 - bw;
+        rr(bx, y + 4, bw, 26, 13, badge.bg);
         ctx.strokeStyle = badge.border;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
-        text(label, bx + bw / 2, y + 30, "800 12px Lexend, system-ui, sans-serif", badge.text, "center");
-        const sub = item.injuryType || item.comment || "";
-        if (sub) {
-          const lines = wrapText(sub, W - PAD * 2 - 40, "500 13px Lexend, system-ui, sans-serif");
-          lines.forEach(function (ln, i) {
-            text(ln, PAD + 20, y + 50 + i * 16, "500 13px Lexend, system-ui, sans-serif", MID);
-          });
+        text(label, bx + bw / 2, y + 22, "800 12px " + FONT, badge.text, "center");
+        let ty = y + 22;
+        if (it.injuryType) {
+          ty += 22;
+          text(it.injuryType, x + 20, ty, "500 14px " + FONT, MID);
         }
-        y += rowH;
+        r.lines.forEach(function (ln, i) {
+          text(ln, x + 20, ty + 20 + i * 17, "600 13px " + FONT, BODY);
+        });
+        y += r.rh;
       });
     });
 
-    text("sixershoops.com", W / 2, H - 28, "600 14px Lexend, system-ui, sans-serif", MID, "center");
+    text("sixershoops.com", W / 2, CARD_TOP + cardH + 76, "800 15px " + FONT, BLUE, "center");
     return canvas;
   }
 
@@ -3531,39 +3653,67 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
       closeInjuryShareModal();
     }
   });
-  const injOverlay = document.getElementById("injShareOverlay");
-  if (injOverlay) {
-    injOverlay.addEventListener("click", function (e) {
-      if (e.target === injOverlay) closeInjuryShareModal();
-    });
+  // Delegated handlers: the modal markup sits below this script, so look elements up at click time.
+  function injPngHref() {
+    const overlay = document.getElementById("injShareOverlay");
+    return (overlay && overlay.dataset.png) || "";
   }
-  const injDl = document.getElementById("injShareDownload");
-  if (injDl) {
-    injDl.addEventListener("click", function () {
-      const overlay = document.getElementById("injShareOverlay");
-      const href = overlay && overlay.dataset.png;
-      if (!href) return;
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = "sixershoops-injury-report.png";
-      a.click();
-    });
+  function injFlash(btn, msg, orig) {
+    btn.textContent = msg;
+    setTimeout(function () { btn.textContent = orig; }, 1800);
   }
-  const injCopy = document.getElementById("injShareCopy");
-  if (injCopy) {
-    injCopy.addEventListener("click", async function () {
+  async function injPngBlob() {
+    const res = await fetch(injPngHref());
+    return await res.blob();
+  }
+  document.addEventListener("click", async function (e) {
+    const t = e.target;
+    if (!t || !t.closest) return;
+
+    const dl = t.closest("#injShareDownload");
+    if (dl) {
+      e.preventDefault();
+      if (!injPngHref()) return;
       try {
-        const overlay = document.getElementById("injShareOverlay");
-        const href = overlay && overlay.dataset.png;
-        if (!href || !navigator.clipboard || !window.ClipboardItem) return;
-        const res = await fetch(href);
-        const blob = await res.blob();
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        injCopy.textContent = "Copied";
-        setTimeout(function () { injCopy.textContent = "Copy image"; }, 1600);
-      } catch (err) {}
-    });
-  }
+        const blob = await injPngBlob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "sixershoops-injury-report.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      } catch (err) {
+        const a = document.createElement("a");
+        a.href = injPngHref();
+        a.download = "sixershoops-injury-report.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+      return;
+    }
+
+    const cp = t.closest("#injShareCopy");
+    if (cp) {
+      e.preventDefault();
+      const orig = "Copy image";
+      if (!injPngHref()) return;
+      if (!navigator.clipboard || !window.ClipboardItem) {
+        injFlash(cp, "Copy not supported — use Download", orig);
+        return;
+      }
+      try {
+        // Promise form keeps the user-gesture valid in Safari
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": injPngBlob() })]);
+        injFlash(cp, "Copied", orig);
+      } catch (err) {
+        console.warn("copy image", err);
+        injFlash(cp, "Copy failed — use Download", orig);
+      }
+    }
+  });
 
 </script>
 

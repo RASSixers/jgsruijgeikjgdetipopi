@@ -5144,6 +5144,7 @@
           if (score.isManuallySet) {
             return {
               username: score.username,
+              userId: userId,
               correct: score.correct,
               total: score.total,
               isOverridden: true,
@@ -5163,8 +5164,9 @@
             };
           }
           return {
-            username: score.username,
-            correct: score.correct,
+              username: score.username,
+              userId: userId,
+              correct: score.correct,
             total: score.total,
             isOverridden: false,
             tieBreakerDiff: score.tieBreakerDiff
@@ -7246,7 +7248,83 @@
       return 1;
     }
 
-    async function loadLeaderboard(period, weekNumber = null, monthOffset = null, selectedDate = null) {
+    
+    async function awardWeeklyWinnerIfClosed(weekNumber, endDate, leaderboard) {
+      try {
+        // Only staff can write achievements onto other user profiles (Firestore rules)
+        if (typeof isCurrentUserAdmin === 'undefined' || !isCurrentUserAdmin) return;
+        if (!window.db || !leaderboard || !leaderboard.length) return;
+        if (weekNumber == null) return;
+        const today = (typeof formatDateForComparison === 'function')
+          ? formatDateForComparison(new Date())
+          : new Date().toISOString().slice(0, 10);
+        if (!endDate || String(today) <= String(endDate)) return; // week still open
+
+        const top = leaderboard[0];
+        const topScore = Number(top.correct_count) || 0;
+        if (topScore <= 0) return;
+
+        const seasonId = (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27';
+        const awardId = 'pickem_week_' + seasonId + '_w' + weekNumber;
+
+        // Resolve user id: prefer leaderboard userId, else users collection by username
+        let uid = top.userId || null;
+        if (!uid && top.username) {
+          try {
+            const uname = String(top.username).toLowerCase().replace(/^@/, '');
+            let snap = await db.collection('users').where('usernameLower', '==', uname).limit(1).get();
+            if (snap.empty) {
+              snap = await db.collection('users').where('username', '==', top.username).limit(1).get();
+            }
+            if (!snap.empty) uid = snap.docs[0].id;
+          } catch (_) {}
+        }
+        if (!uid) return;
+
+        const uref = db.collection('users').doc(uid);
+        const usnap = await uref.get();
+        if (!usnap.exists) return;
+        const data = usnap.data() || {};
+        const list = Array.isArray(data.pickemAchievements) ? data.pickemAchievements.slice() : [];
+        if (list.some(a => a && a.id === awardId)) return; // already awarded
+
+        // Ties: award all with same top score
+        const winners = leaderboard.filter(r => Number(r.correct_count) === topScore);
+        for (const w of winners) {
+          let wuid = w.userId || null;
+          if (!wuid && w.username) {
+            try {
+              const uname = String(w.username).toLowerCase().replace(/^@/, '');
+              let snap = await db.collection('users').where('usernameLower', '==', uname).limit(1).get();
+              if (snap.empty) snap = await db.collection('users').where('username', '==', w.username).limit(1).get();
+              if (!snap.empty) wuid = snap.docs[0].id;
+            } catch (_) {}
+          }
+          if (!wuid) continue;
+          const ref = db.collection('users').doc(wuid);
+          const sn = await ref.get();
+          if (!sn.exists) continue;
+          const d = sn.data() || {};
+          const ach = Array.isArray(d.pickemAchievements) ? d.pickemAchievements.slice() : [];
+          if (ach.some(a => a && a.id === awardId)) continue;
+          ach.unshift({
+            id: awardId,
+            type: 'pickem_week_win',
+            label: 'Week ' + weekNumber + ' Champion',
+            week: Number(weekNumber),
+            seasonId: seasonId,
+            correct: topScore,
+            total: Number(w.total_count) || 0,
+            earnedAt: new Date().toISOString()
+          });
+          await ref.set({ pickemAchievements: ach.slice(0, 50) }, { merge: true });
+        }
+      } catch (e) {
+        console.warn('awardWeeklyWinnerIfClosed', e);
+      }
+    }
+
+async function loadLeaderboard(period, weekNumber = null, monthOffset = null, selectedDate = null) {
       try {
         console.log(`loadLeaderboard called for period: ${period}, weekNumber: ${weekNumber}, monthOffset: ${monthOffset}, selectedDate: ${selectedDate}`);
         
@@ -7301,17 +7379,25 @@
           for (const date of datesInRange) {
             const dailyScores = await calculateScoresForDate(date, null);
             dailyScores.forEach(dayScore => {
-              if (!userScoresMap[dayScore.username]) {
-                userScoresMap[dayScore.username] = { username: dayScore.username, totalCorrect: 0, totalQuestions: 0 };
+              const key = dayScore.userId || dayScore.username;
+              if (!userScoresMap[key]) {
+                userScoresMap[key] = {
+                  username: dayScore.username,
+                  userId: dayScore.userId || null,
+                  totalCorrect: 0,
+                  totalQuestions: 0
+                };
               }
-              userScoresMap[dayScore.username].totalCorrect += dayScore.correct;
-              userScoresMap[dayScore.username].totalQuestions += dayScore.total;
+              if (dayScore.userId) userScoresMap[key].userId = dayScore.userId;
+              userScoresMap[key].totalCorrect += dayScore.correct;
+              userScoresMap[key].totalQuestions += dayScore.total;
             });
           }
 
           const leaderboard = Object.values(userScoresMap)
             .map(score => ({
               username: score.username,
+              userId: score.userId || null,
               correct_count: score.totalCorrect,
               total_count: score.totalQuestions,
               percentage: score.totalQuestions > 0 ? ((score.totalCorrect / score.totalQuestions) * 100).toFixed(1) : 0
@@ -7319,6 +7405,7 @@
             .sort((a, b) => b.correct_count - a.correct_count);
 
           renderLeaderboard(period, leaderboard);
+          try { await awardWeeklyWinnerIfClosed(weekNumber, endDate, leaderboard); } catch (e) { console.warn('week award', e); }
           return;
         }
         
@@ -10622,51 +10709,35 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
 
       // Question bank (from your Quick Presets) — filled with team names when applied to a game
+      // Diversity groups: only ONE question type group per game (no both_110 + O/U 220.5 together)
       const QUESTION_BANK = [
-        // All types auto-grade from public ESPN scoreboard + box score (no paid API)
-        { key: 'win', template: 'Who will win: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'winner' },
-        { key: 'total', template: 'Will the total points in {away} vs {home} go Over or Under {line}?', options: ['Over', 'Under'], needsLine: true, grade: 'total' },
-        { key: 'margin10', template: 'Will {away} vs {home} be decided by 10 or more points?', options: ['Yes', 'No'], grade: 'margin_ge', margin: 10 },
-        { key: 'margin5', template: 'Will {away} vs {home} be decided by 5 or more points?', options: ['Yes', 'No'], grade: 'margin_ge', margin: 5 },
-        { key: 'both_110', template: 'Will both teams score 110+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'both_score_ge', points: 110 },
-        { key: 'either_120', template: 'Will either team score 120+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'either_score_ge', points: 120 },
-        { key: 'combined_220', template: 'Will {away} vs {home} combine for Over or Under 220.5 points?', options: ['Over', 'Under'], grade: 'total', line: 220.5 },
-        { key: 'halftime_leader', template: 'Which team will lead at half in {away} vs {home}?', options: ['{away}', '{home}'], grade: 'halftime_leader' },
-        { key: 'q1_leader', template: 'Which team will lead after the 1st quarter: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'q1_leader' },
-        { key: 'higher_half', template: 'Which half will have more total points in {away} vs {home}?', options: ['1st half', '2nd half'], grade: 'higher_half' },
-        { key: 'overtime', template: 'Will {away} vs {home} go to overtime?', options: ['Yes', 'No'], grade: 'overtime' },
-        { key: 'double_double', template: 'Will a player record a double-double in {away} vs {home}?', options: ['Yes', 'No'], grade: 'double_double' },
-        { key: 'fg50', template: 'Will either team shoot 50%+ from the field in {away} vs {home}?', options: ['Yes', 'No'], grade: 'fg50' },
-        { key: 'higher_fg', template: 'Which team will shoot a higher field-goal %: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'higher_fg' },
-        { key: 'more_rebounds', template: 'Which team will have more rebounds: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_rebounds' },
-        { key: 'more_assists', template: 'Which team will have more assists: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_assists' },
-        { key: 'more_turnovers', template: 'Which team will have more turnovers: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_turnovers' },
-        { key: 'more_steals', template: 'Which team will have more steals: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_steals' },
-        { key: 'more_blocks', template: 'Which team will have more blocks: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_blocks' }
-      ]
+        { key: 'win', group: 'winner', template: 'Who will win: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'winner' },
+        { key: 'total', group: 'game_total', template: 'Will the total points in {away} vs {home} go Over or Under {line}?', options: ['Over', 'Under'], needsLine: true, grade: 'total' },
+        { key: 'margin10', group: 'margin', template: 'Will {away} vs {home} be decided by 10 or more points?', options: ['Yes', 'No'], grade: 'margin_ge', margin: 10 },
+        { key: 'margin5', group: 'margin', template: 'Will {away} vs {home} be decided by 5 or more points?', options: ['Yes', 'No'], grade: 'margin_ge', margin: 5 },
+        { key: 'both_110', group: 'scoring_pace', template: 'Will both teams score 110+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'both_score_ge', points: 110 },
+        { key: 'either_120', group: 'scoring_pace', template: 'Will either team score 120+ in {away} vs {home}?', options: ['Yes', 'No'], grade: 'either_score_ge', points: 120 },
+        { key: 'halftime_leader', group: 'period_lead', template: 'Which team will lead at half in {away} vs {home}?', options: ['{away}', '{home}'], grade: 'halftime_leader' },
+        { key: 'q1_leader', group: 'period_lead', template: 'Which team will lead after the 1st quarter: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'q1_leader' },
+        { key: 'higher_half', group: 'half_scoring', template: 'Which half will have more total points in {away} vs {home}?', options: ['1st half', '2nd half'], grade: 'higher_half' },
+        { key: 'overtime', group: 'extra', template: 'Will {away} vs {home} go to overtime?', options: ['Yes', 'No'], grade: 'overtime' },
+        { key: 'double_double', group: 'player_stat', template: 'Will a player record a double-double in {away} vs {home}?', options: ['Yes', 'No'], grade: 'double_double' },
+        { key: 'fg50', group: 'shooting', template: 'Will either team shoot 50%+ from the field in {away} vs {home}?', options: ['Yes', 'No'], grade: 'fg50' },
+        { key: 'higher_fg', group: 'shooting', template: 'Which team will shoot a higher field-goal %: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'higher_fg' },
+        { key: 'more_rebounds', group: 'team_reb', template: 'Which team will have more rebounds: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_rebounds' },
+        { key: 'more_assists', group: 'team_ast', template: 'Which team will have more assists: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_assists' },
+        { key: 'more_threes', group: 'threes', template: 'Which team will make more three-pointers: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_threes' }
+      ];
 
-      function fillTemplate(str, home, away, line) {
-        return String(str || '')
+      function fillTemplate(tpl, home, away, line) {
+        return String(tpl || '')
           .replace(/\{home\}/g, home)
           .replace(/\{away\}/g, away)
           .replace(/\{line\}/g, line != null ? String(line) : '');
       }
-
       function fillOptions(opts, home, away) {
-        return (opts || []).map(o => fillTemplate(o, home, away));
+        return (opts || []).map(o => String(o).replace(/\{home\}/g, home).replace(/\{away\}/g, away));
       }
-
-      // Deterministic-ish .5 total line from team name hashes (no API)
-      function suggestTotalLine(home, away) {
-        const s = String(home) + '|' + String(away);
-        let h = 0;
-        for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i);
-        h = Math.abs(h);
-        // NBA totals often 210.5–245.5
-        const base = 215 + (h % 31); // 215..245
-        return base + 0.5;
-      }
-
       function shuffleCopy(arr, seed) {
         const a = arr.slice();
         let s = seed || 1;
@@ -10677,32 +10748,30 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         }
         return a;
       }
+      function suggestTotalLine(home, away) {
+        // Neutral NBA-ish total; varies slightly by string hash so days differ
+        let h = 0;
+        const s = String(home) + String(away);
+        for (let i = 0; i < s.length; i++) h = (h + s.charCodeAt(i) * (i + 3)) % 17;
+        return 220.5 + (h - 8); // ~212.5 to 228.5
+      }
 
-      /**
-       * Build exactly 10 questions for a day.
-       * - Primary: one "Who will win?" per game (all games, or first N if too many)
-       * - Fill to 10 from the preset bank applied to random games that day
-       * - Over/Under lines always end in .5
-       */
       function buildDailyTen(games, weekNumber) {
         const week = weekNumber ? Number(weekNumber) : null;
         const TARGET = 10;
         const items = [];
-        const usedKeys = new Set(); // gameIndex + bank key to avoid exact dupes
-
+        const usedKeys = new Set();
+        const usedGroupsByGame = {};
+        const usedGroupsGlobal = new Set();
         const list = (games && games.length) ? games.slice() : [];
-        // If no games, synthesize a placeholder so bank still works with manual opponent
-        if (!list.length) {
-          // No games — cannot build a real slate
-          return items;
-        }
+        if (!list.length) return items;
 
         function addQ(question, options, meta) {
           if (items.length >= TARGET) return false;
           const cleanMeta = {};
           if (meta && typeof meta === 'object') {
             Object.keys(meta).forEach(k => {
-              if (meta[k] !== undefined) cleanMeta[k] = meta[k] === undefined ? null : meta[k];
+              if (meta[k] !== undefined) cleanMeta[k] = meta[k];
             });
           }
           const row = {
@@ -10718,98 +10787,110 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           return true;
         }
 
-        // 1) One moneyline per game until we hit 10 or run out of games
+        function canUse(gi, bi) {
+          if (usedKeys.has(gi + ':' + bi.key)) return false;
+          const grp = bi.group || bi.key;
+          if (!usedGroupsByGame[gi]) usedGroupsByGame[gi] = new Set();
+          if (usedGroupsByGame[gi].has(grp)) return false;
+          return true;
+        }
+
+        function markUsed(gi, bi) {
+          usedKeys.add(gi + ':' + bi.key);
+          const grp = bi.group || bi.key;
+          if (!usedGroupsByGame[gi]) usedGroupsByGame[gi] = new Set();
+          usedGroupsByGame[gi].add(grp);
+          usedGroupsGlobal.add(grp);
+        }
+
+        // One moneyline per game
         for (let i = 0; i < list.length && items.length < TARGET; i++) {
           const g = list[i];
           const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
           const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
-          const key = i + ':win';
-          usedKeys.add(key);
+          markUsed(i, { key: 'win', group: 'winner' });
           addQ(
             fillTemplate('Who will win: {away} vs {home}?', home, away),
             fillOptions(['{away}', '{home}'], home, away),
             {
-              gameIndex: i, bankKey: 'win', grade: 'winner',
+              gameIndex: i, bankKey: 'win', grade: 'winner', diversityGroup: 'winner',
               home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
               eventId: g.eventId ? String(g.eventId) : null
             }
           );
         }
 
-        // 2) Fill remaining — DIFFERENT question types first (each bank key once)
         if (items.length < TARGET) {
           const dateStr = document.getElementById('autoSlateDate')?.value || '';
           let seed = 0;
           for (let i = 0; i < dateStr.length; i++) seed += dateStr.charCodeAt(i);
           const bankOrder = shuffleCopy(QUESTION_BANK.filter(b => b.key !== 'win'), seed + 7);
           const gameOrder = shuffleCopy(list.map((_, i) => i), seed + 99);
-          const usedBankKeys = new Set(['win']);
 
+          // Prefer unique groups across the slate first
           for (const bi of bankOrder) {
             if (items.length >= TARGET) break;
-            if (usedBankKeys.has(bi.key)) continue;
+            if (usedGroupsGlobal.has(bi.group || bi.key)) continue;
             for (const gi of gameOrder) {
-              const uk = gi + ':' + bi.key;
-              if (usedKeys.has(uk)) continue;
+              if (!canUse(gi, bi)) continue;
               const g = list[gi];
               const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
               const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
               const line = bi.needsLine ? suggestTotalLine(home, away) : null;
-              usedKeys.add(uk);
-              usedBankKeys.add(bi.key);
-              addQ(fillTemplate(bi.template, home, away, line != null ? line : bi.line), fillOptions(bi.options, home, away), {
-                gameIndex: gi, bankKey: bi.key, grade: bi.grade || bi.key,
-                line: line != null ? line : (bi.line != null ? bi.line : null),
-                margin: bi.margin, points: bi.points,
-                home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
-                eventId: g.eventId ? String(g.eventId) : null
-              });
+              markUsed(gi, bi);
+              addQ(
+                fillTemplate(bi.template, home, away, line != null ? line : bi.line),
+                fillOptions(bi.options, home, away),
+                {
+                  gameIndex: gi, bankKey: bi.key, grade: bi.grade || bi.key, diversityGroup: bi.group || bi.key,
+                  line: line != null ? line : (bi.line != null ? bi.line : null),
+                  margin: bi.margin, points: bi.points,
+                  home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
+                  eventId: g.eventId ? String(g.eventId) : null
+                }
+              );
               break;
             }
           }
 
-          if (items.length < TARGET) {
-            let safety = 0;
-            while (items.length < TARGET && safety < 400) {
-              safety++;
-              let added = false;
-              for (const bi of bankOrder) {
-                if (items.length >= TARGET) break;
-                for (const gi of gameOrder) {
-                  if (items.length >= TARGET) break;
-                  const uk = gi + ':' + bi.key;
-                  if (usedKeys.has(uk)) continue;
-                  const g = list[gi];
-                  const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
-                  const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
-                  const line = bi.needsLine ? suggestTotalLine(home, away) : null;
-                  usedKeys.add(uk);
-                  addQ(fillTemplate(bi.template, home, away, line != null ? line : bi.line), fillOptions(bi.options, home, away), {
-                gameIndex: gi, bankKey: bi.key, grade: bi.grade || bi.key,
-                line: line != null ? line : (bi.line != null ? bi.line : null),
-                margin: bi.margin, points: bi.points,
-                home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
-                eventId: g.eventId ? String(g.eventId) : null
-              });
-                  added = true;
-                  break;
-                }
+          // Fill remaining without same-group overlap on a game
+          let safety = 0;
+          while (items.length < TARGET && safety < 400) {
+            safety++;
+            let added = false;
+            for (const bi of bankOrder) {
+              if (items.length >= TARGET) break;
+              for (const gi of gameOrder) {
+                if (!canUse(gi, bi)) continue;
+                const g = list[gi];
+                const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
+                const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
+                const line = bi.needsLine ? suggestTotalLine(home, away) : null;
+                markUsed(gi, bi);
+                addQ(
+                  fillTemplate(bi.template, home, away, line != null ? line : bi.line),
+                  fillOptions(bi.options, home, away),
+                  {
+                    gameIndex: gi, bankKey: bi.key, grade: bi.grade || bi.key, diversityGroup: bi.group || bi.key,
+                    line: line != null ? line : (bi.line != null ? bi.line : null),
+                    margin: bi.margin, points: bi.points,
+                    home: home, away: away, homeAbbr: g.home || '', awayAbbr: g.away || '',
+                    eventId: g.eventId ? String(g.eventId) : null
+                  }
+                );
+                added = true;
+                break;
               }
-              if (!added) break;
+              if (added) break;
             }
+            if (!added) break;
           }
         }
 
-        // 3) If still short (edge case), generic fillers
-        let n = 1;
-        while (items.length < TARGET) {
-          addQ('Bonus pick #' + n + ': Will the higher seed win tonight?', ['Yes', 'No'], { bankKey: 'filler' });
-          n++;
-        }
-
-        // Optional: last question as numeric TB only if you want — user asked for 10 multiple style; keep all multiple
-        return items.slice(0, TARGET);
+        if (items.length) items[items.length - 1].isTieBreaker = true;
+        return items;
       }
+
 
       function getGamesForBuild() {
         if (foundGames && foundGames.length) return foundGames;

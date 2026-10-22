@@ -2280,7 +2280,7 @@ function waitForDb(cb, tries) {
 }
 function listenToArticles() {
   waitForDb(() => {
-    window.db.collection(COLLECTION).orderBy('createdAt', 'desc').onSnapshot(snap => {
+    window.db.collection(COLLECTION).orderBy('createdAt', 'desc').limit(100).get().then(snap => {
       articles = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
       renderArticleList();
     }, err => console.error(err));
@@ -2875,7 +2875,7 @@ function renderPollCard(poll, isActive) {
   return '<div class="article-item"><div class="article-item-accent" style="background:' + (isActive ? 'var(--sixers-blue)' : 'var(--border-light)') + ';"></div><div class="article-item-body"><div class="article-item-title">' + q + '</div></div><div class="article-item-actions">' + actionBtns + '</div></div>';
 }
 function listenToPolls() {
-  window.db.collection(POLLS_COLLECTION).orderBy('createdAt', 'desc').onSnapshot(snap => {
+  window.db.collection(POLLS_COLLECTION).orderBy('createdAt', 'desc').limit(50).get().then(snap => {
     pollsCache = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
     const active = pollsCache.filter(p => p.isActive);
     const past = pollsCache.filter(p => !p.isActive);

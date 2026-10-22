@@ -2715,7 +2715,18 @@
                   <button type="button" class="btn btn-secondary" id="autoPreviewBtn">Preview</button>
                   <button type="button" class="btn btn-secondary" id="autoGradeFromEspnBtn">Auto-grade</button>
                 </div>
-                <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.75rem;">Already generated? Use <strong>Load existing</strong> to review/edit. To rebuild, check <strong>Replace existing</strong> first.</p>
+                <p style="font-size:0.8rem;color:var(--mid);margin:0 0 0.75rem;">After Create or Load existing, edit questions below, then <strong>Save edits</strong>. Publish when ready. To rebuild from scratch, check <strong>Replace existing</strong>.</p>
+                <div id="autoEditPanel" style="display:none;margin:1rem 0;padding:1rem;border:1px solid rgba(0,107,182,0.25);border-radius:12px;background:#f8fafc;">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.75rem;">
+                    <h4 style="margin:0;font-size:1rem;">Edit questions for this date</h4>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                      <button type="button" class="btn btn-primary" id="autoSaveEditsBtn">Save edits</button>
+                      <button type="button" class="btn btn-secondary" id="autoAddQuestionBtn">Add question</button>
+                    </div>
+                  </div>
+                  <div id="autoEditList"></div>
+                  <div id="autoEditMsg" class="message" style="margin-top:0.75rem;"></div>
+                </div>
 
                 <div id="autoGradeMsg" class="message" style="margin-bottom:0.5rem;"></div>
                 <div id="autoGamesList" style="margin-bottom:0.75rem;font-size:0.85rem;"></div>
@@ -10900,6 +10911,14 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           const w = document.getElementById('autoSlateWeek')?.value;
           try { const mad = document.getElementById('markAnswersDate'); if (mad && date) mad.value = date; } catch(_){}
           msg('Draft saved: ' + (r.count || 10) + ' questions' + (w ? ' (Week ' + w + ')' : '') + '. Hit Publish when ready.', 'success');
+          try {
+            const snap2 = await db.collection('questions').where('date', '==', date).get();
+            if (!snap2.empty) {
+              const d0 = snap2.docs[0];
+              openAutoEditPanel((d0.data() || {}).items || [], d0.id);
+            }
+          } catch(_) {}
+
           const games = foundGames || [];
           const weekNum = w || (window.SixersSeason && SixersSeason.weekForDate(date));
           const items = buildDailyTen(games, weekNum);
@@ -10917,7 +10936,181 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
       });
 
       
-      document.getElementById('autoLoadExistingBtn')?.addEventListener('click', async () => {
+      
+      // ---- Inline edit after generate / load ----
+      window._autoEditItems = window._autoEditItems || [];
+      window._autoEditDocId = window._autoEditDocId || null;
+
+      function autoEditMsg(text, type) {
+        const el = document.getElementById('autoEditMsg');
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'message' + (type ? ' ' + type : '');
+        el.style.display = text ? 'block' : 'none';
+      }
+
+      function optsToStr(opts) {
+        if (Array.isArray(opts)) return opts.join(', ');
+        if (opts == null) return '';
+        return String(opts);
+      }
+
+      function strToOpts(s) {
+        return String(s || '').split(',').map(x => x.trim()).filter(Boolean);
+      }
+
+      function openAutoEditPanel(items, docId) {
+        window._autoEditItems = (items || []).map((q, i) => Object.assign({}, q, {
+          _editId: q.id || q.tempId || ('e' + i + '_' + Date.now())
+        }));
+        window._autoEditDocId = docId || null;
+        const panel = document.getElementById('autoEditPanel');
+        if (panel) panel.style.display = 'block';
+        renderAutoEditList();
+        // keep Manual questions in sync
+        try {
+          adminQuestions = window._autoEditItems.map(q => Object.assign({}, q, {
+            tempId: q._editId,
+            weekNumber: q.weekNumber != null ? q.weekNumber : null
+          }));
+          if (typeof renderAdminQuestions === 'function') renderAdminQuestions();
+        } catch (_) {}
+      }
+
+      function renderAutoEditList() {
+        const list = document.getElementById('autoEditList');
+        if (!list) return;
+        const items = window._autoEditItems || [];
+        if (!items.length) {
+          list.innerHTML = '<p style="color:var(--mid);margin:0;">No questions loaded. Create or Load existing first.</p>';
+          return;
+        }
+        list.innerHTML = items.map((q, i) => {
+          const opts = optsToStr(q.options);
+          const qtext = (q.question || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+          const otext = opts.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+          return '<div class="auto-edit-row" data-idx="' + i + '" style="border:1px solid #e2e8f0;border-radius:10px;padding:0.85rem;margin-bottom:0.65rem;background:#fff;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;margin-bottom:0.45rem;">' +
+            '<strong style="font-size:0.9rem;">Q' + (i + 1) + '</strong>' +
+            '<button type="button" class="btn btn-secondary auto-edit-del" data-idx="' + i + '" style="padding:0.25rem 0.55rem;font-size:0.75rem;">Remove</button>' +
+            '</div>' +
+            '<label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;margin-bottom:0.25rem;">Question</label>' +
+            '<textarea class="form-input auto-edit-q" data-idx="' + i + '" rows="2" style="width:100%;margin-bottom:0.5rem;resize:vertical;">' + qtext + '</textarea>' +
+            '<label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;margin-bottom:0.25rem;">Answer choices (comma-separated)</label>' +
+            '<input type="text" class="form-input auto-edit-opts" data-idx="' + i + '" value="' + otext + '" style="width:100%;" />' +
+            '</div>';
+        }).join('');
+
+        list.querySelectorAll('.auto-edit-q').forEach(el => {
+          el.addEventListener('input', () => {
+            const i = Number(el.getAttribute('data-idx'));
+            if (window._autoEditItems[i]) window._autoEditItems[i].question = el.value;
+          });
+        });
+        list.querySelectorAll('.auto-edit-opts').forEach(el => {
+          el.addEventListener('input', () => {
+            const i = Number(el.getAttribute('data-idx'));
+            if (window._autoEditItems[i]) {
+              const arr = strToOpts(el.value);
+              window._autoEditItems[i].options = arr;
+              // keep string form if original was string-like for older docs
+              if (window._autoEditItems[i].question_type === 'over_under') {
+                /* keep array */
+              }
+            }
+          });
+        });
+        list.querySelectorAll('.auto-edit-del').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const i = Number(btn.getAttribute('data-idx'));
+            window._autoEditItems.splice(i, 1);
+            renderAutoEditList();
+          });
+        });
+      }
+
+      async function saveAutoEdits() {
+        if (!checkAdminPermission()) return;
+        const date = document.getElementById('autoSlateDate')?.value;
+        if (!date) { autoEditMsg('Choose a date first.', 'error'); return; }
+        const items = (window._autoEditItems || []).map(q => {
+          const out = Object.assign({}, q);
+          delete out._editId;
+          delete out.tempId;
+          if (Array.isArray(out.options)) {
+            /* ok */
+          } else if (typeof out.options === 'string') {
+            out.options = strToOpts(out.options);
+          }
+          // Ensure multiple choice has question_type for picks UI
+          if (out.options && out.options.length && !out.question_type) {
+            out.question_type = 'multiple_choice';
+            out.type = out.type || 'multiple';
+          }
+          return sanitizeForFirestore ? sanitizeForFirestore(out) : out;
+        });
+        if (!items.length) {
+          autoEditMsg('No questions to save.', 'error');
+          return;
+        }
+        try {
+          autoEditMsg('Saving…', 'info');
+          let ref = null;
+          if (window._autoEditDocId) {
+            ref = db.collection('questions').doc(window._autoEditDocId);
+          } else {
+            const snap = await db.collection('questions').where('date', '==', date).get();
+            if (!snap.empty) {
+              ref = snap.docs[0].ref;
+              window._autoEditDocId = snap.docs[0].id;
+            }
+          }
+          const payload = {
+            items,
+            date,
+            updatedAt: new Date().toISOString(),
+            source: 'auto-slate-edit'
+          };
+          if (ref) {
+            await ref.set(payload, { merge: true });
+          } else {
+            const added = await db.collection('questions').add(Object.assign({
+              createdAt: new Date().toISOString(),
+              published: false,
+              status: 'draft',
+              seasonId: (window.SixersSeason && SixersSeason.currentSeasonId) || '2026-27'
+            }, payload));
+            window._autoEditDocId = added.id;
+          }
+          // sync admin list
+          try {
+            adminQuestions = items.map(q => Object.assign({}, q, { tempId: Date.now() + Math.random() }));
+            if (typeof renderAdminQuestions === 'function') renderAdminQuestions();
+          } catch (_) {}
+          autoEditMsg('Saved ' + items.length + ' questions for ' + date + '. Click Publish if you want them live.', 'success');
+          msg('Edits saved for ' + date + '.', 'success');
+        } catch (e) {
+          console.error(e);
+          autoEditMsg('Save failed: ' + (e.message || e), 'error');
+        }
+      }
+
+      document.getElementById('autoSaveEditsBtn')?.addEventListener('click', () => saveAutoEdits());
+      document.getElementById('autoAddQuestionBtn')?.addEventListener('click', () => {
+        window._autoEditItems = window._autoEditItems || [];
+        window._autoEditItems.push({
+          _editId: 'new_' + Date.now(),
+          question: '',
+          options: ['Yes', 'No'],
+          question_type: 'multiple_choice',
+          type: 'multiple'
+        });
+        const panel = document.getElementById('autoEditPanel');
+        if (panel) panel.style.display = 'block';
+        renderAutoEditList();
+      });
+
+document.getElementById('autoLoadExistingBtn')?.addEventListener('click', async () => {
         if (!checkAdminPermission()) return;
         const date = document.getElementById('autoSlateDate')?.value;
         if (!date) { msg('Choose a date.', 'error'); return; }
@@ -10963,7 +11156,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           const ad = document.getElementById('adminDate');
           if (ad) ad.value = date;
           const st = data.status || (data.published === false ? 'draft' : 'published');
-          msg('Loaded ' + items.length + ' questions (' + st + '). Open Manual questions to edit wording, then save. Or Grade to set answers.', 'success');
+          openAutoEditPanel(items, doc.id);
+          msg('Loaded ' + items.length + ' questions (' + st + '). Edit below, then Save edits. Publish when ready.', 'success');
         } catch (e) {
           console.error(e);
           msg('Load failed: ' + (e.message || e), 'error');
@@ -11095,6 +11289,17 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           document.getElementById('loadDateBtn')?.click();
           document.getElementById('autoPreviewBtn')?.click();
           msg('Draft saved: ' + items.length + ' questions for ' + date + '. Click Publish when ready.', 'success');
+          try {
+            const snap2 = await db.collection('questions').where('date', '==', date).get();
+            if (!snap2.empty) {
+              const d0 = snap2.docs[0];
+              const its = (d0.data() || {}).items || items;
+              openAutoEditPanel(its, d0.id);
+            } else {
+              openAutoEditPanel(items, null);
+            }
+          } catch(_) { openAutoEditPanel(items, null); }
+
         } catch (err) {
           console.error(err);
           msg('Save failed: ' + (err.message || err), 'error');

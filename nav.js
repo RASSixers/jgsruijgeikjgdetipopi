@@ -860,36 +860,57 @@ document.addEventListener('DOMContentLoaded', function() {
             badge.textContent = '';
         }
     }
+    var _notifPollTimer = null;
     function listenNotifications(user) {
         if (_notifUnsub) { try { _notifUnsub(); } catch (e) {} _notifUnsub = null; }
+        if (_notifPollTimer) { try { clearInterval(_notifPollTimer); } catch (e) {} _notifPollTimer = null; }
         if (!user || !window.db) { updateNotifBadge(0); return; }
-        try {
-            _notifUnsub = window.db.collection('notifications')
+        // Free-tier: capped one-shot get + poll every 3 min (no permanent onSnapshot)
+        function refreshNotifBadge() {
+            if (!user || !window.db) return;
+            if (typeof document !== 'undefined' && document.hidden) return;
+            window.db.collection('notifications')
                 .where('recipientId', '==', user.uid)
-                .onSnapshot(function(snap) {
+                .limit(25)
+                .get()
+                .then(function (snap) {
                     var unread = 0;
-                    snap.forEach(function(doc) {
+                    snap.forEach(function (doc) {
                         var d = doc.data() || {};
                         if (d.read === false || d.read === undefined) unread++;
                     });
                     updateNotifBadge(unread);
-                }, function(err) {
-                    console.warn('notifications listen', err);
-                });
-        } catch (e) {
-            console.warn(e);
+                })
+                .catch(function (err) { console.warn('notifications poll', err); });
         }
+        refreshNotifBadge();
+        _notifPollTimer = setInterval(refreshNotifBadge, 3 * 60 * 1000);
+        try {
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) refreshNotifBadge();
+            });
+        } catch (e) {}
     }
 
     async function syncUsernameSlug(user) {
         if (!user || !window.db) return;
         try {
+            // Skip network if we already have a cached slug for this uid (24h)
+            var cacheKey = 'usernameLowerUid:' + user.uid;
+            var cachedAt = 0;
+            try { cachedAt = parseInt(localStorage.getItem(cacheKey + ':t') || '0', 10); } catch (e) {}
+            if (cachedAt && (Date.now() - cachedAt) < 24 * 60 * 60 * 1000 && localStorage.getItem('usernameLower')) {
+                return;
+            }
             const doc = await window.db.collection('users').doc(user.uid).get();
             if (doc.exists) {
                 const d = doc.data() || {};
                 const lower = (d.usernameLower || d.username || '').toString().toLowerCase().trim();
                 if (lower) {
                     localStorage.setItem('usernameLower', lower.replace(/[^a-z0-9_-]+/g, '-'));
+                    try {
+                        localStorage.setItem(cacheKey + ':t', String(Date.now()));
+                    } catch (e) {}
                 }
             }
         } catch (e) {}
@@ -1119,20 +1140,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     let notificationUnsubscribe = null;
+    var _setupNotifPollTimer = null;
 
     function setupNotificationListener(user) {
         if (notificationUnsubscribe) { try { notificationUnsubscribe(); } catch(_) {} notificationUnsubscribe = null; }
+        if (_setupNotifPollTimer) { try { clearInterval(_setupNotifPollTimer); } catch(_) {} _setupNotifPollTimer = null; }
         if (!user || !window.db) { updateNotifBadge(0); return; }
-        notificationUnsubscribe = window.db.collection('notifications')
-            .where('recipientId', '==', user.uid)
-            .onSnapshot(snapshot => {
-                let count = 0;
-                snapshot.forEach(doc => {
-                    const d = doc.data() || {};
-                    if (d.read === false || d.read === undefined) count++;
-                });
-                updateNotifBadge(count);
-            }, err => console.error("Notification listener error:", err));
+        // Same free-tier strategy as listenNotifications (capped get + slow poll)
+        function refresh() {
+            if (!user || !window.db || (typeof document !== 'undefined' && document.hidden)) return;
+            window.db.collection('notifications')
+                .where('recipientId', '==', user.uid)
+                .limit(25)
+                .get()
+                .then(function (snapshot) {
+                    let count = 0;
+                    snapshot.forEach(function (doc) {
+                        const d = doc.data() || {};
+                        if (d.read === false || d.read === undefined) count++;
+                    });
+                    updateNotifBadge(count);
+                })
+                .catch(function (err) { console.warn('Notification poll error:', err); });
+        }
+        refresh();
+        _setupNotifPollTimer = setInterval(refresh, 3 * 60 * 1000);
     }
 
     function setupAuthListeners() {

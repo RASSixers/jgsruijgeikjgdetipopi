@@ -2613,12 +2613,11 @@
                   <input type="text" id="adminOptions" class="form-input" placeholder="e.g., Option 1, Option 2, Option 3" />
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="adminTieBreakerGroup" style="display:none;">
                   <label class="checkbox-option" style="cursor: pointer; background: var(--chip); padding: 10px; border-radius: 8px;">
                     <input type="checkbox" id="adminIsTieBreaker" />
                     <span style="font-weight: 700; font-size: 13px; color: var(--brand);">Set as Tie-Breaker Question</span>
                   </label>
-                  <small style="display: block; color: var(--muted); margin-top: 4px;">Tie-breakers are used to rank players with the same score based on how close their answer is to the correct value.</small>
                 </div>
 
                 <button class="btn btn-primary" id="addQuestionBtn">Add Question</button>
@@ -2663,23 +2662,33 @@
 
                 <button class="btn btn-primary" id="saveCorrectAnswersBtn" style="display: none; margin-top: 1rem;">Save Correct Answers</button>
 
-                <hr style="margin:2rem 0;border:none;border-top:1px solid var(--border);">
-                <h3 style="margin:0 0 0.35rem;">Credit / review a player</h3>
-                <p style="font-size:0.85rem;color:var(--mid);margin:0 0 0.75rem;">See every answer for a user. Give credit on individual questions, or set a full score override. Editing question wording does not erase picks (same order / count).</p>
-                <div id="creditPlayerMsg" class="message"></div>
-                <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;margin-bottom:0.75rem;">
-                  <div>
-                    <label class="form-label">Date</label>
-                    <input type="date" id="creditDate" class="form-input" />
+                <div class="credit-admin-card" style="margin-top:2rem;border:1px solid rgba(0,107,182,0.18);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 28px rgba(15,23,42,0.06);">
+                  <div style="padding:1.15rem 1.35rem;background:linear-gradient(135deg,#0b1f3a 0%,#006BB6 70%,#0c4a7a 100%);color:#fff;">
+                    <div style="font-size:0.7rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;">Admin tools</div>
+                    <h3 style="margin:0.25rem 0 0.2rem;font-size:1.2rem;font-weight:800;letter-spacing:-0.02em;">Player credit &amp; overrides</h3>
+                    <p style="margin:0;font-size:0.85rem;line-height:1.45;opacity:0.9;">Review a submission, grant credit on specific questions, or set a full score. Question text edits never wipe picks.</p>
                   </div>
-                  <button type="button" class="btn btn-secondary" id="creditLoadUsersBtn">Load submissions</button>
+                  <div style="padding:1.25rem 1.35rem 1.4rem;">
+                    <div id="creditPlayerMsg" class="message"></div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.85rem;align-items:end;margin-bottom:1rem;">
+                      <div>
+                        <label class="form-label" for="creditDate" style="font-size:0.72rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:#64748b;">Date</label>
+                        <input type="date" id="creditDate" class="form-input" style="border-radius:10px;" />
+                      </div>
+                      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" id="creditLoadUsersBtn" style="border-radius:10px;padding:0.65rem 1.1rem;">Load submissions</button>
+                      </div>
+                    </div>
+                    <div id="creditUserSelectWrap" style="display:none;margin-bottom:1rem;padding:1rem;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+                      <label class="form-label" for="creditUserSelect" style="font-size:0.72rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:#64748b;">Player</label>
+                      <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;">
+                        <select id="creditUserSelect" class="form-input" style="flex:1;min-width:200px;max-width:420px;border-radius:10px;"></select>
+                        <button type="button" class="btn btn-secondary" id="creditLoadUserBtn" style="border-radius:10px;">Review answers</button>
+                      </div>
+                    </div>
+                    <div id="creditReviewPanel" style="display:none;"></div>
+                  </div>
                 </div>
-                <div id="creditUserSelectWrap" style="display:none;margin-bottom:0.75rem;">
-                  <label class="form-label">Player</label>
-                  <select id="creditUserSelect" class="form-input" style="max-width:420px;"></select>
-                  <button type="button" class="btn btn-secondary" id="creditLoadUserBtn" style="margin-top:0.5rem;">Review answers</button>
-                </div>
-                <div id="creditReviewPanel" style="display:none;border:1px solid var(--border);border-radius:12px;padding:1rem;background:var(--chip,#f8fafc);"></div>
               </div>
             </div>
 
@@ -3694,7 +3703,7 @@
       const text = document.getElementById('adminQuestionText').value.trim();
       const type = document.getElementById('adminQuestionType').value;
       const options = document.getElementById('adminOptions').value.trim();
-      const isTieBreaker = document.getElementById('adminIsTieBreaker').checked;
+      const isTieBreaker = false; // tie-breaker disabled
 
       if (!text) {
         showMessage('Please enter a question', 'error', 'adminMessage');
@@ -3757,7 +3766,7 @@
           <div class="admin-question-item-content">
             <div class="admin-question-item-text">${index + 1}. ${q.question}</div>
             <div class="admin-question-item-type">${q.question_type === 'over_under' ? 'Over/Under' : (q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple') ? 'Multiple Choice' : 'Numeric'}</div>
-            ${q.isTieBreaker ? `<div style="display: inline-block; background: var(--brand); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; margin-top: 4px;"> TIE-BREAKER</div>` : ''}
+            
             ${q.options ? `<div class="admin-question-item-options">Options: ${q.options}</div>` : ''}
             ${q.weekNumber || q.dayOfWeek ? `<div class="admin-question-item-options" style="color: #3b82f6; margin-top: 0.5rem; font-weight: 600;"> Week: ${q.weekNumber || '-'} | Day: ${q.dayOfWeek || '-'}</div>` : ''}
           </div>
@@ -4060,7 +4069,7 @@
               <div>
                 <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem;">${idx + 1}. ${q.question}</div>
                 <div style="color: var(--muted); font-size: 0.85rem;">${q.question_type === 'over_under' ? 'Over/Under' : (q.question_type === 'multiple_choice' || q.type === 'multiple' || q.question_type === 'multiple') ? 'Multiple Choice' : 'Numeric'}</div>
-                ${q.isTieBreaker ? `<div style="display: inline-block; background: var(--brand); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; margin-top: 4px;"> TIE-BREAKER</div>` : ''}
+                
                 ${q.weekNumber || q.dayOfWeek ? `<div style="color: #3b82f6; font-size: 0.85rem; font-weight: 600; margin-top: 0.25rem;"> Week: ${q.weekNumber || '-'} | Day: ${q.dayOfWeek || '-'}</div>` : ''}
               </div>
               <span class="answer-indicator-${idx}" style="display: inline-block; width: 24px; height: 24px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;"></span>
@@ -4267,31 +4276,51 @@
         }
         const panel = document.getElementById('creditReviewPanel');
         panel.style.display = 'block';
-        let html = '<div style="margin-bottom:0.75rem;font-weight:700;">' +
-          (pickData.username || pickData.userEmail || pickId) +
-          (pickData.manualScore != null ? ' · manual score: ' + pickData.manualScore : '') +
-          '</div>';
+        const displayName = pickData.username || pickData.userEmail || pickId;
+        let html = '';
+        html += '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:0.75rem;align-items:center;margin-bottom:1rem;padding:0.9rem 1rem;border-radius:12px;background:linear-gradient(135deg,#f8fafc,#eff6ff);border:1px solid #e2e8f0;">';
+        html += '<div><div style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#64748b;">Player</div>';
+        html += '<div style="font-size:1.1rem;font-weight:800;color:#0f172a;">' + String(displayName).replace(/</g,'') + '</div></div>';
+        html += '<div style="text-align:right;"><div style="font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#64748b;">Manual score</div>';
+        html += '<div style="font-size:1.05rem;font-weight:800;color:#006BB6;">' + (pickData.manualScore != null ? pickData.manualScore : '—') + '</div></div></div>';
+        html += '<div style="display:flex;flex-direction:column;gap:0.65rem;">';
         html += items.map((q, idx) => {
           const userPick = answers[idx];
           const ca = correctMap[idx];
-          const caTxt = ca === undefined ? '(not graded)' : (Array.isArray(ca) ? ca.join(' / ') : String(ca));
+          const caTxt = ca === undefined ? 'Not graded' : (Array.isArray(ca) ? ca.join(' · ') : String(ca));
           const checked = creditMap[idx] === true || creditMap[String(idx)] === true;
           const pickTxt = userPick === undefined || userPick === null || userPick === '' ? '—' : String(userPick);
-          return '<div style="border:1px solid var(--border);border-radius:10px;padding:0.75rem;margin-bottom:0.5rem;background:#fff;">' +
-            '<div style="font-weight:700;margin-bottom:0.35rem;">Q' + (idx + 1) + '. ' + String(q.question || '').replace(/</g, '') + '</div>' +
-            '<div style="font-size:0.85rem;margin-bottom:0.25rem;">Their answer: <strong>' + pickTxt.replace(/</g, '') + '</strong></div>' +
-            '<div style="font-size:0.85rem;margin-bottom:0.45rem;color:var(--mid);">Official: ' + String(caTxt).replace(/</g, '') + '</div>' +
-            '<label style="display:flex;align-items:center;gap:0.45rem;font-size:0.85rem;cursor:pointer;">' +
-            '<input type="checkbox" class="credit-q-check" data-qidx="' + idx + '"' + (checked ? ' checked' : '') + ' />' +
-            ' Give credit for this question</label></div>';
+          const graded = ca !== undefined;
+          let match = false;
+          if (graded) {
+            if (Array.isArray(ca)) match = ca.some(x => String(x).trim().toLowerCase() === String(userPick).trim().toLowerCase());
+            else match = String(ca).trim().toLowerCase() === String(userPick).trim().toLowerCase();
+          }
+          const status = checked ? 'Credit' : (graded ? (match ? 'Correct' : 'Incorrect') : 'Pending');
+          const statusBg = checked ? '#dbeafe' : (graded ? (match ? '#dcfce7' : '#fee2e2') : '#f1f5f9');
+          const statusFg = checked ? '#1d4ed8' : (graded ? (match ? '#15803d' : '#b91c1c') : '#64748b');
+          return '<div style="border:1px solid #e2e8f0;border-radius:12px;padding:0.9rem 1rem;background:#fff;">' +
+            '<div style="display:flex;justify-content:space-between;gap:0.5rem;align-items:flex-start;margin-bottom:0.45rem;">' +
+            '<div style="font-weight:800;color:#0f172a;line-height:1.35;">Q' + (idx + 1) + '. ' + String(q.question || '').replace(/</g, '') + '</div>' +
+            '<span style="flex-shrink:0;font-size:0.7rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;padding:0.25rem 0.55rem;border-radius:999px;background:' + statusBg + ';color:' + statusFg + ';">' + status + '</span></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.65rem;">' +
+            '<div style="padding:0.45rem 0.6rem;border-radius:8px;background:#f8fafc;font-size:0.84rem;"><span style="color:#64748b;">Their answer</span><br><strong>' + pickTxt.replace(/</g, '') + '</strong></div>' +
+            '<div style="padding:0.45rem 0.6rem;border-radius:8px;background:#f8fafc;font-size:0.84rem;"><span style="color:#64748b;">Official</span><br><strong>' + String(caTxt).replace(/</g, '') + '</strong></div></div>' +
+            '<label style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.86rem;font-weight:600;cursor:pointer;color:#0f172a;">' +
+            '<input type="checkbox" class="credit-q-check" data-qidx="' + idx + '"' + (checked ? ' checked' : '') + ' style="width:16px;height:16px;accent-color:#006BB6;" />' +
+            'Give credit for this question</label></div>';
         }).join('');
-        html += '<div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;margin-top:0.75rem;">' +
-          '<button type="button" class="btn btn-primary" id="creditSaveBtn">Save credit overrides</button>' +
-          '<div><label class="form-label">Full score override (optional)</label>' +
-          '<input type="number" id="creditManualScore" class="form-input" placeholder="e.g. 80" style="max-width:120px;" value="' +
-          (pickData.manualScore != null ? pickData.manualScore : '') + '" /></div>' +
-          '<button type="button" class="btn btn-secondary" id="creditSaveScoreBtn">Save full score</button>' +
-          '<button type="button" class="btn btn-secondary" id="creditClearScoreBtn">Clear full score</button></div>';
+        html += '</div>';
+        html += '<div style="margin-top:1.1rem;padding:1rem;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">';
+        html += '<div style="font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#64748b;margin-bottom:0.65rem;">Actions</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;">';
+        html += '<button type="button" class="btn btn-primary" id="creditSaveBtn" style="border-radius:10px;">Save credit overrides</button>';
+        html += '<div><label class="form-label" style="font-size:0.72rem;font-weight:800;text-transform:uppercase;color:#64748b;">Full score override</label>';
+        html += '<input type="number" id="creditManualScore" class="form-input" placeholder="e.g. 80" style="max-width:130px;border-radius:10px;" value="' +
+          (pickData.manualScore != null ? pickData.manualScore : '') + '" /></div>';
+        html += '<button type="button" class="btn btn-secondary" id="creditSaveScoreBtn" style="border-radius:10px;">Save full score</button>';
+        html += '<button type="button" class="btn btn-secondary" id="creditClearScoreBtn" style="border-radius:10px;">Clear full score</button>';
+        html += '</div></div>';
         panel.innerHTML = html;
         window._creditActivePickId = pickDoc.id || pickId;
 
@@ -5206,11 +5235,10 @@ document.getElementById('saveCorrectAnswersBtn').addEventListener('click', async
           console.log(`   Tie-Breaker Question found at index ${tieBreakerIndex}: "${allQuestions[tieBreakerIndex].question}"`);
         }
 
-        // Determine which question indices to count based on week filter
-        // EXCLUDE the tie-breaker from accuracy scoring — it acts as a bonus only
+        // All questions count toward score (tie-breaker disabled)
         const questionIndicesToCount = weekNumberFilter !== null 
-          ? allQuestions.map((q, idx) => (q.weekNumber === weekNumberFilter && !q.isTieBreaker) ? idx : -1).filter(idx => idx !== -1)
-          : allQuestions.map((q, idx) => q.isTieBreaker ? -1 : idx).filter(idx => idx !== -1);
+          ? allQuestions.map((q, idx) => (q.weekNumber === weekNumberFilter) ? idx : -1).filter(idx => idx !== -1)
+          : allQuestions.map((q, idx) => idx);
         
         const totalQuestionsForScoring = questionIndicesToCount.length;
         console.log(`   Will score ${totalQuestionsForScoring} questions (${weekNumberFilter ? `Week ${weekNumberFilter} filter applied` : 'no week filter'})`);
@@ -5375,8 +5403,8 @@ document.getElementById('saveCorrectAnswersBtn').addEventListener('click', async
             if (b.correct !== a.correct) {
               return b.correct - a.correct;
             }
-            // Secondary sort: Tie-Breaker Distance (Lower is better)
-            return a.tieBreakerDiff - b.tieBreakerDiff;
+            // Secondary: username for stable order (tie-breaker disabled)
+            return String(a.username||'').localeCompare(String(b.username||''));
           })
           .map((score, idx) => ({
             rank: idx + 1,
@@ -6039,7 +6067,7 @@ document.getElementById('saveCorrectAnswersBtn').addEventListener('click', async
         }
 
         return `
-          <div class="question-card ${q.isTieBreaker ? 'tie-breaker-card' : ''}" data-index="${i}">
+          <div class="question-card" data-index="${i}">
             <div class="question-number">Question ${i + 1}</div>
             <div class="question-text">${q.question}</div>
             <div class="options">${optionsHtml}</div>
@@ -11219,7 +11247,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           }
         }
 
-        if (items.length) items[items.length - 1].isTieBreaker = true;
+        // Tie-breaker disabled — every question scores normally
+        items.forEach(q => { if (q) q.isTieBreaker = false; });
         return items;
       }
 

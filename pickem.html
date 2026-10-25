@@ -2635,7 +2635,7 @@
             <div id="markAnswersTab" style="display: none;">
               <div class="admin-form">
                 <h3 style="margin-top: 0;">Grade answers</h3>
-                <p style="font-size:0.85rem;color:var(--mid);margin:0 0 0.75rem;">Load the date you published, review auto-grades, or set answers manually.</p>
+                <p style="font-size:0.85rem;color:var(--mid);margin:0 0 0.75rem;">Load the date you published, review auto-grades, or set answers manually. Check multiple options to accept more than one correct answer. Credit players below without wiping their picks.</p>
                 <div id="markAnswersMessage" class="message"></div>
 
                 <div class="admin-date-section" style="background: var(--chip); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
@@ -2662,6 +2662,24 @@
                 </div>
 
                 <button class="btn btn-primary" id="saveCorrectAnswersBtn" style="display: none; margin-top: 1rem;">Save Correct Answers</button>
+
+                <hr style="margin:2rem 0;border:none;border-top:1px solid var(--border);">
+                <h3 style="margin:0 0 0.35rem;">Credit / review a player</h3>
+                <p style="font-size:0.85rem;color:var(--mid);margin:0 0 0.75rem;">See every answer for a user. Give credit on individual questions, or set a full score override. Editing question wording does not erase picks (same order / count).</p>
+                <div id="creditPlayerMsg" class="message"></div>
+                <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;margin-bottom:0.75rem;">
+                  <div>
+                    <label class="form-label">Date</label>
+                    <input type="date" id="creditDate" class="form-input" />
+                  </div>
+                  <button type="button" class="btn btn-secondary" id="creditLoadUsersBtn">Load submissions</button>
+                </div>
+                <div id="creditUserSelectWrap" style="display:none;margin-bottom:0.75rem;">
+                  <label class="form-label">Player</label>
+                  <select id="creditUserSelect" class="form-input" style="max-width:420px;"></select>
+                  <button type="button" class="btn btn-secondary" id="creditLoadUserBtn" style="margin-top:0.5rem;">Review answers</button>
+                </div>
+                <div id="creditReviewPanel" style="display:none;border:1px solid var(--border);border-radius:12px;padding:1rem;background:var(--chip,#f8fafc);"></div>
               </div>
             </div>
 
@@ -3806,8 +3824,9 @@
         console.log(`   Current local time: ${new Date().toString()}`);
         
         // Remove tempId from questions before saving
-        const questionsToSave = adminQuestions.map(q => {
+        const questionsToSave = adminQuestions.map((q, i) => {
           const { tempId, ...rest } = q;
+          if (!rest.id) rest.id = 'q_' + i + '_' + String(dateInput).replace(/-/g, '');
           return rest;
         });
         
@@ -3932,11 +3951,32 @@
           showMessage('Loaded questions but form failed: ' + (re.message || re), 'error', 'markAnswersMessage');
           return;
         }
+        // Prefill saved correct answers (supports multi-accept arrays)
+        try {
+          const aSnap = await db.collection('correctAnswers').where('date', '==', dateInput).get();
+          if (!aSnap.empty) {
+            const ans = aSnap.docs[0].data().answers || [];
+            ans.forEach(a => {
+              if (a == null || a.questionId === undefined || a.correctAnswer === undefined) return;
+              const idx = a.questionId;
+              const values = Array.isArray(a.correctAnswer) ? a.correctAnswer : [a.correctAnswer];
+              const inputs = document.querySelectorAll('.answer-input-' + idx);
+              inputs.forEach(inp => {
+                if (inp.type === 'checkbox' || inp.type === 'radio') {
+                  const match = values.some(v => String(v).trim().toLowerCase() === String(inp.value).trim().toLowerCase());
+                  if (match) inp.checked = true;
+                } else if (inp.type === 'number' && values[0] != null) {
+                  inp.value = values[0];
+                }
+              });
+            });
+          }
+        } catch (pe) { console.warn('prefill answers', pe); }
         try { renderPickDistribution(dateInput); } catch (e) { console.warn(e); }
         const saveBtn = document.getElementById('saveCorrectAnswersBtn');
         if (saveBtn) saveBtn.style.display = 'block';
         const st = data.status || (data.published === false ? 'draft' : 'published');
-        showMessage('Loaded ' + questionsForAnswers.length + ' questions (' + st + ').', 'success', 'markAnswersMessage');
+        showMessage('Loaded ' + questionsForAnswers.length + ' questions (' + st + '). Edit answers without affecting user picks. Use Credit player for individual overrides.', 'success', 'markAnswersMessage');
       } catch (err) {
         console.error('Error loading questions:', err);
         showMessage('Error loading questions: ' + (err.message || err), 'error', 'markAnswersMessage');
@@ -3980,13 +4020,14 @@
         
         if (q.question_type === 'over_under') {
           answerInput = `
-            <div style="margin-top: 0.75rem; display: flex; gap: 2rem;">
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--brand); font-weight: 600;">✓ Select correct answer(s) — check both to accept Over and Under</div>
+            <div style="margin-top: 0.5rem; display: flex; gap: 2rem;">
               <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="${inputId}" value="Over" class="answer-input-${idx}" /> 
+                <input type="checkbox" name="${inputId}" value="Over" class="answer-input-${idx}" style="width:16px;height:16px;accent-color:var(--brand);" />
                 <span style="font-weight: 500;">Over</span>
               </label>
               <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="${inputId}" value="Under" class="answer-input-${idx}" /> 
+                <input type="checkbox" name="${inputId}" value="Under" class="answer-input-${idx}" style="width:16px;height:16px;accent-color:var(--brand);" />
                 <span style="font-weight: 500;">Under</span>
               </label>
             </div>
@@ -4155,7 +4196,151 @@
       }
     }
 
-    document.getElementById('saveCorrectAnswersBtn').addEventListener('click', async () => {
+    
+    // ===== Admin: credit / review individual player =====
+    function creditMsg(text, type) {
+      const el = document.getElementById('creditPlayerMsg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'message' + (type ? ' ' + type : '');
+      el.style.display = text ? 'block' : 'none';
+    }
+
+    document.getElementById('creditLoadUsersBtn')?.addEventListener('click', async () => {
+      if (!checkAdminPermission()) return;
+      let date = document.getElementById('creditDate')?.value
+        || document.getElementById('markAnswersDate')?.value
+        || document.getElementById('autoSlateDate')?.value;
+      if (!date) { creditMsg('Choose a date first.', 'error'); return; }
+      document.getElementById('creditDate').value = date;
+      try {
+        creditMsg('Loading submissions…', 'info');
+        const snap = await db.collection('picks').where('date', '==', date).get();
+        const sel = document.getElementById('creditUserSelect');
+        if (!sel) return;
+        const rows = snap.docs.map(d => {
+          const data = d.data() || {};
+          return {
+            id: d.id,
+            label: (data.username || data.userEmail || data.userId || d.id) + '',
+            userEmail: data.userEmail || '',
+            username: data.username || '',
+            userId: data.userId || ''
+          };
+        }).sort((a, b) => a.label.localeCompare(b.label));
+        sel.innerHTML = rows.map(r =>
+          '<option value="' + r.id + '">' + r.label.replace(/</g, '') + '</option>'
+        ).join('');
+        document.getElementById('creditUserSelectWrap').style.display = rows.length ? 'block' : 'none';
+        creditMsg(rows.length ? ('Found ' + rows.length + ' submission(s).') : 'No submissions for that date.', rows.length ? 'success' : 'info');
+        window._creditPickDocs = {};
+        snap.docs.forEach(d => { window._creditPickDocs[d.id] = d; });
+      } catch (e) {
+        console.error(e);
+        creditMsg('Load failed: ' + (e.message || e), 'error');
+      }
+    });
+
+    document.getElementById('creditLoadUserBtn')?.addEventListener('click', async () => {
+      if (!checkAdminPermission()) return;
+      const pickId = document.getElementById('creditUserSelect')?.value;
+      const date = document.getElementById('creditDate')?.value;
+      if (!pickId || !date) { creditMsg('Select a player and date.', 'error'); return; }
+      try {
+        const pickDoc = window._creditPickDocs && window._creditPickDocs[pickId]
+          ? window._creditPickDocs[pickId]
+          : await db.collection('picks').doc(pickId).get();
+        const pickData = pickDoc.data ? (pickDoc.data() || {}) : (pickDoc.data || {});
+        const answers = Array.isArray(pickData.answers) ? pickData.answers : [];
+        const creditMap = Object.assign({}, pickData.creditOverrides || {});
+        const qSnap = await db.collection('questions').where('date', '==', date).get();
+        const items = (!qSnap.empty && (qSnap.docs[0].data().items || [])) || [];
+        const aSnap = await db.collection('correctAnswers').where('date', '==', date).get();
+        const correctMap = {};
+        if (!aSnap.empty) {
+          (aSnap.docs[0].data().answers || []).forEach(a => {
+            if (a && a.questionId !== undefined) correctMap[a.questionId] = a.correctAnswer;
+          });
+        }
+        const panel = document.getElementById('creditReviewPanel');
+        panel.style.display = 'block';
+        let html = '<div style="margin-bottom:0.75rem;font-weight:700;">' +
+          (pickData.username || pickData.userEmail || pickId) +
+          (pickData.manualScore != null ? ' · manual score: ' + pickData.manualScore : '') +
+          '</div>';
+        html += items.map((q, idx) => {
+          const userPick = answers[idx];
+          const ca = correctMap[idx];
+          const caTxt = ca === undefined ? '(not graded)' : (Array.isArray(ca) ? ca.join(' / ') : String(ca));
+          const checked = creditMap[idx] === true || creditMap[String(idx)] === true;
+          const pickTxt = userPick === undefined || userPick === null || userPick === '' ? '—' : String(userPick);
+          return '<div style="border:1px solid var(--border);border-radius:10px;padding:0.75rem;margin-bottom:0.5rem;background:#fff;">' +
+            '<div style="font-weight:700;margin-bottom:0.35rem;">Q' + (idx + 1) + '. ' + String(q.question || '').replace(/</g, '') + '</div>' +
+            '<div style="font-size:0.85rem;margin-bottom:0.25rem;">Their answer: <strong>' + pickTxt.replace(/</g, '') + '</strong></div>' +
+            '<div style="font-size:0.85rem;margin-bottom:0.45rem;color:var(--mid);">Official: ' + String(caTxt).replace(/</g, '') + '</div>' +
+            '<label style="display:flex;align-items:center;gap:0.45rem;font-size:0.85rem;cursor:pointer;">' +
+            '<input type="checkbox" class="credit-q-check" data-qidx="' + idx + '"' + (checked ? ' checked' : '') + ' />' +
+            ' Give credit for this question</label></div>';
+        }).join('');
+        html += '<div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;margin-top:0.75rem;">' +
+          '<button type="button" class="btn btn-primary" id="creditSaveBtn">Save credit overrides</button>' +
+          '<div><label class="form-label">Full score override (optional)</label>' +
+          '<input type="number" id="creditManualScore" class="form-input" placeholder="e.g. 80" style="max-width:120px;" value="' +
+          (pickData.manualScore != null ? pickData.manualScore : '') + '" /></div>' +
+          '<button type="button" class="btn btn-secondary" id="creditSaveScoreBtn">Save full score</button>' +
+          '<button type="button" class="btn btn-secondary" id="creditClearScoreBtn">Clear full score</button></div>';
+        panel.innerHTML = html;
+        window._creditActivePickId = pickDoc.id || pickId;
+
+        document.getElementById('creditSaveBtn')?.addEventListener('click', async () => {
+          const map = {};
+          panel.querySelectorAll('.credit-q-check').forEach(cb => {
+            if (cb.checked) map[cb.getAttribute('data-qidx')] = true;
+          });
+          try {
+            await db.collection('picks').doc(window._creditActivePickId).set({
+              creditOverrides: map,
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+            creditMsg('Credit overrides saved. Leaderboards use these on the next load.', 'success');
+          } catch (e) {
+            creditMsg('Save failed: ' + (e.message || e), 'error');
+          }
+        });
+        document.getElementById('creditSaveScoreBtn')?.addEventListener('click', async () => {
+          const v = document.getElementById('creditManualScore')?.value;
+          if (v === '' || v == null) { creditMsg('Enter a score number.', 'error'); return; }
+          try {
+            await db.collection('picks').doc(window._creditActivePickId).set({
+              manualScore: parseInt(v, 10),
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+            creditMsg('Full score override saved: ' + v, 'success');
+          } catch (e) {
+            creditMsg('Save failed: ' + (e.message || e), 'error');
+          }
+        });
+        document.getElementById('creditClearScoreBtn')?.addEventListener('click', async () => {
+          try {
+            await db.collection('picks').doc(window._creditActivePickId).update({
+              manualScore: firebase.firestore.FieldValue.delete(),
+              updatedAt: new Date().toISOString()
+            });
+            creditMsg('Full score override cleared.', 'success');
+            const inp = document.getElementById('creditManualScore');
+            if (inp) inp.value = '';
+          } catch (e) {
+            creditMsg('Clear failed: ' + (e.message || e), 'error');
+          }
+        });
+        creditMsg('Review loaded.', 'success');
+      } catch (e) {
+        console.error(e);
+        creditMsg('Review failed: ' + (e.message || e), 'error');
+      }
+    });
+
+document.getElementById('saveCorrectAnswersBtn').addEventListener('click', async () => {
       if (!checkAdminPermission()) return;
       
       const dateInput = document.getElementById('markAnswersDate').value;
@@ -5077,6 +5262,14 @@
             
             // Normalize comparison for numeric vs string types
             let isCorrect = false;
+            // Per-question admin credit (does not change stored pick text)
+            const creditMap = pickData.creditOverrides || {};
+            if (creditMap[qIdx] === true || creditMap[String(qIdx)] === true) {
+              isCorrect = true;
+              questionsMatched++;
+              userCorrectCount++;
+              return;
+            }
             if (userPick !== undefined && correctAnswer !== undefined) {
               questionsMatched++;
 
@@ -11208,16 +11401,18 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         if (!checkAdminPermission()) return;
         const date = document.getElementById('autoSlateDate')?.value;
         if (!date) { autoEditMsg('Choose a date first.', 'error'); return; }
-        const items = (window._autoEditItems || []).map(q => {
+        const prevCount = (window._autoEditItems || []).length;
+        const items = (window._autoEditItems || []).map((q, i) => {
           const out = Object.assign({}, q);
           delete out._editId;
           delete out.tempId;
+          // Stable id so edits keep question identity (picks stay index-aligned if order/count unchanged)
+          if (!out.id) out.id = 'q_' + i + '_' + String(date).replace(/-/g, '');
           if (Array.isArray(out.options)) {
             /* ok */
           } else if (typeof out.options === 'string') {
             out.options = strToOpts(out.options);
           }
-          // Ensure multiple choice has question_type for picks UI
           if (out.options && out.options.length && !out.question_type) {
             out.question_type = 'multiple_choice';
             out.type = out.type || 'multiple';
@@ -11262,7 +11457,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             adminQuestions = items.map(q => Object.assign({}, q, { tempId: Date.now() + Math.random() }));
             if (typeof renderAdminQuestions === 'function') renderAdminQuestions();
           } catch (_) {}
-          autoEditMsg('Saved ' + items.length + ' questions for ' + date + '. Click Publish if you want them live.', 'success');
+          autoEditMsg('Saved ' + items.length + ' questions for ' + date + '. User picks are kept when you only change wording/options (same question order). Click Publish if needed.', 'success');
           msg('Edits saved for ' + date + '.', 'success');
         } catch (e) {
           console.error(e);

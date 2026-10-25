@@ -10847,46 +10847,77 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
       // ESPN scoreboard (often works in browser; may fail if blocked)
       async function fetchEspnGames(dateStr) {
-        const url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' + dateStr.replace(/-/g, '');
+        const ymd = String(dateStr || '').replace(/-/g, '');
+        if (!/^\d{8}$/.test(ymd)) throw new Error('Invalid date for ESPN');
+        const url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' + ymd;
         const res = await fetch(url);
         if (!res.ok) throw new Error('ESPN HTTP ' + res.status);
         const data = await res.json();
         const events = data.events || [];
-        return events.map(ev => {
-          const comp = (ev.competitions && ev.competitions[0]) || {};
-          const competitors = comp.competitors || [];
-          const home = competitors.find(c => c.homeAway === 'home') || competitors[0] || {};
-          const away = competitors.find(c => c.homeAway === 'away') || competitors[1] || {};
-          const homeAbbr = (home.team && (home.team.abbreviation || home.team.shortDisplayName)) || '';
-          const awayAbbr = (away.team && (away.team.abbreviation || away.team.shortDisplayName)) || '';
-          const homeName = (home.team && (home.team.displayName || home.team.name)) || homeAbbr;
-          const awayName = (away.team && (away.team.displayName || away.team.name)) || awayAbbr;
-          let tipET = '';
+
+        function etYmd(iso) {
           try {
-            if (ev.date) {
-              const dt = new Date(ev.date);
-              // Always lock in Eastern Time, not the browser's local zone
+            const parts = new Intl.DateTimeFormat('en-CA', {
+              timeZone: 'America/New_York',
+              year: 'numeric', month: '2-digit', day: '2-digit'
+            }).formatToParts(new Date(iso));
+            const get = t => (parts.find(p => p.type === t) || {}).value;
+            return get('year') + '-' + get('month') + '-' + get('day');
+          } catch (_) { return ''; }
+        }
+
+        const out = [];
+        for (const ev of events) {
+          if (!ev || !ev.id) continue;
+          const comp = (ev.competitions && ev.competitions[0]) || {};
+          // Must be on the requested slate date in Eastern Time
+          const tipIso = ev.date || comp.date || null;
+          if (tipIso) {
+            const gameDay = etYmd(tipIso);
+            if (gameDay && gameDay !== dateStr) continue;
+          }
+          const statusName = String(((comp.status && comp.status.type) || {}).name || '').toUpperCase();
+          if (/POSTPON|CANCEL|SUSPEND/.test(statusName)) continue;
+
+          const competitors = comp.competitors || [];
+          const home = competitors.find(c => c.homeAway === 'home');
+          const away = competitors.find(c => c.homeAway === 'away');
+          if (!home || !away || !home.team || !away.team) continue;
+
+          const homeAbbr = home.team.abbreviation || home.team.shortDisplayName || '';
+          const awayAbbr = away.team.abbreviation || away.team.shortDisplayName || '';
+          // Prefer official display names (consistent with scoreboard finals)
+          const homeName = home.team.displayName || home.team.name || TEAM_NAMES[homeAbbr] || homeAbbr;
+          const awayName = away.team.displayName || away.team.name || TEAM_NAMES[awayAbbr] || awayAbbr;
+          if (!homeName || !awayName || !homeAbbr || !awayAbbr) continue;
+          if (homeAbbr === awayAbbr) continue;
+
+          let tipET = '19:30';
+          try {
+            if (tipIso) {
               tipET = new Intl.DateTimeFormat('en-GB', {
                 timeZone: 'America/New_York',
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false
-              }).format(dt);
+              }).format(new Date(tipIso));
             }
           } catch (_) {}
-          return {
+
+          out.push({
             source: 'espn',
             date: dateStr,
-            tipET: tipET || '19:30',
-            tipISO: ev.date || null,
-            eventId: ev.id ? String(ev.id) : null,
+            tipET: tipET,
+            tipISO: tipIso,
+            eventId: String(ev.id),
             home: homeAbbr,
             away: awayAbbr,
             homeName: homeName,
             awayName: awayName,
             name: awayName + ' @ ' + homeName
-          };
-        });
+          });
+        }
+        return out;
       }
 
       async function fetchLocalSchedule(dateStr) {
@@ -11051,10 +11082,21 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           if (bad.test(qtext) || opts.some(o => bad.test(o))) return false;
           const grade = meta && meta.grade;
           if (grade && typeof SAFE_GRADES !== 'undefined' && !SAFE_GRADES.has(grade)) return false;
-          // Prefer event-linked questions so auto-grade can match the real game
-          if (meta && !meta.eventId && grade && grade !== 'winner') {
-            // still allow, but warn in console
-            console.warn('[pickem] question without eventId', qtext);
+          // When the slate is ESPN-backed, every question must carry eventId
+          const slateHasEspn = (list || []).some(g => g && g.eventId);
+          if (slateHasEspn && meta && !meta.eventId) {
+            console.warn('[pickem] rejected question without eventId', qtext);
+            return false;
+          }
+          // Options for winner must equal home/away names from meta
+          if (meta && meta.grade === 'winner') {
+            const o = opts.map(x => String(x).toLowerCase());
+            const hn = String(meta.home || '').toLowerCase();
+            const an = String(meta.away || '').toLowerCase();
+            if (hn && an && !(o.includes(hn) && o.includes(an))) {
+              console.warn('[pickem] winner options mismatch', qtext, opts, meta.home, meta.away);
+              return false;
+            }
           }
           const cleanMeta = {};
           if (meta && typeof meta === 'object') {
@@ -11275,8 +11317,9 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           msg('Creating questions…', 'info');
           const r = await publishSlateForDate(date, { force: hasItems && replace, draft: true });
           if (!r.ok) {
-            msg(r.reason === 'no_games' ? 'No games found for that date.'
-              : (r.reason === 'no_questions' ? 'Could not build questions.' : ('Create failed: ' + (r.reason || 'unknown'))), 'error');
+            msg(r.reason === 'no_games' ? 'No ESPN games found for that date.'
+              : (r.reason === 'validation_failed' ? ('Blocked unsafe questions: ' + ((r.issues || []).slice(0, 3).join('; ') || 'validation failed'))
+              : (r.reason === 'no_questions' ? 'Could not build valid questions for that date.' : ('Create failed: ' + (r.reason || 'unknown')))), 'error');
             return;
           }
           const w = document.getElementById('autoSlateWeek')?.value;
@@ -11726,23 +11769,46 @@ document.getElementById('autoLoadExistingBtn')?.addEventListener('click', async 
       // ---- Fully automatic slate + grade ----
       async function gatherGamesForDate(dateStr) {
         let games = [];
+        let espnErr = null;
         try {
-          const espn = await fetchEspnGames(dateStr);
-          games = games.concat(espn || []);
-        } catch (e) { console.warn('espn', e); }
-        try {
-          const local = await fetchLocalSchedule(dateStr);
-          games = games.concat(local || []);
-        } catch (_) {}
-        // dedupe by name
+          games = await fetchEspnGames(dateStr) || [];
+        } catch (e) {
+          espnErr = e;
+          console.warn('espn', e);
+          games = [];
+        }
+
+        // Local schedule is fallback only (no eventId → cannot auto-grade safely)
+        if (!games.length) {
+          try {
+            const local = await fetchLocalSchedule(dateStr);
+            games = (local || []).filter(g => g && g.homeName && g.awayName);
+            if (games.length) {
+              console.warn('[pickem] Using local schedule only — questions will not have ESPN eventIds');
+            }
+          } catch (_) {}
+        }
+
+        // Prefer ESPN rows; drop anything without two real teams
         const seen = new Set();
         games = games.filter(g => {
-          const k = (g.name || (g.awayName + '@' + g.homeName)).toLowerCase();
+          if (!g || !g.homeName || !g.awayName) return false;
+          if (/^(Home|Away|TBD)$/i.test(g.homeName) || /^(Home|Away|TBD)$/i.test(g.awayName)) return false;
+          const k = (g.eventId ? ('id:' + g.eventId) : ('n:' + g.awayName + '@' + g.homeName)).toLowerCase();
           if (seen.has(k)) return false;
           seen.add(k);
           return true;
         });
+
+        // Sort by tip time for stable moneyline order
+        games.sort((a, b) => {
+          const ta = String(a.tipET || '99:99');
+          const tb = String(b.tipET || '99:99');
+          return ta < tb ? -1 : ta > tb ? 1 : 0;
+        });
+
         foundGames = games;
+        if (espnErr && !games.length) throw espnErr;
         return games;
       }
 
@@ -11765,7 +11831,69 @@ document.getElementById('autoLoadExistingBtn')?.addEventListener('click', async 
         return value;
       }
 
-      async function publishSlateForDate(dateStr, opts) {
+      
+      function validateSlateItems(items, games) {
+        const issues = [];
+        const gameById = {};
+        (games || []).forEach(g => {
+          if (g.eventId) gameById[String(g.eventId)] = g;
+        });
+        (items || []).forEach((q, idx) => {
+          const n = idx + 1;
+          if (!q || !q.question) {
+            issues.push('Q' + n + ': empty question');
+            return;
+          }
+          if (/\\b(Home|Away|TBD|undefined|null)\\b/i.test(q.question)) {
+            issues.push('Q' + n + ': placeholder team name in text');
+          }
+          const opts = Array.isArray(q.options) ? q.options : [];
+          if (opts.length < 2) issues.push('Q' + n + ': needs at least 2 options');
+          const meta = q.meta || {};
+          if (!meta.grade) issues.push('Q' + n + ': missing grade type');
+          if (meta.eventId) {
+            const g = gameById[String(meta.eventId)];
+            if (!g) {
+              issues.push('Q' + n + ': eventId not on slate date');
+            } else {
+              // Text must mention both teams (or Over/Under style without needing both in opts)
+              const qt = q.question.toLowerCase();
+              const hn = String(g.homeName || '').toLowerCase();
+              const an = String(g.awayName || '').toLowerCase();
+              const ha = String(g.home || '').toLowerCase();
+              const aa = String(g.away || '').toLowerCase();
+              const homeOk = !hn || qt.includes(hn) || qt.includes(ha) || (meta.home && qt.includes(String(meta.home).toLowerCase()));
+              const awayOk = !an || qt.includes(an) || qt.includes(aa) || (meta.away && qt.includes(String(meta.away).toLowerCase()));
+              // Winner-style options must be the two teams
+              if (meta.grade === 'winner') {
+                if (opts.length >= 2) {
+                  const o0 = String(opts[0]).toLowerCase();
+                  const o1 = String(opts[1]).toLowerCase();
+                  const teamsOk =
+                    ((o0.includes(an.split(' ').pop()) || o0.includes(aa) || o0 === an) ||
+                     (o1.includes(an.split(' ').pop()) || o1.includes(aa) || o1 === an)) &&
+                    ((o0.includes(hn.split(' ').pop()) || o0.includes(ha) || o0 === hn) ||
+                     (o1.includes(hn.split(' ').pop()) || o1.includes(ha) || o1 === hn));
+                  // softer check: both options reference different sides
+                  if (!opts.some(o => String(o).toLowerCase().includes(aa) || String(o).toLowerCase() === an || String(o).toLowerCase().includes(an.split(' ').pop())) ||
+                      !opts.some(o => String(o).toLowerCase().includes(ha) || String(o).toLowerCase() === hn || String(o).toLowerCase().includes(hn.split(' ').pop()))) {
+                    issues.push('Q' + n + ': winner options do not match ESPN teams');
+                  }
+                }
+              }
+              if (!homeOk || !awayOk) {
+                // For some templates both names appear — flag if neither side is present
+                if (!homeOk && !awayOk) issues.push('Q' + n + ': question text does not match ESPN game');
+              }
+            }
+          } else if (meta.grade && meta.grade !== 'filler' && Object.keys(gameById).length) {
+            issues.push('Q' + n + ': missing ESPN eventId (unsafe to auto-grade)');
+          }
+        });
+        return issues;
+      }
+
+async function publishSlateForDate(dateStr, opts) {
         opts = opts || {};
         const draft = !!opts.draft;
         const force = !!opts.force;
@@ -11788,10 +11916,26 @@ document.getElementById('autoLoadExistingBtn')?.addEventListener('click', async 
         if (!items) {
           games = await gatherGamesForDate(dateStr);
           if (!games.length) return { ok: false, reason: 'no_games' };
-          items = buildDailyTen(games, weekNum);
+          // Only build from ESPN-linked games when available
+          const linked = games.filter(g => g.eventId);
+          const buildFrom = linked.length ? linked : games;
+          items = buildDailyTen(buildFrom, weekNum);
           items.forEach(q => {
             if (weekNum != null && weekNum !== '') q.weekNumber = Number(weekNum);
           });
+          const issues = validateSlateItems(items, buildFrom);
+          if (issues.length) {
+            console.warn('[pickem] slate validation issues', issues);
+            // Drop questions that are clearly broken
+            items = items.filter((q, idx) => {
+              const bad = issues.some(msg => msg.indexOf('Q' + (idx + 1) + ':') === 0 &&
+                (/placeholder|empty question|winner options|missing ESPN eventId|eventId not on slate/.test(msg)));
+              return !bad;
+            });
+            // Re-index issues after filter is hard; if nothing left, fail
+            if (!items.length) return { ok: false, reason: 'validation_failed', issues };
+          }
+          if (!items.length) return { ok: false, reason: 'no_questions' };
         } else {
           try { games = await gatherGamesForDate(dateStr); } catch (_) { games = []; }
         }

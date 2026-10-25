@@ -8446,11 +8446,23 @@ async function loadLeaderboard(period, weekNumber = null, monthOffset = null, se
         if (!res.ok) throw new Error('ESPN HTTP ' + res.status);
         const data = await res.json();
         const finals = [];
+        function isStrictFinal(status) {
+          const name = String((status && status.name) || '').toUpperCase();
+          const state = String((status && status.state) || '').toLowerCase();
+          const desc = String((status && (status.description || status.detail)) || '').toLowerCase();
+          if (/POSTPON|CANCEL|SUSPEND|DELAY|FORFEIT/.test(name + ' ' + desc)) return false;
+          if (name === 'STATUS_IN_PROGRESS' || name === 'STATUS_HALFTIME' || name === 'STATUS_END_OF_PERIOD') return false;
+          if (state === 'in' || state === 'pre') return false;
+          // Official finals only (including OT)
+          if (name === 'STATUS_FINAL' || name === 'STATUS_FINAL_AFTER_OT' || name.indexOf('STATUS_FINAL') === 0) return true;
+          // Last resort: ESPN post + completed, never in-progress wording
+          if (state === 'post' && status.completed === true && !/progress|half/i.test(name)) return true;
+          return false;
+        }
         for (const ev of (data.events || [])) {
           const comp = (ev.competitions && ev.competitions[0]) || {};
           const status = (comp.status && comp.status.type) || {};
-          const completed = status.completed || status.name === 'STATUS_FINAL';
-          if (!completed) continue;
+          if (!isStrictFinal(status)) continue;
           const competitors = comp.competitors || [];
           const home = competitors.find(c => c.homeAway === 'home') || competitors[0];
           const away = competitors.find(c => c.homeAway === 'away') || competitors[1];
@@ -8499,16 +8511,26 @@ async function loadLeaderboard(period, weekNumber = null, monthOffset = null, se
         let graded = 0;
         let skipped = 0;
 
+        const failures = [];
+        function fail(idx, reason) {
+          failures.push({ q: idx + 1, reason: reason });
+          skipped++;
+        }
+
         items.forEach((q, idx) => {
           const meta = q.meta || {};
           const grade = meta.grade || meta.bankKey || '';
           const opts = (q.options || []).map(o => typeof o === 'string' ? o : (o.label || o.text || ''));
           const f = findFinal(finals, meta);
           let correct = null;
+          const needsBox = /halftime|q1_leader|higher_half|double_double|triple_double|fg50|higher_fg|more_rebound|more_assist|more_turnover|more_steal|more_block/.test(String(grade));
 
           if (!f && grade !== 'filler') {
-            // try fuzzy from question text
-            skipped++;
+            fail(idx, 'game not final yet or not found on ESPN');
+            return;
+          }
+          if (f && needsBox && !boxes[f.eventId]) {
+            fail(idx, 'no box score from ESPN yet');
             return;
           }
 
@@ -8516,7 +8538,9 @@ async function loadLeaderboard(period, weekNumber = null, monthOffset = null, se
             correct = opts.find(o => teamMatch(o, f.winner)) || f.winner;
           } else if (grade === 'total') {
             const line = meta.line != null ? Number(meta.line) : 220.5;
-            correct = f.total > line ? 'Over' : 'Under';
+            if (f.total == null || isNaN(f.total)) correct = null;
+            else if (Number(f.total) === Number(line)) correct = null; // push
+            else correct = f.total > line ? 'Over' : 'Under';
           } else if (grade === 'margin_ge') {
             const m = meta.margin != null ? Number(meta.margin) : 10;
             correct = f.margin >= m ? 'Yes' : 'No';
@@ -8599,41 +8623,90 @@ async function loadLeaderboard(period, weekNumber = null, monthOffset = null, se
               }
             }
           } else {
-            // fallback: winner-style from options
-            if (f && opts.length === 2) {
-              const w = opts.find(o => teamMatch(o, f.winner));
-              if (w) correct = w;
-            }
+            // Unknown grade type — do not guess; leave for manual
+            correct = null;
           }
 
-          if (correct != null) {
-            // Prefer exact option match
+          // Never write an answer unless we resolved a concrete correct value
+          if (correct != null && String(correct).trim() !== '') {
             const exact = opts.find(o => o === correct || norm(o) === norm(correct));
             answers.push({ questionId: idx, correctAnswer: exact || correct });
             graded++;
           } else {
-            skipped++;
+            if (!failures.some(x => x.q === idx + 1)) {
+              if (!grade) fail(idx, 'missing grade metadata — set answer by hand');
+              else if (needsBox) fail(idx, 'could not resolve from box (tie or incomplete stats)');
+              else fail(idx, 'could not resolve answer (tie or missing data)');
+            } else {
+              skipped++; // already counted in fail()
+            }
           }
         });
 
-        if (!graded) {
-          showMessage('Could not grade any questions. Use Auto-Slate so questions include grade metadata, and wait until games are final.', 'error', msgId);
-          return;
+        // Dedupe skip count (fail already increments)
+        skipped = failures.length;
+
+        if (!graded && !answers.length) {
+          const detail = failures.length
+            ? failures.slice(0, 8).map(f => 'Q' + f.q + ': ' + f.reason).join(' · ')
+            : 'No final games or no grade metadata.';
+          showMessage('No answers written — waiting for finals or manual review. ' + detail, 'error', msgId);
+          try {
+            await qDoc.ref.set({
+              lastGradeReport: {
+                at: new Date().toISOString(),
+                graded: 0,
+                skipped: failures.length,
+                failures: failures,
+                finals: finals.length
+              }
+            }, { merge: true });
+          } catch (_) {}
+          return { ok: false, reason: 'nothing_graded', failures };
         }
 
+        // Only merge newly graded answers — never invent answers for skipped questions
         const aSnap = await db.collection('correctAnswers').where('date', '==', date).get();
         const byId = {};
         if (!aSnap.empty) (aSnap.docs[0].data().answers || []).forEach(a => { byId[a.questionId] = a; });
         answers.forEach(a => { byId[a.questionId] = a; });
         const merged = Object.keys(byId).map(k => byId[k]);
-        const payload = { date, answers: merged, updatedAt: new Date().toISOString(), source: 'auto-espn-full' };
+        const payload = {
+          date,
+          answers: merged,
+          updatedAt: new Date().toISOString(),
+          source: 'auto-espn-full',
+          gradeReport: { graded, skipped: failures.length, failures, finals: finals.length }
+        };
         if (!aSnap.empty) await aSnap.docs[0].ref.set(payload, { merge: true });
         else await db.collection('correctAnswers').add(payload);
 
+        try {
+          await qDoc.ref.set({
+            lastGradeReport: {
+              at: new Date().toISOString(),
+              graded,
+              skipped: failures.length,
+              failures,
+              finals: finals.length
+            }
+          }, { merge: true });
+        } catch (_) {}
+
+        const failTxt = failures.length
+          ? ' Needs review: ' + failures.slice(0, 10).map(f => 'Q' + f.q + ' (' + f.reason + ')').join('; ') + (failures.length > 10 ? '…' : '')
+          : '';
         if (graded > 0) {
-          showMessage('Success — auto-graded ' + graded + ' of ' + items.length + ' questions (' + finals.length + ' final game' + (finals.length === 1 ? '' : 's') + ').' + (skipped ? ' ' + skipped + ' still need review.' : ''), 'success', msgId);
+          showMessage(
+            'Auto-graded ' + graded + ' of ' + items.length +
+            ' (' + finals.length + ' final game' + (finals.length === 1 ? '' : 's') + ').' +
+            (failures.length ? ' ' + failures.length + ' not written.' : '') +
+            failTxt,
+            failures.length ? 'info' : 'success',
+            msgId
+          );
         } else {
-          showMessage('Could not grade any questions yet. Games may still be in progress, or questions need Auto-Slate grade metadata.', 'error', msgId);
+          showMessage('Could not grade any questions yet. ' + failTxt, 'error', msgId);
         }
         try {
           const mad = document.getElementById('markAnswersDate');
@@ -10610,6 +10683,7 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
             date: dateStr,
             tipET: tipET || '19:30',
             tipISO: ev.date || null,
+            eventId: ev.id ? String(ev.id) : null,
             home: homeAbbr,
             away: awayAbbr,
             homeName: homeName,
@@ -10709,7 +10783,13 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
 
       // Question bank (from your Quick Presets) — filled with team names when applied to a game
-      // Diversity groups: only ONE question type group per game (no both_110 + O/U 220.5 together)
+      // Only types with working auto-grade handlers. Diversity groups = max one per game.
+      // SAFE_GRADES must stay in sync with runFullAutoGrade / resolve logic.
+      const SAFE_GRADES = new Set([
+        'winner', 'total', 'margin_ge', 'both_score_ge', 'either_score_ge',
+        'halftime_leader', 'q1_leader', 'higher_half', 'overtime',
+        'double_double', 'fg50', 'higher_fg', 'more_rebounds', 'more_assists'
+      ]);
       const QUESTION_BANK = [
         { key: 'win', group: 'winner', template: 'Who will win: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'winner' },
         { key: 'total', group: 'game_total', template: 'Will the total points in {away} vs {home} go Over or Under {line}?', options: ['Over', 'Under'], needsLine: true, grade: 'total' },
@@ -10725,9 +10805,8 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
         { key: 'fg50', group: 'shooting', template: 'Will either team shoot 50%+ from the field in {away} vs {home}?', options: ['Yes', 'No'], grade: 'fg50' },
         { key: 'higher_fg', group: 'shooting', template: 'Which team will shoot a higher field-goal %: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'higher_fg' },
         { key: 'more_rebounds', group: 'team_reb', template: 'Which team will have more rebounds: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_rebounds' },
-        { key: 'more_assists', group: 'team_ast', template: 'Which team will have more assists: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_assists' },
-        { key: 'more_threes', group: 'threes', template: 'Which team will make more three-pointers: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_threes' }
-      ];
+        { key: 'more_assists', group: 'team_ast', template: 'Which team will have more assists: {away} vs {home}?', options: ['{away}', '{home}'], grade: 'more_assists' }
+      ].filter(b => SAFE_GRADES.has(b.grade));
 
       function fillTemplate(tpl, home, away, line) {
         return String(tpl || '')
@@ -10768,17 +10847,30 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
 
         function addQ(question, options, meta) {
           if (items.length >= TARGET) return false;
+          const qtext = String(question || '').trim();
+          const opts = Array.isArray(options) ? options.map(o => String(o).trim()).filter(Boolean) : [];
+          if (!qtext || opts.length < 2) return false;
+          // Reject placeholder / broken team names
+          const bad = /\b(Home|Away|TBD|null|undefined)\b/i;
+          if (bad.test(qtext) || opts.some(o => bad.test(o))) return false;
+          const grade = meta && meta.grade;
+          if (grade && typeof SAFE_GRADES !== 'undefined' && !SAFE_GRADES.has(grade)) return false;
+          // Prefer event-linked questions so auto-grade can match the real game
+          if (meta && !meta.eventId && grade && grade !== 'winner') {
+            // still allow, but warn in console
+            console.warn('[pickem] question without eventId', qtext);
+          }
           const cleanMeta = {};
           if (meta && typeof meta === 'object') {
             Object.keys(meta).forEach(k => {
-              if (meta[k] !== undefined) cleanMeta[k] = meta[k];
+              if (meta[k] !== undefined && meta[k] !== null) cleanMeta[k] = meta[k];
             });
           }
           const row = {
-            question: String(question || ''),
+            question: qtext,
             type: 'multiple',
             question_type: 'multiple_choice',
-            options: Array.isArray(options) ? options.map(o => String(o)).filter(Boolean) : [],
+            options: opts,
             isTieBreaker: false
           };
           if (week != null && week !== '') row.weekNumber = Number(week);
@@ -10803,11 +10895,13 @@ document.getElementById('leagueRefreshBtn')?.addEventListener('click', async () 
           usedGroupsGlobal.add(grp);
         }
 
-        // One moneyline per game
+        // One moneyline per real game only
         for (let i = 0; i < list.length && items.length < TARGET; i++) {
           const g = list[i];
-          const home = g.homeName || TEAM_NAMES[g.home] || g.home || 'Home';
-          const away = g.awayName || TEAM_NAMES[g.away] || g.away || 'Away';
+          const home = g.homeName || TEAM_NAMES[g.home] || g.home || '';
+          const away = g.awayName || TEAM_NAMES[g.away] || g.away || '';
+          if (!home || !away || /^(Home|Away|TBD)$/i.test(home) || /^(Home|Away|TBD)$/i.test(away)) continue;
+          if (!g.eventId) console.warn('[pickem] game missing eventId', away, home);
           markUsed(i, { key: 'win', group: 'winner' });
           addQ(
             fillTemplate('Who will win: {away} vs {home}?', home, away),

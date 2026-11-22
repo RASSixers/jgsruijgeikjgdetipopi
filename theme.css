@@ -797,3 +797,14 @@ html.dark-mode .ad-slot-home-mid {
 html.dark-mode .ad-slot-label {
   color: #64748b !important;
 }
+
+/* Featured article — clean text style (no visual) */
+html.dark-mode .news-feature {
+  border-left-color: #4aa3ef !important;
+}
+html.dark-mode .news-feature-cat {
+  color: #f87171 !important;
+}
+html.dark-mode .news-feature-meta {
+  border-top-color: var(--sh-border) !important;
+}

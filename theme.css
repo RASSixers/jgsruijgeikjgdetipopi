@@ -710,3 +710,90 @@ html.dark-mode [style*="color: #001a57"],
 html.dark-mode [style*="color:#001a57"] {
   color: #f4f4f5 !important;
 }
+
+/* —— Homepage news redesign (magazine cards) dark mode —— */
+html.dark-mode .news-section {
+  background: linear-gradient(180deg, #000 0%, #0a0a0a 50%, #0a0a0a 100%) !important;
+  border-top-color: var(--sh-border) !important;
+}
+html.dark-mode .news-feature,
+html.dark-mode .news-card,
+html.dark-mode .news-more {
+  background: var(--sh-card) !important;
+  border-color: var(--sh-border) !important;
+  box-shadow: none !important;
+}
+html.dark-mode .news-feature:hover,
+html.dark-mode .news-card:hover {
+  border-color: rgba(74, 163, 239, 0.4) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35) !important;
+}
+html.dark-mode .news-feature-title,
+html.dark-mode .news-card-title,
+html.dark-mode .news-more-title {
+  color: #f1f5f9 !important;
+}
+html.dark-mode .news-feature:hover .news-feature-title,
+html.dark-mode .news-card:hover .news-card-title,
+html.dark-mode .news-more-row:hover .news-more-title {
+  color: #7dd3fc !important;
+}
+html.dark-mode .news-feature-excerpt,
+html.dark-mode .news-card-excerpt {
+  color: #94a3b8 !important;
+}
+html.dark-mode .news-feature-meta,
+html.dark-mode .news-card-meta,
+html.dark-mode .news-more-date {
+  color: #94a3b8 !important;
+  border-top-color: var(--sh-border) !important;
+}
+html.dark-mode .news-card-cat {
+  color: #5eb0f0 !important;
+}
+html.dark-mode .news-more-label {
+  color: #94a3b8 !important;
+  border-bottom-color: var(--sh-border) !important;
+}
+html.dark-mode .news-more-row {
+  border-bottom-color: var(--sh-border) !important;
+}
+html.dark-mode .news-more-row:hover {
+  background: rgba(255,255,255,0.04) !important;
+}
+html.dark-mode .news-heading-link {
+  color: #7dd3fc !important;
+  border-color: rgba(74, 163, 239, 0.35) !important;
+  background: rgba(74, 163, 239, 0.08) !important;
+}
+html.dark-mode .news-empty,
+html.dark-mode .news-loading {
+  background: var(--sh-card) !important;
+  border-color: var(--sh-border) !important;
+  color: var(--sh-mid) !important;
+}
+
+html.dark-mode .updates-section {
+  background: #0a0a0a !important;
+  border-top-color: var(--sh-border) !important;
+}
+html.dark-mode .update-card {
+  background: var(--sh-card) !important;
+  border-color: var(--sh-border) !important;
+  box-shadow: none !important;
+}
+html.dark-mode .update-card:hover {
+  border-color: rgba(74, 163, 239, 0.35) !important;
+}
+html.dark-mode .updates-page-btn {
+  background: var(--sh-card) !important;
+  border-color: var(--sh-border) !important;
+  color: var(--sh-ink) !important;
+}
+html.dark-mode .ad-slot-home-mid {
+  background: #0a0a0a !important;
+  border-color: var(--sh-border) !important;
+}
+html.dark-mode .ad-slot-label {
+  color: #64748b !important;
+}

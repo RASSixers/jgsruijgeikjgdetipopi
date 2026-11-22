@@ -217,84 +217,60 @@
 
   /* Lead story — full width premium card */
   .news-feature {
-    display: grid;
-    grid-template-columns: 1.15fr 1fr;
+    display: block;
     text-decoration: none;
     color: inherit;
     background: #fff;
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
-    overflow: hidden;
+    border-radius: 16px;
+    padding: 1.6rem 1.75rem 1.7rem;
     min-width: 0;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+    border-left: 4px solid var(--sixers-blue);
   }
   .news-feature:hover {
     border-color: rgba(0, 107, 182, 0.35);
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.09);
-    transform: translateY(-2px);
+    border-left-color: var(--sixers-blue);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
   }
+  /* No photo / no gradient visual */
   .news-feature-visual {
-    display: block;
-    width: 100%;
-    min-height: 260px;
-    aspect-ratio: auto;
-    background:
-      radial-gradient(ellipse at 15% 85%, rgba(0, 107, 182, 0.35), transparent 55%),
-      radial-gradient(ellipse at 95% 15%, rgba(237, 23, 76, 0.22), transparent 50%),
-      linear-gradient(145deg, #06101f 0%, #0f2744 40%, #163a5c 100%);
-    position: relative;
-    overflow: hidden;
-  }
-  .news-feature-visual::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%),
-      linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.45) 100%);
-    pointer-events: none;
-  }
-  .news-feature-visual::after {
-    content: attr(data-cat);
-    position: absolute;
-    left: 1.25rem;
-    top: 1.25rem;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #fff;
-    background: rgba(237, 23, 76, 0.85);
-    padding: 0.4rem 0.75rem;
-    border-radius: 6px;
-    z-index: 1;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: none;
   }
   .news-feature-body {
-    padding: 1.65rem 1.75rem 1.75rem;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
   }
   .news-feature .news-kicker,
   .news-feature .news-tag { display: none; }
+  .news-feature-cat {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sixers-red);
+    margin-bottom: 0.55rem;
+  }
   .news-feature-title {
-    font-size: clamp(1.4rem, 2.5vw, 1.95rem);
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
     font-weight: 800;
     letter-spacing: -0.035em;
-    line-height: 1.18;
-    margin: 0 0 0.7rem;
+    line-height: 1.2;
+    margin: 0 0 0.65rem;
     color: var(--ink);
     word-wrap: break-word;
     overflow-wrap: anywhere;
   }
   .news-feature:hover .news-feature-title { color: var(--sixers-blue); }
   .news-feature-excerpt {
-    font-size: 0.98rem;
+    font-size: 0.97rem;
     line-height: 1.65;
     color: #64748b;
-    margin: 0 0 1.25rem;
+    margin: 0 0 1.15rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -309,6 +285,8 @@
     color: #94a3b8;
     font-weight: 500;
     margin-top: auto;
+    padding-top: 0.85rem;
+    border-top: 1px solid #f1f5f9;
   }
   .news-feature-meta .news-read {
     margin-left: auto;
@@ -497,13 +475,6 @@
   }
 
   @media (max-width: 960px) {
-    .news-feature {
-      grid-template-columns: 1fr;
-    }
-    .news-feature-visual {
-      min-height: 180px;
-      aspect-ratio: 16 / 9;
-    }
     .news-cards {
       grid-template-columns: 1fr 1fr;
     }
@@ -1299,13 +1270,13 @@
     </div>
   </section>
 
-  <!-- AdSense: high-viewability unit after game center (create Display unit in AdSense & replace SLOT_ID) -->
+  <!-- AdSense: Home Top -->
   <div class="ad-slot ad-slot-home-top" aria-label="Advertisement">
     <span class="ad-slot-label">Advertisement</span>
     <ins class="adsbygoogle"
-         style="display:block;text-align:center"
+         style="display:block"
          data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="HOME_TOP_SLOT"
+         data-ad-slot="4080559158"
          data-ad-format="auto"
          data-full-width-responsive="true"></ins>
     <script>
@@ -1328,13 +1299,13 @@
     </div>
   </section>
 
-  <!-- AdSense: in-content unit between News and Poll — strong engagement placement -->
+  <!-- AdSense: Home Mid -->
   <div class="ad-slot ad-slot-home-mid" aria-label="Advertisement">
     <span class="ad-slot-label">Advertisement</span>
     <ins class="adsbygoogle"
-         style="display:block;text-align:center"
+         style="display:block"
          data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="HOME_MID_SLOT"
+         data-ad-slot="1973270566"
          data-ad-format="auto"
          data-full-width-responsive="true"></ins>
     <script>
@@ -1367,19 +1338,6 @@
     </div>
   </section>
 
-  <!-- AdSense: end-of-content unit (users who scroll this far are highly engaged) -->
-  <div class="ad-slot ad-slot-home-bottom" aria-label="Advertisement">
-    <span class="ad-slot-label">Advertisement</span>
-    <ins class="adsbygoogle"
-         style="display:block;text-align:center"
-         data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="HOME_BOTTOM_SLOT"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
 </main>
 
 <script src="/nav.js"></script>
@@ -1461,8 +1419,8 @@ function renderNews(articles) {
   const featDate = shortDate(toDate(featured.createdAt));
   const featuredHtml =
     '<a href="' + articleUrl(featured) + '" class="news-feature">' +
-      '<div class="news-feature-visual" data-cat="' + escapeHtml(featured.category || 'News') + '" aria-hidden="true"></div>' +
       '<div class="news-feature-body">' +
+        '<span class="news-feature-cat">' + escapeHtml(featured.category || 'News') + '</span>' +
         '<h3 class="news-feature-title">' + escapeHtml(featured.title) + '</h3>' +
         (featured.excerpt ? '<p class="news-feature-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
         '<div class="news-feature-meta">' +

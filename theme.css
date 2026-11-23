@@ -783,3 +783,60 @@ html.dark-mode .updates-page-btn {
   border-color: var(--sh-border) !important;
   color: #f4f4f5 !important;
 }
+
+/* —— Stronger From-the-desk + ad dark mode (Nov 2026) —— */
+html.dark-mode .updates-section,
+html.navy-mode .updates-section {
+  background: #0a0a0a !important;
+  border-top-color: var(--sh-border) !important;
+}
+html.dark-mode .update-card,
+html.navy-mode .update-card {
+  background: #111111 !important;
+  border-color: var(--sh-border) !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45) !important;
+  color: var(--sh-ink) !important;
+}
+html.dark-mode .update-card:hover,
+html.navy-mode .update-card:hover {
+  border-color: rgba(74, 163, 239, 0.35) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55) !important;
+}
+html.dark-mode .update-card .update-text,
+html.dark-mode .update-card p {
+  color: #e8eaf0 !important;
+}
+html.dark-mode .updates-page-btn,
+html.navy-mode .updates-page-btn {
+  background: #111111 !important;
+  border-color: var(--sh-border) !important;
+  color: #f4f4f5 !important;
+}
+html.dark-mode .updates-page-btn:hover:not(:disabled) {
+  border-color: #4aa3ef !important;
+  color: #7dd3fc !important;
+  background: rgba(74, 163, 239, 0.1) !important;
+}
+html.dark-mode .updates-page-label {
+  color: #a3a3a3 !important;
+}
+html.dark-mode .poll-inner {
+  background: #111111 !important;
+  border-color: var(--sh-border) !important;
+}
+html.dark-mode .ad-slot-home-mid,
+html.dark-mode .ad-slot-home-poll,
+html.dark-mode .ad-slot-home-bottom,
+html.dark-mode .ad-slot-home-top {
+  background: #000000 !important;
+  border-top-color: var(--sh-border) !important;
+  border-bottom-color: var(--sh-border) !important;
+}
+html.dark-mode .ad-slot-label {
+  color: #64748b !important;
+}
+
+/* Force Twitter embed containers to sit on dark cards cleanly */
+html.dark-mode .update-embed {
+  background: transparent !important;
+}

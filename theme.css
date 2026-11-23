@@ -919,3 +919,49 @@ html.dark-mode .news-loading {
 html.dark-mode .update-embed[data-tweet-theme="dark"] {
   background: transparent !important;
 }
+
+/* —— Standings mini + gradient surfaces in dark mode —— */
+html.dark-mode .standings-mini-card {
+  background: #111111 !important;
+  border-color: var(--sh-border) !important;
+}
+html.dark-mode .standings-mini-table thead th {
+  color: #a3a3a3 !important;
+  border-bottom-color: var(--sh-border) !important;
+  background: rgba(255,255,255,0.03) !important;
+}
+html.dark-mode .standings-mini-table tbody td {
+  color: #e8eaf0 !important;
+  border-bottom-color: var(--sh-border) !important;
+}
+html.dark-mode .standings-mini-table tbody tr.is-phi {
+  background: rgba(74, 163, 239, 0.12) !important;
+}
+html.dark-mode .standings-mini-rank {
+  color: #a3a3a3 !important;
+}
+html.dark-mode .hero {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0, 107, 182, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 20%, rgba(237, 23, 76, 0.08), transparent 50%),
+    #000000 !important;
+}
+html.dark-mode .feature-cards-section {
+  background: #000000 !important;
+}
+html.dark-mode .news-section {
+  background:
+    radial-gradient(ellipse 70% 50% at 0% 0%, rgba(0, 107, 182, 0.08), transparent 55%),
+    #0a0a0a !important;
+}
+html.dark-mode .updates-section {
+  background:
+    radial-gradient(ellipse 60% 45% at 100% 0%, rgba(237, 23, 76, 0.06), transparent 50%),
+    #0a0a0a !important;
+}
+html.dark-mode .news-feature-visual {
+  background:
+    radial-gradient(ellipse at 15% 90%, rgba(0, 107, 182, 0.4), transparent 55%),
+    radial-gradient(ellipse at 90% 10%, rgba(237, 23, 76, 0.28), transparent 50%),
+    linear-gradient(145deg, #050a12 0%, #0c1828 42%, #122033 100%) !important;
+}

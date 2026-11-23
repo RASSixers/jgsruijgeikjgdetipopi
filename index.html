@@ -261,15 +261,22 @@
   .news-feature-visual.has-image {
     aspect-ratio: auto;
     max-height: none;
-    background: #0b1a2e;
+    background: #000;
+    border-top: 2px solid #000;
+    box-shadow: inset 0 0 0 2px #000;
   }
   .news-feature-visual img {
     display: block;
     width: 100%;
     height: auto;
-    max-height: 280px;
-    object-fit: cover;
-    object-position: center top;
+    max-height: 320px;
+    object-fit: contain;
+    object-position: center center;
+    background: #000;
+  }
+  .news-feature-visual.has-image img {
+    object-fit: contain;
+    max-height: 340px;
   }
   .news-feature-visual::after {
     content: attr(data-score);
@@ -287,8 +294,10 @@
     text-align: center;
     pointer-events: none;
   }
+  /* Never show score text when a real photo is present */
   .news-feature-visual.has-image::after {
-    display: none;
+    content: none !important;
+    display: none !important;
   }
   .news-feature-visual.is-empty::after {
     content: 'BOX SCORE';
@@ -1755,11 +1764,11 @@ function renderNews(articles) {
     var mScore = String(featured.title).match(/(\d{2,3})\s*[-–]\s*(\d{2,3})/);
     if (mScore) scoreLabel = mScore[1] + ' – ' + mScore[2];
   }
-  // Box score / cover image fields (set any of these on the Firestore article doc)
-  var imgUrl = (featured.boxScoreImage || featured.coverImage || featured.image || featured.heroImage || featured.thumbnail || '').toString().trim();
+  // Homepage card image: articles-admin saves upload as imageUrl
+  var imgUrl = (featured.imageUrl || featured.boxScoreImage || featured.coverImage || featured.image || featured.heroImage || featured.thumbnail || '').toString().trim();
   var visualHtml;
   if (imgUrl) {
-    visualHtml = '<div class="news-feature-visual has-image"><img src="' + escapeHtml(imgUrl) + '" alt="" loading="lazy"></div>';
+    visualHtml = '<div class="news-feature-visual has-image"><img src="' + escapeHtml(imgUrl) + '" alt="' + escapeHtml(featured.title || '') + '" loading="lazy"></div>';
   } else {
     visualHtml = '<div class="news-feature-visual' + (scoreLabel ? '' : ' is-empty') + '" data-score="' + escapeHtml(scoreLabel || '') + '"></div>';
   }

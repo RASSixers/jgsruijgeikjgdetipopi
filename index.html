@@ -40,7 +40,10 @@
   a { color: inherit; }
 
   .hero {
-    background: var(--cream);
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0, 107, 182, 0.08), transparent 55%),
+      radial-gradient(ellipse 50% 40% at 100% 20%, rgba(237, 23, 76, 0.05), transparent 50%),
+      var(--cream);
     position: relative;
     overflow: hidden;
   }
@@ -121,7 +124,9 @@
   }
 
   .feature-cards-section {
-    background: var(--cream);
+    background:
+      linear-gradient(180deg, rgba(0, 107, 182, 0.03) 0%, transparent 100%),
+      var(--cream);
     border-top: 1px solid var(--border-light);
     padding: 0 0 1.75rem;
   }
@@ -154,7 +159,9 @@
 
   /* —— Articles: polished professional layout —— */
   .news-section {
-    background: var(--cream, #f8fafc);
+    background:
+      radial-gradient(ellipse 70% 50% at 0% 0%, rgba(0, 107, 182, 0.05), transparent 55%),
+      var(--cream, #f8fafc);
     padding: 3.1rem 0 3.6rem;
     border-top: 1px solid var(--border-light, #e8edf3);
   }
@@ -237,7 +244,41 @@
     border-color: rgba(0, 107, 182, 0.28);
     box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
   }
-  .news-feature-visual { display: none; }
+  .news-feature-visual {
+    display: block;
+    width: calc(100% + 3.3rem);
+    margin: 0.85rem -1.65rem 0 -1.65rem;
+    aspect-ratio: 16 / 7;
+    max-height: 160px;
+    border-radius: 0;
+    background:
+      radial-gradient(ellipse at 15% 90%, rgba(0, 107, 182, 0.35), transparent 55%),
+      radial-gradient(ellipse at 90% 10%, rgba(237, 23, 76, 0.22), transparent 50%),
+      linear-gradient(145deg, #0b1a2e 0%, #122844 42%, #1a3352 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .news-feature-visual::after {
+    content: attr(data-score);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    padding: 0 1rem;
+    text-align: center;
+  }
+  .news-feature-visual.is-empty::after {
+    content: 'BOX SCORE';
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    opacity: 0.55;
+  }
   .news-feature-body {
     display: flex;
     flex-direction: column;
@@ -413,10 +454,44 @@
     max-width: 100%;
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     .news-grid {
       grid-template-columns: 1fr;
       gap: 1.15rem;
+    }
+    .news-feature-visual {
+      max-height: 140px;
+      aspect-ratio: 16 / 6.5;
+    }
+  }
+  @media (max-width: 640px) {
+    .news-feature {
+      padding: 1.2rem 1.15rem 0;
+      border-radius: 14px;
+    }
+    .news-feature-body {
+      padding-left: 0.2rem;
+      padding-bottom: 1rem;
+    }
+    .news-feature-visual {
+      width: calc(100% + 2.3rem);
+      margin-left: -1.15rem;
+      margin-right: -1.15rem;
+      max-height: 120px;
+    }
+    .news-feature::before {
+      width: 2.5px;
+    }
+    .news-title {
+      font-size: 1.2rem;
+    }
+    .news-heading-link {
+      font-size: 0.78rem;
+      padding: 0.3rem 0.55rem;
+    }
+    .feature-cards-inner {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
     }
   }
   @media (min-width: 768px) {
@@ -620,9 +695,128 @@
     padding: 0.35rem 0;
   }
 
+  /* Standings mini widget */
+  .standings-mini-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem 2.5rem;
+  }
+  .standings-mini-inner {
+    width: 100%;
+  }
+  .standings-mini-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .standings-mini-heading .news-eyebrow {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sixers-blue);
+    margin-bottom: 0.25rem;
+  }
+  .standings-mini-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  }
+  .standings-mini-loading,
+  .standings-mini-error {
+    padding: 1.25rem 1.35rem;
+    color: var(--mid);
+    font-size: 0.9rem;
+  }
+  .standings-mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .standings-mini-table thead th {
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mid);
+    padding: 0.7rem 0.85rem;
+    border-bottom: 1px solid var(--border-light);
+    background: rgba(0,0,0,0.015);
+  }
+  .standings-mini-table thead th.num {
+    text-align: right;
+  }
+  .standings-mini-table tbody td {
+    padding: 0.62rem 0.85rem;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--ink);
+  }
+  .standings-mini-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .standings-mini-table tbody td.num {
+    text-align: right;
+    font-weight: 600;
+  }
+  .standings-mini-table tbody tr.is-phi {
+    background: rgba(0, 107, 182, 0.08);
+  }
+  .standings-mini-table tbody tr.is-phi td {
+    font-weight: 700;
+  }
+  .standings-mini-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .standings-mini-team img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .standings-mini-team span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .standings-mini-rank {
+    width: 1.4rem;
+    color: var(--mid);
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  @media (max-width: 640px) {
+    .standings-mini-section {
+      padding: 0 1rem 1.75rem;
+    }
+    .standings-mini-table {
+      font-size: 0.82rem;
+    }
+    .standings-mini-table thead th,
+    .standings-mini-table tbody td {
+      padding: 0.55rem 0.65rem;
+    }
+    .standings-mini-table .hide-sm {
+      display: none;
+    }
+  }
+
   /* From the desk — refined tweet / updates feed */
   .updates-section {
-    background: var(--cream, #f8fafc);
+    background:
+      radial-gradient(ellipse 60% 45% at 100% 0%, rgba(237, 23, 76, 0.04), transparent 50%),
+      var(--cream, #f8fafc);
     border-top: 1px solid var(--border-light, #e8edf3);
     padding: 2.75rem 0 3.75rem;
   }
@@ -1310,7 +1504,7 @@
     <div class="news-inner">
       <div class="news-heading">
         <h2 class="news-title">News &amp; Analysis</h2>
-        <a href="/articles" class="news-heading-link">All articles →</a>
+        <a href="/articles.html" class="news-heading-link">All articles →</a>
       </div>
       <div class="news-grid" id="news-grid">
         <div class="news-loading">Loading the latest…</div>
@@ -1338,19 +1532,21 @@
     </div>
   </section>
 
-  <!-- AdSense: Home after poll (high viewability, low disruption) -->
-  <div class="ad-slot ad-slot-home-poll" aria-label="Advertisement">
-    <span class="ad-slot-label">Advertisement</span>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="7359603811"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
+  <!-- East standings mini widget -->
+  <section id="standings-mini" class="standings-mini-section" aria-label="Eastern Conference standings">
+    <div class="standings-mini-inner">
+      <div class="standings-mini-heading">
+        <div>
+          <span class="news-eyebrow" style="display:block">Standings</span>
+          <h2 class="news-title">Eastern Conference</h2>
+        </div>
+        <a href="/standings" class="news-heading-link">Full standings →</a>
+      </div>
+      <div class="standings-mini-card" id="standings-mini-card">
+        <div class="standings-mini-loading">Loading standings…</div>
+      </div>
+    </div>
+  </section>
 
   <section id="updates" class="updates-section">
     <div class="updates-inner">
@@ -1461,6 +1657,12 @@ function renderNews(articles) {
   }
 
   const featDate = shortDate(toDate(featured.createdAt));
+  // Prefer an explicit score string from the article, else a short title-based fallback label
+  var scoreLabel = (featured.scoreLine || featured.finalScore || '').toString().trim();
+  if (!scoreLabel && featured.title) {
+    var mScore = String(featured.title).match(/(\d{2,3})\s*[-–]\s*(\d{2,3})/);
+    if (mScore) scoreLabel = mScore[1] + ' – ' + mScore[2];
+  }
   const featuredHtml =
     '<a href="' + articleUrl(featured) + '" class="news-feature">' +
       '<div class="news-feature-body">' +
@@ -1472,6 +1674,7 @@ function renderNews(articles) {
           (featDate ? '<span>·</span><span>' + escapeHtml(featDate) + '</span>' : '') +
         '</div>' +
       '</div>' +
+      '<div class="news-feature-visual' + (scoreLabel ? '' : ' is-empty') + '" data-score="' + escapeHtml(scoreLabel || '') + '"></div>' +
     '</a>';
 
   const listHtml = rest.map(function (a) {
@@ -1705,6 +1908,114 @@ document.getElementById('updates-next').addEventListener('click', function () {
 listenToNews();
 listenToPoll();
 listenToUpdates();
+
+// —— Eastern Conference mini standings ——
+(function () {
+  const URL = 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings';
+  const card = document.getElementById('standings-mini-card');
+  if (!card) return;
+
+  function pickStat(entry, names) {
+    const stats = entry.stats || [];
+    for (let i = 0; i < names.length; i++) {
+      const n = names[i];
+      for (let j = 0; j < stats.length; j++) {
+        const s = stats[j];
+        if (!s) continue;
+        if (s.name === n || s.abbreviation === n || s.shortDisplayName === n || s.displayName === n) {
+          return s.displayValue != null ? s.displayValue : (s.value != null ? String(s.value) : '—');
+        }
+      }
+    }
+    return '—';
+  }
+
+  function logoFor(team) {
+    if (team.logos && team.logos[0] && team.logos[0].href) return team.logos[0].href;
+    const id = team.id;
+    if (id) return 'https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/' + id + '.png';
+    return '';
+  }
+
+  async function load() {
+    try {
+      const res = await fetch(URL);
+      if (!res.ok) throw new Error('standings ' + res.status);
+      const data = await res.json();
+      const children = data.children || [];
+      let east = null;
+      for (let i = 0; i < children.length; i++) {
+        const name = (children[i].name || children[i].abbreviation || '').toLowerCase();
+        if (name.indexOf('east') !== -1) { east = children[i]; break; }
+      }
+      if (!east) east = children[0];
+      const entries = (((east || {}).standings) || {}).entries || [];
+      if (!entries.length) {
+        card.innerHTML = '<div class="standings-mini-error">Standings unavailable right now.</div>';
+        return;
+      }
+
+      // Sort by playoff seed / rank if present
+      const sorted = entries.slice().sort(function (a, b) {
+        const ra = Number(pickStat(a, ['playoffSeed', 'rank', 'seed']) ) || 99;
+        const rb = Number(pickStat(b, ['playoffSeed', 'rank', 'seed']) ) || 99;
+        return ra - rb;
+      });
+
+      const rows = sorted.map(function (e, idx) {
+        const team = e.team || {};
+        const abbr = team.abbreviation || '';
+        const name = team.displayName || team.shortDisplayName || abbr;
+        const isPhi = abbr === 'PHI';
+        const rank = pickStat(e, ['playoffSeed', 'rank', 'seed']);
+        const w = pickStat(e, ['wins', 'W']);
+        const l = pickStat(e, ['losses', 'L']);
+        const pct = pickStat(e, ['winPercent', 'PCT', 'avgPointsFor']); // prefer win%
+        // better PCT lookup
+        let pctVal = '—';
+        (e.stats || []).forEach(function (s) {
+          if (s && (s.name === 'winPercent' || s.abbreviation === 'PCT')) {
+            pctVal = s.displayValue != null ? s.displayValue : pctVal;
+          }
+        });
+        const gb = pickStat(e, ['gamesBehind', 'GB']);
+        const logo = logoFor(team);
+        return '<tr class="' + (isPhi ? 'is-phi' : '') + '">' +
+          '<td><div class="standings-mini-team">' +
+            '<span class="standings-mini-rank">' + escapeHtml(String(rank !== '—' ? rank : (idx + 1))) + '</span>' +
+            (logo ? '<img src="' + logo + '" alt="" loading="lazy" onerror="this.style.display=\\'none\\'">' : '') +
+            '<span>' + escapeHtml(name) + '</span>' +
+          '</div></td>' +
+          '<td class="num">' + escapeHtml(String(w)) + '</td>' +
+          '<td class="num">' + escapeHtml(String(l)) + '</td>' +
+          '<td class="num hide-sm">' + escapeHtml(String(pctVal)) + '</td>' +
+          '<td class="num">' + escapeHtml(String(gb)) + '</td>' +
+          '</tr>';
+      }).join('');
+
+      card.innerHTML =
+        '<table class="standings-mini-table">' +
+          '<thead><tr>' +
+            '<th>Team</th><th class="num">W</th><th class="num">L</th>' +
+            '<th class="num hide-sm">PCT</th><th class="num">GB</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>';
+    } catch (err) {
+      console.warn('standings mini', err);
+      card.innerHTML = '<div class="standings-mini-error">Couldn\\'t load standings.</div>';
+    }
+  }
+
+  // escapeHtml may already exist in page scope
+  if (typeof escapeHtml !== 'function') {
+    window.escapeHtml = function (str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    };
+  }
+  load();
+})();
+
 
 // Re-render tweet embeds when the user toggles dark/light mode so data-theme is correct
 (function () {

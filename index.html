@@ -1983,7 +1983,7 @@ listenToUpdates();
         return '<tr class="' + (isPhi ? 'is-phi' : '') + '">' +
           '<td><div class="standings-mini-team">' +
             '<span class="standings-mini-rank">' + escapeHtml(String(rank !== '—' ? rank : (idx + 1))) + '</span>' +
-            (logo ? '<img src="' + logo + '" alt="" loading="lazy" onerror="this.style.display=\\'none\\'">' : '') +
+            (logo ? '<img src="' + logo + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
             '<span>' + escapeHtml(name) + '</span>' +
           '</div></td>' +
           '<td class="num">' + escapeHtml(String(w)) + '</td>' +
@@ -2003,7 +2003,7 @@ listenToUpdates();
         '</table>';
     } catch (err) {
       console.warn('standings mini', err);
-      card.innerHTML = '<div class="standings-mini-error">Couldn\\'t load standings.</div>';
+      card.innerHTML = '<div class="standings-mini-error">Could not load standings.</div>';
     }
   }
 

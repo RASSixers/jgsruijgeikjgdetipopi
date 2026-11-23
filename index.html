@@ -152,14 +152,14 @@
   .feature-card-desc { font-size: 0.68rem; color: var(--mid); line-height: 1.4; flex: 1; }
   .feature-card-arrow { margin-top: 0.25rem; color: var(--sixers-blue); font-weight: 700; font-size: 0.85rem; }
 
-  /* —— Articles: modern professional layout —— */
+  /* —— Articles: polished professional layout —— */
   .news-section {
-    background: #f8fafc;
-    padding: 3rem 0 3.5rem;
-    border-top: 1px solid #e8edf3;
+    background: var(--cream, #f8fafc);
+    padding: 3.1rem 0 3.6rem;
+    border-top: 1px solid var(--border-light, #e8edf3);
   }
   .news-inner {
-    max-width: 1080px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 1.5rem;
     width: 100%;
@@ -170,34 +170,40 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.4rem;
   }
   .news-eyebrow {
     display: none;
   }
   .news-title {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: 800;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
     color: var(--ink);
     margin: 0;
   }
   .news-heading-link {
     font-size: 0.84rem;
-    font-weight: 600;
+    font-weight: 650;
     color: var(--sixers-blue);
     text-decoration: none;
     white-space: nowrap;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
   }
   .news-heading-link:hover {
-    text-decoration: underline;
+    background: rgba(0, 107, 182, 0.06);
+    border-color: rgba(0, 107, 182, 0.18);
+    text-decoration: none;
   }
 
   .news-grid {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 1.5rem;
-    align-items: start;
+    grid-template-columns: 1.45fr 1fr;
+    gap: 1.35rem;
+    align-items: stretch;
     width: 100%;
     min-width: 0;
   }
@@ -208,50 +214,63 @@
     flex-direction: column;
     text-decoration: none;
     color: inherit;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1.5rem 1.6rem 1.55rem;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 14px;
+    padding: 1.55rem 1.65rem 1.5rem;
     min-width: 0;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.18s, box-shadow 0.18s;
+  }
+  .news-feature::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--sixers-blue), var(--sixers-red));
+    opacity: 0.9;
   }
   .news-feature:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+    border-color: rgba(0, 107, 182, 0.28);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
   }
   .news-feature-visual { display: none; }
   .news-feature-body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding-left: 0.35rem;
   }
   .news-feature .news-kicker,
   .news-feature .news-tag { display: none; }
   .news-feature-cat {
     display: inline-block;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--sixers-red);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.55rem;
   }
   .news-feature-title {
-    font-size: clamp(1.3rem, 2.2vw, 1.65rem);
+    font-size: clamp(1.32rem, 2.3vw, 1.7rem);
     font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.22;
-    margin: 0 0 0.6rem;
+    letter-spacing: -0.032em;
+    line-height: 1.2;
+    margin: 0 0 0.65rem;
     color: var(--ink);
   }
   .news-feature:hover .news-feature-title {
     color: var(--sixers-blue);
   }
   .news-feature-excerpt {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: #64748b;
-    margin: 0 0 1.1rem;
+    font-size: 0.94rem;
+    line-height: 1.62;
+    color: var(--mid, #64748b);
+    margin: 0 0 1.15rem;
     flex: 1;
   }
   .news-feature-meta {
@@ -259,12 +278,12 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.35rem 0.5rem;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: #94a3b8;
     font-weight: 500;
     margin-top: auto;
-    padding-top: 0.9rem;
-    border-top: 1px solid #f1f5f9;
+    padding-top: 0.95rem;
+    border-top: 1px solid var(--border-light, #f1f5f9);
   }
   .news-feature-meta .news-read {
     display: none;
@@ -275,10 +294,11 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 14px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
   }
   .news-card {
     display: block;
@@ -287,26 +307,26 @@
     background: transparent;
     border: none;
     border-radius: 0;
-    padding: 1.05rem 1.25rem;
-    border-bottom: 1px solid #f1f5f9;
-    transition: background 0.12s;
+    padding: 1.05rem 1.3rem;
+    border-bottom: 1px solid var(--border-light, #f1f5f9);
+    transition: background 0.14s;
   }
   .news-card:last-child {
     border-bottom: none;
   }
   .news-card:hover {
-    background: #f8fafc;
+    background: rgba(0, 107, 182, 0.035);
   }
   .news-card-cat {
     display: none;
   }
   .news-card-title {
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     font-weight: 650;
-    line-height: 1.4;
-    letter-spacing: -0.01em;
-    margin: 0 0 0.35rem;
-    color: #0f172a;
+    line-height: 1.38;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.38rem;
+    color: var(--ink);
   }
   .news-card:hover .news-card-title {
     color: var(--sixers-blue);
@@ -318,7 +338,7 @@
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     color: #94a3b8;
     font-weight: 500;
     padding-top: 0;
@@ -350,9 +370,9 @@
     text-align: center;
     color: var(--mid);
     font-size: 0.95rem;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 14px;
     grid-column: 1 / -1;
   }
 
@@ -507,12 +527,97 @@
     background: var(--card-bg, #fff);
     border: 1px solid var(--border-light);
     border-radius: 14px;
-    padding: 1.25rem 1.35rem;
+    padding: 1.35rem 1.45rem 1.4rem;
   }
   .poll-loading, .updates-loading, .updates-empty {
     color: var(--mid);
     font-size: 0.9rem;
     padding: 0.5rem 0;
+  }
+  .poll-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .poll-card .news-eyebrow {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sixers-blue);
+    margin: 0;
+  }
+  .poll-question {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    color: var(--ink);
+    margin: 0;
+  }
+  .poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .poll-option {
+    position: relative;
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--cream, #f8fafc);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 0.78rem 1rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .poll-option:hover:not(:disabled) {
+    border-color: rgba(0, 107, 182, 0.35);
+    background: rgba(0, 107, 182, 0.04);
+  }
+  .poll-option:disabled {
+    cursor: default;
+  }
+  .poll-option-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(0, 107, 182, 0.12);
+    border-radius: 12px 0 0 12px;
+    transition: width 0.35s ease;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .poll-option-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .poll-option-name {
+    min-width: 0;
+  }
+  .poll-option-pct {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--sixers-blue);
+    flex-shrink: 0;
+  }
+  .poll-empty {
+    color: var(--mid);
+    font-size: 0.9rem;
+    margin: 0;
+    padding: 0.35rem 0;
   }
 
   /* From the desk — refined tweet / updates feed */
@@ -1239,7 +1344,7 @@
     <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="REPLACE_WITH_NEW_SLOT_ID_POLL"
+         data-ad-slot="7359603811"
          data-ad-format="auto"
          data-full-width-responsive="true"></ins>
     <script>
@@ -1271,10 +1376,9 @@
     <span class="ad-slot-label">Advertisement</span>
     <ins class="adsbygoogle"
          style="display:block"
+         data-ad-format="autorelaxed"
          data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="REPLACE_WITH_NEW_SLOT_ID_BOTTOM"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
+         data-ad-slot="9534467323"></ins>
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
@@ -1407,9 +1511,14 @@ function pollVoteKey(id) {
 function renderPoll(poll) {
   const box = document.getElementById('poll-box');
   if (!poll || !poll.options || poll.options.length < 2) {
+    // Keep the section quiet when no active poll exists in Firestore
     box.innerHTML = '';
+    const section = document.getElementById('fan-poll');
+    if (section) section.style.display = 'none';
     return;
   }
+  const section = document.getElementById('fan-poll');
+  if (section) section.style.display = '';
   const total = poll.options.reduce(function (sum, o) { return sum + (Number(o.votes) || 0); }, 0);
   const voted = localStorage.getItem(pollVoteKey(poll.id));
   const optionsHtml = poll.options.map(function (o, i) {
@@ -1471,8 +1580,13 @@ function extractTweetUrl(p) {
 }
 function tweetCardEmbed(url) {
   const safe = escapeHtml(url);
-  const theme = document.documentElement.classList.contains('dark-mode') || document.documentElement.classList.contains('navy-mode') ? 'dark' : 'light';
-  return '<div class="update-embed"><blockquote class="twitter-tweet" data-dnt="true" data-theme="' + theme + '"><a href="' + safe + '">Loading post…</a></blockquote></div>';
+  const isDark = document.documentElement.classList.contains('dark-mode') || document.documentElement.classList.contains('navy-mode');
+  const theme = isDark ? 'dark' : 'light';
+  // data-theme on the blockquote is the official way; we also mark the wrapper
+  // so CSS can help and so re-renders after theme toggle pick up the right value.
+  return '<div class="update-embed" data-tweet-theme="' + theme + '">' +
+    '<blockquote class="twitter-tweet" data-dnt="true" data-theme="' + theme + '" data-conversation="none">' +
+    '<a href="' + safe + '">Loading post…</a></blockquote></div>';
 }
 function loadTweetWidgets(container) {
   function doLoad() {
@@ -1591,6 +1705,20 @@ document.getElementById('updates-next').addEventListener('click', function () {
 listenToNews();
 listenToPoll();
 listenToUpdates();
+
+// Re-render tweet embeds when the user toggles dark/light mode so data-theme is correct
+(function () {
+  var lastDark = document.documentElement.classList.contains('dark-mode') || document.documentElement.classList.contains('navy-mode');
+  var obs = new MutationObserver(function () {
+    var nowDark = document.documentElement.classList.contains('dark-mode') || document.documentElement.classList.contains('navy-mode');
+    if (nowDark === lastDark) return;
+    lastDark = nowDark;
+    if (typeof renderUpdatesPage === 'function') {
+      renderUpdatesPage();
+    }
+  });
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+})();
 </script>
 
 <script>

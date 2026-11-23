@@ -372,7 +372,7 @@
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--mid, #94a3b8);
     margin-bottom: 0.45rem;
   }
   .ad-slot ins {
@@ -381,10 +381,15 @@
     max-width: 728px;
     min-height: 90px;
   }
-  .ad-slot-home-mid {
-    background: #fff;
-    border-top: 1px solid #eef2f7;
-    border-bottom: 1px solid #eef2f7;
+  .ad-slot-home-mid,
+  .ad-slot-home-poll,
+  .ad-slot-home-bottom {
+    background: var(--card-bg, #fff);
+    border-top: 1px solid var(--border-light, #eef2f7);
+    border-bottom: 1px solid var(--border-light, #eef2f7);
+    max-width: 100%;
+  }
+  .ad-slot-home-top {
     max-width: 100%;
   }
 
@@ -499,7 +504,7 @@
     padding: 0 1.25rem 2rem;
   }
   .poll-inner {
-    background: #fff;
+    background: var(--card-bg, #fff);
     border: 1px solid var(--border-light);
     border-radius: 14px;
     padding: 1.25rem 1.35rem;
@@ -512,8 +517,8 @@
 
   /* From the desk — refined tweet / updates feed */
   .updates-section {
-    background: #f8fafc;
-    border-top: 1px solid #e8edf3;
+    background: var(--cream, #f8fafc);
+    border-top: 1px solid var(--border-light, #e8edf3);
     padding: 2.75rem 0 3.75rem;
   }
   .updates-inner {
@@ -532,7 +537,7 @@
   .updates-feed {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.1rem;
+    gap: 1.15rem;
     align-items: stretch;
   }
   @media (min-width: 700px) {
@@ -541,10 +546,10 @@
     }
   }
   .update-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-light, #e2e8f0);
     border-radius: 16px;
-    padding: 0.9rem 0.9rem 1rem;
+    padding: 0.85rem 0.85rem 0.95rem;
     overflow: hidden;
     word-wrap: break-word;
     overflow-wrap: anywhere;
@@ -552,17 +557,18 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
-    transition: border-color 0.18s, box-shadow 0.18s;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+    transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
   }
   .update-card:hover {
-    border-color: rgba(0, 107, 182, 0.25);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    border-color: rgba(0, 107, 182, 0.28);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
   }
   .update-card .update-embed {
     max-width: 100%;
     overflow: visible;
     flex: 1;
+    border-radius: 12px;
   }
   .update-card .update-embed blockquote,
   .update-card .update-embed iframe,
@@ -600,8 +606,8 @@
     font-weight: 700;
     padding: 0.55rem 1.15rem;
     border-radius: 999px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--border-light, #e2e8f0);
+    background: var(--card-bg, #fff);
     color: var(--ink);
     cursor: pointer;
     transition: border-color 0.15s, color 0.15s, background 0.15s;
@@ -609,7 +615,7 @@
   .updates-page-btn:hover:not(:disabled) {
     border-color: var(--sixers-blue);
     color: var(--sixers-blue);
-    background: rgba(0, 107, 182, 0.04);
+    background: rgba(0, 107, 182, 0.06);
   }
   .updates-page-btn:disabled {
     opacity: 0.4;
@@ -617,7 +623,7 @@
   }
   .updates-page-label {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--mid, #64748b);
     font-weight: 600;
   }
   @media (min-width: 640px) {
@@ -1207,7 +1213,7 @@
     </div>
   </section>
 
-  <!-- AdSense: Home Mid -->
+  <!-- AdSense: Home Mid (after news) -->
   <div class="ad-slot ad-slot-home-mid" aria-label="Advertisement">
     <span class="ad-slot-label">Advertisement</span>
     <ins class="adsbygoogle"
@@ -1227,11 +1233,25 @@
     </div>
   </section>
 
+  <!-- AdSense: Home after poll (high viewability, low disruption) -->
+  <div class="ad-slot ad-slot-home-poll" aria-label="Advertisement">
+    <span class="ad-slot-label">Advertisement</span>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-8046070602394287"
+         data-ad-slot="REPLACE_WITH_NEW_SLOT_ID_POLL"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+
   <section id="updates" class="updates-section">
     <div class="updates-inner">
       <div class="updates-heading">
         <div>
-          <span class="news-eyebrow">Community &amp; Desk</span>
+          <span class="news-eyebrow">From the desk</span>
           <h2 class="news-title">Sixers Updates</h2>
         </div>
       </div>
@@ -1245,6 +1265,20 @@
       </div>
     </div>
   </section>
+
+  <!-- AdSense: Home bottom (after From the desk — strong viewability) -->
+  <div class="ad-slot ad-slot-home-bottom" aria-label="Advertisement">
+    <span class="ad-slot-label">Advertisement</span>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-8046070602394287"
+         data-ad-slot="REPLACE_WITH_NEW_SLOT_ID_BOTTOM"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
 
 </main>
 

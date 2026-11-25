@@ -986,3 +986,39 @@ html.dark-mode .news-feature::before,
   display: none !important;
   content: none !important;
 }
+
+/* All Articles modal — dark mode */
+html.dark-mode .articles-modal-panel {
+  background: #111111 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65) !important;
+}
+html.dark-mode .articles-modal-head {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+html.dark-mode .articles-modal-head h2 {
+  color: #f5f5f5 !important;
+}
+html.dark-mode .articles-modal-close {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e8eaf0 !important;
+}
+html.dark-mode .articles-modal-item {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-mode .articles-modal-item:hover {
+  background: rgba(74, 163, 239, 0.08) !important;
+}
+html.dark-mode .articles-modal-title {
+  color: #f5f5f5 !important;
+}
+html.dark-mode .articles-modal-item:hover .articles-modal-title {
+  color: #7dd3fc !important;
+}
+html.dark-mode .articles-modal-meta {
+  color: #94a3b8 !important;
+}
+html.dark-mode .articles-modal-loading,
+html.dark-mode .articles-modal-empty {
+  color: #94a3b8 !important;
+}

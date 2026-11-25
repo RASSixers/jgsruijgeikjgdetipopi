@@ -1133,133 +1133,89 @@
   #home-game-body { transition: opacity .15s; }
   @media (max-width: 720px) {
     .home-game {
-      padding: 0 0.65rem 1.35rem;
+      padding: 0 0.85rem 1.35rem;
       max-width: 100%;
-      overflow: hidden;
+      box-sizing: border-box;
     }
-    .home-game-shell {
-      gap: 0.5rem;
-    }
+    .home-game-shell { gap: 0.5rem; width: 100%; }
+    /* Stack arrows above the card so the scoreboard gets full width */
     .home-game-row {
-      gap: 0.25rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "prev next"
+        "card card";
+      gap: 0.45rem 0.5rem;
       width: 100%;
       min-width: 0;
     }
     .home-game-row .home-game-card {
+      grid-area: card;
+      width: 100%;
       min-width: 0;
-      flex: 1 1 0;
     }
-    .home-game-arrow {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      flex-shrink: 0;
-    }
-    .home-game-arrow svg { width: 15px; height: 15px; }
-    .home-game-card {
-      border-radius: 12px;
-      overflow: hidden;
-    }
+    #home-game-prev { grid-area: prev; width: 100%; height: 36px; border-radius: 10px; }
+    #home-game-next { grid-area: next; width: 100%; height: 36px; border-radius: 10px; }
+    .home-game-arrow svg { width: 16px; height: 16px; }
+    .home-game-card { border-radius: 12px; overflow: hidden; }
     .home-game-head {
-      padding: 0.6rem 0.75rem;
-      gap: 0.4rem;
+      padding: 0.65rem 0.9rem;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
-    .home-game-kicker {
-      font-size: 0.58rem;
-      letter-spacing: 0.08em;
-    }
+    .home-game-kicker { font-size: 0.6rem; letter-spacing: 0.1em; }
     .home-game-clock {
-      font-size: 0.68rem;
-      padding: 0.18rem 0.45rem;
-      flex-shrink: 0;
-    }
-    .home-game-scoreline {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      gap: 0.35rem;
-      padding: 0.75rem 0.65rem;
-      align-items: center;
-      min-width: 0;
-    }
-    .home-game-team {
-      gap: 0.3rem;
-      font-size: 0.78rem;
-      min-width: 0;
-      overflow: hidden;
-    }
-    .home-game-team span {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.55rem;
+      max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: 100%;
-      display: block;
     }
-    .home-game-logo {
-      width: 26px;
-      height: 26px;
-      flex-shrink: 0;
+    .home-game-scoreline {
+      gap: 0.45rem;
+      padding: 0.85rem 0.9rem 0.75rem;
     }
-    .home-game-score {
-      font-size: 1.25rem;
-      letter-spacing: -0.02em;
-      flex-shrink: 0;
-      padding: 0 0.15rem;
-    }
+    .home-game-side { gap: 0.5rem; }
+    .home-game-team { gap: 0.45rem; }
+    .home-game-team span { font-size: 0.9rem; }
+    .home-game-logo { width: 30px; height: 30px; }
+    .home-game-score { font-size: 1.4rem; min-width: 2.2rem; }
+    .home-game-score.is-vs { font-size: 0.75rem; }
     .home-game-tabs {
-      padding: 0 0.35rem;
+      padding: 0 0.4rem;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
     .home-game-tabs::-webkit-scrollbar { display: none; }
     .home-game-tab {
-      font-size: 0.7rem;
-      padding: 0.45rem 0.5rem;
+      font-size: 0.72rem;
+      padding: 0.5rem 0.6rem;
       flex-shrink: 0;
     }
     .home-game-pbp li {
       grid-template-columns: 3.4rem minmax(0, 1fr);
       gap: 0.3rem;
-      padding: 0.4rem 0.75rem;
-      font-size: 0.72rem;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.74rem;
     }
     .home-game-pbp .sc {
       grid-column: 2;
       justify-self: start;
       font-size: 0.68rem;
     }
-    .home-game-box {
-      max-height: 240px;
-    }
-    .home-game-box table {
-      min-width: 380px;
-      font-size: 0.65rem;
-    }
+    .home-game-box { max-height: 240px; }
+    .home-game-box table { min-width: 360px; font-size: 0.65rem; }
     .home-game-foot {
-      padding: 0.55rem 0.75rem;
+      padding: 0.55rem 0.85rem;
       font-size: 0.72rem;
       flex-wrap: wrap;
       gap: 0.4rem;
     }
     .home-game-meta {
-      padding: 0 0.75rem 0.65rem;
-      font-size: 0.74rem;
-    }
-  }
-  @media (max-width: 400px) {
-    .home-game-arrow {
-      width: 28px;
-      height: 28px;
-    }
-    .home-game-logo {
-      width: 22px;
-      height: 22px;
-    }
-    .home-game-score {
-      font-size: 1.1rem;
-    }
-    .home-game-team {
-      font-size: 0.72rem;
+      padding: 0 0.9rem 0.75rem;
+      font-size: 0.76rem;
     }
   }
   .home-game-head {
@@ -1282,19 +1238,62 @@
     border-color: rgba(237,23,76,.35);
     background: rgba(237,23,76,.06);
   }
+  /* Scoreboard: stacked team rows (clean on mobile + desktop) */
   .home-game-scoreline {
-    display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
-    gap: 0.75rem; align-items: center; padding: 1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1rem 1.15rem 0.9rem;
+  }
+  .home-game-side {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
   }
   .home-game-team {
-    display: flex; align-items: center; gap: 0.5rem; font-weight: 700; min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 700;
+    min-width: 0;
+    flex: 1 1 auto;
   }
-  .home-game-team.away { justify-content: flex-end; text-align: right; }
-  .home-game-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .home-game-logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+  .home-game-team.away { justify-content: flex-start; text-align: left; }
+  .home-game-team span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.95rem;
+  }
+  .home-game-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
   .home-game-score {
-    font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums; white-space: nowrap;
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 2.4rem;
+    text-align: right;
+    color: var(--ink);
+  }
+  .home-game-score.is-vs {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mid);
+    min-width: 2rem;
+  }
+  .home-game-vs-row {
+    display: none; /* unused in stacked layout */
   }
   .home-game-tabs {
     display: flex; gap: 0; padding: 0 1.15rem;
@@ -3356,9 +3355,14 @@ listenToUpdates();
       const homeN = sideLabel(home, "HOME");
       body.innerHTML =
         '<div class="home-game-scoreline">' +
-          '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
-          '<div class="home-game-score">vs</div>' +
-          '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+          '<div class="home-game-side">' +
+            '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
+            '<div class="home-game-score is-vs">AWAY</div>' +
+          '</div>' +
+          '<div class="home-game-side">' +
+            '<div class="home-game-team"><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + homeN + '</span></div>' +
+            '<div class="home-game-score is-vs">HOME</div>' +
+          '</div>' +
         '</div>' +
         renderInjuriesBlock(summary, event) +
         '<p class="home-game-meta">Upcoming tip · Live scores & play-by-play appear here when the game starts.</p>';
@@ -3394,21 +3398,26 @@ listenToUpdates();
 
     body.innerHTML =
       '<div class="home-game-scoreline">' +
-        '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
-        '<div class="home-game-score">' + awayScore + "–" + homeScore + "</div>" +
-        '<div class="home-game-team away"><span>' + homeN + '</span><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
-      "</div>" +
-      '<div class="home-game-share-bar" style="display:flex;justify-content:flex-end;padding:0.15rem 0 0.45rem">' +
+        '<div class="home-game-side">' +
+          '<div class="home-game-team"><img class="home-game-logo" src="' + logo(away.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + awayN + '</span></div>' +
+          '<div class="home-game-score">' + awayScore + '</div>' +
+        '</div>' +
+        '<div class="home-game-side">' +
+          '<div class="home-game-team"><img class="home-game-logo" src="' + logo(home.team) + '" alt="" onerror="this.style.display=\'none\'"><span>' + homeN + '</span></div>' +
+          '<div class="home-game-score">' + homeScore + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="home-game-share-bar" style="display:flex;justify-content:flex-end;padding:0 0.9rem 0.45rem">' +
         '<button type="button" class="home-inj-share-btn" id="homeGameShareBtn">Share graphic</button>' +
-      "</div>" +
+      '</div>' +
       '<div class="home-game-tabs">' +
         '<button type="button" class="home-game-tab' + (panel === "pbp" ? " on" : "") + '" data-hg-panel="pbp">Play-by-play</button>' +
         '<button type="button" class="home-game-tab' + (panel === "box" ? " on" : "") + '" data-hg-panel="box">Box score</button>' +
         '<button type="button" class="home-game-tab' + (panel === "team" ? " on" : "") + '" data-hg-panel="team">Team stats</button>' +
-      "</div>" +
-      '<div class="hg-panel-pbp" style="' + (panel === "pbp" ? "" : "display:none") + '">' + pbp + "</div>" +
-      '<div class="hg-panel-box home-game-box" style="' + (panel === "box" ? "" : "display:none") + '">' + renderBox(summary || {}) + "</div>" +
-      '<div class="hg-panel-team" style="' + (panel === "team" ? "" : "display:none") + '">' + renderTeamStats(summary || {}) + "</div>";
+      '</div>' +
+      '<div class="hg-panel-pbp" style="' + (panel === "pbp" ? "" : "display:none") + '">' + pbp + '</div>' +
+      '<div class="hg-panel-box home-game-box" style="' + (panel === "box" ? "" : "display:none") + '">' + renderBox(summary || {}) + '</div>' +
+      '<div class="hg-panel-team" style="' + (panel === "team" ? "" : "display:none") + '">' + renderTeamStats(summary || {}) + '</div>';
 
     try {
       window.__homeGameShare = { event: event, summary: summary || {}, mode: mode };

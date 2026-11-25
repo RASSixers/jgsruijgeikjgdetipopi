@@ -1022,3 +1022,30 @@ html.dark-mode .articles-modal-loading,
 html.dark-mode .articles-modal-empty {
   color: #94a3b8 !important;
 }
+
+html.dark-mode .articles-modal-search-wrap {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+html.dark-mode .articles-modal-search {
+  background-color: #1a1a1a !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #f5f5f5 !important;
+}
+html.dark-mode .articles-modal-search:focus {
+  border-color: #4aa3ef !important;
+  background-color: #111111 !important;
+  box-shadow: 0 0 0 3px rgba(74, 163, 239, 0.2) !important;
+}
+html.dark-mode .home-inj-name.is-upgraded {
+  color: #4ade80 !important;
+}
+html.dark-mode .home-inj-team {
+  background: #111111 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+html.dark-mode .home-inj-row {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-mode .home-inj-comment {
+  color: #c4c4c4 !important;
+}

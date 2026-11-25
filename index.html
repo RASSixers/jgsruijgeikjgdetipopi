@@ -602,6 +602,52 @@
     max-width: 100%;
   }
 
+  /* Mobile sticky bottom ad — collapsible / dismissible */
+  .mobile-sticky-ad {
+    display: none;
+  }
+  @media (max-width: 768px) {
+    .mobile-sticky-ad:not([hidden]) {
+      display: block;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 900;
+      background: var(--card-bg, #fff);
+      border-top: 1px solid var(--border-light, #e2e8f0);
+      box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.12);
+      padding: 0.35rem 2.25rem 0.45rem 0.5rem;
+    }
+    .mobile-sticky-ad-close {
+      position: absolute;
+      top: 0.2rem;
+      right: 0.35rem;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.06);
+      color: var(--ink, #0d0f1a);
+      font-size: 1.15rem;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .mobile-sticky-ad-inner {
+      min-height: 50px;
+      max-height: 100px;
+      overflow: hidden;
+    }
+    .mobile-sticky-ad-inner ins {
+      display: block;
+      width: 100%;
+    }
+    body.has-mobile-sticky-ad {
+      padding-bottom: 110px;
+    }
+  }
+
   @media (max-width: 900px) {
     .news-grid {
       grid-template-columns: 1fr;
@@ -2005,6 +2051,42 @@
   </div>
 
 </main>
+
+<!-- Mobile sticky bottom ad (dismissible — high viewability, low disruption) -->
+<div class="mobile-sticky-ad" id="mobile-sticky-ad" hidden>
+  <button type="button" class="mobile-sticky-ad-close" id="mobile-sticky-ad-close" aria-label="Close ad">×</button>
+  <div class="mobile-sticky-ad-inner">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-8046070602394287"
+         data-ad-slot="4080559158"
+         data-ad-format="horizontal"
+         data-full-width-responsive="true"></ins>
+  </div>
+</div>
+<script>
+(function () {
+  if (window.matchMedia && !window.matchMedia('(max-width: 768px)').matches) return;
+  try {
+    if (sessionStorage.getItem('sh_sticky_ad_closed') === '1') return;
+  } catch (e) {}
+  var bar = document.getElementById('mobile-sticky-ad');
+  var closeBtn = document.getElementById('mobile-sticky-ad-close');
+  if (!bar) return;
+  bar.hidden = false;
+  document.body.classList.add('has-mobile-sticky-ad');
+  try {
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  } catch (e) {}
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      bar.hidden = true;
+      document.body.classList.remove('has-mobile-sticky-ad');
+      try { sessionStorage.setItem('sh_sticky_ad_closed', '1'); } catch (e) {}
+    });
+  }
+})();
+</script>
 
 <script src="/nav.js"></script>
 <script>
@@ -4112,8 +4194,8 @@ function __gsLoadImg(url) {
       var WHITE = "#ffffff", CARD = "#f4f6fa", INK = "#0f172a";
       var BORDER = "#e2e8f0", LINE = "#cbd5e1";
       var rowH = 58;
-      var headerH = 150;
-      var scoreBlockH = 220;
+      var headerH = 155;
+      var scoreBlockH = 280;
       var boxTitleH = 40;
       var footerH = 56;
       var nRows = Math.max(leaders.length, 1);
@@ -4186,39 +4268,39 @@ function __gsLoadImg(url) {
       ctx.fillStyle = WHITE;
       ctx.fillRect(0, 0, W, H);
 
-      // Header
-      text("SIXERSHOOPS", W / 2, 36, "800 15px Lexend, system-ui, sans-serif", BLUE, "center");
-      text(periodTitle, W / 2, 78, "800 40px Lexend, system-ui, sans-serif", INK, "center");
-      text(matchup, W / 2, 112, "700 20px Lexend, system-ui, sans-serif", INK, "center");
+      // Header — larger brand mark
+      text("SIXERSHOOPS", W / 2, 42, "800 28px Lexend, system-ui, sans-serif", BLUE, "center");
+      text(periodTitle, W / 2, 82, "800 38px Lexend, system-ui, sans-serif", INK, "center");
+      text(matchup, W / 2, 114, "700 20px Lexend, system-ui, sans-serif", INK, "center");
       if (dateLine) {
-        text(dateLine, W / 2, 136, "600 14px Lexend, system-ui, sans-serif", INK, "center");
+        text(dateLine, W / 2, 138, "600 14px Lexend, system-ui, sans-serif", INK, "center");
       }
 
-      // Score card + linescore
+      // Score card — stacked scoreboard (matches site UI)
       var scoreY = headerH;
       var cardW = W - PAD * 2;
       rr(PAD, scoreY, cardW, scoreBlockH - 16, 16, CARD);
 
-      var logoBox = 48;
-      var leftX = PAD + 24;
-      var rightX = W - PAD - 24;
-      var logoY = scoreY + 22;
+      var logoBox = 52;
+      var rowPadX = PAD + 28;
+      var row1Y = scoreY + 28;
+      var row2Y = scoreY + 88;
 
-      if (!logoFit(awayLogo, leftX, logoY, logoBox)) {
-        rr(leftX, logoY, logoBox, logoBox, 10, "#e8eef5");
-        text(String(teams.away.abbr).slice(0, 3), leftX + logoBox / 2, logoY + 30, "800 12px Lexend, system-ui, sans-serif", BLUE, "center");
+      // Away row
+      if (!logoFit(awayLogo, rowPadX, row1Y, logoBox)) {
+        rr(rowPadX, row1Y, logoBox, logoBox, 10, "#e8eef5");
+        text(String(teams.away.abbr).slice(0, 3), rowPadX + logoBox / 2, row1Y + 32, "800 13px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      text(awayShort, leftX + logoBox + 12, scoreY + 42, "800 22px Lexend, system-ui, sans-serif", INK, "left");
-      text("AWAY", leftX + logoBox + 12, scoreY + 64, "700 11px Lexend, system-ui, sans-serif", INK, "left");
+      text(awayShort, rowPadX + logoBox + 16, row1Y + 34, "800 26px Lexend, system-ui, sans-serif", INK, "left");
+      text(String(awayScore), W - PAD - 28, row1Y + 38, "800 42px Lexend, system-ui, sans-serif", INK, "right");
 
-      if (!logoFit(homeLogo, rightX - logoBox, logoY, logoBox)) {
-        rr(rightX - logoBox, logoY, logoBox, logoBox, 10, "#e8eef5");
-        text(String(teams.home.abbr).slice(0, 3), rightX - logoBox / 2, logoY + 30, "800 12px Lexend, system-ui, sans-serif", BLUE, "center");
+      // Home row
+      if (!logoFit(homeLogo, rowPadX, row2Y, logoBox)) {
+        rr(rowPadX, row2Y, logoBox, logoBox, 10, "#e8eef5");
+        text(String(teams.home.abbr).slice(0, 3), rowPadX + logoBox / 2, row2Y + 32, "800 13px Lexend, system-ui, sans-serif", BLUE, "center");
       }
-      text(homeShort, rightX - logoBox - 12, scoreY + 42, "800 22px Lexend, system-ui, sans-serif", INK, "right");
-      text("HOME", rightX - logoBox - 12, scoreY + 64, "700 11px Lexend, system-ui, sans-serif", INK, "right");
-
-      text(String(awayScore) + "  –  " + String(homeScore), W / 2, scoreY + 52, "800 40px Lexend, system-ui, sans-serif", BLUE, "center");
+      text(homeShort, rowPadX + logoBox + 16, row2Y + 34, "800 26px Lexend, system-ui, sans-serif", INK, "left");
+      text(String(homeScore), W - PAD - 28, row2Y + 38, "800 42px Lexend, system-ui, sans-serif", INK, "right");
 
       // Linescore
       var qCount = Math.max(teams.away.lines.length, teams.home.lines.length, 4);
@@ -4231,7 +4313,7 @@ function __gsLoadImg(url) {
       }
       qLabels.push("T");
 
-      var tableTop = scoreY + 96;
+      var tableTop = scoreY + 156;
       var tableLeft = PAD + 40;
       var tableWidth = cardW - 80;
       var colW = tableWidth / (qLabels.length + 1);
@@ -4499,12 +4581,13 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
     const W = 1080, PAD = 48, GAP = 24;
     const BLUE = "#006BB6", INK = "#0d0f1a", MID = "#64748b", CARD = "#f6f8fc", BODY = "#475569";
     const FONT = "Lexend, system-ui, sans-serif";
+    /* Match site injury badges: solid rectangles, distinct colors */
     const BADGE = {
-      "OUT": { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
-      "Doubtful": { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
-      "Questionable": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
-      "GTD": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
-      "Probable": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" }
+      "OUT": { bg: "#c1121f", text: "#ffffff", border: "#9b0e18" },
+      "Doubtful": { bg: "#9a3412", text: "#ffffff", border: "#7c2d12" },
+      "Questionable": { bg: "#facc15", text: "#1a1a1a", border: "#eab308" },
+      "GTD": { bg: "#1d4ed8", text: "#ffffff", border: "#1e3a8a" },
+      "Probable": { bg: "#166534", text: "#ffffff", border: "#14532d" }
     };
     const teams = (payload.teams || []).slice(0, 2);
     const n = Math.max(teams.length, 1);
@@ -4570,17 +4653,17 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, W, H);
 
-    // Centered header
+    // Centered header — larger brand mark
     try { ctx.letterSpacing = "0.5px"; } catch (e) {}
-    text("SIXERSHOOPS", W / 2, 48, "800 16px " + FONT, BLUE, "center");
+    text("SIXERSHOOPS", W / 2, 52, "800 28px " + FONT, BLUE, "center");
     try { ctx.letterSpacing = "0px"; } catch (e) {}
-    text("Injury Report", W / 2, 104, "800 50px " + FONT, INK, "center");
+    text("Injury Report", W / 2, 108, "800 48px " + FONT, INK, "center");
     const names = teams.map(function (t) { return t.name || t.team; }).filter(Boolean);
     const matchupLine = names.length === 2 ? names.join(" vs ") : (payload.matchup || "Game report");
-    text(matchupLine, W / 2, 142, "700 22px " + FONT, INK, "center");
+    text(matchupLine, W / 2, 146, "700 22px " + FONT, INK, "center");
     const dateLine = [payload.dateShort, payload.updatedTime ? "Updated " + payload.updatedTime : (payload.updatedLabel ? "Updated " + payload.updatedLabel : "")]
       .filter(Boolean).join(" · ");
-    if (dateLine) text(dateLine, W / 2, 168, "600 16px " + FONT, MID, "center");
+    if (dateLine) text(dateLine, W / 2, 172, "600 16px " + FONT, MID, "center");
 
     // Two team cards
     cols.forEach(function (col, ci) {
@@ -4600,7 +4683,7 @@ window.openGameShareModal = function openGameShareModal(defaultPeriod) {
         ctx.font = "800 12px " + FONT;
         const bw = ctx.measureText(label).width + 26;
         const bx = x + colW - 20 - bw;
-        rr(bx, y + 4, bw, 26, 13, badge.bg);
+        rr(bx, y + 4, bw, 26, 4, badge.bg); /* rectangle badges, not pills */
         ctx.strokeStyle = badge.border;
         ctx.lineWidth = 1.5;
         ctx.stroke();

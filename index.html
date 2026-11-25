@@ -230,30 +230,25 @@
     overflow: hidden;
     transition: border-color 0.18s, box-shadow 0.18s;
   }
+  /* Accent bar removed — clean card edge */
   .news-feature::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, var(--sixers-blue), var(--sixers-red));
-    opacity: 0.9;
+    display: none !important;
+    content: none !important;
   }
   .news-feature:hover {
     border-color: rgba(0, 107, 182, 0.28);
     box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
   }
-  /* Image sits inside the card, between title and byline */
+  /* Image sits inside the card, between title and byline — no black side bars */
   .news-feature-visual {
     display: none; /* hidden when no image */
     width: 100%;
     margin: 0.85rem 0 0.15rem;
     border-radius: 10px;
     overflow: hidden;
-    background: #0a0a0a;
-    border: 1px solid #1a1a1a;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    background: transparent;
+    border: 1px solid var(--border-light, #e2e8f0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
   .news-feature-visual.has-image {
     display: block;
@@ -262,16 +257,17 @@
     display: block;
     width: 100%;
     height: auto;
-    max-height: 280px;
+    max-height: none;
     object-fit: contain;
-    object-position: center center;
-    background: #0a0a0a;
+    object-position: center top;
+    background: transparent;
+    vertical-align: top;
   }
   .news-feature-body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding-left: 0.35rem;
+    padding-left: 0.15rem;
   }
   .news-feature .news-kicker,
   .news-feature .news-tag { display: none; }
@@ -447,7 +443,7 @@
       gap: 1.15rem;
     }
     .news-feature-visual img {
-      max-height: 220px;
+      max-height: none;
     }
   }
   @media (max-width: 640px) {
@@ -456,17 +452,14 @@
       border-radius: 14px;
     }
     .news-feature-body {
-      padding-left: 0.2rem;
+      padding-left: 0.1rem;
     }
     .news-feature-visual {
       margin: 0.7rem 0 0.1rem;
       border-radius: 8px;
     }
     .news-feature-visual img {
-      max-height: 200px;
-    }
-    .news-feature::before {
-      width: 2.5px;
+      max-height: none;
     }
     .news-title {
       font-size: 1.2rem;
@@ -823,7 +816,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.15rem;
-    align-items: stretch;
+    align-items: start; /* don't stretch short tweets into tall empty cards */
   }
   @media (min-width: 700px) {
     .updates-feed {
@@ -834,12 +827,13 @@
     background: var(--card-bg, #fff);
     border: 1px solid var(--border-light, #e2e8f0);
     border-radius: 16px;
-    padding: 0.85rem 0.85rem 0.95rem;
+    padding: 0.75rem 0.75rem 0.85rem;
     overflow: hidden;
     word-wrap: break-word;
     overflow-wrap: anywhere;
     min-width: 0;
     min-height: 0;
+    height: auto;
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
@@ -851,9 +845,10 @@
   }
   .update-card .update-embed {
     max-width: 100%;
-    overflow: visible;
-    flex: 1;
+    overflow: hidden;
+    flex: 0 0 auto;
     border-radius: 12px;
+    line-height: 0;
   }
   .update-card .update-embed blockquote,
   .update-card .update-embed iframe,

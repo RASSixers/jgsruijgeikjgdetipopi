@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </button>
             <a href="/" class="nav-brand">
                 <img src="/favicon.ico" alt="SixersHoops" class="nav-logo">
-                <span class="brand-name">SixersHoops</span>
+                <span class="brand-name">Sixers<span class="brand-hoops">Hoops</span></span>
             </a>
         </div>
 

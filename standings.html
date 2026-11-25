@@ -314,6 +314,23 @@
       margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em;
     }
     .nba-cup-note { margin: 0; font-size: .8rem; color: var(--mid); max-width: 28rem; }
+    .nba-cup-actions {
+      display: flex; flex-wrap: wrap; gap: .45rem; margin: 0 0 1rem;
+    }
+    .nba-cup-tiebreakers {
+      margin: 0 0 1.15rem;
+      padding: .85rem 1rem;
+      background: var(--surface-soft);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      font-size: .8rem;
+      color: var(--mid);
+      line-height: 1.45;
+    }
+    .nba-cup-tiebreakers strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
     .nba-cup-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -354,11 +371,26 @@
     .cup-group-card .sixers-highlight td { background: rgba(0,107,182,.07); }
     .cup-group-card .num { font-variant-numeric: tabular-nums; text-align: right; }
     #cup-export-container {
-      position: fixed; top: 0; left: 0; width: 900px;
+      position: fixed; top: 0; left: 0; width: 1080px;
       background: #fff; color: #0d0f1a; z-index: -1; pointer-events: none;
       font-family: 'Lexend', system-ui, sans-serif;
     }
-    .cup-sg-page { width: 900px; padding: 56px 48px 40px; box-sizing: border-box; background: #fff; }
+    .cup-sg-page { width: 1080px; padding: 56px 48px 40px; box-sizing: border-box; background: #fff; }
+    #cup-export-content.cup-export-multi {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+    #cup-export-content .cup-group-card { margin: 0; }
+    #cup-export-tb {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #64748b;
+    }
+    #cup-export-tb strong { color: #0f172a; }
 
     @media (max-width: 1000px) {
       .nba-cup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -410,6 +442,18 @@
         </div>
         <p class="nba-cup-note" id="nba-cup-note">Loading Cup results…</p>
       </div>
+      <div class="nba-cup-actions">
+        <button type="button" class="export-btn" id="cup-shot-east">Screenshot East groups</button>
+        <button type="button" class="export-btn" id="cup-shot-west">Screenshot West groups</button>
+      </div>
+      <div class="nba-cup-tiebreakers" id="nba-cup-tiebreakers">
+        <strong>Group tiebreakers:</strong>
+        (1) Head-to-head record among tied teams ·
+        (2) Point differential in group play ·
+        (3) Points scored in group play ·
+        (4) Regular-season record vs common group opponents (if needed).
+        Group winners advance; the best second-place team in each conference is the wild card.
+      </div>
       <div id="nba-cup-groups" class="nba-cup-grid">
         <div class="loader" style="grid-column:1/-1">
           <div class="loader-spinner"></div>
@@ -419,7 +463,7 @@
     </section>
   </div>
 
-  <!-- Hidden single-group export canvas target -->
+  <!-- Hidden cup export canvas target -->
   <div id="cup-export-container" aria-hidden="true">
     <div class="sg-page cup-sg-page">
       <div class="sg-top">
@@ -427,6 +471,7 @@
         <p class="sg-subtitle"><span id="cup-export-label">Emirates NBA Cup</span></p>
       </div>
       <div id="cup-export-content"></div>
+      <p id="cup-export-tb"></p>
       <div class="sg-bottom">
         <div class="sg-bottom-rule"></div>
         <p class="sg-bottom-mark">SixersHoops</p>

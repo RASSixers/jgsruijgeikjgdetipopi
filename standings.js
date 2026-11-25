@@ -578,14 +578,69 @@ function renderCupGroups(groupsData) {
   });
 }
 
-async function exportCupGroup(groupId, btn) {
-  const card = document.querySelector(`[data-cup-group="${groupId}"]`);
+const CUP_TIEBREAKER_TEXT =
+  "Tiebreakers: (1) Head-to-head among tied teams · (2) Point differential in group play · (3) Points scored in group play · (4) Regular-season record vs common group opponents if needed. Group winners advance; best second-place team in each conference is the wild card.";
+
+function showCupExportModal(canvas, titleText, fileSlug) {
   const modal = document.getElementById("exportModal");
   const preview = document.getElementById("exportPreview");
   const downloadBtn = document.getElementById("downloadBtn");
   const copyBtn = document.getElementById("copyBtn");
   const closeModal = document.getElementById("closeModal");
   const title = document.getElementById("export-title");
+  if (!modal || !preview) return;
+
+  if (title) title.textContent = titleText;
+  preview.src = canvas.toDataURL("image/png");
+  modal.style.display = "flex";
+
+  if (downloadBtn) {
+    downloadBtn.onclick = () => {
+      const link = document.createElement("a");
+      link.download = `nba-cup-${fileSlug}-${new Date().toISOString().split("T")[0]}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+  }
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      canvas.toBlob((blob) => {
+        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy to Clipboard"; }, 2000);
+        });
+      });
+    };
+  }
+  if (closeModal) closeModal.onclick = () => { modal.style.display = "none"; };
+}
+
+function prepareCupExportShell(label, multi) {
+  const exportContent = document.getElementById("cup-export-content");
+  const exportLabel = document.getElementById("cup-export-label");
+  const exportTb = document.getElementById("cup-export-tb");
+  const shell = document.getElementById("cup-export-container");
+  if (!exportContent || !shell) throw new Error("export shell missing");
+
+  if (exportLabel) exportLabel.textContent = label;
+  if (exportTb) exportTb.textContent = CUP_TIEBREAKER_TEXT;
+  exportContent.classList.toggle("cup-export-multi", !!multi);
+  exportContent.innerHTML = "";
+  return { exportContent, shell };
+}
+
+function cloneCupCard(card) {
+  const clone = card.cloneNode(true);
+  const shotBtn = clone.querySelector(".cup-shot-btn");
+  if (shotBtn) shotBtn.remove();
+  clone.style.border = "1px solid #e2e8f0";
+  clone.style.borderRadius = "16px";
+  clone.style.overflow = "hidden";
+  return clone;
+}
+
+async function exportCupGroup(groupId, btn) {
+  const card = document.querySelector(`[data-cup-group="${groupId}"]`);
   if (!card || typeof html2canvas !== "function") return;
 
   const original = btn ? btn.textContent : "";
@@ -595,23 +650,9 @@ async function exportCupGroup(groupId, btn) {
   }
 
   try {
-    // Clone visible card into export shell for clean pasteable graphic
-    const exportContent = document.getElementById("cup-export-content");
-    const exportLabel = document.getElementById("cup-export-label");
-    const shell = document.getElementById("cup-export-container");
-    if (!exportContent || !shell) throw new Error("export shell missing");
-
     const groupName = card.querySelector(".cup-group-name")?.textContent || "NBA Cup Group";
-    if (exportLabel) exportLabel.textContent = "Emirates NBA Cup · " + groupName;
-
-    exportContent.innerHTML = "";
-    const clone = card.cloneNode(true);
-    const shotBtn = clone.querySelector(".cup-shot-btn");
-    if (shotBtn) shotBtn.remove();
-    clone.style.border = "1px solid #e2e8f0";
-    clone.style.borderRadius = "16px";
-    clone.style.overflow = "hidden";
-    exportContent.appendChild(clone);
+    const { exportContent, shell } = prepareCupExportShell("Emirates NBA Cup · " + groupName, false);
+    exportContent.appendChild(cloneCupCard(card));
 
     const canvas = await html2canvas(shell, {
       backgroundColor: "#ffffff",
@@ -620,26 +661,7 @@ async function exportCupGroup(groupId, btn) {
       allowTaint: true,
       logging: false
     });
-
-    if (title) title.textContent = groupName + " graphic";
-    preview.src = canvas.toDataURL("image/png");
-    modal.style.display = "flex";
-
-    downloadBtn.onclick = () => {
-      const link = document.createElement("a");
-      link.download = `nba-cup-${groupId}-${new Date().toISOString().split("T")[0]}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-    copyBtn.onclick = () => {
-      canvas.toBlob((blob) => {
-        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => {
-          copyBtn.textContent = "Copied!";
-          setTimeout(() => { copyBtn.textContent = "Copy to Clipboard"; }, 2000);
-        });
-      });
-    };
-    if (closeModal) closeModal.onclick = () => { modal.style.display = "none"; };
+    showCupExportModal(canvas, groupName + " graphic", groupId);
   } catch (err) {
     console.error(err);
     alert("Could not create group screenshot. Try again.");
@@ -649,6 +671,54 @@ async function exportCupGroup(groupId, btn) {
       btn.disabled = false;
     }
   }
+}
+
+async function exportCupConference(conf, btn) {
+  if (typeof html2canvas !== "function") return;
+  const prefix = conf === "West" ? "west-" : "east-";
+  const cards = Array.from(document.querySelectorAll("[data-cup-group]")).filter((el) =>
+    String(el.getAttribute("data-cup-group") || "").startsWith(prefix)
+  );
+  if (!cards.length) {
+    alert("Cup groups are still loading.");
+    return;
+  }
+
+  const original = btn ? btn.textContent : "";
+  if (btn) {
+    btn.textContent = "Generating…";
+    btn.disabled = true;
+  }
+
+  try {
+    const label = "Emirates NBA Cup · " + conf + " Groups";
+    const { exportContent, shell } = prepareCupExportShell(label, true);
+    cards.forEach((card) => exportContent.appendChild(cloneCupCard(card)));
+
+    const canvas = await html2canvas(shell, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    });
+    showCupExportModal(canvas, conf + " groups graphic", conf.toLowerCase() + "-groups");
+  } catch (err) {
+    console.error(err);
+    alert("Could not create conference Cup graphic. Try again.");
+  } finally {
+    if (btn) {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  }
+}
+
+function bindCupConferenceShots() {
+  const eastBtn = document.getElementById("cup-shot-east");
+  const westBtn = document.getElementById("cup-shot-west");
+  if (eastBtn) eastBtn.onclick = () => exportCupConference("East", eastBtn);
+  if (westBtn) westBtn.onclick = () => exportCupConference("West", westBtn);
 }
 
 async function loadNbaCupStandings() {
@@ -698,6 +768,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   getNBAStandings(NEXT_SEASON_YEAR);
   loadNbaCupStandings();
+  bindCupConferenceShots();
 
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {

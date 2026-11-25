@@ -190,6 +190,7 @@
     margin: 0;
   }
   .news-heading-link {
+    font-family: inherit;
     font-size: 0.84rem;
     font-weight: 650;
     color: var(--sixers-blue);
@@ -198,12 +199,119 @@
     padding: 0.35rem 0.7rem;
     border-radius: 999px;
     border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
   }
   .news-heading-link:hover {
     background: rgba(0, 107, 182, 0.06);
     border-color: rgba(0, 107, 182, 0.18);
     text-decoration: none;
+  }
+
+  /* All Articles modal */
+  .articles-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .articles-modal[hidden] { display: none !important; }
+  .articles-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 12, 20, 0.55);
+    backdrop-filter: blur(4px);
+  }
+  .articles-modal-panel {
+    position: relative;
+    width: min(560px, 100%);
+    max-height: min(80vh, 720px);
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .articles-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--border-light, #e2e8f0);
+    flex-shrink: 0;
+  }
+  .articles-modal-head h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .articles-modal-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: var(--surface-soft, rgba(0,0,0,.04));
+    color: var(--ink);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .articles-modal-close:hover { background: rgba(237, 23, 76, 0.12); color: var(--sixers-red); }
+  .articles-modal-body {
+    overflow-y: auto;
+    padding: 0.35rem 0 0.75rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .articles-modal-loading,
+  .articles-modal-empty {
+    padding: 2rem 1.25rem;
+    text-align: center;
+    color: var(--mid);
+    font-size: 0.9rem;
+  }
+  .articles-modal-item {
+    display: block;
+    padding: 0.85rem 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid var(--border-light, #f1f5f9);
+    transition: background 0.12s;
+  }
+  .articles-modal-item:last-child { border-bottom: none; }
+  .articles-modal-item:hover { background: rgba(0, 107, 182, 0.05); }
+  .articles-modal-cat {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sixers-red);
+    margin-bottom: 0.25rem;
+  }
+  .articles-modal-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--ink);
+    margin: 0 0 0.3rem;
+  }
+  .articles-modal-item:hover .articles-modal-title { color: var(--sixers-blue); }
+  .articles-modal-meta {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 500;
   }
 
   .news-grid {
@@ -988,9 +1096,89 @@
   .home-game-arrow:focus-visible { outline: 2px solid var(--sixers-blue, #006BB6); outline-offset: 2px; }
   #home-game-body { transition: opacity .15s; }
   @media (max-width: 720px) {
-    .home-game-row { gap: 0.3rem; }
-    .home-game-arrow { width: 30px; height: 30px; }
+    .home-game {
+      padding: 0 0.75rem 1.5rem;
+    }
+    .home-game-row { gap: 0.35rem; }
+    .home-game-arrow {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+    }
     .home-game-arrow svg { width: 16px; height: 16px; }
+    .home-game-card {
+      border-radius: 12px;
+    }
+    .home-game-head {
+      padding: 0.7rem 0.9rem;
+      gap: 0.5rem;
+    }
+    .home-game-kicker {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+    }
+    .home-game-clock {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.5rem;
+    }
+    .home-game-scoreline {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 0.4rem;
+      padding: 0.85rem 0.85rem;
+    }
+    .home-game-team {
+      gap: 0.35rem;
+      font-size: 0.82rem;
+    }
+    .home-game-logo {
+      width: 28px;
+      height: 28px;
+    }
+    .home-game-score {
+      font-size: 1.45rem;
+    }
+    .home-game-tabs {
+      padding: 0 0.5rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .home-game-tabs::-webkit-scrollbar { display: none; }
+    .home-game-tab {
+      font-size: 0.72rem;
+      padding: 0.5rem 0.55rem;
+      flex-shrink: 0;
+    }
+    .home-game-pbp li {
+      grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.75rem;
+    }
+    .home-game-box {
+      max-height: 260px;
+    }
+    .home-game-box table {
+      min-width: 420px;
+      font-size: 0.68rem;
+    }
+    .home-game-foot {
+      padding: 0.65rem 0.85rem;
+      font-size: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .home-game-meta {
+      padding: 0 0.85rem 0.75rem;
+      font-size: 0.78rem;
+    }
+  }
+  @media (max-width: 400px) {
+    .home-game-team span {
+      max-width: 4.5rem;
+    }
+    .home-game-score {
+      font-size: 1.3rem;
+    }
   }
   .home-game-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -1542,31 +1730,31 @@
     </div>
   </section>
 
-  <!-- AdSense: Home Top -->
-  <div class="ad-slot ad-slot-home-top" aria-label="Advertisement">
-    <span class="ad-slot-label">Advertisement</span>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="4080559158"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
-
   <section id="news" class="news-section">
     <div class="news-inner">
       <div class="news-heading">
         <h2 class="news-title">News &amp; Analysis</h2>
-        <a href="/articles.html" class="news-heading-link">All articles →</a>
+        <button type="button" class="news-heading-link" id="all-articles-btn">All articles →</button>
       </div>
       <div class="news-grid" id="news-grid">
         <div class="news-loading">Loading the latest…</div>
       </div>
     </div>
   </section>
+
+  <!-- All Articles modal -->
+  <div class="articles-modal" id="articles-modal" hidden aria-hidden="true">
+    <div class="articles-modal-backdrop" id="articles-modal-backdrop"></div>
+    <div class="articles-modal-panel" role="dialog" aria-modal="true" aria-labelledby="articles-modal-title">
+      <div class="articles-modal-head">
+        <h2 id="articles-modal-title">All Articles</h2>
+        <button type="button" class="articles-modal-close" id="articles-modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="articles-modal-body" id="articles-modal-body">
+        <div class="articles-modal-loading">Loading articles…</div>
+      </div>
+    </div>
+  </div>
 
   <!-- AdSense: Home Mid (after news) -->
   <div class="ad-slot ad-slot-home-mid" aria-label="Advertisement">
@@ -1763,6 +1951,79 @@ function listenToNews() {
     );
   });
 }
+
+/* —— All Articles modal —— */
+function openArticlesModal() {
+  var modal = document.getElementById('articles-modal');
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  loadAllArticlesModal();
+}
+function closeArticlesModal() {
+  var modal = document.getElementById('articles-modal');
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+function loadAllArticlesModal() {
+  var body = document.getElementById('articles-modal-body');
+  if (!body) return;
+  body.innerHTML = '<div class="articles-modal-loading">Loading articles…</div>';
+  waitForDb(function () {
+    window.db.collection(NEWS_COLLECTION).orderBy('createdAt', 'desc').limit(50).get()
+      .then(function (snap) {
+        var articles = snap.docs.map(function (d) {
+          return Object.assign({ id: d.id }, d.data());
+        }).filter(isPublished);
+        if (!articles.length) {
+          body.innerHTML = '<div class="articles-modal-empty">No articles published yet.</div>';
+          return;
+        }
+        body.innerHTML = articles.map(function (a) {
+          var d = toDate(a.createdAt);
+          var dateStr = d && !isNaN(d.getTime())
+            ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '';
+          var url = a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
+          return (
+            '<a href="' + url + '" class="articles-modal-item">' +
+              (a.category ? '<span class="articles-modal-cat">' + escapeHtml(a.category) + '</span>' : '') +
+              '<h3 class="articles-modal-title">' + escapeHtml(a.title || 'Untitled') + '</h3>' +
+              '<div class="articles-modal-meta">' +
+                escapeHtml(byline(a)) +
+                (dateStr ? ' · ' + escapeHtml(dateStr) : '') +
+              '</div>' +
+            '</a>'
+          );
+        }).join('');
+      })
+      .catch(function (err) {
+        console.error(err);
+        body.innerHTML = '<div class="articles-modal-empty">Couldn\'t load articles right now.</div>';
+      });
+  });
+}
+(function initArticlesModal() {
+  function bind() {
+    var openBtn = document.getElementById('all-articles-btn');
+    var closeBtn = document.getElementById('articles-modal-close');
+    var backdrop = document.getElementById('articles-modal-backdrop');
+    if (openBtn) openBtn.addEventListener('click', openArticlesModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeArticlesModal);
+    if (backdrop) backdrop.addEventListener('click', closeArticlesModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeArticlesModal();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
 
 function pollVoteKey(id) {
   return 'sixers_poll_vote_' + id;

@@ -243,8 +243,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.1rem 1.25rem;
-    border-bottom: 1px solid var(--border-light, #e2e8f0);
+    padding: 1.1rem 1.25rem 0.85rem;
     flex-shrink: 0;
   }
   .articles-modal-head h2 {
@@ -269,11 +268,35 @@
     justify-content: center;
   }
   .articles-modal-close:hover { background: rgba(237, 23, 76, 0.12); color: var(--sixers-red); }
+  .articles-modal-search-wrap {
+    padding: 0 1.25rem 0.9rem;
+    border-bottom: 1px solid var(--border-light, #e2e8f0);
+    flex-shrink: 0;
+  }
+  .articles-modal-search {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0.65rem 0.85rem 0.65rem 2.35rem;
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 10px;
+    background: var(--surface-soft, #f8fafc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l3.5 3.5'/%3E%3C/svg%3E") 0.75rem 50% no-repeat;
+    color: var(--ink);
+    outline: none;
+  }
+  .articles-modal-search:focus {
+    border-color: var(--sixers-blue);
+    background-color: var(--card-bg, #fff);
+    box-shadow: 0 0 0 3px rgba(0, 107, 182, 0.12);
+  }
+  .articles-modal-search::placeholder { color: #94a3b8; }
   .articles-modal-body {
     overflow-y: auto;
     padding: 0.35rem 0 0.75rem;
     -webkit-overflow-scrolling: touch;
   }
+  .articles-modal-item.is-hidden { display: none; }
   .articles-modal-loading,
   .articles-modal-empty {
     padding: 2rem 1.25rem;
@@ -540,6 +563,19 @@
     border-top: 1px solid var(--border-light, #eef2f7);
     border-bottom: 1px solid var(--border-light, #eef2f7);
     max-width: 100%;
+  }
+  /* Extra breathing room around mid ad (between articles and standings block) */
+  .ad-slot-home-mid {
+    margin-top: 1.75rem;
+    margin-bottom: 1.75rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  /* Bottom ad: desktop only */
+  @media (max-width: 768px) {
+    .ad-slot-home-bottom {
+      display: none !important;
+    }
   }
   .ad-slot-home-top {
     max-width: 100%;
@@ -1413,7 +1449,7 @@
   .inj-edit-clear { background: #fff; border: 1px solid #fecaca; color: #b91c1c; }
   .inj-edit-status { font-size: 0.78rem; color: #64748b; flex: 1; align-self: center; }
   .home-inj {
-    padding: 0.45rem 1.15rem 0.9rem;
+    padding: 0.55rem 1.15rem 1rem;
     border-top: 1px solid var(--border-light);
   }
   .home-inj-title {
@@ -1433,11 +1469,38 @@
   .home-inj-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.85rem;
     margin-top: 0.35rem;
   }
+  /* Keep two-column team cards on mobile to match desktop */
   @media (max-width: 720px) {
-    .home-inj-grid { grid-template-columns: 1fr; }
+    .home-inj {
+      padding: 0.5rem 0.85rem 0.9rem;
+    }
+    .home-inj-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.55rem;
+    }
+    .home-inj-team {
+      padding: 0.6rem 0.55rem;
+      border-radius: 8px;
+    }
+    .home-inj-team-name {
+      font-size: 0.72rem;
+      margin-bottom: 0.3rem;
+    }
+    .home-inj-name { font-size: 0.78rem; }
+    .home-inj-badge {
+      font-size: 0.58rem;
+      padding: 0.15rem 0.35rem;
+    }
+    .home-inj-meta { font-size: 0.7rem; }
+    .home-inj-comment { font-size: 0.72rem; }
+    .home-inj-empty { font-size: 0.75rem; }
+  }
+  @media (max-width: 380px) {
+    .home-inj-grid { gap: 0.4rem; }
+    .home-inj-team { padding: 0.5rem 0.4rem; }
   }
   .home-inj-team {
     margin-bottom: 0;
@@ -1462,29 +1525,66 @@
     padding: 0.45rem 0;
     border-bottom: 1px solid rgba(15,23,42,0.06);
   }
+  .home-inj-row:last-child { border-bottom: none; }
   .home-inj-main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.65rem;
+    gap: 0.5rem;
   }
-  .home-inj-name { font-weight: 700; color: var(--ink); font-size: 0.88rem; }
+  .home-inj-name {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.88rem;
+    min-width: 0;
+    line-height: 1.25;
+  }
+  /* Green player name when status was upgraded */
+  .home-inj-name.is-upgraded {
+    color: #15803d;
+  }
   .home-inj-badge {
     flex-shrink: 0;
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    padding: 0.2rem 0.5rem;
-    border-radius: 999px;
+    padding: 0.22rem 0.45rem;
+    border-radius: 4px; /* rectangles, not pills */
     border: 1px solid transparent;
+    line-height: 1.15;
   }
-  .home-inj-badge.inj-out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-  .home-inj-badge.inj-doubt { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
-  .home-inj-badge.inj-q { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-  .home-inj-badge.inj-gtd { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-  .home-inj-badge.inj-prob { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-  .home-inj-badge.inj-other { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+  /* Distinct status colors — classic report style, not pastel AI */
+  .home-inj-badge.inj-out {
+    background: #c1121f;
+    color: #ffffff;
+    border-color: #9b0e18;
+  }
+  .home-inj-badge.inj-doubt {
+    background: #9a3412;
+    color: #ffffff;
+    border-color: #7c2d12;
+  }
+  .home-inj-badge.inj-q {
+    background: #ca8a04;
+    color: #1a1a1a;
+    border-color: #a16207;
+  }
+  .home-inj-badge.inj-gtd {
+    background: #1d4ed8;
+    color: #ffffff;
+    border-color: #1e3a8a;
+  }
+  .home-inj-badge.inj-prob {
+    background: #166534;
+    color: #ffffff;
+    border-color: #14532d;
+  }
+  .home-inj-badge.inj-other {
+    background: #475569;
+    color: #ffffff;
+    border-color: #334155;
+  }
   .home-inj-meta {
     font-size: 0.78rem;
     color: var(--mid);
@@ -1750,6 +1850,10 @@
         <h2 id="articles-modal-title">All Articles</h2>
         <button type="button" class="articles-modal-close" id="articles-modal-close" aria-label="Close">×</button>
       </div>
+      <div class="articles-modal-search-wrap">
+        <input type="search" class="articles-modal-search" id="articles-modal-search"
+               placeholder="Search articles…" autocomplete="off" enterkeyhint="search">
+      </div>
       <div class="articles-modal-body" id="articles-modal-body">
         <div class="articles-modal-loading">Loading articles…</div>
       </div>
@@ -1959,6 +2063,11 @@ function openArticlesModal() {
   modal.hidden = false;
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+  var search = document.getElementById('articles-modal-search');
+  if (search) {
+    search.value = '';
+    setTimeout(function () { search.focus(); }, 50);
+  }
   loadAllArticlesModal();
 }
 function closeArticlesModal() {
@@ -1967,6 +2076,36 @@ function closeArticlesModal() {
   modal.hidden = true;
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
+}
+function filterArticlesModal(query) {
+  var body = document.getElementById('articles-modal-body');
+  if (!body) return;
+  var q = String(query || '').trim().toLowerCase();
+  var items = body.querySelectorAll('.articles-modal-item');
+  var visible = 0;
+  items.forEach(function (el) {
+    var hay = (el.getAttribute('data-search') || el.textContent || '').toLowerCase();
+    var show = !q || hay.indexOf(q) !== -1;
+    el.classList.toggle('is-hidden', !show);
+    if (show) visible++;
+  });
+  var empty = body.querySelector('.articles-modal-empty-search');
+  if (!q) {
+    if (empty) empty.remove();
+    return;
+  }
+  if (visible === 0) {
+    if (!empty) {
+      empty = document.createElement('div');
+      empty.className = 'articles-modal-empty articles-modal-empty-search';
+      empty.textContent = 'No articles match “‘ + query + '”.';
+      body.appendChild(empty);
+    } else {
+      empty.textContent = 'No articles match “‘ + query + '”.';
+    }
+  } else if (empty) {
+    empty.remove();
+  }
 }
 function loadAllArticlesModal() {
   var body = document.getElementById('articles-modal-body');
@@ -1988,8 +2127,9 @@ function loadAllArticlesModal() {
             ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             : '';
           var url = a.slug ? ('/article/' + encodeURIComponent(a.slug)) : '#';
+          var searchBlob = [a.title, a.category, a.author, a.byline, a.excerpt].filter(Boolean).join(' ');
           return (
-            '<a href="' + url + '" class="articles-modal-item">' +
+            '<a href="' + url + '" class="articles-modal-item" data-search="' + escapeHtml(searchBlob) + '">' +
               (a.category ? '<span class="articles-modal-cat">' + escapeHtml(a.category) + '</span>' : '') +
               '<h3 class="articles-modal-title">' + escapeHtml(a.title || 'Untitled') + '</h3>' +
               '<div class="articles-modal-meta">' +
@@ -1999,6 +2139,8 @@ function loadAllArticlesModal() {
             '</a>'
           );
         }).join('');
+        var search = document.getElementById('articles-modal-search');
+        if (search && search.value) filterArticlesModal(search.value);
       })
       .catch(function (err) {
         console.error(err);
@@ -2011,9 +2153,15 @@ function loadAllArticlesModal() {
     var openBtn = document.getElementById('all-articles-btn');
     var closeBtn = document.getElementById('articles-modal-close');
     var backdrop = document.getElementById('articles-modal-backdrop');
+    var search = document.getElementById('articles-modal-search');
     if (openBtn) openBtn.addEventListener('click', openArticlesModal);
     if (closeBtn) closeBtn.addEventListener('click', closeArticlesModal);
     if (backdrop) backdrop.addEventListener('click', closeArticlesModal);
+    if (search) {
+      search.addEventListener('input', function () {
+        filterArticlesModal(search.value);
+      });
+    }
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') closeArticlesModal();
     });
@@ -2999,10 +3147,15 @@ listenToUpdates();
       }
       if (/\bdoubtful\b/i.test(text) || official.includes("doubtful")) return { label: "Doubtful", cls: "inj-doubt" };
       if (/\bquestionable\b/i.test(text) || official.includes("questionable")) return { label: "Questionable", cls: "inj-q" };
-      if (official.includes("day-to-day") || official.includes("day to day") || /\bgtd\b/i.test(text)) {
+      if (/\bprobable\b/i.test(text) || official.includes("probable")) return { label: "Probable", cls: "inj-prob" };
+      if (official.includes("day-to-day") || official.includes("day to day") || /\bgtd\b/i.test(text) || /\bday.to.day\b/i.test(text)) {
         return { label: "GTD", cls: "inj-gtd" };
       }
       return { label: inj.status || "Listed", cls: "inj-other" };
+    }
+    function isUpgraded(inj) {
+      const text = collectText(inj);
+      return /\bupgraded\b/i.test(text) || /\bupgrade\b/i.test(text);
     }
 
     function formatInjDate(iso) {
@@ -3095,12 +3248,13 @@ listenToUpdates();
       const rows = items.map(function (inj) {
         const name = get(inj, "athlete.displayName", null) || get(inj, "athlete.shortName", "Player");
         const st = displayStatus(inj);
+        const upgraded = isUpgraded(inj);
         const injuryType = [get(inj, "details.type", ""), get(inj, "details.detail", "")].filter(Boolean).join(" — ");
         const comment = inj.shortComment || inj.longComment || "";
         const playerUpdated = formatInjDate(inj.date);
         return '<li class="home-inj-row">' +
           '<div class="home-inj-main">' +
-            '<span class="home-inj-name">' + name + '</span>' +
+            '<span class="home-inj-name' + (upgraded ? ' is-upgraded' : '') + '">' + name + '</span>' +
             '<span class="home-inj-badge ' + st.cls + '">' + st.label + '</span>' +
           '</div>' +
           (injuryType ? '<div class="home-inj-meta">' + injuryType + '</div>' : '') +

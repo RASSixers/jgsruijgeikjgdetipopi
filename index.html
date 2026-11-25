@@ -627,52 +627,6 @@
     max-width: 100%;
   }
 
-  /* Mobile sticky bottom ad — collapsible / dismissible */
-  .mobile-sticky-ad {
-    display: none;
-  }
-  @media (max-width: 768px) {
-    .mobile-sticky-ad:not([hidden]) {
-      display: block;
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 900;
-      background: var(--card-bg, #fff);
-      border-top: 1px solid var(--border-light, #e2e8f0);
-      box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.12);
-      padding: 0.35rem 2.25rem 0.45rem 0.5rem;
-    }
-    .mobile-sticky-ad-close {
-      position: absolute;
-      top: 0.2rem;
-      right: 0.35rem;
-      width: 28px;
-      height: 28px;
-      border: none;
-      border-radius: 50%;
-      background: rgba(15, 23, 42, 0.06);
-      color: var(--ink, #0d0f1a);
-      font-size: 1.15rem;
-      line-height: 1;
-      cursor: pointer;
-      z-index: 2;
-    }
-    .mobile-sticky-ad-inner {
-      min-height: 50px;
-      max-height: 100px;
-      overflow: hidden;
-    }
-    .mobile-sticky-ad-inner ins {
-      display: block;
-      width: 100%;
-    }
-    body.has-mobile-sticky-ad {
-      padding-bottom: 110px;
-    }
-  }
-
   @media (max-width: 900px) {
     .news-grid {
       grid-template-columns: 1fr;
@@ -2088,41 +2042,6 @@
 
 </main>
 
-<!-- Mobile sticky bottom ad (dismissible — high viewability, low disruption) -->
-<div class="mobile-sticky-ad" id="mobile-sticky-ad" hidden>
-  <button type="button" class="mobile-sticky-ad-close" id="mobile-sticky-ad-close" aria-label="Close ad">×</button>
-  <div class="mobile-sticky-ad-inner">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="4080559158"
-         data-ad-format="horizontal"
-         data-full-width-responsive="true"></ins>
-  </div>
-</div>
-<script>
-(function () {
-  if (window.matchMedia && !window.matchMedia('(max-width: 768px)').matches) return;
-  try {
-    if (sessionStorage.getItem('sh_sticky_ad_closed') === '1') return;
-  } catch (e) {}
-  var bar = document.getElementById('mobile-sticky-ad');
-  var closeBtn = document.getElementById('mobile-sticky-ad-close');
-  if (!bar) return;
-  bar.hidden = false;
-  document.body.classList.add('has-mobile-sticky-ad');
-  try {
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  } catch (e) {}
-  if (closeBtn) {
-    closeBtn.addEventListener('click', function () {
-      bar.hidden = true;
-      document.body.classList.remove('has-mobile-sticky-ad');
-      try { sessionStorage.setItem('sh_sticky_ad_closed', '1'); } catch (e) {}
-    });
-  }
-})();
-</script>
 
 <script src="/nav.js"></script>
 <script>

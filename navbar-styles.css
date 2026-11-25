@@ -911,26 +911,41 @@ body {
 .mobile-menu-btn {
   display: none;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 5px;
   background: transparent;
   border: none;
+  outline: none;
+  box-shadow: none;
   cursor: pointer;
   padding: 8px;
   border-radius: 6px;
   transition: background 0.2s ease;
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mobile-menu-btn:hover {
-  background: #f3f4f6;
+.mobile-menu-btn:hover,
+.mobile-menu-btn:focus,
+.mobile-menu-btn:focus-visible,
+.mobile-menu-btn:active {
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .mobile-menu-btn span {
+  display: block;
   width: 22px;
   height: 2px;
   background: #000000;
-  border-radius: 2px;
-  transition: all 0.3s ease;
+  border: none;
+  outline: none;
+  border-radius: 1px;
+  box-shadow: none;
+  transition: transform 0.25s ease, opacity 0.2s ease;
 }
 
 .mobile-menu-btn.active span:nth-child(1) {
@@ -1064,17 +1079,23 @@ body {
   .brand-name {
     display: block;
     font-size: 0.92rem;
-    transform: translateY(-2px);
+    transform: none;
     line-height: 1;
+    margin: 0;
+    padding: 0;
   }
 
   .nav-brand {
+    display: flex;
+    flex-direction: row;
     align-items: center;
+    gap: 0.45rem;
   }
 
   .nav-logo {
     width: 28px;
     height: 28px;
+    display: block;
   }
 
   .user-name {
@@ -1161,8 +1182,26 @@ html.dark-mode .brand-name {
   color: #ffffff !important;
 }
 :root.dark-mode .brand-name .brand-hoops,
-html.dark-mode .brand-name .brand-hoops {
-  color: #006BB6 !important; /* same blue in dark mode */
+html.dark-mode .brand-name .brand-hoops,
+.brand-name .brand-hoops {
+  color: #006BB6 !important; /* Hoops stays brand blue in light + dark */
+}
+:root.dark-mode .mobile-menu-btn,
+html.dark-mode .mobile-menu-btn,
+:root.dark-mode .mobile-menu-btn:hover,
+html.dark-mode .mobile-menu-btn:hover,
+:root.dark-mode .mobile-menu-btn:focus,
+html.dark-mode .mobile-menu-btn:focus {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+:root.dark-mode .mobile-menu-btn span,
+html.dark-mode .mobile-menu-btn span {
+  background: #e8eaf0 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 :root.dark-mode .nav-link,

@@ -1058,12 +1058,19 @@ body {
   }
 
   .brand-name {
-    display: none;
+    display: block;
+    font-size: 0.92rem;
+    transform: translateY(-2px);
+    line-height: 1;
+  }
+
+  .nav-brand {
+    align-items: center;
   }
 
   .nav-logo {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
   }
 
   .user-name {

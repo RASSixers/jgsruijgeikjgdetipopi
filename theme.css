@@ -960,8 +960,6 @@ html.dark-mode .updates-section {
     #0a0a0a !important;
 }
 html.dark-mode .news-feature-visual {
-  background:
-    radial-gradient(ellipse at 15% 90%, rgba(0, 107, 182, 0.4), transparent 55%),
-    radial-gradient(ellipse at 90% 10%, rgba(237, 23, 76, 0.28), transparent 50%),
-    linear-gradient(145deg, #050a12 0%, #0c1828 42%, #122033 100%) !important;
+  background: #0a0a0a !important;
+  border-color: #222 !important;
 }

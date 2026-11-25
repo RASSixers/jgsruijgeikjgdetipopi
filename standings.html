@@ -300,6 +300,69 @@
       display: block;
     }
 
+    /* NBA Cup groups */
+    .nba-cup-section { margin-top: 2.25rem; }
+    .nba-cup-heading {
+      display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+      gap: .75rem 1.25rem; margin-bottom: 1rem;
+    }
+    .nba-cup-eyebrow {
+      margin: 0 0 .25rem; font-size: .68rem; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--sixers-red);
+    }
+    .nba-cup-title {
+      margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em;
+    }
+    .nba-cup-note { margin: 0; font-size: .8rem; color: var(--mid); max-width: 28rem; }
+    .nba-cup-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .cup-group-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .cup-group-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      padding: .85rem 1rem; background: var(--surface-soft);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .cup-group-name {
+      margin: 0; font-size: .92rem; font-weight: 800; letter-spacing: -.01em;
+    }
+    .cup-shot-btn {
+      border: 1px solid var(--border-light); background: #fff; color: var(--ink);
+      border-radius: 999px; padding: .3rem .65rem; font: inherit; font-size: .72rem;
+      font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .cup-shot-btn:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
+    .cup-group-card table { width: 100%; border-collapse: collapse; }
+    .cup-group-card th {
+      text-align: left; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--mid); padding: .55rem .75rem; border-bottom: 1px solid var(--border-light);
+    }
+    .cup-group-card td {
+      padding: .55rem .75rem; border-bottom: 1px solid var(--border-light);
+      font-size: .82rem; vertical-align: middle;
+    }
+    .cup-group-card tr:last-child td { border-bottom: 0; }
+    .cup-group-card .sixers-highlight td { background: rgba(0,107,182,.07); }
+    .cup-group-card .num { font-variant-numeric: tabular-nums; text-align: right; }
+    #cup-export-container {
+      position: fixed; top: 0; left: 0; width: 900px;
+      background: #fff; color: #0d0f1a; z-index: -1; pointer-events: none;
+      font-family: 'Lexend', system-ui, sans-serif;
+    }
+    .cup-sg-page { width: 900px; padding: 56px 48px 40px; box-sizing: border-box; background: #fff; }
+
+    @media (max-width: 1000px) {
+      .nba-cup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
     @media (max-width: 720px) {
       .wrap { padding: 1rem 1.1rem 3rem; }
       .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
@@ -308,6 +371,7 @@
       .modal-card { width: 100%; padding: 18px; }
       #export-title { font-size: 22px; }
       #exportPreview { max-height: 62vh; }
+      .nba-cup-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -336,6 +400,39 @@
         <p>Loading teams...</p>
       </div>
     </main>
+
+    <!-- Emirates NBA Cup group standings -->
+    <section id="nba-cup" class="nba-cup-section" aria-label="Emirates NBA Cup standings">
+      <div class="nba-cup-heading">
+        <div>
+          <p class="nba-cup-eyebrow">Emirates NBA Cup</p>
+          <h2 class="nba-cup-title">Group Standings</h2>
+        </div>
+        <p class="nba-cup-note" id="nba-cup-note">Loading Cup results…</p>
+      </div>
+      <div id="nba-cup-groups" class="nba-cup-grid">
+        <div class="loader" style="grid-column:1/-1">
+          <div class="loader-spinner"></div>
+          <p>Loading NBA Cup groups…</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Hidden single-group export canvas target -->
+  <div id="cup-export-container" aria-hidden="true">
+    <div class="sg-page cup-sg-page">
+      <div class="sg-top">
+        <p class="sg-wordmark">SixersHoops</p>
+        <p class="sg-subtitle"><span id="cup-export-label">Emirates NBA Cup</span></p>
+      </div>
+      <div id="cup-export-content"></div>
+      <div class="sg-bottom">
+        <div class="sg-bottom-rule"></div>
+        <p class="sg-bottom-mark">SixersHoops</p>
+        <p class="sg-bottom-url">sixershoops.com/standings</p>
+      </div>
+    </div>
   </div>
 
   <div id="social-export-container">

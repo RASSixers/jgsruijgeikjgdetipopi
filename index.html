@@ -571,11 +571,36 @@
     padding-top: 2rem;
     padding-bottom: 2rem;
   }
-  .ad-slot-home-bottom {
-    margin-top: 1.25rem;
-    margin-bottom: 1.5rem;
-    padding-top: 1.75rem;
-    padding-bottom: 1.75rem;
+  .ad-slot-home-bottom-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem auto 1.5rem;
+    padding: 1.5rem 1rem 1.75rem;
+    max-width: 100%;
+    background: var(--card-bg, #fff);
+    border-top: 1px solid var(--border-light, #eef2f7);
+    border-bottom: 1px solid var(--border-light, #eef2f7);
+    box-sizing: border-box;
+  }
+  .ad-slot-home-bottom-stack .ad-slot-label {
+    margin-bottom: 0.25rem;
+  }
+  .ad-slot-home-bottom1,
+  .ad-slot-home-bottom2 {
+    width: 100%;
+    max-width: 728px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+  .ad-slot-home-bottom1 ins,
+  .ad-slot-home-bottom2 ins {
+    display: block;
+    width: 100%;
+    min-height: 100px;
   }
   /* Mobile-only in-content unit (after standings) */
   .ad-slot-home-mobile {
@@ -2036,18 +2061,29 @@
     </div>
   </section>
 
-  <!-- AdSense: Home bottom (desktop + mobile) -->
-  <div class="ad-slot ad-slot-home-bottom" aria-label="Advertisement">
+  <!-- AdSense: Home bottom stack (bottom1 + bottom2) -->
+  <div class="ad-slot ad-slot-home-bottom-stack" aria-label="Advertisement">
     <span class="ad-slot-label">Advertisement</span>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-8046070602394287"
-         data-ad-slot="9534467323"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
+    <div class="ad-slot-home-bottom ad-slot-home-bottom1">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-format="autorelaxed"
+           data-ad-client="ca-pub-8046070602394287"
+           data-ad-slot="9534467323"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+    <div class="ad-slot-home-bottom ad-slot-home-bottom2">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-format="autorelaxed"
+           data-ad-client="ca-pub-8046070602394287"
+           data-ad-slot="2460650879"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
   </div>
 
 </main>
@@ -3388,8 +3424,7 @@ listenToUpdates();
         '<div class="home-inj-title" style="margin:0;">Injury report</div>' +
         adminBtn +
         '<button type="button" class="home-inj-share-btn" id="homeInjShareBtn">Share graphic</button>' +
-      '</div>' +
-      '<div class="home-inj-updated">Only <strong>' + dayNote + '</strong> game notes</div>';
+      '</div>';
 
     const body = groups.map(function (g) {
       const team = get(g, "team.abbreviation", null) || get(g, "team.displayName", "Team");

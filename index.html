@@ -244,66 +244,28 @@
     border-color: rgba(0, 107, 182, 0.28);
     box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
   }
+  /* Image sits inside the card, between title and byline */
   .news-feature-visual {
-    display: block;
-    width: calc(100% + 3.3rem);
-    margin: 0.85rem -1.65rem 0 -1.65rem;
-    aspect-ratio: 16 / 7;
-    max-height: 200px;
-    border-radius: 0;
-    background:
-      radial-gradient(ellipse at 15% 90%, rgba(0, 107, 182, 0.35), transparent 55%),
-      radial-gradient(ellipse at 90% 10%, rgba(237, 23, 76, 0.22), transparent 50%),
-      linear-gradient(145deg, #0b1a2e 0%, #122844 42%, #1a3352 100%);
-    position: relative;
+    display: none; /* hidden when no image */
+    width: 100%;
+    margin: 0.85rem 0 0.15rem;
+    border-radius: 10px;
     overflow: hidden;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   }
   .news-feature-visual.has-image {
-    aspect-ratio: auto;
-    max-height: none;
-    background: #000;
-    border-top: 2px solid #000;
-    box-shadow: inset 0 0 0 2px #000;
+    display: block;
   }
   .news-feature-visual img {
     display: block;
     width: 100%;
     height: auto;
-    max-height: 320px;
+    max-height: 280px;
     object-fit: contain;
     object-position: center center;
-    background: #000;
-  }
-  .news-feature-visual.has-image img {
-    object-fit: contain;
-    max-height: 340px;
-  }
-  .news-feature-visual::after {
-    content: attr(data-score);
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(1.1rem, 2.4vw, 1.45rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: rgba(255,255,255,0.92);
-    text-shadow: 0 2px 12px rgba(0,0,0,0.35);
-    padding: 0 1rem;
-    text-align: center;
-    pointer-events: none;
-  }
-  /* Never show score text when a real photo is present */
-  .news-feature-visual.has-image::after {
-    content: none !important;
-    display: none !important;
-  }
-  .news-feature-visual.is-empty::after {
-    content: 'BOX SCORE';
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
-    opacity: 0.55;
+    background: #0a0a0a;
   }
   .news-feature-body {
     display: flex;
@@ -327,7 +289,7 @@
     font-weight: 800;
     letter-spacing: -0.032em;
     line-height: 1.2;
-    margin: 0 0 0.65rem;
+    margin: 0 0 0.15rem;
     color: var(--ink);
   }
   .news-feature:hover .news-feature-title {
@@ -337,8 +299,7 @@
     font-size: 0.94rem;
     line-height: 1.62;
     color: var(--mid, #64748b);
-    margin: 0 0 1.15rem;
-    flex: 1;
+    margin: 0.5rem 0 0.25rem;
   }
   .news-feature-meta {
     display: flex;
@@ -485,25 +446,24 @@
       grid-template-columns: 1fr;
       gap: 1.15rem;
     }
-    .news-feature-visual {
-      max-height: 140px;
-      aspect-ratio: 16 / 6.5;
+    .news-feature-visual img {
+      max-height: 220px;
     }
   }
   @media (max-width: 640px) {
     .news-feature {
-      padding: 1.2rem 1.15rem 0;
+      padding: 1.2rem 1.15rem 1.25rem;
       border-radius: 14px;
     }
     .news-feature-body {
       padding-left: 0.2rem;
-      padding-bottom: 1rem;
     }
     .news-feature-visual {
-      width: calc(100% + 2.3rem);
-      margin-left: -1.15rem;
-      margin-right: -1.15rem;
-      max-height: 120px;
+      margin: 0.7rem 0 0.1rem;
+      border-radius: 8px;
+    }
+    .news-feature-visual img {
+      max-height: 200px;
     }
     .news-feature::before {
       width: 2.5px;
@@ -1758,32 +1718,24 @@ function renderNews(articles) {
   }
 
   const featDate = shortDate(toDate(featured.createdAt));
-  // Prefer an explicit score string from the article, else parse from title
-  var scoreLabel = (featured.scoreLine || featured.finalScore || '').toString().trim();
-  if (!scoreLabel && featured.title) {
-    var mScore = String(featured.title).match(/(\d{2,3})\s*[-–]\s*(\d{2,3})/);
-    if (mScore) scoreLabel = mScore[1] + ' – ' + mScore[2];
-  }
   // Homepage card image: articles-admin saves upload as imageUrl
   var imgUrl = (featured.imageUrl || featured.boxScoreImage || featured.coverImage || featured.image || featured.heroImage || featured.thumbnail || '').toString().trim();
-  var visualHtml;
-  if (imgUrl) {
-    visualHtml = '<div class="news-feature-visual has-image"><img src="' + escapeHtml(imgUrl) + '" alt="' + escapeHtml(featured.title || '') + '" loading="lazy"></div>';
-  } else {
-    visualHtml = '<div class="news-feature-visual' + (scoreLabel ? '' : ' is-empty') + '" data-score="' + escapeHtml(scoreLabel || '') + '"></div>';
-  }
+  // Image goes inside the card between title and byline. No image = empty (no score filler).
+  var visualHtml = imgUrl
+    ? '<div class="news-feature-visual has-image"><img src="' + escapeHtml(imgUrl) + '" alt="' + escapeHtml(featured.title || '') + '" loading="lazy"></div>'
+    : '';
   const featuredHtml =
     '<a href="' + articleUrl(featured) + '" class="news-feature">' +
       '<div class="news-feature-body">' +
         (featured.category ? '<span class="news-feature-cat">' + escapeHtml(featured.category) + '</span>' : '') +
         '<h3 class="news-feature-title">' + escapeHtml(featured.title) + '</h3>' +
+        visualHtml +
         (featured.excerpt ? '<p class="news-feature-excerpt">' + escapeHtml(featured.excerpt) + '</p>' : '') +
         '<div class="news-feature-meta">' +
           '<span>' + escapeHtml(byline(featured)) + '</span>' +
           (featDate ? '<span>·</span><span>' + escapeHtml(featDate) + '</span>' : '') +
         '</div>' +
       '</div>' +
-      visualHtml +
     '</a>';
 
   const listHtml = rest.map(function (a) {

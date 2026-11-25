@@ -1133,93 +1133,141 @@ body {
 
 :root.dark-mode .navbar,
 html.dark-mode .navbar {
-  background: var(--sh-bg, #0b0f1a);
-  border-bottom-color: var(--sh-border, rgba(255, 255, 255, 0.1));
-  color: var(--sh-ink, #e8eaf0);
+  background: var(--sh-bg, #0b0f1a) !important;
+  border-bottom-color: var(--sh-border, rgba(255, 255, 255, 0.1)) !important;
+  color: var(--sh-ink, #e8eaf0) !important;
+  box-shadow: none !important;
 }
 
 :root.dark-mode .navbar.scrolled,
 html.dark-mode .navbar.scrolled {
-  border-bottom-color: transparent;
-  box-shadow: none;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
 }
 
-:root.dark-mode .brand-name {
-  color: #ffffff;
+:root.dark-mode .brand-name,
+html.dark-mode .brand-name {
+  color: #ffffff !important;
 }
 
-:root.dark-mode .nav-link {
-  color: #e0e0e0;
+:root.dark-mode .nav-link,
+html.dark-mode .nav-link {
+  color: #e0e0e0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
-:root.dark-mode .nav-link:hover {
-  background: #3a3a3a;
-  color: #ffffff;
+:root.dark-mode .nav-link:hover,
+html.dark-mode .nav-link:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
-:root.dark-mode .nav-link.active {
-  color: #ffffff;
+:root.dark-mode .nav-link.active,
+html.dark-mode .nav-link.active {
+  color: #ffffff !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-:root.dark-mode .dropdown-toggle {
-  color: #e0e0e0;
+:root.dark-mode .dropdown-toggle,
+html.dark-mode .dropdown-toggle {
+  color: #e0e0e0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
-:root.dark-mode .dropdown-toggle:hover {
-  background: #3a3a3a;
-  color: #ffffff;
+:root.dark-mode .dropdown-toggle:hover,
+html.dark-mode .dropdown-toggle:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
-:root.dark-mode .dropdown-menu {
-  background: #2d2d2d;
-  border-color: #404040;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+:root.dark-mode .dropdown-menu,
+html.dark-mode .dropdown-menu {
+  background: #1a1d24 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
 }
 
-:root.dark-mode .dropdown-item {
-  color: #e0e0e0;
+:root.dark-mode .dropdown-item,
+html.dark-mode .dropdown-item {
+  color: #e0e0e0 !important;
+  background: transparent !important;
 }
 
-:root.dark-mode .dropdown-item:hover {
-  background: #3a3a3a;
-  color: #ffffff;
+:root.dark-mode .dropdown-item:hover,
+html.dark-mode .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
-:root.dark-mode .icon-btn {
-  color: #e0e0e0;
+:root.dark-mode .icon-btn,
+html.dark-mode .icon-btn {
+  color: #e0e0e0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-:root.dark-mode .icon-btn:hover {
-  background: #3a3a3a;
-  color: #ffffff;
+:root.dark-mode .icon-btn:hover,
+html.dark-mode .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
-:root.dark-mode .theme-toggle {
-  color: #ffd700;
+:root.dark-mode .theme-toggle,
+html.dark-mode .theme-toggle {
+  color: #ffd700 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-:root.dark-mode .mobile-menu-btn span {
-  background: #e0e0e0;
+:root.dark-mode .user-profile-btn,
+html.dark-mode .user-profile-btn {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e0e0e0 !important;
+  box-shadow: none !important;
 }
 
-:root.dark-mode .mobile-menu-panel {
-  background: #1f1f1f;
-  border-color: #404040;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+:root.dark-mode .user-profile-btn:hover,
+html.dark-mode .user-profile-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
-:root.dark-mode .mobile-menu-label {
-  color: #94a3b8;
+:root.dark-mode .mobile-menu-btn span,
+html.dark-mode .mobile-menu-btn span {
+  background: #e0e0e0 !important;
 }
 
-:root.dark-mode .mobile-nav-link {
-  color: #e5e7eb;
+:root.dark-mode .mobile-menu-panel,
+html.dark-mode .mobile-menu-panel {
+  background: #14161c !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+
+:root.dark-mode .mobile-menu-label,
+html.dark-mode .mobile-menu-label {
+  color: #94a3b8 !important;
+}
+
+:root.dark-mode .mobile-nav-link,
+html.dark-mode .mobile-nav-link {
+  color: #e5e7eb !important;
+  background: transparent !important;
 }
 
 :root.dark-mode .mobile-nav-link:hover,
-:root.dark-mode .mobile-nav-link.active {
-  background: #2d2d2d;
-  color: #ffffff;
+:root.dark-mode .mobile-nav-link.active,
+html.dark-mode .mobile-nav-link:hover,
+html.dark-mode .mobile-nav-link.active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 :root.dark-mode,

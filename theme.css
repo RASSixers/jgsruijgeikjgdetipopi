@@ -645,22 +645,36 @@ html.dark-mode .footer-bottom {
   border-top-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Tweet / X embeds */
+/* Tweet / X embeds — kill white flash / squares in dark mode */
 html.dark-mode .update-embed,
 html.dark-mode .tweet-embed-wrap,
 html.dark-mode .tweet-card,
 html.dark-mode blockquote.twitter-tweet,
+html.dark-mode .update-card .update-embed,
 :root.dark-mode .update-embed {
-  background: #0f0f0f !important;
+  background: #111111 !important;
   border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  min-height: 120px;
+  overflow: hidden !important;
+  border: none !important;
+  min-height: 0 !important;
+  box-shadow: none !important;
 }
 html.dark-mode .update-embed iframe,
-html.dark-mode blockquote.twitter-tweet iframe {
+html.dark-mode blockquote.twitter-tweet iframe,
+html.dark-mode .update-card iframe,
+html.dark-mode twitter-widget {
   filter: none !important;
-  background: transparent !important;
+  background: #111111 !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+/* Hide any residual white chrome around X embeds */
+html.dark-mode .update-card {
+  background: #111111 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+html.dark-mode .update-card > * {
+  background-color: transparent;
 }
 
 /* Trade machine surfaces */
@@ -960,6 +974,15 @@ html.dark-mode .updates-section {
     #0a0a0a !important;
 }
 html.dark-mode .news-feature-visual {
-  background: #0a0a0a !important;
-  border-color: #222 !important;
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+html.dark-mode .news-feature-visual img {
+  background: transparent !important;
+}
+/* No left accent bar on featured article */
+html.dark-mode .news-feature::before,
+.news-feature::before {
+  display: none !important;
+  content: none !important;
 }

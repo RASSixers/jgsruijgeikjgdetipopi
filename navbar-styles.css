@@ -67,6 +67,10 @@ body {
   letter-spacing: -0.01em;
   font-family: 'Lexend', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', sans-serif;
 }
+/* "Hoops" stays brand blue in light + dark mode */
+.brand-name .brand-hoops {
+  color: #006BB6;
+}
 
 .nav-menu {
   display: flex;
@@ -1155,6 +1159,10 @@ html.dark-mode .navbar.scrolled {
 :root.dark-mode .brand-name,
 html.dark-mode .brand-name {
   color: #ffffff !important;
+}
+:root.dark-mode .brand-name .brand-hoops,
+html.dark-mode .brand-name .brand-hoops {
+  color: #006BB6 !important; /* same blue in dark mode */
 }
 
 :root.dark-mode .nav-link,

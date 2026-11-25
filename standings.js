@@ -405,6 +405,288 @@ function initExport() {
   window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
 }
 
+/* —— Emirates NBA Cup (2026-27 group stage) —— */
+const NBA_CUP_GROUPS = [
+  { id: "east-a", conf: "East", name: "East Group A", teams: ["DET", "TOR", "ORL", "MIL", "BKN"] },
+  { id: "east-b", conf: "East", name: "East Group B", teams: ["NYK", "CLE", "PHI", "MIA", "IND"] },
+  { id: "east-c", conf: "East", name: "East Group C", teams: ["BOS", "ATL", "WAS", "CHI", "CHA"] },
+  { id: "west-a", conf: "West", name: "West Group A", teams: ["DAL", "DEN", "PHX", "HOU", "UTA"] },
+  { id: "west-b", conf: "West", name: "West Group B", teams: ["MIN", "OKC", "MEM", "LAC", "NOP"] },
+  { id: "west-c", conf: "West", name: "West Group C", teams: ["SAS", "LAL", "POR", "GSW", "SAC"] }
+];
+
+const TEAM_NAMES = {};
+EAST_TEAMS.forEach((t) => { TEAM_NAMES[t.abbreviation] = t.displayName; });
+WEST_TEAMS.forEach((t) => { TEAM_NAMES[t.abbreviation] = t.displayName; });
+TEAM_NAMES.NY = "New York Knicks";
+TEAM_NAMES.GS = "Golden State Warriors";
+TEAM_NAMES.SA = "San Antonio Spurs";
+TEAM_NAMES.NO = "New Orleans Pelicans";
+TEAM_NAMES.WSH = "Washington Wizards";
+TEAM_NAMES.UTAH = "Utah Jazz";
+
+function normalizeAbbr(a) {
+  const x = String(a || "").toUpperCase();
+  if (x === "NY") return "NYK";
+  if (x === "GS") return "GSW";
+  if (x === "SA") return "SAS";
+  if (x === "NO") return "NOP";
+  if (x === "WSH") return "WAS";
+  if (x === "UTAH") return "UTA";
+  return x;
+}
+
+function cupDateList() {
+  // 2026 group-play windows (Fridays + Thanksgiving Cup nights)
+  return [
+    "20261030", "20261106", "20261113", "20261120",
+    "20261124", "20261125", "20261127"
+  ];
+}
+
+async function fetchCupScoreboard(dateStr) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${dateStr}&limit=100`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("scoreboard " + res.status);
+  return res.json();
+}
+
+function isCupGroupGame(event) {
+  const comps = event.competitions || [];
+  const c0 = comps[0] || {};
+  const notes = c0.notes || event.notes || [];
+  const text = notes.map((n) => n.headline || n.text || "").join(" ").toLowerCase();
+  return text.includes("nba cup") || text.includes("in-season tournament") || text.includes("emirates");
+}
+
+function applyCupGame(records, event) {
+  if (!isCupGroupGame(event)) return;
+  const c0 = (event.competitions || [])[0] || {};
+  const competitors = c0.competitors || [];
+  if (competitors.length < 2) return;
+  const status = (c0.status || {}).type || {};
+  const state = String(status.state || "").toLowerCase();
+  const completed = state === "post" || status.completed === true;
+  if (!completed) return;
+
+  const sides = competitors.map((c) => ({
+    abbr: normalizeAbbr(c.team?.abbreviation),
+    score: Number(c.score),
+    homeAway: c.homeAway
+  }));
+  if (sides.some((s) => !s.abbr || Number.isNaN(s.score))) return;
+
+  const [a, b] = sides;
+  if (!records[a.abbr] || !records[b.abbr]) return; // only track group teams
+
+  records[a.abbr].pf += a.score;
+  records[a.abbr].pa += b.score;
+  records[b.abbr].pf += b.score;
+  records[b.abbr].pa += a.score;
+
+  if (a.score > b.score) {
+    records[a.abbr].w += 1;
+    records[b.abbr].l += 1;
+  } else if (b.score > a.score) {
+    records[b.abbr].w += 1;
+    records[a.abbr].l += 1;
+  }
+}
+
+function sortCupRows(rows) {
+  return rows.slice().sort((a, b) => {
+    if (b.w !== a.w) return b.w - a.w;
+    if (b.diff !== a.diff) return b.diff - a.diff;
+    if (b.pf !== a.pf) return b.pf - a.pf;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function buildCupGroupRows(group, records) {
+  const rows = group.teams.map((abbr) => {
+    const r = records[abbr] || { w: 0, l: 0, pf: 0, pa: 0 };
+    const gp = r.w + r.l;
+    const pct = gp ? (r.w / gp) : 0;
+    const diff = r.pf - r.pa;
+    return {
+      abbr,
+      name: TEAM_NAMES[abbr] || abbr,
+      w: r.w,
+      l: r.l,
+      pct,
+      pctStr: gp ? pct.toFixed(3).replace(/^0/, "") : ".000",
+      diff,
+      diffStr: (diff > 0 ? "+" : "") + String(diff),
+      pf: r.pf,
+      pa: r.pa
+    };
+  });
+  const sorted = sortCupRows(rows);
+  const leader = sorted[0];
+  sorted.forEach((row) => {
+    if (!leader || leader.w + leader.l === 0) {
+      row.gb = "-";
+      return;
+    }
+    const gb = (leader.w - row.w + (row.l - leader.l)) / 2;
+    row.gb = gb <= 0 ? "-" : gb.toFixed(1).replace(/\.0$/, "");
+  });
+  return sorted;
+}
+
+function renderCupGroups(groupsData) {
+  const root = document.getElementById("nba-cup-groups");
+  const note = document.getElementById("nba-cup-note");
+  if (!root) return;
+
+  root.innerHTML = groupsData.map((g) => {
+    const rowsHtml = g.rows.map((row, idx) => {
+      const isPhi = row.abbr === "PHI";
+      return `<tr class="${isPhi ? "sixers-highlight" : ""}">
+        <td><div class="team-info"><span class="rank">${idx + 1}</span><span>${row.name}</span></div></td>
+        <td class="num">${row.w}</td>
+        <td class="num">${row.l}</td>
+        <td class="num">${row.pctStr}</td>
+        <td class="num">${row.gb}</td>
+        <td class="num">${row.diffStr}</td>
+      </tr>`;
+    }).join("");
+
+    return `<article class="cup-group-card" data-cup-group="${g.id}">
+      <div class="cup-group-head">
+        <h3 class="cup-group-name">${g.name}</h3>
+        <button type="button" class="cup-shot-btn" data-cup-shot="${g.id}">Screenshot</button>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr>
+            <th>Team</th><th class="num">W</th><th class="num">L</th>
+            <th class="num">PCT</th><th class="num">GB</th><th class="num">DIFF</th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    </article>`;
+  }).join("");
+
+  if (note) {
+    note.textContent = "Group play only · Updated from completed NBA Cup games";
+  }
+
+  root.querySelectorAll("[data-cup-shot]").forEach((btn) => {
+    btn.addEventListener("click", () => exportCupGroup(btn.getAttribute("data-cup-shot"), btn));
+  });
+}
+
+async function exportCupGroup(groupId, btn) {
+  const card = document.querySelector(`[data-cup-group="${groupId}"]`);
+  const modal = document.getElementById("exportModal");
+  const preview = document.getElementById("exportPreview");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const closeModal = document.getElementById("closeModal");
+  const title = document.getElementById("export-title");
+  if (!card || typeof html2canvas !== "function") return;
+
+  const original = btn ? btn.textContent : "";
+  if (btn) {
+    btn.textContent = "…";
+    btn.disabled = true;
+  }
+
+  try {
+    // Clone visible card into export shell for clean pasteable graphic
+    const exportContent = document.getElementById("cup-export-content");
+    const exportLabel = document.getElementById("cup-export-label");
+    const shell = document.getElementById("cup-export-container");
+    if (!exportContent || !shell) throw new Error("export shell missing");
+
+    const groupName = card.querySelector(".cup-group-name")?.textContent || "NBA Cup Group";
+    if (exportLabel) exportLabel.textContent = "Emirates NBA Cup · " + groupName;
+
+    exportContent.innerHTML = "";
+    const clone = card.cloneNode(true);
+    const shotBtn = clone.querySelector(".cup-shot-btn");
+    if (shotBtn) shotBtn.remove();
+    clone.style.border = "1px solid #e2e8f0";
+    clone.style.borderRadius = "16px";
+    clone.style.overflow = "hidden";
+    exportContent.appendChild(clone);
+
+    const canvas = await html2canvas(shell, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    });
+
+    if (title) title.textContent = groupName + " graphic";
+    preview.src = canvas.toDataURL("image/png");
+    modal.style.display = "flex";
+
+    downloadBtn.onclick = () => {
+      const link = document.createElement("a");
+      link.download = `nba-cup-${groupId}-${new Date().toISOString().split("T")[0]}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+    copyBtn.onclick = () => {
+      canvas.toBlob((blob) => {
+        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy to Clipboard"; }, 2000);
+        });
+      });
+    };
+    if (closeModal) closeModal.onclick = () => { modal.style.display = "none"; };
+  } catch (err) {
+    console.error(err);
+    alert("Could not create group screenshot. Try again.");
+  } finally {
+    if (btn) {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  }
+}
+
+async function loadNbaCupStandings() {
+  const root = document.getElementById("nba-cup-groups");
+  const note = document.getElementById("nba-cup-note");
+  if (!root) return;
+
+  // Seed empty records for all cup teams
+  const records = {};
+  NBA_CUP_GROUPS.forEach((g) => {
+    g.teams.forEach((abbr) => {
+      records[abbr] = { w: 0, l: 0, pf: 0, pa: 0 };
+    });
+  });
+
+  try {
+    const dates = cupDateList();
+    const results = await Promise.all(
+      dates.map((d) => fetchCupScoreboard(d).catch(() => null))
+    );
+    results.forEach((data) => {
+      if (!data || !Array.isArray(data.events)) return;
+      data.events.forEach((ev) => applyCupGame(records, ev));
+    });
+
+    const groupsData = NBA_CUP_GROUPS.map((g) => ({
+      id: g.id,
+      name: g.name,
+      rows: buildCupGroupRows(g, records)
+    }));
+    renderCupGroups(groupsData);
+  } catch (err) {
+    console.error("NBA Cup standings error:", err);
+    if (note) note.textContent = "Could not load Cup standings right now.";
+    root.innerHTML = `<p style="color:var(--mid);grid-column:1/-1;">Cup standings unavailable.</p>`;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   availableSeasons = defaultSeasonList();
   populateSeasonSelect(NEXT_SEASON_YEAR);
@@ -415,10 +697,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   getNBAStandings(NEXT_SEASON_YEAR);
+  loadNbaCupStandings();
 
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {
     const viewing = Number(document.getElementById("season-select")?.value || NEXT_SEASON_YEAR);
     getNBAStandings(viewing);
+    loadNbaCupStandings();
   }, 300000);
 });

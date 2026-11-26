@@ -162,13 +162,42 @@ function rowsFromApiConference(conf) {
   });
 }
 
+function standingsMidAdHtml() {
+  return `
+    <div class="ad-slot ad-slot-standings-mid" aria-label="Advertisement">
+      <span class="ad-slot-label">Advertisement</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-8046070602394287"
+           data-ad-slot="7921181910"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>`;
+}
+
+function pushStandingsAds(root) {
+  if (!root || typeof window.adsbygoogle === "undefined") {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {}
+  }
+  const slots = root.querySelectorAll("ins.adsbygoogle:not([data-adsbygoogle-status])");
+  slots.forEach(() => {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {}
+  });
+}
+
 function renderTables(conferences) {
   const container = document.getElementById("standings");
   const socialContainer = document.getElementById("social-export-content");
   let html = "";
   let socialHtml = "";
 
-  conferences.forEach((conf) => {
+  conferences.forEach((conf, confIndex) => {
+    if (confIndex > 0) html += standingsMidAdHtml();
+
     html += `
       <div class="conference-section">
         <h2 class="conference-title">${conf.name}</h2>
@@ -246,6 +275,7 @@ function renderTables(conferences) {
 
   container.innerHTML = html;
   if (socialContainer) socialContainer.innerHTML = socialHtml;
+  pushStandingsAds(container);
   initExport();
 }
 
@@ -620,28 +650,67 @@ function prepareCupExportShell(label, multi) {
   const exportLabel = document.getElementById("cup-export-label");
   const exportTb = document.getElementById("cup-export-tb");
   const shell = document.getElementById("cup-export-container");
+  const page = shell && shell.querySelector(".cup-sg-page");
   if (!exportContent || !shell) throw new Error("export shell missing");
 
+  // Hard reset so screenshots never accumulate prior groups
+  exportContent.innerHTML = "";
+  exportContent.className = multi ? "cup-export-multi" : "";
   if (exportLabel) exportLabel.textContent = label;
   if (exportTb) exportTb.textContent = CUP_TIEBREAKER_TEXT;
-  exportContent.classList.toggle("cup-export-multi", !!multi);
-  exportContent.innerHTML = "";
+  if (page) {
+    page.style.width = multi ? "1080px" : "720px";
+  }
+  shell.style.width = multi ? "1080px" : "720px";
   return { exportContent, shell };
 }
 
 function cloneCupCard(card) {
   const clone = card.cloneNode(true);
-  const shotBtn = clone.querySelector(".cup-shot-btn");
-  if (shotBtn) shotBtn.remove();
+  // Never keep interactive controls or live-page ids that could confuse selectors
+  clone.removeAttribute("id");
+  clone.querySelectorAll(".cup-shot-btn").forEach((b) => b.remove());
   clone.style.border = "1px solid #e2e8f0";
   clone.style.borderRadius = "16px";
   clone.style.overflow = "hidden";
+  clone.style.width = "100%";
+  clone.style.maxWidth = "100%";
   return clone;
 }
 
+function liveCupCards() {
+  // Only cards on the page — never clones inside the export shell
+  const root = document.getElementById("nba-cup-groups");
+  if (!root) return [];
+  return Array.from(root.querySelectorAll(":scope > [data-cup-group]"));
+}
+
+async function captureCupShell(shell) {
+  // Wait a frame so layout is final after clearing/appending
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  return html2canvas(shell, {
+    backgroundColor: "#ffffff",
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    width: shell.offsetWidth || undefined,
+    height: shell.scrollHeight || undefined
+  });
+}
+
+function clearCupExportShell() {
+  const exportContent = document.getElementById("cup-export-content");
+  if (exportContent) {
+    exportContent.innerHTML = "";
+    exportContent.className = "";
+  }
+}
+
 async function exportCupGroup(groupId, btn) {
-  const card = document.querySelector(`[data-cup-group="${groupId}"]`);
-  if (!card || typeof html2canvas !== "function") return;
+  if (typeof html2canvas !== "function") return;
+  const card = liveCupCards().find((el) => el.getAttribute("data-cup-group") === groupId);
+  if (!card) return;
 
   const original = btn ? btn.textContent : "";
   if (btn) {
@@ -654,18 +723,13 @@ async function exportCupGroup(groupId, btn) {
     const { exportContent, shell } = prepareCupExportShell("Emirates NBA Cup · " + groupName, false);
     exportContent.appendChild(cloneCupCard(card));
 
-    const canvas = await html2canvas(shell, {
-      backgroundColor: "#ffffff",
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false
-    });
+    const canvas = await captureCupShell(shell);
     showCupExportModal(canvas, groupName + " graphic", groupId);
   } catch (err) {
     console.error(err);
     alert("Could not create group screenshot. Try again.");
   } finally {
+    clearCupExportShell();
     if (btn) {
       btn.textContent = original;
       btn.disabled = false;
@@ -676,7 +740,7 @@ async function exportCupGroup(groupId, btn) {
 async function exportCupConference(conf, btn) {
   if (typeof html2canvas !== "function") return;
   const prefix = conf === "West" ? "west-" : "east-";
-  const cards = Array.from(document.querySelectorAll("[data-cup-group]")).filter((el) =>
+  const cards = liveCupCards().filter((el) =>
     String(el.getAttribute("data-cup-group") || "").startsWith(prefix)
   );
   if (!cards.length) {
@@ -695,18 +759,13 @@ async function exportCupConference(conf, btn) {
     const { exportContent, shell } = prepareCupExportShell(label, true);
     cards.forEach((card) => exportContent.appendChild(cloneCupCard(card)));
 
-    const canvas = await html2canvas(shell, {
-      backgroundColor: "#ffffff",
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false
-    });
+    const canvas = await captureCupShell(shell);
     showCupExportModal(canvas, conf + " groups graphic", conf.toLowerCase() + "-groups");
   } catch (err) {
     console.error(err);
     alert("Could not create conference Cup graphic. Try again.");
   } finally {
+    clearCupExportShell();
     if (btn) {
       btn.textContent = original;
       btn.disabled = false;

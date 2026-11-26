@@ -252,7 +252,7 @@ function renderTables(conferences) {
           <td class="social-wl">${wl}</td>
           <td>${row.pct}</td>
           <td>${row.l10}</td>
-          <td class="${row.socialStreakClass}">${row.streakValue}</td>
+          <td><span class="${row.socialStreakClass || ""}">${row.streakValue}</span></td>
         </tr>`;
     });
 

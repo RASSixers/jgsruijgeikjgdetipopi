@@ -95,10 +95,25 @@
       padding: .8rem 1.25rem; border-bottom: 1px solid var(--border-light);
       font-size: .88rem; vertical-align: middle;
     }
-    .team-info { display: flex; align-items: center; gap: .65rem; font-weight: 600; }
-    .rank { color: var(--mid); width: 1.4rem; display: inline-block; font-variant-numeric: tabular-nums; }
+    .team-info { display: flex; align-items: center; gap: .65rem; font-weight: 600; min-width: 0; }
+    .rank { color: var(--mid); width: 1.4rem; display: inline-block; font-variant-numeric: tabular-nums; flex-shrink: 0; }
     .sixers-highlight td { background: rgba(0,107,182,.07); }
     .pct, .gb { font-variant-numeric: tabular-nums; }
+    /* W-L styled like homepage game-center scores */
+    .wl-score {
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      color: var(--ink);
+    }
+    .cup-group-card .wl-score,
+    .cup-group-card .num.wl-part {
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+    }
     .status-badge {
       display: inline-block; font-size: .72rem; font-weight: 700;
       letter-spacing: .04em; padding: 3px 8px; border-radius: 999px;
@@ -238,6 +253,13 @@
     .social-sixers-row td { background: #eef6fc !important; }
     .social-streak-w { color: #16a34a; font-weight: 700; }
     .social-streak-l { color: #dc2626; font-weight: 700; }
+    .social-wl {
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
     .sg-bottom {
       text-align: center;
       margin-top: 40px;
@@ -269,43 +291,68 @@
       align-items: center;
       justify-content: center;
       z-index: 80;
-      padding: 24px;
+      padding: 12px;
+      box-sizing: border-box;
     }
     .modal-card {
       background: #fff;
-      border-radius: 20px;
-      width: min(920px, calc(100vw - 48px));
-      max-height: calc(100vh - 48px);
-      overflow: auto;
-      padding: 28px 28px 24px;
+      border-radius: 16px;
+      width: min(960px, calc(100vw - 24px));
+      max-height: calc(100vh - 24px);
+      overflow: hidden;
+      padding: 18px 18px 16px;
       box-shadow: 0 24px 80px rgba(13,15,26,.22);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     .modal-kicker {
-      margin: 0 0 6px;
+      margin: 0 0 4px;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: .16em;
       text-transform: uppercase;
       color: #006BB6;
+      flex-shrink: 0;
     }
     #export-title {
-      margin: 0 0 18px;
-      font-size: 28px;
-      line-height: 1.1;
+      margin: 0 0 12px;
+      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+      line-height: 1.15;
       letter-spacing: -.03em;
       font-weight: 800;
       color: #0b1220;
+      flex-shrink: 0;
     }
-    .modal-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 18px; }
-    #exportPreview {
-      width: 100%;
-      height: auto;
-      max-height: min(78vh, 980px);
-      object-fit: contain;
-      border-radius: 12px;
-      background: #fff;
+    .modal-preview-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #f8fafc;
       border: 1px solid var(--border-light);
+      border-radius: 12px;
+    }
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin-top: 12px;
+      flex-shrink: 0;
+    }
+    #exportPreview {
       display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: calc(100vh - 200px);
+      object-fit: contain;
+      object-position: center top;
+      border-radius: 0;
+      background: #fff;
+      border: none;
     }
 
     /* NBA Cup groups */
@@ -386,19 +433,17 @@
       text-align: right;
       white-space: nowrap;
     }
-    /* Team | W | L | PCT | GB | DIFF — keep names + DIFF fully visible */
+    /* Team | W-L | PCT | GB | DIFF */
     .cup-group-card th:nth-child(1),
-    .cup-group-card td:nth-child(1) { width: 44%; }
+    .cup-group-card td:nth-child(1) { width: 46%; }
     .cup-group-card th:nth-child(2),
-    .cup-group-card td:nth-child(2),
+    .cup-group-card td:nth-child(2) { width: 14%; }
     .cup-group-card th:nth-child(3),
-    .cup-group-card td:nth-child(3) { width: 8%; }
+    .cup-group-card td:nth-child(3) { width: 13%; }
     .cup-group-card th:nth-child(4),
     .cup-group-card td:nth-child(4) { width: 12%; }
     .cup-group-card th:nth-child(5),
-    .cup-group-card td:nth-child(5) { width: 10%; }
-    .cup-group-card th:nth-child(6),
-    .cup-group-card td:nth-child(6) { width: 18%; min-width: 3.25rem; }
+    .cup-group-card td:nth-child(5) { width: 15%; min-width: 3.25rem; }
     .cup-group-card td {
       height: auto;
       min-height: 2.4rem;
@@ -538,11 +583,11 @@
       .wrap { padding: 1rem 1.1rem 3rem; }
       .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
       /* Hide home/away on narrow screens for conference tables only — not Cup DIFF */
-      #standings th:nth-child(6), #standings td:nth-child(6),
-      #standings th:nth-child(7), #standings td:nth-child(7) { display: none; }
-      .modal-card { width: 100%; padding: 18px; }
-      #export-title { font-size: 22px; }
-      #exportPreview { max-height: 62vh; }
+      #standings th:nth-child(5), #standings td:nth-child(5),
+      #standings th:nth-child(6), #standings td:nth-child(6) { display: none; }
+      .modal-card { width: 100%; padding: 14px; max-height: calc(100vh - 16px); }
+      #export-title { font-size: 1.15rem; margin-bottom: 10px; }
+      #exportPreview { max-height: calc(100vh - 190px); }
       .nba-cup-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -695,7 +740,9 @@
     <div class="modal-card">
       <p class="modal-kicker">Share</p>
       <h2 id="export-title">Graphic ready</h2>
-      <img id="exportPreview" alt="Standings export preview"/>
+      <div class="modal-preview-wrap">
+        <img id="exportPreview" alt="Standings export preview"/>
+      </div>
       <div class="modal-actions">
         <button type="button" class="export-btn" id="downloadBtn">Download PNG</button>
         <button type="button" class="export-btn" id="copyBtn">Copy to Clipboard</button>

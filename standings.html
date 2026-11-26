@@ -23,6 +23,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="navbar-styles.css"/>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287"
+     crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -358,24 +360,54 @@
       font-weight: 600; cursor: pointer; white-space: nowrap;
     }
     .cup-shot-btn:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
-    .cup-group-card table { width: 100%; border-collapse: collapse; }
+    .cup-group-card table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
     .cup-group-card th {
-      text-align: left; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--mid); padding: .55rem .75rem; border-bottom: 1px solid var(--border-light);
+      text-align: left; font-size: .58rem; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--mid); padding: .55rem .45rem; border-bottom: 1px solid var(--border-light);
     }
     .cup-group-card td {
-      padding: .55rem .75rem; border-bottom: 1px solid var(--border-light);
+      padding: .55rem .45rem; border-bottom: 1px solid var(--border-light);
       font-size: .82rem; vertical-align: middle;
     }
     .cup-group-card tr:last-child td { border-bottom: 0; }
     .cup-group-card .sixers-highlight td { background: rgba(0,107,182,.07); }
-    .cup-group-card .num { font-variant-numeric: tabular-nums; text-align: right; }
+    .cup-group-card .num {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }
+    /* Team | W | L | PCT | GB | DIFF — keep DIFF visible */
+    .cup-group-card th:nth-child(1),
+    .cup-group-card td:nth-child(1) { width: 40%; }
+    .cup-group-card th:nth-child(2),
+    .cup-group-card td:nth-child(2),
+    .cup-group-card th:nth-child(3),
+    .cup-group-card td:nth-child(3) { width: 9%; }
+    .cup-group-card th:nth-child(4),
+    .cup-group-card td:nth-child(4) { width: 13%; }
+    .cup-group-card th:nth-child(5),
+    .cup-group-card td:nth-child(5) { width: 12%; }
+    .cup-group-card th:nth-child(6),
+    .cup-group-card td:nth-child(6) { width: 17%; min-width: 3.25rem; }
+    .cup-group-card .team-info { min-width: 0; }
+    .cup-group-card .team-info span:last-child {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
     #cup-export-container {
-      position: fixed; top: 0; left: 0; width: 1080px;
+      position: fixed; top: 0; left: -9999px; width: 1080px;
       background: #fff; color: #0d0f1a; z-index: -1; pointer-events: none;
       font-family: 'Lexend', system-ui, sans-serif;
     }
     .cup-sg-page { width: 1080px; padding: 56px 48px 40px; box-sizing: border-box; background: #fff; }
+    #cup-export-content:not(.cup-export-multi) {
+      display: block;
+      max-width: 640px;
+      margin: 0 auto;
+    }
     #cup-export-content.cup-export-multi {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -392,14 +424,81 @@
     }
     #cup-export-tb strong { color: #0f172a; }
 
+    /* Standings ads */
+    .ad-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 1.15rem auto;
+      padding: 1.15rem 1rem;
+      max-width: 100%;
+      box-sizing: border-box;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .ad-slot-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 0.45rem;
+      font-weight: 600;
+    }
+    .ad-slot ins {
+      display: block;
+      width: 100%;
+      max-width: 728px;
+      min-height: 90px;
+    }
+    .ad-slot-standings-top { margin-top: 0.35rem; margin-bottom: 1.25rem; }
+    .ad-slot-standings-mid { margin: 1.35rem auto; }
+    .ad-slot-standings-before-cup { margin: 1.75rem auto 1.25rem; }
+    .ad-slot-standings-bottom {
+      margin: 1.5rem auto 0.5rem;
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+    .standings-rail {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    .standings-rail-side {
+      display: none;
+    }
+    .standings-rail-side .ad-slot {
+      margin: 0;
+      padding: 0.75rem 0.35rem;
+      border: none;
+      background: transparent;
+      position: sticky;
+      top: 80px;
+    }
+    .standings-rail-side ins {
+      max-width: 160px;
+      min-height: 600px;
+      width: 160px;
+    }
+    @media (min-width: 1280px) {
+      .standings-rail {
+        grid-template-columns: 160px minmax(0, 1fr) 160px;
+        gap: 1rem;
+      }
+      .standings-rail-side { display: block; }
+    }
+
     @media (max-width: 1000px) {
       .nba-cup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 720px) {
       .wrap { padding: 1rem 1.1rem 3rem; }
       .hero-inner { padding: 2.8rem 1.25rem 2.2rem; }
-      th:nth-child(6), td:nth-child(6),
-      th:nth-child(7), td:nth-child(7) { display: none; }
+      /* Hide home/away on narrow screens for conference tables only — not Cup DIFF */
+      #standings th:nth-child(6), #standings td:nth-child(6),
+      #standings th:nth-child(7), #standings td:nth-child(7) { display: none; }
       .modal-card { width: 100%; padding: 18px; }
       #export-title { font-size: 22px; }
       #exportPreview { max-height: 62vh; }
@@ -426,41 +525,109 @@
       <button type="button" class="export-btn" data-export-mode="east">Export East</button>
       <button type="button" class="export-btn" data-export-mode="west">Export West</button>
     </div>
-    <main id="standings">
-      <div class="loader">
-        <div class="loader-spinner"></div>
-        <p>Loading teams...</p>
-      </div>
-    </main>
 
-    <!-- Emirates NBA Cup group standings -->
-    <section id="nba-cup" class="nba-cup-section" aria-label="Emirates NBA Cup standings">
-      <div class="nba-cup-heading">
-        <div>
-          <p class="nba-cup-eyebrow">Emirates NBA Cup</p>
-          <h2 class="nba-cup-title">Group Standings</h2>
+    <!-- ad-slot-standings-top -->
+    <div class="ad-slot ad-slot-standings-top" aria-label="Advertisement">
+      <span class="ad-slot-label">Advertisement</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-8046070602394287"
+           data-ad-slot="1547345257"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div class="standings-rail">
+      <!-- Desktop left vertical -->
+      <aside class="standings-rail-side" aria-label="Advertisement">
+        <div class="ad-slot ad-slot-standings-leftvert">
+          <span class="ad-slot-label">Advertisement</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-8046070602394287"
+               data-ad-slot="4852291751"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
-        <p class="nba-cup-note" id="nba-cup-note">Loading Cup results…</p>
-      </div>
-      <div class="nba-cup-actions">
-        <button type="button" class="export-btn" id="cup-shot-east">Screenshot East groups</button>
-        <button type="button" class="export-btn" id="cup-shot-west">Screenshot West groups</button>
-      </div>
-      <div class="nba-cup-tiebreakers" id="nba-cup-tiebreakers">
-        <strong>Group tiebreakers:</strong>
-        (1) Head-to-head record among tied teams ·
-        (2) Point differential in group play ·
-        (3) Points scored in group play ·
-        (4) Regular-season record vs common group opponents (if needed).
-        Group winners advance; the best second-place team in each conference is the wild card.
-      </div>
-      <div id="nba-cup-groups" class="nba-cup-grid">
-        <div class="loader" style="grid-column:1/-1">
-          <div class="loader-spinner"></div>
-          <p>Loading NBA Cup groups…</p>
+      </aside>
+
+      <div class="standings-rail-main">
+        <main id="standings">
+          <div class="loader">
+            <div class="loader-spinner"></div>
+            <p>Loading teams...</p>
+          </div>
+        </main>
+
+        <!-- ad-slot-standings-before-cup -->
+        <div class="ad-slot ad-slot-standings-before-cup" aria-label="Advertisement">
+          <span class="ad-slot-label">Advertisement</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-8046070602394287"
+               data-ad-slot="6117271962"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+
+        <!-- Emirates NBA Cup group standings -->
+        <section id="nba-cup" class="nba-cup-section" aria-label="Emirates NBA Cup standings">
+          <div class="nba-cup-heading">
+            <div>
+              <p class="nba-cup-eyebrow">Emirates NBA Cup</p>
+              <h2 class="nba-cup-title">Group Standings</h2>
+            </div>
+            <p class="nba-cup-note" id="nba-cup-note">Loading Cup results…</p>
+          </div>
+          <div class="nba-cup-actions">
+            <button type="button" class="export-btn" id="cup-shot-east">Screenshot East groups</button>
+            <button type="button" class="export-btn" id="cup-shot-west">Screenshot West groups</button>
+          </div>
+          <div class="nba-cup-tiebreakers" id="nba-cup-tiebreakers">
+            <strong>Group tiebreakers:</strong>
+            (1) Head-to-head record among tied teams ·
+            (2) Point differential in group play ·
+            (3) Points scored in group play ·
+            (4) Regular-season record vs common group opponents (if needed).
+            Group winners advance; the best second-place team in each conference is the wild card.
+          </div>
+          <div id="nba-cup-groups" class="nba-cup-grid">
+            <div class="loader" style="grid-column:1/-1">
+              <div class="loader-spinner"></div>
+              <p>Loading NBA Cup groups…</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ad-slot-standings-bottom -->
+        <div class="ad-slot ad-slot-standings-bottom" aria-label="Advertisement">
+          <span class="ad-slot-label">Advertisement</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-format="autorelaxed"
+               data-ad-client="ca-pub-8046070602394287"
+               data-ad-slot="1059939291"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
       </div>
-    </section>
+
+      <!-- Desktop right vertical -->
+      <aside class="standings-rail-side" aria-label="Advertisement">
+        <div class="ad-slot ad-slot-standings-rightvert">
+          <span class="ad-slot-label">Advertisement</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-8046070602394287"
+               data-ad-slot="1571395989"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+      </aside>
+    </div>
   </div>
 
   <!-- Hidden cup export canvas target -->

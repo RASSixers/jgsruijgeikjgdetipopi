@@ -179,11 +179,11 @@
       border-radius: 16px;
       overflow: hidden;
     }
-    .social-table col.col-team { width: 46%; }
-    .social-table col.col-wl { width: 16%; }
-    .social-table col.col-pct { width: 13%; }
-    .social-table col.col-l10 { width: 13%; }
-    .social-table col.col-strk { width: 12%; }
+    .social-table col.col-team { width: 52%; }
+    .social-table col.col-wl { width: 14%; }
+    .social-table col.col-pct { width: 12%; }
+    .social-table col.col-l10 { width: 11%; }
+    .social-table col.col-strk { width: 11%; }
     .social-table thead th {
       background: #f8fafc;
       color: #94a3b8;
@@ -198,15 +198,16 @@
       vertical-align: middle;
     }
     .social-table td {
-      padding: 0 10px;
+      padding: 8px 10px;
       border: 0;
       color: #0d0f1a;
-      height: 44px;
-      line-height: 1;
+      min-height: 48px;
+      height: auto;
+      line-height: 1.25;
       vertical-align: middle;
       font-size: 14px;
       font-variant-numeric: tabular-nums;
-      white-space: nowrap;
+      white-space: normal;
     }
     .social-table tbody tr:nth-child(odd) td { background: #f8fafc; }
     .social-table tbody tr:nth-child(even) td { background: #ffffff; }
@@ -215,19 +216,24 @@
       align-items: center;
       gap: 10px;
       font-weight: 700;
-      line-height: 1;
+      line-height: 1.2;
+      min-width: 0;
     }
     .social-team-rank {
-      width: 16px;
+      flex: 0 0 18px;
+      width: 18px;
       color: #94a3b8;
       font-size: 14px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      line-height: 1;
+      line-height: 1.2;
     }
     .social-team-name {
       font-size: 14px;
-      line-height: 1;
+      line-height: 1.25;
+      white-space: normal;
+      overflow: visible;
+      word-break: break-word;
     }
     .social-sixers-row td { background: #eef6fc !important; }
     .social-streak-w { color: #16a34a; font-weight: 700; }
@@ -380,23 +386,60 @@
       text-align: right;
       white-space: nowrap;
     }
-    /* Team | W | L | PCT | GB | DIFF — keep DIFF visible */
+    /* Team | W | L | PCT | GB | DIFF — keep names + DIFF fully visible */
     .cup-group-card th:nth-child(1),
-    .cup-group-card td:nth-child(1) { width: 40%; }
+    .cup-group-card td:nth-child(1) { width: 44%; }
     .cup-group-card th:nth-child(2),
     .cup-group-card td:nth-child(2),
     .cup-group-card th:nth-child(3),
-    .cup-group-card td:nth-child(3) { width: 9%; }
+    .cup-group-card td:nth-child(3) { width: 8%; }
     .cup-group-card th:nth-child(4),
-    .cup-group-card td:nth-child(4) { width: 13%; }
+    .cup-group-card td:nth-child(4) { width: 12%; }
     .cup-group-card th:nth-child(5),
-    .cup-group-card td:nth-child(5) { width: 12%; }
+    .cup-group-card td:nth-child(5) { width: 10%; }
     .cup-group-card th:nth-child(6),
-    .cup-group-card td:nth-child(6) { width: 17%; min-width: 3.25rem; }
-    .cup-group-card .team-info { min-width: 0; }
-    .cup-group-card .team-info span:last-child {
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    .cup-group-card td:nth-child(6) { width: 18%; min-width: 3.25rem; }
+    .cup-group-card td {
+      height: auto;
+      min-height: 2.4rem;
+      line-height: 1.25;
+      white-space: normal;
+      vertical-align: middle;
     }
+    .cup-group-card .team-info {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      line-height: 1.25;
+    }
+    .cup-group-card .team-info .rank { flex-shrink: 0; }
+    .cup-group-card .team-info span:last-child {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.25;
+      font-size: 0.8rem;
+    }
+    /* Export clones: never clip team names */
+    #cup-export-content .cup-group-card {
+      overflow: visible !important;
+    }
+    #cup-export-content .cup-group-card .team-info span:last-child {
+      overflow: visible !important;
+      white-space: normal !important;
+      text-overflow: clip !important;
+      font-size: 12px !important;
+      line-height: 1.3 !important;
+    }
+    #cup-export-content .cup-group-card td {
+      padding: 10px 8px !important;
+      height: auto !important;
+      white-space: normal !important;
+    }
+    #cup-export-content .cup-group-card th:nth-child(1),
+    #cup-export-content .cup-group-card td:nth-child(1) { width: 48% !important; }
     #cup-export-container {
       position: fixed; top: 0; left: -9999px; width: 1080px;
       background: #fff; color: #0d0f1a; z-index: -1; pointer-events: none;
@@ -452,8 +495,6 @@
       max-width: 728px;
       min-height: 90px;
     }
-    .ad-slot-standings-top { margin-top: 0.35rem; margin-bottom: 1.25rem; }
-    .ad-slot-standings-mid { margin: 1.35rem auto; }
     .ad-slot-standings-before-cup { margin: 1.75rem auto 1.25rem; }
     .ad-slot-standings-bottom {
       margin: 1.5rem auto 0.5rem;
@@ -524,18 +565,6 @@
       <button type="button" class="export-btn" data-export-mode="all">Export both conferences</button>
       <button type="button" class="export-btn" data-export-mode="east">Export East</button>
       <button type="button" class="export-btn" data-export-mode="west">Export West</button>
-    </div>
-
-    <!-- ad-slot-standings-top -->
-    <div class="ad-slot ad-slot-standings-top" aria-label="Advertisement">
-      <span class="ad-slot-label">Advertisement</span>
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-8046070602394287"
-           data-ad-slot="1547345257"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
     <div class="standings-rail">

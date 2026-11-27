@@ -1,877 +1,870 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>NBA Standings | Philadelphia 76ers | SixersHoops</title>
-  <meta name="description" content="NBA standings with Eastern and Western Conference tables and the Philadelphia 76ers highlighted."/>
-  <link rel="canonical" href="https://sixershoops.com/standings"/>
-  <meta name="robots" content="index,follow"/>
-  <meta name="theme-color" content="#006BB6"/>
-  <meta property="og:type" content="website"/>
-  <meta property="og:site_name" content="SixersHoops"/>
-  <meta property="og:title" content="NBA Standings"/>
-  <meta property="og:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
-  <meta property="og:url" content="https://sixershoops.com/standings"/>
-  <meta property="og:image" content="https://sixershoops.com/sixershoopslogonew.png"/>
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="NBA Standings"/>
-  <meta name="twitter:description" content="NBA standings with the Philadelphia 76ers highlighted."/>
-  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css"/>
-  <link rel="stylesheet" href="navbar-styles.css"/>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8046070602394287"
-     crossorigin="anonymous"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1V9Q0MNEM"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-T1V9Q0MNEM');
-  </script>
-  <style>
-    :root {
-      --navy:#001a57; --sixers-blue:#006BB6; --sixers-red:#ED174C;
-      --cream:#ffffff; --ink:#0d0f1a; --mid:#64748b; --mid-2:#94a3b8;
-      --border-light:#e4e8f0; --card-bg:#ffffff; --surface-soft:#f6f8fc;
-      --green:#16a34a; --red:#dc2626;
-    }
-    *,*::before,*::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body,html {
-      margin: 0; background: var(--cream); color: var(--ink);
-      font-family: 'Lexend', system-ui, sans-serif; line-height: 1.5;
-    }
-    body { padding-top: 64px; }
-    .sr-only {
-      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-    }
-    .hero-inner { max-width: 860px; margin: 0 auto; padding: 5rem 2rem 3.2rem; text-align: center; }
-    .hero-title-top, .hero-title-bottom {
-      font-size: clamp(2.4rem,6vw,4.5rem); font-weight: 700;
-      line-height: .95; letter-spacing: -.03em; margin: 0;
-    }
-    .hero-title-bottom { color: var(--sixers-blue); }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
-    .season-picker-bar {
-      display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
-      margin: 0 0 1.25rem;
-    }
-    .season-picker-bar label {
-      font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
-      font-weight: 600; color: var(--mid);
-    }
-    #season-select {
-      font: inherit; font-weight: 600; font-size: .9rem;
-      padding: .45rem .8rem; border: 1px solid var(--border-light);
-      border-radius: 8px; background: #fff; color: var(--ink); cursor: pointer;
-    }
-    .export-bar { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0 0 1.25rem; }
-    .export-btn {
-      border: 1px solid var(--border-light); background: #fff; color: var(--ink);
-      border-radius: 999px; padding: .35rem .75rem; font: inherit; font-size: .78rem;
-      font-weight: 600; cursor: pointer;
-    }
-    .export-btn:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
-    .conference-section {
-      background: var(--card-bg); border: 1px solid var(--border-light);
-      border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
-    }
-    .conference-title {
-      margin: 0; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-light);
-      background: var(--surface-soft); font-size: 1.05rem; font-weight: 700;
-    }
-    .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      text-align: left; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
-      color: var(--mid); padding: .85rem 1.25rem; border-bottom: 1px solid var(--border-light);
-    }
-    td {
-      padding: .8rem 1.25rem; border-bottom: 1px solid var(--border-light);
-      font-size: .88rem; vertical-align: middle;
-    }
-    .team-info { display: flex; align-items: center; gap: .65rem; font-weight: 600; min-width: 0; }
-    .rank { color: var(--mid); width: 1.4rem; display: inline-block; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-    .sixers-highlight td { background: rgba(0,107,182,.07); }
-    .pct, .gb { font-variant-numeric: tabular-nums; }
-    /* W-L: plain ink score style (never inherits streak green/red) */
-    .wl-score {
-      font-weight: 800;
-      font-size: 1.02rem;
-      letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      color: #0d0f1a !important;
-      background: transparent !important;
-      border: none !important;
-    }
-    .cup-group-card .wl-score {
-      font-weight: 800;
-      font-size: 0.92rem;
-      letter-spacing: -0.02em;
-      color: #0d0f1a !important;
-    }
-    /* Streak badges: solid rectangles like homepage injury statuses */
-    .status-badge {
-      display: inline-block;
-      font-size: 0.65rem;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      padding: 0.22rem 0.45rem;
-      border-radius: 4px;
-      border: 1px solid transparent;
-      line-height: 1.15;
-      white-space: nowrap;
-    }
-    .streak-w {
-      background: #166534 !important;
-      color: #ffffff !important;
-      border-color: #14532d !important;
-    }
-    .streak-l {
-      background: #c1121f !important;
-      color: #ffffff !important;
-      border-color: #9b0e18 !important;
-    }
-    .loader { text-align: center; padding: 4rem 1rem; color: var(--mid); }
-    .loader-spinner {
-      border: 3px solid var(--border-light); border-top: 3px solid var(--sixers-blue);
-      border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite; margin: 0 auto 1rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+const STANDINGS_URL = "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings";
+const SEASON_COUNT = 10;
+const NEXT_SEASON_YEAR = 2027;
+const NEXT_SEASON_LABEL = "2026-27";
 
-    #social-export-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 1080px;
-      background: #ffffff;
-      color: #0d0f1a;
-      font-family: 'Lexend', system-ui, sans-serif;
-      z-index: -1;
-      pointer-events: none;
-    }
-    .sg-page {
-      width: 1080px;
-      padding: 72px 64px 48px;
-      background: #ffffff;
-      box-sizing: border-box;
-    }
-    .sg-top {
-      text-align: center;
-      margin: 0 0 48px;
-    }
-    .sg-wordmark {
-      margin: 0 0 32px;
-      font-size: 48px;
-      line-height: 1;
-      font-weight: 800;
-      letter-spacing: -.04em;
-      color: #0b1220;
-    }
-    .sg-subtitle {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: #006BB6;
-    }
-    #social-export-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-    }
-    #social-export-container.single-conf #social-export-content {
-      grid-template-columns: 1fr;
-      max-width: 820px;
-      margin: 0 auto;
-    }
-    #social-export-container.single-conf .social-conf-title {
-      display: none;
-    }
-    .social-conference { min-width: 0; }
-    .social-conf-title {
-      margin: 0 0 12px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: #64748b;
-      text-align: center;
-    }
-    .social-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #f8fafc;
-      border-radius: 16px;
-      overflow: hidden;
-    }
-    .social-table col.col-team { width: 52%; }
-    .social-table col.col-wl { width: 14%; }
-    .social-table col.col-pct { width: 12%; }
-    .social-table col.col-l10 { width: 11%; }
-    .social-table col.col-strk { width: 11%; }
-    .social-table thead th {
-      background: #f8fafc;
-      color: #94a3b8;
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      font-weight: 700;
-      padding: 12px 10px;
-      border: 0;
-      line-height: 1;
-      height: 40px;
-      vertical-align: middle;
-    }
-    .social-table td {
-      padding: 8px 10px;
-      border: 0;
-      color: #0d0f1a;
-      min-height: 48px;
-      height: auto;
-      line-height: 1.25;
-      vertical-align: middle;
-      font-size: 14px;
-      font-variant-numeric: tabular-nums;
-      white-space: normal;
-    }
-    .social-table tbody tr:nth-child(odd) td { background: #f8fafc; }
-    .social-table tbody tr:nth-child(even) td { background: #ffffff; }
-    .social-team {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      line-height: 1.2;
-      min-width: 0;
-    }
-    .social-team-rank {
-      flex: 0 0 18px;
-      width: 18px;
-      color: #94a3b8;
-      font-size: 14px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      line-height: 1.2;
-    }
-    .social-team-name {
-      font-size: 14px;
-      line-height: 1.25;
-      white-space: normal;
-      overflow: visible;
-      word-break: break-word;
-    }
-    .social-sixers-row td { background: #eef6fc !important; }
-    .social-streak-w,
-    .social-streak-l {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      padding: 4px 8px;
-      border-radius: 4px;
-      line-height: 1.15;
-      border: 1px solid transparent;
-      white-space: nowrap;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .social-streak-w {
-      background-color: #166534 !important;
-      color: #ffffff !important;
-      border-color: #14532d !important;
-    }
-    .social-streak-l {
-      background-color: #c1121f !important;
-      color: #ffffff !important;
-      border-color: #9b0e18 !important;
-    }
-    /* W-L on graphics: always dark ink, never streak colors */
-    .social-wl {
-      font-weight: 800 !important;
-      font-size: 16px !important;
-      letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      color: #0d0f1a !important;
-      background: transparent !important;
-      border: none !important;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .sg-bottom {
-      text-align: center;
-      margin-top: 40px;
-    }
-    .sg-bottom-rule {
-      width: 40px;
-      height: 2px;
-      background: #dbe3ee;
-      margin: 0 auto 16px;
-    }
-    .sg-bottom-mark {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -.03em;
-    }
-    .sg-bottom-url {
-      margin: 8px 0 0;
-      color: #64748b;
-      font-size: 14px;
-      font-weight: 500;
-    }
+const EAST_TEAMS = [
+  { abbreviation: "ATL", displayName: "Atlanta Hawks" },
+  { abbreviation: "BOS", displayName: "Boston Celtics" },
+  { abbreviation: "BKN", displayName: "Brooklyn Nets" },
+  { abbreviation: "CHA", displayName: "Charlotte Hornets" },
+  { abbreviation: "CHI", displayName: "Chicago Bulls" },
+  { abbreviation: "CLE", displayName: "Cleveland Cavaliers" },
+  { abbreviation: "DET", displayName: "Detroit Pistons" },
+  { abbreviation: "IND", displayName: "Indiana Pacers" },
+  { abbreviation: "MIA", displayName: "Miami Heat" },
+  { abbreviation: "MIL", displayName: "Milwaukee Bucks" },
+  { abbreviation: "NYK", displayName: "New York Knicks" },
+  { abbreviation: "ORL", displayName: "Orlando Magic" },
+  { abbreviation: "PHI", displayName: "Philadelphia 76ers" },
+  { abbreviation: "TOR", displayName: "Toronto Raptors" },
+  { abbreviation: "WAS", displayName: "Washington Wizards" }
+];
 
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(13,15,26,.62);
-      align-items: center;
-      justify-content: center;
-      z-index: 80;
-      padding: 12px;
-      box-sizing: border-box;
-    }
-    .modal-card {
-      background: #fff;
-      border-radius: 16px;
-      width: min(960px, calc(100vw - 24px));
-      max-height: calc(100vh - 24px);
-      overflow: hidden;
-      padding: 18px 18px 16px;
-      box-shadow: 0 24px 80px rgba(13,15,26,.22);
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
-    }
-    .modal-kicker {
-      margin: 0 0 4px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: #006BB6;
-      flex-shrink: 0;
-    }
-    #export-title {
-      margin: 0 0 12px;
-      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
-      line-height: 1.15;
-      letter-spacing: -.03em;
-      font-weight: 800;
-      color: #0b1220;
-      flex-shrink: 0;
-    }
-    .modal-preview-wrap {
-      flex: 1 1 auto;
-      min-height: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      background: #f8fafc;
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-    }
-    .modal-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .55rem;
-      margin-top: 12px;
-      flex-shrink: 0;
-    }
-    #exportPreview {
-      display: block;
-      width: auto;
-      height: auto;
-      max-width: 100%;
-      max-height: calc(100vh - 200px);
-      object-fit: contain;
-      object-position: center top;
-      border-radius: 0;
-      background: #fff;
-      border: none;
-    }
+const WEST_TEAMS = [
+  { abbreviation: "DAL", displayName: "Dallas Mavericks" },
+  { abbreviation: "DEN", displayName: "Denver Nuggets" },
+  { abbreviation: "GSW", displayName: "Golden State Warriors" },
+  { abbreviation: "HOU", displayName: "Houston Rockets" },
+  { abbreviation: "LAC", displayName: "LA Clippers" },
+  { abbreviation: "LAL", displayName: "Los Angeles Lakers" },
+  { abbreviation: "MEM", displayName: "Memphis Grizzlies" },
+  { abbreviation: "MIN", displayName: "Minnesota Timberwolves" },
+  { abbreviation: "NOP", displayName: "New Orleans Pelicans" },
+  { abbreviation: "OKC", displayName: "Oklahoma City Thunder" },
+  { abbreviation: "PHX", displayName: "Phoenix Suns" },
+  { abbreviation: "POR", displayName: "Portland Trail Blazers" },
+  { abbreviation: "SAC", displayName: "Sacramento Kings" },
+  { abbreviation: "SAS", displayName: "San Antonio Spurs" },
+  { abbreviation: "UTA", displayName: "Utah Jazz" }
+];
 
-    /* NBA Cup groups */
-    .nba-cup-section { margin-top: 2.25rem; }
-    .nba-cup-heading {
-      display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
-      gap: .75rem 1.25rem; margin-bottom: 1rem;
-    }
-    .nba-cup-eyebrow {
-      margin: 0 0 .25rem; font-size: .68rem; font-weight: 700; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--sixers-red);
-    }
-    .nba-cup-title {
-      margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em;
-    }
-    .nba-cup-note { margin: 0; font-size: .8rem; color: var(--mid); max-width: 28rem; }
-    .nba-cup-actions {
-      display: flex; flex-wrap: wrap; gap: .45rem; margin: 0 0 1rem;
-    }
-    .nba-cup-tiebreakers {
-      margin: 0 0 1.15rem;
-      padding: .85rem 1rem;
-      background: var(--surface-soft);
-      border: 1px solid var(--border-light);
-      border-radius: 10px;
-      font-size: .8rem;
-      color: var(--mid);
-      line-height: 1.45;
-    }
-    .nba-cup-tiebreakers strong {
-      color: var(--ink);
-      font-weight: 700;
-    }
-    .nba-cup-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1rem;
-    }
-    .cup-group-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .cup-group-head {
-      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-      padding: .85rem 1rem; background: var(--surface-soft);
-      border-bottom: 1px solid var(--border-light);
-    }
-    .cup-group-name {
-      margin: 0; font-size: .92rem; font-weight: 800; letter-spacing: -.01em;
-    }
-    .cup-shot-btn {
-      border: 1px solid var(--border-light); background: #fff; color: var(--ink);
-      border-radius: 999px; padding: .3rem .65rem; font: inherit; font-size: .72rem;
-      font-weight: 600; cursor: pointer; white-space: nowrap;
-    }
-    .cup-shot-btn:hover { border-color: var(--sixers-blue); color: var(--sixers-blue); }
-    .cup-group-card table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
-    .cup-group-card th {
-      text-align: left; font-size: .58rem; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--mid); padding: .55rem .45rem; border-bottom: 1px solid var(--border-light);
-    }
-    .cup-group-card td {
-      padding: .55rem .45rem; border-bottom: 1px solid var(--border-light);
-      font-size: .82rem; vertical-align: middle;
-    }
-    .cup-group-card tr:last-child td { border-bottom: 0; }
-    .cup-group-card .sixers-highlight td { background: rgba(0,107,182,.07); }
-    .cup-group-card .num {
-      font-variant-numeric: tabular-nums;
-      text-align: right;
-      white-space: nowrap;
-    }
-    /* Team | W-L | PCT | GB | DIFF */
-    .cup-group-card th:nth-child(1),
-    .cup-group-card td:nth-child(1) { width: 46%; }
-    .cup-group-card th:nth-child(2),
-    .cup-group-card td:nth-child(2) { width: 14%; }
-    .cup-group-card th:nth-child(3),
-    .cup-group-card td:nth-child(3) { width: 13%; }
-    .cup-group-card th:nth-child(4),
-    .cup-group-card td:nth-child(4) { width: 12%; }
-    .cup-group-card th:nth-child(5),
-    .cup-group-card td:nth-child(5) { width: 15%; min-width: 3.25rem; }
-    .cup-group-card td {
-      height: auto;
-      min-height: 2.4rem;
-      line-height: 1.25;
-      white-space: normal;
-      vertical-align: middle;
-    }
-    .cup-group-card .team-info {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      line-height: 1.25;
-    }
-    .cup-group-card .team-info .rank { flex-shrink: 0; }
-    .cup-group-card .team-info span:last-child {
-      overflow: visible;
-      text-overflow: clip;
-      white-space: normal;
-      word-break: break-word;
-      line-height: 1.25;
-      font-size: 0.8rem;
-    }
-    /* Export clones: never clip team names */
-    #cup-export-content .cup-group-card {
-      overflow: visible !important;
-    }
-    #cup-export-content .cup-group-card .team-info span:last-child {
-      overflow: visible !important;
-      white-space: normal !important;
-      text-overflow: clip !important;
-      font-size: 12px !important;
-      line-height: 1.3 !important;
-    }
-    #cup-export-content .cup-group-card td {
-      padding: 10px 8px !important;
-      height: auto !important;
-      white-space: normal !important;
-    }
-    #cup-export-content .cup-group-card th:nth-child(1),
-    #cup-export-content .cup-group-card td:nth-child(1) { width: 48% !important; }
-    #cup-export-container {
-      position: fixed; top: 0; left: -9999px; width: 1080px;
-      background: #fff; color: #0d0f1a; z-index: -1; pointer-events: none;
-      font-family: 'Lexend', system-ui, sans-serif;
-    }
-    .cup-sg-page { width: 1080px; padding: 56px 48px 40px; box-sizing: border-box; background: #fff; }
-    #cup-export-content:not(.cup-export-multi) {
-      display: block;
-      max-width: 640px;
-      margin: 0 auto;
-    }
-    #cup-export-content.cup-export-multi {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 16px;
-    }
-    #cup-export-content .cup-group-card { margin: 0; }
-    #cup-export-tb {
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid #e2e8f0;
-      font-size: 13px;
-      line-height: 1.45;
-      color: #64748b;
-    }
-    #cup-export-tb strong { color: #0f172a; }
+let currentSeasonYear = NEXT_SEASON_YEAR;
+let availableSeasons = [];
+let refreshTimer = null;
 
-    /* Standings ads */
-    .ad-slot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin: 1.15rem auto;
-      padding: 1.15rem 1rem;
-      max-width: 100%;
-      box-sizing: border-box;
-      background: var(--card-bg);
-      border-top: 1px solid var(--border-light);
-      border-bottom: 1px solid var(--border-light);
-    }
-    .ad-slot-label {
-      font-size: 0.62rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--mid);
-      margin-bottom: 0.45rem;
-      font-weight: 600;
-    }
-    .ad-slot ins {
-      display: block;
-      width: 100%;
-      max-width: 728px;
-      min-height: 90px;
-    }
-    .ad-slot-standings-before-cup { margin: 1.75rem auto 1.25rem; }
-    .ad-slot-standings-bottom {
-      margin: 1.5rem auto 0.5rem;
-      padding-top: 1.5rem;
-      padding-bottom: 1.5rem;
-    }
-    .standings-rail {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      align-items: start;
-    }
-    .standings-rail-side {
-      display: none;
-    }
-    .standings-rail-side .ad-slot {
-      margin: 0;
-      padding: 0.75rem 0.35rem;
-      border: none;
-      background: transparent;
-      position: sticky;
-      top: 80px;
-    }
-    .standings-rail-side ins {
-      max-width: 160px;
-      min-height: 600px;
-      width: 160px;
-    }
-    @media (min-width: 1280px) {
-      .standings-rail {
-        grid-template-columns: 160px minmax(0, 1fr) 160px;
-        gap: 1rem;
-      }
-      .standings-rail-side { display: block; }
-    }
+function seasonLabel(year) {
+  return `${year - 1}-${String(year).slice(-2)}`;
+}
 
-    @media (max-width: 1000px) {
-      .nba-cup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+function defaultSeasonList() {
+  const list = [];
+  for (let i = 0; i < SEASON_COUNT; i++) {
+    const year = NEXT_SEASON_YEAR - i;
+    list.push({ year, label: year === NEXT_SEASON_YEAR ? NEXT_SEASON_LABEL : seasonLabel(year) });
+  }
+  return list;
+}
+
+function shuffle(list) {
+  const arr = [...list];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildSeasonOptions(seasonsFromApi) {
+  const byYear = new Map();
+  defaultSeasonList().forEach((s) => byYear.set(s.year, s.label));
+  (seasonsFromApi || []).forEach((s) => {
+    if (!s || !s.year) return;
+    byYear.set(s.year, s.displayName || seasonLabel(s.year));
+  });
+  byYear.set(NEXT_SEASON_YEAR, NEXT_SEASON_LABEL);
+
+  return Array.from(byYear.keys())
+    .sort((a, b) => b - a)
+    .slice(0, SEASON_COUNT)
+    .map((year) => ({ year, label: byYear.get(year) || seasonLabel(year) }));
+}
+
+function populateSeasonSelect(selectedYear) {
+  const select = document.getElementById("season-select");
+  if (!select) return;
+  if (!availableSeasons.length) availableSeasons = defaultSeasonList();
+  select.innerHTML = availableSeasons
+    .map((s) => `<option value="${s.year}"${s.year === selectedYear ? " selected" : ""}>${s.label}</option>`)
+    .join("");
+}
+
+function setGraphicSeason(label) {
+  const el = document.getElementById("social-season-label");
+  if (el) el.textContent = label;
+}
+
+function getStat(entry, name) {
+  const list = (entry && entry.stats) || [];
+  const hit = list.find((s) => s && s.name === name);
+  const v = hit && hit.value;
+  return v == null ? 0 : Number(v) || 0;
+}
+
+function fetchWithTimeout(url, options, ms) {
+  const opts = options || {};
+  const timeout = ms || 12000;
+  const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timer = setTimeout(() => {
+    try { if (ctrl) ctrl.abort(); } catch (e) {}
+  }, timeout);
+  return fetch(url, ctrl ? Object.assign({}, opts, { signal: ctrl.signal }) : opts)
+    .finally(() => clearTimeout(timer));
+}
+
+function isPreseasonBlank(seasonYear, data) {
+  const conferences = data?.children || [];
+  if (!conferences.length) return true;
+  return !conferences.some((conf) =>
+    (conf.standings?.entries || []).some((t) => {
+      const wins = Number(t.stats?.find((s) => s.name === "wins")?.value) || 0;
+      const losses = Number(t.stats?.find((s) => s.name === "losses")?.value) || 0;
+      return wins + losses > 0;
+    })
+  );
+}
+
+function emptyRow(team) {
+  return {
+    team,
+    wins: "0",
+    losses: "0",
+    pct: ".000",
+    gb: "-",
+    home: "0-0",
+    away: "0-0",
+    l10: "-",
+    streakValue: "-",
+    streakClass: "",
+    socialStreakClass: ""
+  };
+}
+
+function rowsFromApiConference(conf) {
+  const entries = [...((conf && conf.standings && conf.standings.entries) || [])];
+  entries.sort((a, b) => getStat(b, "winPercent") - getStat(a, "winPercent"));
+  return entries.map((t) => {
+    const stats = {};
+    ((t && t.stats) || []).forEach((s) => {
+      if (!s) return;
+      if (s.name) stats[s.name] = s;
+      if (s.type) stats[s.type] = s;
+    });
+    const streakValue = (stats.streak && stats.streak.displayValue) || "-";
+    let streakClass = "";
+    let socialStreakClass = "";
+    if (String(streakValue).startsWith("W")) {
+      streakClass = "streak-w";
+      socialStreakClass = "social-streak-w";
     }
-    @media (max-width: 720px) {
-      body { overflow-x: hidden; }
-      .wrap {
-        padding: 1rem 0.85rem 3rem;
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-      .hero-inner { padding: 2.4rem 1rem 1.8rem; }
-      .season-picker-bar,
-      .export-bar {
-        gap: 0.5rem;
-        margin-bottom: 0.85rem;
-      }
-      .export-btn {
-        font-size: 0.72rem;
-        padding: 0.35rem 0.65rem;
-      }
-      .conference-section {
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        overflow: hidden;
-      }
-      .conference-title {
-        font-size: 0.95rem;
-        padding: 0.75rem 0.85rem;
-      }
-      .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        max-width: 100%;
-      }
-      #standings table {
-        width: 100%;
-        min-width: 0;
-        table-layout: fixed;
-      }
-      #standings th,
-      #standings td {
-        padding: 0.55rem 0.45rem;
-        font-size: 0.78rem;
-      }
-      #standings th {
-        font-size: 0.55rem;
-        letter-spacing: 0.06em;
-      }
-      .wl-score { font-size: 0.88rem; }
-      .status-badge {
-        font-size: 0.58rem;
-        padding: 0.18rem 0.35rem;
-      }
-      .team-info { gap: 0.35rem; }
-      .rank { width: 1.1rem; font-size: 0.72rem; }
-      /* Mobile columns: Team, W-L, PCT, GB, L10, STRK (hide HOME/AWAY) */
-      #standings th:nth-child(5), #standings td:nth-child(5),
-      #standings th:nth-child(6), #standings td:nth-child(6) { display: none; }
-      /* Cup groups: one column, no horizontal jank */
-      .nba-cup-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-      }
-      .cup-group-card { border-radius: 10px; }
-      .cup-group-head { padding: 0.7rem 0.75rem; }
-      .cup-group-name { font-size: 0.85rem; }
-      .cup-shot-btn { font-size: 0.68rem; padding: 0.28rem 0.55rem; }
-      .cup-group-card th,
-      .cup-group-card td {
-        padding: 0.45rem 0.4rem;
-        font-size: 0.76rem;
-      }
-      .cup-group-card .wl-score { font-size: 0.82rem; }
-      .nba-cup-actions { gap: 0.4rem; }
-      .nba-cup-tiebreakers {
-        font-size: 0.74rem;
-        padding: 0.7rem 0.8rem;
-      }
-      .ad-slot {
-        margin: 0.85rem auto;
-        padding: 0.85rem 0.5rem;
-      }
-      .modal-card { width: 100%; padding: 14px; max-height: calc(100vh - 16px); }
-      #export-title { font-size: 1.15rem; margin-bottom: 10px; }
-      #exportPreview { max-height: calc(100vh - 190px); }
+    if (String(streakValue).startsWith("L")) {
+      streakClass = "streak-l";
+      socialStreakClass = "social-streak-l";
     }
-  </style>
-</head>
-<body>
-  <script src="nav.js"></script>
-  <header class="hero">
-    <div class="hero-inner">
-      <h1 class="sr-only">NBA Standings</h1>
-      <p class="hero-title-top" aria-hidden="true">NBA</p>
-      <p class="hero-title-bottom" aria-hidden="true">STANDINGS</p>
-    </div>
-  </header>
-  <div class="wrap">
-    <div class="season-picker-bar">
-      <label for="season-select">Season</label>
-      <select id="season-select" aria-label="Select NBA season standings"></select>
-    </div>
-    <div class="export-bar">
-      <button type="button" class="export-btn" data-export-mode="all">Export both conferences</button>
-      <button type="button" class="export-btn" data-export-mode="east">Export East</button>
-      <button type="button" class="export-btn" data-export-mode="west">Export West</button>
-    </div>
+    const team = (t && t.team) || { abbreviation: "?", displayName: "Team" };
+    return {
+      team: team,
+      wins: (stats.wins && stats.wins.displayValue) || "0",
+      losses: (stats.losses && stats.losses.displayValue) || "0",
+      pct: (stats.winPercent && stats.winPercent.displayValue) || ".000",
+      gb: (stats.gamesBehind && stats.gamesBehind.displayValue) || "-",
+      home: (stats.Home && stats.Home.displayValue) || (stats.home && (stats.home.summary || stats.home.displayValue)) || "-",
+      away: (stats.Road && stats.Road.displayValue) || (stats.road && (stats.road.summary || stats.road.displayValue)) || "-",
+      l10: (stats.lasttengames && stats.lasttengames.summary) || (stats.lastTenGames && stats.lastTenGames.summary) || (stats.l10 && stats.l10.summary) || "-",
+      streakValue: streakValue,
+      streakClass: streakClass,
+      socialStreakClass: socialStreakClass
+    };
+  });
+}
 
-    <div class="standings-rail">
-      <!-- Desktop left vertical -->
-      <aside class="standings-rail-side" aria-label="Advertisement">
-        <div class="ad-slot ad-slot-standings-leftvert">
-          <span class="ad-slot-label">Advertisement</span>
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-8046070602394287"
-               data-ad-slot="4852291751"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-      </aside>
+function renderTables(conferences) {
+  const container = document.getElementById("standings");
+  const socialContainer = document.getElementById("social-export-content");
+  let html = "";
+  let socialHtml = "";
 
-      <div class="standings-rail-main">
-        <main id="standings">
-          <div class="loader">
-            <div class="loader-spinner"></div>
-            <p>Loading teams...</p>
-          </div>
-        </main>
+  conferences.forEach((conf) => {
+    html += `
+      <div class="conference-section">
+        <h2 class="conference-title">${conf.name}</h2>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Team</th><th>W-L</th><th>PCT</th><th>GB</th>
+                <th>HOME</th><th>AWAY</th><th>L10</th><th>STRK</th>
+              </tr>
+            </thead>
+            <tbody>`;
 
-        <!-- ad-slot-standings-before-cup -->
-        <div class="ad-slot ad-slot-standings-before-cup" aria-label="Advertisement">
-          <span class="ad-slot-label">Advertisement</span>
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-8046070602394287"
-               data-ad-slot="6117271962"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
+    const confKey = conf.name.toLowerCase().includes("east") ? "east" : "west";
+    socialHtml += `
+      <div class="social-conference" data-conf="${confKey}">
+        <h2 class="social-conf-title">${conf.name}</h2>
+        <table class="social-table">
+          <colgroup>
+            <col class="col-team"/>
+            <col class="col-wl"/>
+            <col class="col-pct"/>
+            <col class="col-l10"/>
+            <col class="col-strk"/>
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>W-L</th>
+              <th>PCT</th>
+              <th>L10</th>
+              <th>STRK</th>
+            </tr>
+          </thead>
+          <tbody>`;
 
-        <!-- Emirates NBA Cup group standings -->
-        <section id="nba-cup" class="nba-cup-section" aria-label="Emirates NBA Cup standings">
-          <div class="nba-cup-heading">
-            <div>
-              <p class="nba-cup-eyebrow">Emirates NBA Cup</p>
-              <h2 class="nba-cup-title">Group Standings</h2>
+    conf.rows.forEach((row, idx) => {
+      const isSixers = row.team.abbreviation === "PHI";
+      const wl = String(row.wins) + "–" + String(row.losses);
+      html += `
+        <tr class="${isSixers ? "sixers-highlight" : ""}">
+          <td>
+            <div class="team-info">
+              <span class="rank">${idx + 1}</span>
+              <span>${row.team.displayName}</span>
             </div>
-            <p class="nba-cup-note" id="nba-cup-note">Loading Cup results…</p>
-          </div>
-          <div class="nba-cup-actions">
-            <button type="button" class="export-btn" id="cup-shot-east">Screenshot East groups</button>
-            <button type="button" class="export-btn" id="cup-shot-west">Screenshot West groups</button>
-          </div>
-          <div class="nba-cup-tiebreakers" id="nba-cup-tiebreakers">
-            <strong>Group tiebreakers:</strong>
-            (1) Head-to-head record among tied teams ·
-            (2) Point differential in group play ·
-            (3) Points scored in group play ·
-            (4) Regular-season record vs common group opponents (if needed).
-            Group winners advance; the best second-place team in each conference is the wild card.
-          </div>
-          <div id="nba-cup-groups" class="nba-cup-grid">
-            <div class="loader" style="grid-column:1/-1">
-              <div class="loader-spinner"></div>
-              <p>Loading NBA Cup groups…</p>
+          </td>
+          <td><span class="wl-score">${wl}</span></td>
+          <td class="pct">${row.pct}</td>
+          <td class="gb">${row.gb}</td>
+          <td>${row.home}</td>
+          <td>${row.away}</td>
+          <td>${row.l10}</td>
+          <td><span class="status-badge ${row.streakClass}">${row.streakValue}</span></td>
+        </tr>`;
+
+      socialHtml += `
+        <tr class="${isSixers ? "social-sixers-row" : ""}">
+          <td>
+            <div class="social-team">
+              <span class="social-team-rank">${idx + 1}</span>
+              <span class="social-team-name">${row.team.displayName}</span>
             </div>
-          </div>
-        </section>
+          </td>
+          <td class="social-wl">${wl}</td>
+          <td>${row.pct}</td>
+          <td>${row.l10}</td>
+          <td><span class="${row.socialStreakClass || ""}">${row.streakValue}</span></td>
+        </tr>`;
+    });
 
-        <!-- ad-slot-standings-bottom -->
-        <div class="ad-slot ad-slot-standings-bottom" aria-label="Advertisement">
-          <span class="ad-slot-label">Advertisement</span>
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-format="autorelaxed"
-               data-ad-client="ca-pub-8046070602394287"
-               data-ad-slot="1059939291"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-      </div>
+    html += `</tbody></table></div></div>`;
+    socialHtml += `</tbody></table></div>`;
+  });
 
-      <!-- Desktop right vertical -->
-      <aside class="standings-rail-side" aria-label="Advertisement">
-        <div class="ad-slot ad-slot-standings-rightvert">
-          <span class="ad-slot-label">Advertisement</span>
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-8046070602394287"
-               data-ad-slot="1571395989"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-      </aside>
-    </div>
-  </div>
+  container.innerHTML = html;
+  if (socialContainer) socialContainer.innerHTML = socialHtml;
+  initExport();
+}
 
-  <!-- Hidden cup export canvas target -->
-  <div id="cup-export-container" aria-hidden="true">
-    <div class="sg-page cup-sg-page">
-      <div class="sg-top">
-        <p class="sg-wordmark">SixersHoops</p>
-        <p class="sg-subtitle"><span id="cup-export-label">Emirates NBA Cup</span></p>
-      </div>
-      <div id="cup-export-content"></div>
-      <p id="cup-export-tb"></p>
-      <div class="sg-bottom">
-        <div class="sg-bottom-rule"></div>
-        <p class="sg-bottom-mark">SixersHoops</p>
-        <p class="sg-bottom-url">sixershoops.com/standings</p>
-      </div>
-    </div>
-  </div>
+function renderPreseasonBoard(label) {
+  setGraphicSeason(label);
+  renderTables([
+    { name: "Eastern Conference", rows: shuffle(EAST_TEAMS).map(emptyRow) },
+    { name: "Western Conference", rows: shuffle(WEST_TEAMS).map(emptyRow) }
+  ]);
+}
 
-  <div id="social-export-container">
-    <div class="sg-page">
-      <div class="sg-top">
-        <p class="sg-wordmark">SixersHoops</p>
-        <p class="sg-subtitle"><span id="social-season-label">2026-27</span> · <span id="social-top-meta">NBA STANDINGS</span></p>
-      </div>
-      <div id="social-export-content"></div>
-      <div class="sg-bottom">
-        <div class="sg-bottom-rule"></div>
-        <p class="sg-bottom-mark">SixersHoops</p>
-        <p class="sg-bottom-url">sixershoops.com/standings</p>
-      </div>
-    </div>
-  </div>
+async function hydrateSeasonDropdown(selectedYear) {
+  availableSeasons = defaultSeasonList();
+  populateSeasonSelect(selectedYear || NEXT_SEASON_YEAR);
+  try {
+    const res = await fetchWithTimeout(STANDINGS_URL, { cache: "no-store" }, 10000);
+    if (!res.ok) return;
+    const data = await res.json();
+    availableSeasons = buildSeasonOptions(data.seasons || []);
+    populateSeasonSelect(selectedYear || NEXT_SEASON_YEAR);
+  } catch (err) {
+    console.error("Season list error:", err);
+  }
+}
 
-  <div class="modal" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="export-title">
-    <div class="modal-card">
-      <p class="modal-kicker">Share</p>
-      <h2 id="export-title">Graphic ready</h2>
-      <div class="modal-preview-wrap">
-        <img id="exportPreview" alt="Standings export preview"/>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="export-btn" id="downloadBtn">Download PNG</button>
-        <button type="button" class="export-btn" id="copyBtn">Copy to Clipboard</button>
-        <button type="button" class="export-btn" id="closeModal">Close</button>
-      </div>
-    </div>
-  </div>
+async function getNBAStandings(seasonYear) {
+  const container = document.getElementById("standings");
+  if (!container) return;
 
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="standings.js"></script>
-</body>
-</html>
+  const year = seasonYear || currentSeasonYear || NEXT_SEASON_YEAR;
+  currentSeasonYear = year;
+  if (!availableSeasons.length) availableSeasons = defaultSeasonList();
+  const label = (availableSeasons.find((s) => s.year === year) || {}).label || seasonLabel(year);
+  setGraphicSeason(label);
+  populateSeasonSelect(year);
+
+  container.innerHTML = `
+    <div class="loader">
+      <div class="loader-spinner"></div>
+      <p>Loading standings for ${label}…</p>
+    </div>`;
+
+  try {
+    let res = await fetchWithTimeout(`${STANDINGS_URL}?season=${year}`, { cache: "no-store" }, 12000);
+    if (!res.ok) {
+      // Fallback: current season endpoint without season param
+      res = await fetchWithTimeout(STANDINGS_URL, { cache: "no-store" }, 12000);
+    }
+    if (!res.ok) throw new Error("HTTP error! status: " + res.status);
+    const data = await res.json();
+
+    availableSeasons = buildSeasonOptions(data.seasons || availableSeasons);
+    populateSeasonSelect(year);
+
+    const resolvedLabel = (availableSeasons.find((s) => s.year === year) || {}).label
+      || (data.season && data.season.displayName)
+      || label;
+    setGraphicSeason(resolvedLabel);
+
+    const conferences = (data.children || []).map((conf) => ({
+      name: conf.name || "Conference",
+      rows: rowsFromApiConference(conf)
+    })).filter((c) => c.rows && c.rows.length);
+
+    if (!conferences.length || isPreseasonBlank(year, data)) {
+      // If API returned teams with records, still try to render them
+      const anyRows = (data.children || []).some((c) => ((c.standings && c.standings.entries) || []).length);
+      if (anyRows) {
+        renderTables((data.children || []).map((conf) => ({
+          name: conf.name || "Conference",
+          rows: rowsFromApiConference(conf)
+        })));
+        return;
+      }
+      renderPreseasonBoard(resolvedLabel);
+      return;
+    }
+
+    renderTables(conferences);
+  } catch (err) {
+    console.error("Standings Load Error:", err);
+    container.innerHTML = `
+      <div style="text-align:center;padding:3rem;">
+        <p style="color:#dc2626;font-weight:700;margin-bottom:1rem;">Error loading standings.</p>
+        <p style="font-size:0.9rem;color:var(--mid,#64748b);">${(err && err.message) ? err.message : "Network error"}</p>
+        <button type="button" id="standings-retry" class="export-btn" style="margin-top:1.5rem;">Try Again</button>
+      </div>`;
+    const retry = document.getElementById("standings-retry");
+    if (retry) retry.addEventListener("click", function () { getNBAStandings(year); });
+  }
+}
+
+function initExport() {
+  const exportBtns = document.querySelectorAll("[data-export-mode]");
+  const modal = document.getElementById("exportModal");
+  const preview = document.getElementById("exportPreview");
+  const closeModal = document.getElementById("closeModal");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  if (!exportBtns.length || !modal || typeof html2canvas !== "function") return;
+
+  exportBtns.forEach((btn) => {
+    btn.onclick = async () => {
+      const mode = btn.dataset.exportMode;
+      const originalText = btn.textContent;
+      btn.textContent = "Generating...";
+      btn.disabled = true;
+      try {
+        const grid = document.getElementById("social-export-container");
+        const content = document.getElementById("social-export-content");
+        const topMeta = document.getElementById("social-top-meta");
+
+        grid.classList.remove("single-conf");
+        const eastDiv = content.querySelector('[data-conf="east"]');
+        const westDiv = content.querySelector('[data-conf="west"]');
+
+        if (mode === "east") {
+          grid.classList.add("single-conf");
+          if (eastDiv) eastDiv.style.display = "block";
+          if (westDiv) westDiv.style.display = "none";
+          if (topMeta) topMeta.textContent = "EASTERN CONFERENCE STANDINGS";
+        } else if (mode === "west") {
+          grid.classList.add("single-conf");
+          if (eastDiv) eastDiv.style.display = "none";
+          if (westDiv) westDiv.style.display = "block";
+          if (topMeta) topMeta.textContent = "WESTERN CONFERENCE STANDINGS";
+        } else {
+          if (eastDiv) eastDiv.style.display = "block";
+          if (westDiv) westDiv.style.display = "block";
+          if (topMeta) topMeta.textContent = "NBA STANDINGS";
+        }
+
+        const canvas = await html2canvas(grid, {
+          backgroundColor: "#ffffff",
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          onclone: function (doc) {
+            // Force W-L ink + streak badge colors so capture is never washed out
+            doc.querySelectorAll(".social-wl, .wl-score").forEach(function (el) {
+              el.style.setProperty("color", "#0d0f1a", "important");
+              el.style.setProperty("background", "transparent", "important");
+            });
+            doc.querySelectorAll(".social-streak-w, .streak-w").forEach(function (el) {
+              el.style.setProperty("background-color", "#166534", "important");
+              el.style.setProperty("color", "#ffffff", "important");
+            });
+            doc.querySelectorAll(".social-streak-l, .streak-l").forEach(function (el) {
+              el.style.setProperty("background-color", "#c1121f", "important");
+              el.style.setProperty("color", "#ffffff", "important");
+            });
+          }
+        });
+
+        preview.src = canvas.toDataURL("image/png");
+        modal.style.display = "flex";
+
+        downloadBtn.onclick = () => {
+          const link = document.createElement("a");
+          link.download = `nba-${mode}-standings-${new Date().toISOString().split("T")[0]}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        };
+
+        copyBtn.onclick = () => {
+          canvas.toBlob((blob) => {
+            navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => {
+              copyBtn.textContent = "Copied!";
+              setTimeout(() => { copyBtn.textContent = "Copy to Clipboard"; }, 2000);
+            });
+          });
+        };
+      } catch (err) {
+        console.error("Export Error:", err);
+        alert("Failed to generate image. Please try again.");
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    };
+  });
+
+  closeModal.onclick = () => { modal.style.display = "none"; };
+  window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
+}
+
+/* —— Emirates NBA Cup (2026-27 group stage) —— */
+const NBA_CUP_GROUPS = [
+  { id: "east-a", conf: "East", name: "East Group A", teams: ["DET", "TOR", "ORL", "MIL", "BKN"] },
+  { id: "east-b", conf: "East", name: "East Group B", teams: ["NYK", "CLE", "PHI", "MIA", "IND"] },
+  { id: "east-c", conf: "East", name: "East Group C", teams: ["BOS", "ATL", "WAS", "CHI", "CHA"] },
+  { id: "west-a", conf: "West", name: "West Group A", teams: ["DAL", "DEN", "PHX", "HOU", "UTA"] },
+  { id: "west-b", conf: "West", name: "West Group B", teams: ["MIN", "OKC", "MEM", "LAC", "NOP"] },
+  { id: "west-c", conf: "West", name: "West Group C", teams: ["SAS", "LAL", "POR", "GSW", "SAC"] }
+];
+
+const TEAM_NAMES = {};
+EAST_TEAMS.forEach((t) => { TEAM_NAMES[t.abbreviation] = t.displayName; });
+WEST_TEAMS.forEach((t) => { TEAM_NAMES[t.abbreviation] = t.displayName; });
+TEAM_NAMES.NY = "New York Knicks";
+TEAM_NAMES.GS = "Golden State Warriors";
+TEAM_NAMES.SA = "San Antonio Spurs";
+TEAM_NAMES.NO = "New Orleans Pelicans";
+TEAM_NAMES.WSH = "Washington Wizards";
+TEAM_NAMES.UTAH = "Utah Jazz";
+
+function normalizeAbbr(a) {
+  const x = String(a || "").toUpperCase();
+  if (x === "NY") return "NYK";
+  if (x === "GS") return "GSW";
+  if (x === "SA") return "SAS";
+  if (x === "NO") return "NOP";
+  if (x === "WSH") return "WAS";
+  if (x === "UTAH") return "UTA";
+  return x;
+}
+
+function cupDateList() {
+  // 2026 group-play windows (Fridays + Thanksgiving Cup nights)
+  return [
+    "20261030", "20261106", "20261113", "20261120",
+    "20261124", "20261125", "20261127"
+  ];
+}
+
+async function fetchCupScoreboard(dateStr) {
+  const url = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=" + dateStr + "&limit=100";
+  const res = await fetchWithTimeout(url, { cache: "no-store" }, 10000);
+  if (!res.ok) throw new Error("scoreboard " + res.status);
+  return res.json();
+}
+
+function isCupGroupGame(event) {
+  const comps = event.competitions || [];
+  const c0 = comps[0] || {};
+  const notes = c0.notes || event.notes || [];
+  const text = notes.map((n) => n.headline || n.text || "").join(" ").toLowerCase();
+  return text.includes("nba cup") || text.includes("in-season tournament") || text.includes("emirates");
+}
+
+function applyCupGame(records, event) {
+  if (!isCupGroupGame(event)) return;
+  const c0 = (event.competitions || [])[0] || {};
+  const competitors = c0.competitors || [];
+  if (competitors.length < 2) return;
+  const status = (c0.status || {}).type || {};
+  const state = String(status.state || "").toLowerCase();
+  const completed = state === "post" || status.completed === true;
+  if (!completed) return;
+
+  const sides = competitors.map((c) => ({
+    abbr: normalizeAbbr(c.team?.abbreviation),
+    score: Number(c.score),
+    homeAway: c.homeAway
+  }));
+  if (sides.some((s) => !s.abbr || Number.isNaN(s.score))) return;
+
+  const [a, b] = sides;
+  if (!records[a.abbr] || !records[b.abbr]) return; // only track group teams
+
+  records[a.abbr].pf += a.score;
+  records[a.abbr].pa += b.score;
+  records[b.abbr].pf += b.score;
+  records[b.abbr].pa += a.score;
+
+  if (a.score > b.score) {
+    records[a.abbr].w += 1;
+    records[b.abbr].l += 1;
+  } else if (b.score > a.score) {
+    records[b.abbr].w += 1;
+    records[a.abbr].l += 1;
+  }
+}
+
+function sortCupRows(rows) {
+  return rows.slice().sort((a, b) => {
+    if (b.w !== a.w) return b.w - a.w;
+    if (b.diff !== a.diff) return b.diff - a.diff;
+    if (b.pf !== a.pf) return b.pf - a.pf;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function buildCupGroupRows(group, records) {
+  const rows = group.teams.map((abbr) => {
+    const r = records[abbr] || { w: 0, l: 0, pf: 0, pa: 0 };
+    const gp = r.w + r.l;
+    const pct = gp ? (r.w / gp) : 0;
+    const diff = r.pf - r.pa;
+    return {
+      abbr,
+      name: TEAM_NAMES[abbr] || abbr,
+      w: r.w,
+      l: r.l,
+      pct,
+      pctStr: gp ? pct.toFixed(3).replace(/^0/, "") : ".000",
+      diff,
+      diffStr: (diff > 0 ? "+" : "") + String(diff),
+      pf: r.pf,
+      pa: r.pa
+    };
+  });
+  const sorted = sortCupRows(rows);
+  const leader = sorted[0];
+  sorted.forEach((row) => {
+    if (!leader || leader.w + leader.l === 0) {
+      row.gb = "-";
+      return;
+    }
+    const gb = (leader.w - row.w + (row.l - leader.l)) / 2;
+    row.gb = gb <= 0 ? "-" : gb.toFixed(1).replace(/\.0$/, "");
+  });
+  return sorted;
+}
+
+function renderCupGroups(groupsData) {
+  const root = document.getElementById("nba-cup-groups");
+  const note = document.getElementById("nba-cup-note");
+  if (!root) return;
+
+  root.innerHTML = groupsData.map((g) => {
+    const rowsHtml = g.rows.map((row, idx) => {
+      const isPhi = row.abbr === "PHI";
+      return `<tr class="${isPhi ? "sixers-highlight" : ""}">
+        <td><div class="team-info"><span class="rank">${idx + 1}</span><span>${row.name}</span></div></td>
+        <td class="num"><span class="wl-score">${row.w}–${row.l}</span></td>
+        <td class="num">${row.pctStr}</td>
+        <td class="num">${row.gb}</td>
+        <td class="num">${row.diffStr}</td>
+      </tr>`;
+    }).join("");
+
+    return `<article class="cup-group-card" data-cup-group="${g.id}">
+      <div class="cup-group-head">
+        <h3 class="cup-group-name">${g.name}</h3>
+        <button type="button" class="cup-shot-btn" data-cup-shot="${g.id}">Screenshot</button>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr>
+            <th>Team</th><th class="num">W-L</th>
+            <th class="num">PCT</th><th class="num">GB</th><th class="num">DIFF</th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    </article>`;
+  }).join("");
+
+  if (note) {
+    note.textContent = "Group play only · Updated from completed NBA Cup games";
+  }
+
+  root.querySelectorAll("[data-cup-shot]").forEach((btn) => {
+    btn.addEventListener("click", () => exportCupGroup(btn.getAttribute("data-cup-shot"), btn));
+  });
+}
+
+const CUP_TIEBREAKER_TEXT =
+  "Tiebreakers: (1) Head-to-head among tied teams · (2) Point differential in group play · (3) Points scored in group play · (4) Regular-season record vs common group opponents if needed. Group winners advance; best second-place team in each conference is the wild card.";
+
+function showCupExportModal(canvas, titleText, fileSlug) {
+  const modal = document.getElementById("exportModal");
+  const preview = document.getElementById("exportPreview");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const closeModal = document.getElementById("closeModal");
+  const title = document.getElementById("export-title");
+  if (!modal || !preview) return;
+
+  if (title) title.textContent = titleText;
+  preview.src = canvas.toDataURL("image/png");
+  modal.style.display = "flex";
+
+  if (downloadBtn) {
+    downloadBtn.onclick = () => {
+      const link = document.createElement("a");
+      link.download = `nba-cup-${fileSlug}-${new Date().toISOString().split("T")[0]}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+  }
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      canvas.toBlob((blob) => {
+        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy to Clipboard"; }, 2000);
+        });
+      });
+    };
+  }
+  if (closeModal) closeModal.onclick = () => { modal.style.display = "none"; };
+}
+
+function prepareCupExportShell(label, multi) {
+  const exportContent = document.getElementById("cup-export-content");
+  const exportLabel = document.getElementById("cup-export-label");
+  const exportTb = document.getElementById("cup-export-tb");
+  const shell = document.getElementById("cup-export-container");
+  const page = shell && shell.querySelector(".cup-sg-page");
+  if (!exportContent || !shell) throw new Error("export shell missing");
+
+  // Hard reset so screenshots never accumulate prior groups
+  exportContent.innerHTML = "";
+  exportContent.className = multi ? "cup-export-multi" : "";
+  if (exportLabel) exportLabel.textContent = label;
+  if (exportTb) exportTb.textContent = CUP_TIEBREAKER_TEXT;
+  // Wider canvas so full team names fit in 3-group graphics
+  if (page) {
+    page.style.width = multi ? "1200px" : "760px";
+  }
+  shell.style.width = multi ? "1200px" : "760px";
+  return { exportContent, shell };
+}
+
+function cloneCupCard(card) {
+  const clone = card.cloneNode(true);
+  // Never keep interactive controls or live-page ids that could confuse selectors
+  clone.removeAttribute("id");
+  clone.querySelectorAll(".cup-shot-btn").forEach((b) => b.remove());
+  clone.style.border = "1px solid #e2e8f0";
+  clone.style.borderRadius = "16px";
+  clone.style.overflow = "visible";
+  clone.style.width = "100%";
+  clone.style.maxWidth = "100%";
+  // Force full team names in the graphic (no ellipsis / clipping)
+  clone.querySelectorAll(".team-info span:last-child").forEach((el) => {
+    el.style.overflow = "visible";
+    el.style.whiteSpace = "normal";
+    el.style.textOverflow = "clip";
+    el.style.fontSize = "12px";
+    el.style.lineHeight = "1.3";
+  });
+  clone.querySelectorAll("td").forEach((td) => {
+    td.style.height = "auto";
+    td.style.whiteSpace = "normal";
+    td.style.paddingTop = "10px";
+    td.style.paddingBottom = "10px";
+  });
+  return clone;
+}
+
+function liveCupCards() {
+  // Only cards on the page — never clones inside the export shell
+  const root = document.getElementById("nba-cup-groups");
+  if (!root) return [];
+  return Array.from(root.querySelectorAll(":scope > [data-cup-group]"));
+}
+
+async function captureCupShell(shell) {
+  // Wait a frame so layout is final after clearing/appending
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  return html2canvas(shell, {
+    backgroundColor: "#ffffff",
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    width: shell.offsetWidth || undefined,
+    height: shell.scrollHeight || undefined
+  });
+}
+
+function clearCupExportShell() {
+  const exportContent = document.getElementById("cup-export-content");
+  if (exportContent) {
+    exportContent.innerHTML = "";
+    exportContent.className = "";
+  }
+}
+
+async function exportCupGroup(groupId, btn) {
+  if (typeof html2canvas !== "function") return;
+  const card = liveCupCards().find((el) => el.getAttribute("data-cup-group") === groupId);
+  if (!card) return;
+
+  const original = btn ? btn.textContent : "";
+  if (btn) {
+    btn.textContent = "…";
+    btn.disabled = true;
+  }
+
+  try {
+    const groupName = card.querySelector(".cup-group-name")?.textContent || "NBA Cup Group";
+    const { exportContent, shell } = prepareCupExportShell("Emirates NBA Cup · " + groupName, false);
+    exportContent.appendChild(cloneCupCard(card));
+
+    const canvas = await captureCupShell(shell);
+    showCupExportModal(canvas, groupName + " graphic", groupId);
+  } catch (err) {
+    console.error(err);
+    alert("Could not create group screenshot. Try again.");
+  } finally {
+    clearCupExportShell();
+    if (btn) {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  }
+}
+
+async function exportCupConference(conf, btn) {
+  if (typeof html2canvas !== "function") return;
+  const prefix = conf === "West" ? "west-" : "east-";
+  const cards = liveCupCards().filter((el) =>
+    String(el.getAttribute("data-cup-group") || "").startsWith(prefix)
+  );
+  if (!cards.length) {
+    alert("Cup groups are still loading.");
+    return;
+  }
+
+  const original = btn ? btn.textContent : "";
+  if (btn) {
+    btn.textContent = "Generating…";
+    btn.disabled = true;
+  }
+
+  try {
+    const label = "Emirates NBA Cup · " + conf + " Groups";
+    const { exportContent, shell } = prepareCupExportShell(label, true);
+    cards.forEach((card) => exportContent.appendChild(cloneCupCard(card)));
+
+    const canvas = await captureCupShell(shell);
+    showCupExportModal(canvas, conf + " groups graphic", conf.toLowerCase() + "-groups");
+  } catch (err) {
+    console.error(err);
+    alert("Could not create conference Cup graphic. Try again.");
+  } finally {
+    clearCupExportShell();
+    if (btn) {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  }
+}
+
+function bindCupConferenceShots() {
+  const eastBtn = document.getElementById("cup-shot-east");
+  const westBtn = document.getElementById("cup-shot-west");
+  if (eastBtn) eastBtn.onclick = () => exportCupConference("East", eastBtn);
+  if (westBtn) westBtn.onclick = () => exportCupConference("West", westBtn);
+}
+
+async function loadNbaCupStandings() {
+  const root = document.getElementById("nba-cup-groups");
+  const note = document.getElementById("nba-cup-note");
+  if (!root) return;
+
+  // Seed empty records for all cup teams
+  const records = {};
+  NBA_CUP_GROUPS.forEach((g) => {
+    g.teams.forEach((abbr) => {
+      records[abbr] = { w: 0, l: 0, pf: 0, pa: 0 };
+    });
+  });
+
+  try {
+    const dates = cupDateList();
+    const results = await Promise.all(
+      dates.map((d) => fetchCupScoreboard(d).catch(() => null))
+    );
+    results.forEach((data) => {
+      if (!data || !Array.isArray(data.events)) return;
+      data.events.forEach((ev) => applyCupGame(records, ev));
+    });
+
+    const groupsData = NBA_CUP_GROUPS.map((g) => ({
+      id: g.id,
+      name: g.name,
+      rows: buildCupGroupRows(g, records)
+    }));
+    renderCupGroups(groupsData);
+  } catch (err) {
+    console.error("NBA Cup standings error:", err);
+    if (note) note.textContent = "Could not load Cup standings right now.";
+    root.innerHTML = `<p style="color:var(--mid);grid-column:1/-1;">Cup standings unavailable.</p>`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  availableSeasons = defaultSeasonList();
+  populateSeasonSelect(NEXT_SEASON_YEAR);
+
+  const seasonSelect = document.getElementById("season-select");
+  if (seasonSelect) {
+    seasonSelect.addEventListener("change", (e) => {
+      getNBAStandings(Number(e.target.value));
+    });
+  }
+
+  // Load standings immediately — do not wait on season-list hydrate
+  getNBAStandings(NEXT_SEASON_YEAR);
+  loadNbaCupStandings();
+  bindCupConferenceShots();
+  hydrateSeasonDropdown(NEXT_SEASON_YEAR);
+
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    const viewing = Number((document.getElementById("season-select") || {}).value || NEXT_SEASON_YEAR);
+    getNBAStandings(viewing);
+    loadNbaCupStandings();
+  }, 300000);
+});

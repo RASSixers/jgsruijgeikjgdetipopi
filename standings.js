@@ -401,10 +401,18 @@ function initExport() {
           allowTaint: true,
           logging: false,
           onclone: function (doc) {
-            // Force W-L ink + streak badge colors so capture is never washed out
+            // Force W-L ink + centered streak badges in the graphic
             doc.querySelectorAll(".social-wl, .wl-score").forEach(function (el) {
               el.style.setProperty("color", "#0d0f1a", "important");
               el.style.setProperty("background", "transparent", "important");
+            });
+            doc.querySelectorAll(".social-streak-w, .streak-w, .social-streak-l, .streak-l, .status-badge").forEach(function (el) {
+              el.style.setProperty("display", "inline-flex", "important");
+              el.style.setProperty("align-items", "center", "important");
+              el.style.setProperty("justify-content", "center", "important");
+              el.style.setProperty("text-align", "center", "important");
+              el.style.setProperty("min-width", "36px", "important");
+              el.style.setProperty("box-sizing", "border-box", "important");
             });
             doc.querySelectorAll(".social-streak-w, .streak-w").forEach(function (el) {
               el.style.setProperty("background-color", "#166534", "important");
@@ -413,6 +421,11 @@ function initExport() {
             doc.querySelectorAll(".social-streak-l, .streak-l").forEach(function (el) {
               el.style.setProperty("background-color", "#c1121f", "important");
               el.style.setProperty("color", "#ffffff", "important");
+            });
+            doc.querySelectorAll(".social-team-name, .team-info > span:last-child").forEach(function (el) {
+              el.style.setProperty("overflow", "visible", "important");
+              el.style.setProperty("white-space", "normal", "important");
+              el.style.setProperty("text-overflow", "clip", "important");
             });
           }
         });
